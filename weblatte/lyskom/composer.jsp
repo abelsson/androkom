@@ -219,6 +219,10 @@
 		ContentType ct = new ContentType(ctstr);
 		if (!ct.match("text/html")) continue;
 		String contents = (String) part.get("contents");
+      		if (contents == null || contents.trim().equals("")) {
+		    i.remove();
+		    continue;
+		}
 		Debug.println("will search and replace composer.jsp image references.");
 		Matcher m = Pattern.compile("composer\\.jsp\\?image=([^\">]*)").matcher(contents);
 		StringBuffer buf = new StringBuffer();
@@ -577,7 +581,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.12 2004/06/03 02:27:38 pajp Exp $
+$Id: composer.jsp,v 1.13 2004/06/04 15:37:37 pajp Exp $
 </p>
 </body>
 </html>

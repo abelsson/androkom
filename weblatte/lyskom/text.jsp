@@ -10,6 +10,7 @@
             request.getAttribute("popupComment") != null;
 	boolean footnoteDisplay = request.getParameter("footnote") != null ||
 	    request.getAttribute("footnote") != null;
+        boolean inlineImages = preferences.getBoolean("inline-images");
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	Debug.println("conferenceNumber: " + conferenceNumber);
 
@@ -272,8 +273,8 @@
 			}
 		    }
 		    ContentType partContentTypeObj = new ContentType(part.getContentType());
-		    if (partContentTypeObj.match("text/*")) {
-	    		if (commonPreferences.getBoolean("dashed-lines")) {
+		    if (partContentTypeObj.match("text/*")) 
+{	    		if (commonPreferences.getBoolean("dashed-lines")) {
 	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    		}
 
@@ -342,6 +343,14 @@
 	    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
 	    out.println("<tt>");
   	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	} else if (inlineImages && contentTypeObj.match("image/*")) {
+	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	    out.println("<img src=\"rawtext.jsp?text=" + text.getNo() + "\" /><br/>");
+	    if (commonPreferences.getBoolean("dashed-lines")) {
 		out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
 	} else {

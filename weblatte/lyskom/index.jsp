@@ -914,16 +914,22 @@
 		}
 		newText = new Text();
 		byte[] body = bodyStream.toByteArray();
-		if (wrapInRfc822) {
+		if (wrapInRfc822 && parts.size() > 1) {
 		    ByteArrayOutputStream rfc822os =
 	  		new ByteArrayOutputStream();
 		    OutputStreamWriter rfc822writer =
 			new OutputStreamWriter(rfc822os, "us-ascii");
-		    ct.getParameterList().set("type", "html");
+	            if (ct.match("multipart/*")) {
+		    	ct.getParameterList().set("type", "html");
+		    }
 		    rfc822writer.write("Content-Type: " + ct.toString() + "\r\n");
 		    rfc822writer.write("Content-Transfer-Encoding: binary\r\n");
 		    rfc822writer.write("\r\n");
-		    ct = new ContentType("message/rfc822; x-type=mhtml");
+		    ContentType oldCt = ct;
+		    ct = new ContentType("message/rfc822");
+	            if (oldCt.match("multipart/*")) {
+		    	ct.getParameterList().set("x-type", "mhtml");
+		    }	
 		    rfc822writer.flush();
 		    rfc822os.write(body);
 		    body = rfc822os.toByteArray();
@@ -1858,7 +1864,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.67 $
+$Revision: 1.68 $
 </p>
 </body>
 </html>

@@ -183,7 +183,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
 		InputStream is = getInputStream();
 		InternetHeaders rfc822headers = new InternetHeaders();
 		BufferedReader reader = new BufferedReader(new InputStreamReader(is, "us-ascii"));
-		String row = reader.readLine();
+		String row;
 		String lastRow = null;
 		while ((row = reader.readLine()) != null && !row.equals("")) {
 		    if (row.startsWith("\t")) {
@@ -205,13 +205,15 @@ public class Text extends Hollerith implements Serializable, DataSource {
 		    Debug.println("rfc822 header name: " + h.getName() + ", value: " + h.getValue());
 		}
 
-	        String preambleContentType = rfc822headers.getHeader("Content-Type", null);
+	        ContentType preambleContentType = new ContentType(rfc822headers.getHeader("Content-Type", null));
 
 		if (preambleContentType != null) {
 		    stat.setAuxItem(new AuxItem(AuxItem.tagContentType,
-						preambleContentType));
-		    contentTypeString = preambleContentType;
+						preambleContentType.toString()));
+		    contentTypeString = preambleContentType.toString();
 		}
+	    } catch (javax.mail.internet.ParseException ex) {
+		throw new RuntimeException(ex.toString());
 	    } catch (IOException ex1) {
 		ex1.printStackTrace();
 		throw new RuntimeException("Error parsing contents while trying to parse MHTML message");
