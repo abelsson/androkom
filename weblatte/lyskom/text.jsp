@@ -284,26 +284,29 @@
 		}
 		textBody = htmlize(lyskom, textBody, true);
 
-		Matcher m = textLinkPattern.matcher(textBody);
-		StringBuffer sb = new StringBuffer();
-		while (m.find()) {
-		    try {
-			int _textNo = Integer.parseInt(m.group());
-			if (_textNo == 0) {
-                            m.appendReplacement(sb, m.group());
-			    continue;
-			}
-			TextStat ts = lyskom.getTextStat(_textNo);
-			m.appendReplacement(sb, textLink(request, lyskom, ts.getNo(), false));
-		    } catch (RpcFailure ex0) {
-			if (ex0.getError() != Rpc.E_no_such_text) throw ex0;
-			m.appendReplacement(sb, m.group());
-		    } catch (NumberFormatException ex1) {
-			m.appendReplacement(sb, m.group());
+		if (preferences.getBoolean("link-text-numbers")) {
+		    Matcher m = textLinkPattern.matcher(textBody);
+		    StringBuffer sb = new StringBuffer();
+		    while (m.find()) {
+		        try {
+			    int _textNo = Integer.parseInt(m.group());
+			    if (_textNo == 0) {
+                                m.appendReplacement(sb, m.group());
+			        continue;
+			    }
+			    TextStat ts = lyskom.getTextStat(_textNo);
+			    m.appendReplacement(sb, textLink(request, lyskom, ts.getNo(), false));
+		        } catch (RpcFailure ex0) {
+			    if (ex0.getError() != Rpc.E_no_such_text) throw ex0;
+			    m.appendReplacement(sb, m.group());
+		        } catch (NumberFormatException ex1) {
+			    m.appendReplacement(sb, m.group());
+		        }
 		    }
+		    m.appendTail(sb);
+		    textBody = sb.toString();
 		}
-		m.appendTail(sb);
-		out.print(sb.toString());
+		out.print(textBody);
 		out.println("</pre>");
 		if (commonPreferences.getBoolean("dashed-lines")) {
         	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
