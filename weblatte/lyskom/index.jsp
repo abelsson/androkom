@@ -83,7 +83,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.14 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.15 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -230,6 +230,8 @@
 	    if (justLoggedIn || showWelcome) {
 %>
     	<h2>välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!</h2>
+	<p class="intro">Högerklicka på en tom yta för att visa menyn. Du kan även högerklicka på personnamn,
+		mötesnamn och textnummer för att få fram menyer specifika för objektet i fråga.</p>
 	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
 <%
 	    }
@@ -494,7 +496,10 @@
 	for (int i=0; i < sessions.length; i++) {
 	    if (sessions[i].getPerson() == lyskom.getMyPerson().getNo() &&
 		sessions[i].getSession() != mySession) {
-		out.print("Avslutar session nummer " + sessions[i].getSession() + "...");
+		SessionInfo _session = lyskom.getStaticSessionInfo(sessions[i].getSession());
+		out.print("Avslutar session nummer " + sessions[i].getSession()
+			  + " från " + lyskom.toString(_session.getHostname())
+			  + "...");
 		out.flush();
 		lyskom.disconnect(sessions[i].getSession());
 		out.println(" OK.");
@@ -1225,7 +1230,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.14 2004/04/26 00:52:40 pajp Exp $
+$Id: index.jsp,v 1.15 2004/04/27 00:38:18 pajp Exp $
 </p>
 </body>
 </html>

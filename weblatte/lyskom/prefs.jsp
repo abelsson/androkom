@@ -4,7 +4,7 @@
 <%!
     void printBlockPrefs(JspWriter out, String blockName, KomPreferences block)
     throws IOException {
-	List pmds = (List) PreferencesMetaData.blocks.get(blockName);
+	List pmds = (List) PreferencesMetaData.getInstance().blocks.get(blockName);
 	out.println("<input type=\"hidden\" name=\"saveBlock\" value=\"" + blockName + "\">");
 	out.println("<table>");
 	for (Iterator i = pmds.iterator(); i.hasNext();) {
@@ -24,7 +24,7 @@
 	        out.println("<select name=\"" + pmd.key + "\">");
 	        for (int j=0; j < pmd.alternatives.length; j++) {
 	    	    out.print("<option ");
-		    if (block.getString(pmd.key).equals(pmd.alternatives[j])) {
+		    if (block.getString(pmd.key).toLowerCase().equals(pmd.alternatives[j].toLowerCase())) {
 			out.print("selected ");
 		    }
 		    out.print("value=\"" + pmd.alternatives[j] + "\">");
@@ -74,7 +74,7 @@
 
 	while (parameterNames.hasMoreElements()) {
 	    String parameterName = (String) parameterNames.nextElement();
-	    if (!PreferencesMetaData.containsKey(blockName, parameterName)) {
+	    if (!PreferencesMetaData.getInstance().containsKey(blockName, parameterName)) {
 		continue;
 	    }
 	    block.set(parameterName, request.getParameter(parameterName));
