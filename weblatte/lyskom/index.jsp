@@ -130,8 +130,8 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.61 $" + 
-					    (debug ? " (devel)" : ""));
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.62 $" + 
+					    (Debug.ENABLED ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
@@ -1840,7 +1840,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.61 $
+$Revision: 1.62 $
 </p>
 </body>
 </html>
