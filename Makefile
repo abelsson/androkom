@@ -9,7 +9,7 @@ all:	classes
 classes:
 	$(JAVAC) nu/dll/lyskom/*.java
 
-apps:	classes snarfkom swingkom kombiff komwho
+apps:	classes snarfkom swingkom kombiff komwho kombot
 
 snarfkom:
 	$(JAVAC) nu/dll/app/snarfkom/SnarfKom.java
@@ -19,6 +19,9 @@ swingkom:
 
 kombiff: 
 	$(JAVAC) nu/dll/app/kombiff/*.java
+
+kombot: 
+	$(JAVAC) nu/dll/app/kombot/*.java
 
 komwho: 
 	$(JAVAC) nu/dll/app/komwho/*.java
