@@ -439,7 +439,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		t.start();
 	    }
 
-	    foo.setLatteVersion("T2", "0.9");
+	    foo.setLatteVersion("T2", "$Revision: 1.14 $");
 	    //4303588, 100035, 4257987, 4244657
 	    int me = foo.getMyPerson().getNo();
 	    int rc = 1;

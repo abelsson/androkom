@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.19 2002/04/01 18:22:43 pajp Exp $
+ * @version $Id: Session.java,v 1.20 2002/04/04 08:31:03 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -204,7 +204,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     String clientHost = null;
 
-
+    String latteVersion = "$Revision: 1.20 $";
+    String latteName = "LatteKOM";
     private void init() {
 	textCache = new TextCache();
 	personCache = new PersonCache();
@@ -718,9 +719,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param clientVersion The version of the LysKOM client
      * @see nu.dll.lyskom.Session#setClientVersion(String, String)
      */
+
     public void setLatteVersion(String clientName, String clientVersion)
     throws IOException, RpcFailure {
-	setClientVersion("LatteKOM/" + clientName, "0.1/" + clientVersion);
+	setClientVersion(latteName + "/" + clientName, latteVersion + "/" + clientVersion);
     }
 
     /**
