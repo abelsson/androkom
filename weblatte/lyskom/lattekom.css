@@ -1,10 +1,25 @@
-/* $Id: lattekom.css,v 1.9 2004/06/04 23:07:00 pajp Exp $ */
+/* $Id: lattekom.css,v 1.10 2004/06/07 00:53:17 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
-  font-family: verdana, sans-serif;
+  font-family: sans-serif;
   color: black;
-  background: white;
+  background: #ffffee;
+}
+
+a {
+  color: #339;
+}
+
+ul.news {
+  display: list;
+  list-style-type: circle;
+  padding-left: 1.5em;
+}
+
+.welcome {
+  font-weight: bolder;
+  margin-bottom: 1em;
 }
 
 .about { 
@@ -67,7 +82,14 @@ p.asynchMessage {
 
 .intro { 
   width: 70%;
+  border-width: 2px;
+  border-style: solid;
+  padding: 0.3em;
+  background: #ffa;
+  margin-bottom: 1em;
+  margin-top: 1em;
 }
+
 
 .conference-name { 
   color: #339;
@@ -87,14 +109,22 @@ p.asynchMessage {
 }
 
 .boxed {
-  border-style: dotted;
+  border-style: solid;
   border-width: 1px;
-  border-color: #00f;
+  border-color: #88f;
   padding: 1em 1em 1em 1em;
+}
+
+.unread-summary {
+  margin-bottom: 1em;
 }
 
 .countdown { 
   font-size: x-small;
+}
+
+.standard-boxes {
+  margin-top: 1em;
 }
 
 .mo {
@@ -116,13 +146,23 @@ p.header {
   font-size: medium;
 }
 
-p.footer {
+.footer {
   text-align: center;
   font-size: xx-small;
 }
 
 .text {
+  font-size: 10pt;
+  background: white;
+  border-style: solid;
+  border-width: 1px;
+  border-color: #339;
+  margin-top: 1em;
+  padding: 0.4em;
+}
 
+.text-body {
+  font-size: 8pt
 }
 
 sup {
@@ -162,7 +202,7 @@ input.mo {
   font-size: 10px;
 }
 
-/* Context menu Script- © Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
+/* Context menu Script- ? Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
 For full source code and Terms Of Use, visit http://www.dynamicdrive.com */
 
 .skin0{
@@ -182,4 +222,5 @@ visibility:hidden;
 padding-left:10px;
 padding-right:10px;
 }
+
 

@@ -29,14 +29,12 @@
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_no_such_text) {
 		out.println("<p class=\"statusError\">Fel: text " + 
-		    textNumber + " finns inte.</p>");
+		    textNumber + " finns inte.</div>");
 		return;
 	    }
 	}
 %>
-	<p class="boxed">
- 	<span class="text">
-	<tt>
+ 	<div class="text">
 <%
 	List viewedTexts = (List) request.getAttribute("viewedTexts");
 	if (viewedTexts == null) {
@@ -141,6 +139,7 @@
 	Kommentar till text <%= textLink(request, lyskom, commented[i]) %><br/>
 <%
 	}
+
 	for (int i=0; !footnoteDisplay && i < footnoted.length; i++) {
 %>
 	Fotnot till text <%= textLink(request, lyskom, footnoted[i]) %><br/>
@@ -194,7 +193,7 @@
 	Ärende: <%= htmlize(subject) %><br/>
 <%
 	} else {
-	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");
+	    out.println("<div class=\"statusSuccess\">Texten är en User-Area.</div>");
 	}
         if (contentTypeObj.match("multipart/*")) {
 	    out.println("Texten är flerdelad: ");
@@ -222,7 +221,7 @@
 		if (commonPreferences.getBoolean("dashed-lines")) {
         	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
     		}
-		out.print("<pre class=\"text\">");
+		out.print("<pre class=\"text-body\">");
 		out.print(textBody);
 		out.println("</pre>");
 		if (commonPreferences.getBoolean("dashed-lines")) {
@@ -230,12 +229,12 @@
     		}
             } catch (UnsupportedEncodingException ex1) {
 %>
-	<p class="statusError">Varning: textens teckenkodning ("<%=ex1.getMessage()%>") kan inte visas ordentligt.<br/>
+	<div class="statusError">Varning: textens teckenkodning ("<%=ex1.getMessage()%>") kan inte visas ordentligt.<br/>
 	<a href="<%= basePath %>rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata
         eller <a href="<%= basePath %>index.jsp?text=<%=text.getNo()%>&forceCharset=iso-8859-1">här</a> för att
 	tolka innehållet enligt iso-8859-1.<br/>
 	Textens fullständiga datatyp är "<b><%= htmlize(rawContentType) %></b>".
-	</p>
+	</div>
 <%
             }
 	} else if (contentTypeObj.match("x-kom/user-area")) {
@@ -282,12 +281,11 @@
 			if (wantHtml && part.isMimeType("text/html")) {
 			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
-			    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"."+subpart+"\" width=\"95%\" type=\"" + partContentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + subpart + "&sanitize\"></object><br/>");
-			    out.println("<tt>");
+			    out.println("<object style=\"height: 200px;\" id=\"obj"+i+"."+subpart+"\" width=\"95%\" type=\"" + partContentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + subpart + "&sanitize\"></object><br/>");
 			    contentDisplayed = true;
 			} else if (part.isMimeType("text/html")) {
-			    out.println("<p class=\"statusError\">Texten är en HTML-text.<br/>");
-			    out.println("<a href=\"" + basePath + "?text="+text.getNo()+"&wantHtml\">Klicka här</a> för att visa den.</p>");
+			    out.println("<div class=\"statusError\">Texten är en HTML-text.<br/>");
+			    out.println("<a href=\"" + basePath + "?text="+text.getNo()+"&wantHtml\">Klicka här</a> för att visa den.</div>");
 			    contentDisplayed = true;
 			} else {
 			    out.println("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
@@ -313,14 +311,14 @@
 		    }
 		}
 		if (!contentDisplayed) {
-		    out.println("<p class=\"statusError\">Texten innehåller enbart data som ej kunde visas.<br/> " +
+		    out.println("<div class=\"statusError\">Texten innehåller enbart data som ej kunde visas.<br/> " +
 			"<a href=\"" + basePath + "?text=" + text.getNo() + "&showAll\">Klicka här</a> " +
-			"för att visa dolda delar.</p>");
+			"för att visa dolda delar.</div>");
 		}
 	    } catch (MessagingException ex1) {
-		out.println("<p class=\"statusError\">Fel: det gick inte att tolka inläggets MIME-innehåll.<br/>");
+		out.println("<div class=\"statusError\">Fel: det gick inte att tolka inläggets MIME-innehåll.<br/>");
 		out.println("(" + ex1.getMessage() + ")<br/>");
-		out.println("(<a href=\"/lyskom/?text=" + text.getNo() + "&forceContentType=text/plain\">återse omodifierad</a>)</p>");
+		out.println("(<a href=\"/lyskom/?text=" + text.getNo() + "&forceContentType=text/plain\">återse omodifierad</a>)</div>");
 	    }
         } else if (contentTypeObj.match("multipart/alternative")) {
   	    if (commonPreferences.getBoolean("dashed-lines")) {
@@ -333,8 +331,7 @@
 		if (wantHtml && pct.match("text/html")) {
 		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
-		    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
-		    out.println("<tt>");
+		    out.println("<object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
 		}
 		if (!wantHtml && pct.match("text/plain") || pct.match("text/x-kom-basic")) {
 		    out.print("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
@@ -349,8 +346,7 @@
 	    }
 	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
-	    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
-	    out.println("<tt>");
+	    out.println("<object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
   	    if (commonPreferences.getBoolean("dashed-lines")) {
 		out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
@@ -364,8 +360,8 @@
 	    }
 	} else {
 %>
-	<p class="statusError">Varning: textens datatyp ("<%=contentType%>") kan inte visas.<br/>
-	<a href="rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata.</p>
+	<div class="statusError">Varning: textens datatyp ("<%=contentType%>") kan inte visas.<br/>
+	<a href="rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata.</div>
 <%
 	}
 
@@ -442,7 +438,6 @@
 <%
 	}
 %>
-	</tt>
 	<br/>
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
@@ -458,8 +453,7 @@
 <%
     }
 %>
-	</span>
-	</p>
+	</div>
 <%
     out.flush();
     RequestDispatcher d = getServletContext().getRequestDispatcher("/lyskom/text.jsp?footnote");

@@ -86,10 +86,7 @@ public class PreferencesMetaData {
 		    row = reader.readLine();
 		    continue;
 		}
-		if (lastRow) {
-		    Debug.println("In last row, block=" + block + ", object: " + 
-				  object);
-		}
+
 		String newBlockName = null;
 		if (row.startsWith("[")) {
 		    // new block name, but don't assign it until we've
@@ -207,6 +204,10 @@ public class PreferencesMetaData {
 
     public static PreferencesMetaData getInstance() {
 	return instance;
+    }
+
+    public static void reload() {
+	instance = new PreferencesMetaData();
     }
 
     public String getDefault(String blockName, String key) {

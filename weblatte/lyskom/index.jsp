@@ -213,7 +213,7 @@
 <%
     if (error != null) {
 %>
-<p class="statusError"><%= error %></p>
+<div class="statusError"><%= error %></div>
 <%
     }
     if (parameter(parameters, "debug") != null) {
@@ -258,9 +258,9 @@
 	authenticated = Boolean.FALSE;
 	%>
 	<h2>utloggad.</h2>
-	<p>
+	<div>
 	[ <a href="<%= basePath %>">logga in</a> ]
-	</p>
+	</div>
 	<%
     }
     if (parameter(parameters, "logout") != null) {
@@ -280,9 +280,9 @@
 	authenticated = Boolean.FALSE;
 	%>
 	<h2>utloggad.</h2>
-	<p>
+	<div>
 	[ <a href="<%= basePath %>">logga in</a> ]
-	</p>
+	</div>
 	<%
     } else if (authenticated.booleanValue()) {
 	%><%@ include file='prefs_inc.jsp' %><%
@@ -327,12 +327,14 @@
 	    }
 	    if (justLoggedIn || showWelcome) {
 %>
-    	<h2>välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!</h2>
+    	<div class="welcome">Välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!<br>
+	    Din LysKOM-server är <%= lyskom.getServer() %>.
+	</div>
 <%
 		if (!minimalistic) {
 %>
-		<p class="intro">Högerklicka på en tom yta för att visa menyn. Du kan även högerklicka på personnamn,
-		mötesnamn och textnummer för att få fram menyer specifika för objektet i fråga.</p>
+		<div class="intro">Högerklicka på en tom yta för att visa menyn. Du kan även högerklicka på personnamn,
+		mötesnamn och textnummer för att få fram menyer specifika för objektet i fråga.</div>
 <%
 	    	}
 	    }
@@ -347,21 +349,21 @@
 	    if (ci != null) {
  	    	confNo = ci.getNo();
 	    	lyskom.changeName(confNo, newName);
-	    	out.println("<p class=\"statusSuccess\">OK: \"" +
+	    	out.println("<div class=\"statusSuccess\">OK: \"" +
 		    htmlize(ci.getNameString()) + "\" har bytt namn till " +
-		    lookupName(lyskom, confNo, true) + "</p>");
+		    lookupName(lyskom, confNo, true) + "</div>");
 	    } else {
-		out.println("<p class=\"statusError\">Fel: namnet \"" + 
-			htmlize(oldName) + "\" finns inte.</p>");
+		out.println("<div class=\"statusError\">Fel: namnet \"" + 
+			htmlize(oldName) + "\" finns inte.</div>");
 	    }
 	} catch (RpcFailure ex1) {
 	    switch (ex1.getError()) {
 		case Rpc.E_permission_denied:
-		out.println("<p class=\"statusError\">Fel: du har inte rättighet att " +
-			"ändra namn på \"" + lookupName(lyskom, confNo, true) + "\"</p>");
+		out.println("<div class=\"statusError\">Fel: du har inte rättighet att " +
+			"ändra namn på \"" + lookupName(lyskom, confNo, true) + "\"</div>");
 		break;
 		case Rpc.E_conference_exists:
-		out.println("<p class=\"statusError\">Fel: det angivna namnet är upptaget.</p>");
+		out.println("<div class=\"statusError\">Fel: det angivna namnet är upptaget.</div>");
 		break;
 	    }
 	} catch (AmbiguousNameException ex2) {
@@ -373,17 +375,17 @@
 	int textNo = Integer.parseInt(parameter(parameters, "delete"));
 	try {
 	    lyskom.deleteText(textNo);
-	    out.println("<p class=\"statusSuccess\">OK: text " + 
-			textLink(request, lyskom, textNo) + " är borttagen.</p>");
+	    out.println("<div class=\"statusSuccess\">OK: text " + 
+			textLink(request, lyskom, textNo) + " är borttagen.</div>");
 	} catch (RpcFailure ex1) {
 	    switch (ex1.getError()) {
 	    case Rpc.E_not_author:
-		out.println("<p class=\"statusError\">Fel: du är inte " +
-			    "textens skapare.</p>");
+		out.println("<div class=\"statusError\">Fel: du är inte " +
+			    "textens skapare.</div>");
 		break;
 	    case Rpc.E_no_such_text:
-		out.println("<p class=\"statusError\">Fel: det finns ingen " +
-			    "sådan text (" + ex1.getErrorStatus() + ").</p>");
+		out.println("<div class=\"statusError\">Fel: det finns ingen " +
+			    "sådan text (" + ex1.getErrorStatus() + ").</div>");
 		break;
 	    default:
 		throw ex1;
@@ -393,15 +395,15 @@
     }
     if (parameter(parameters, "mark") != null) {
 	lyskom.markText(Integer.parseInt(parameter(parameters, "mark")), commonPreferences.getInt("default-mark"));
-	out.println("<p class=\"statusSuccess\">Text " +
+	out.println("<div class=\"statusSuccess\">Text " +
 		textLink(request, lyskom,
 		Integer.parseInt(parameter(parameters, "mark")))
-		+ " har markerats.</p>");
+		+ " har markerats.</div>");
     }
     if (parameter(parameters, "unmark") != null) {
 	lyskom.unmarkText(Integer.parseInt(parameter(parameters, "unmark")));
-	out.println("<p class=\"statusSuccess\">Text " +
-		parameter(parameters, "unmark") + " har avmarkerats.</p>");
+	out.println("<div class=\"statusSuccess\">Text " +
+		parameter(parameters, "unmark") + " har avmarkerats.</div>");
     }
 
     if (parameter(parameters, "endast") != null) {
@@ -410,19 +412,19 @@
 	try {
 	    conf = lookupName(lyskom, parameter(parameters, "endastConferenceName"), true, true);
 	    if (conf != null) {
-	    	out.print("<p>Endast " + textcount + " inlägg i möte " +
+	    	out.print("<div>Endast " + textcount + " inlägg i möte " +
 			lookupName(lyskom, conf.getNo(), true) + "...");
 	    	out.flush();
 	    	lyskom.endast(conf.getNo(), textcount);
-	    	out.println(" ok.</p>");
+	    	out.println(" ok.</div>");
 		//lyskom.removeAttribute("mbInited");
 	    } else {
-	    	%><p class="statusError">Fel: mötet finns inte.</p><%
+	    	%><div class="statusError">Fel: mötet finns inte.</div><%
 	    }
             
 
 	} catch (AmbiguousNameException ex1) {
-	    %><p class="statusError">Fel: mötesnamnet är flertydigt. Följande mötesnamn matchar:<%
+	    %><div class="statusError">Fel: mötesnamnet är flertydigt. Följande mötesnamn matchar:<%
 	    out.println("<ul>");
 	    ConfInfo[] names = ex1.getPossibleNames();
 	    for (int i=0; i < names.length; i++) 
@@ -442,23 +444,23 @@
 		if (conf != null) confNo = conf.getNo();
 	    }
 	    if (confNo > 0) {
-		out.print("<p>Bli medlem i " + lookupName(lyskom, confNo, true) + "...");
+		out.print("<div>Bli medlem i " + lookupName(lyskom, confNo, true) + "...");
 		out.flush();
 		lyskom.joinConference(confNo);
-		out.print("OK!</p>");
+		out.print("OK!</div>");
 		out.flush();
 		lyskom.setAttribute("mbInited", Boolean.FALSE);
 	    } else {
-		out.println("<p class=\"statusError\">Fel: hittar inget sådant möte</p>");
+		out.println("<div class=\"statusError\">Fel: hittar inget sådant möte</div>");
 	    }
 	} catch (AmbiguousNameException ex1) {
 	    out.println(ambiguousNameMsg(lyskom, ex1));
 	} catch (RpcFailure ex2) {
 	  if (ex2.getError() == Rpc.E_access_denied) {
-	      out.println("misslyckades.</p><p class=\"statusError\">Fel: du får inte gå med i mötet.");
+	      out.println("misslyckades.</div><div class=\"statusError\">Fel: du får inte gå med i mötet.");
 	      Conference conf = lyskom.getConfStat(ex2.getErrorStatus());
 	      out.println("Administratör för mötet är " +
-	          lookupName(lyskom, conf.getSuperConf(), true) + " - vänd dig dit för mer information.</p>");
+	          lookupName(lyskom, conf.getSuperConf(), true) + " - vänd dig dit för mer information.</div>");
 	  }
 	}
     }
@@ -473,19 +475,19 @@
 		if (conf != null) confNo = conf.getNo();
 	    }
 	    if (confNo > 0) {
-		out.print("<p>Utträda ur möte " + lookupName(lyskom, confNo, true) + "...");
+		out.print("<div>Utträda ur möte " + lookupName(lyskom, confNo, true) + "...");
 		out.flush();
 		lyskom.subMember(confNo, lyskom.getMyPerson().getNo());
-		out.println("OK!</p>");
+		out.println("OK!</div>");
 		out.flush();
 		lyskom.setAttribute("mbInited", Boolean.FALSE);
 	    } else {
-		out.println("<p class=\"statusError\">Fel: hittar inget sådant möte</p>");
+		out.println("<div class=\"statusError\">Fel: hittar inget sådant möte</div>");
 	    }
 	} catch (AmbiguousNameException ex1) {
 	    out.println(ambiguousNameMsg(lyskom, ex1));
  	} catch (RpcFailure ex2) {
-	    out.println("misslyckades.</p><p class=\"statusError\">Fel: du är inte medlem i mötet.</p>");
+	    out.println("misslyckades.</div><div class=\"statusError\">Fel: du är inte medlem i mötet.</div>");
 	}
     }
 
@@ -504,7 +506,7 @@
     lyskom.setAttribute("many-memberships", new Boolean(manyMemberships));
 
     if (!mbInitedObj.booleanValue()) {
-	out.print("<p>Läser in medlemskapsinformation...");
+	out.print("<div>Läser in medlemskapsinformation...");
 	out.flush();
 	List unreadConferencesList = lyskom.getUnreadConfsList(me);
 	int unreadConferences = unreadConferencesList.size();
@@ -518,7 +520,7 @@
 		"innebär att komplett medlemsskap aldrig läses in, samt att " +
 		"nyhetslistan aldrig visar fler än fem möten åt gången. " +
 	  	"För att aktivera \"många möten\" permanent, ändra dina " + 
-		"<a href=\"prefs.jsp\">inställningar</a>.</p>");
+		"<a href=\"prefs.jsp\">inställningar</a>.</div>");
 	    out.flush();
 	    manyMemberships = true;
 	} else {
@@ -527,7 +529,7 @@
 	    } else {
 		out.println("(\"många möten\" aktiverad)...");
 	    }
-	    out.println("klart.</p>");
+	    out.println("klart.</div>");
 	    out.flush();
 	}
 	mbInitedObj = Boolean.TRUE;
@@ -556,20 +558,20 @@
 	    String _text = parameter(parameters, "sendText");
 	    if (stn.trim().equals("")) {
 		lyskom.sendMessage(0, _text);
-		%><p class="statusSuccess">Alarmmeddelande skickat.</p><%
+		%><div class="statusSuccess">Alarmmeddelande skickat.</div><%
 	    } else {
 	    	ConfInfo recipient = lookupName(lyskom, stn, true, true);
 	    	if (recipient != null) {
 		    lyskom.sendMessage(recipient.getNo(), _text);
 		    lastReceivedOrSent = lookupName(lyskom, recipient.getNo());
-		    %><p class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</p><%
+		    %><div class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</div><%
 	    	} else {
-		    %><p class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</p><%
+		    %><div class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</div><%
 	    	}
 	    }
 	} catch (RpcFailure ex2) {
 	    if (ex2.getError() == Rpc.E_message_not_sent) {
-		%><p class="statusError">Meddelandet gick inte att skicka.</p><%
+		%><div class="statusError">Meddelandet gick inte att skicka.</div><%
 	    } else {
 		throw ex2;
 	    }
@@ -594,12 +596,12 @@
 			lastReceivedOrSent = lookupName(lyskom, recipient);
 		    }
 %>
-		<p class="asynchMessage">
+		<div class="asynchMessage">
 		<i>Meddelande från <%=lookupName(lyskom, sender, true)%> till
                       <%= recipient != 0 ? lookupName(lyskom, recipient, true) : "alla"%>:</i><br>
 		<tt><%=htmlize(text).replaceAll("\n", "<br/>")%></tt><br/>
 		<small>(mottaget <%= df.format(m.getArrivalTime()) %>)</small>
-		</p>
+		</div>
 <%
 		    out.flush();
     		    if (parameter(parameters, "saveMessages") == null) {
@@ -625,7 +627,7 @@
     int conferenceNumber = 0;
     int newTextNo = 0;
     if (parameter(parameters, "purgeOtherSessions") != null) {
-	out.println("<p><pre>Listar sessioner...");
+	out.println("<div><pre>Listar sessioner...");
 	out.flush();
 	int mySession = lyskom.whoAmI();
 	DynamicSessionInfo[] sessions = lyskom.whoIsOnDynamic(true, true, 0);
@@ -642,7 +644,7 @@
 	    }
 	}
 	out.println("Klar.");
-	out.println("</pre></p>");
+	out.println("</pre></div>");
 	out.flush();
     }
     if (parameter(parameters, "conference") != null) {
@@ -702,28 +704,28 @@
 	int _textNo = Integer.parseInt(parameter(parameters, "toText"));
 	ConfInfo lbx = lookupName(lyskom, (String) parameters.get("addRecipient"), true, true);
 	if (lbx == null) {
-	    out.println("<p class=\"statusError\">Inget möte matchade det angivna namnet.</p>");
+	    out.println("<div class=\"statusError\">Inget möte matchade det angivna namnet.</div>");
 	} else {
 	    int confNo = lbx.getNo();
 	    lyskom.addRecipient(_textNo, confNo, rtype);
-	    out.println("<p class=\"statusSuccess\">OK: ny mottagare för " + textLink(request, lyskom, _textNo) + ": " +
-		lookupName(lyskom, confNo, true) + ".</p>");
+	    out.println("<div class=\"statusSuccess\">OK: ny mottagare för " + textLink(request, lyskom, _textNo) + ": " +
+		lookupName(lyskom, confNo, true) + ".</div>");
 	}
     }
 
     if (parameter(parameters, "setPassword") != null) {
 	ConfInfo lbx = lookupName(lyskom, (String) parameters.get("setPasswordPerson"), true, false);
 	if (lbx == null) {
-	    out.println("<p class=\"statusError\">Ingen person har det angivna namnet.</p>");
+	    out.println("<div class=\"statusError\">Ingen person har det angivna namnet.</div>");
 	} else {
 	    if (parameters.get("setPasswordNewPassword").
 		equals(parameters.get("setPasswordNewPasswordVerify"))) {
 	    	lyskom.setPassword(lbx.getNo(), (String) parameters.get("setPasswordUserPassword"),
 			           (String) parameters.get("setPasswordNewPassword"));
-	    	out.println("<p class=\"statusSuccess\">Person " +
-			    lookupName(lyskom, lbx.getNo(), true) + " har bytt lösenord.</p>");
+	    	out.println("<div class=\"statusSuccess\">Person " +
+			    lookupName(lyskom, lbx.getNo(), true) + " har bytt lösenord.</div>");
 	    } else {
-		out.println("<p class=\"statusError\">Lösenorden stämde inte överens.</p>");
+		out.println("<div class=\"statusError\">Lösenorden stämde inte överens.</div>");
 	    }
 	}
 	
@@ -751,14 +753,14 @@
     Conference letterbox = lyskom.getConfStat(person.getNo());
     if (letterbox.getPresentation() == 0) {
 %>
-	<p class="notice">Du har ingen presentation.
+	<div class="notice">Du har ingen presentation.
 	Varför inte <a href="<%=basePath%>?changePresentation=<%=person.getNo()%>">skriva en</a>?
-	</p>
+	</div>
 <%
     }
     if (showPOM) {
 %>
-   	<p class="nav">
+   	<div class="nav">
 	    [ <a href="<%=basePath%>?logout">logga ut</a>
               (<a title="Logga ut mina andra sessioner" href="<%=myURI(request)%>?purgeOtherSessions">övriga</a>) |
 	      <a href="<%=basePath%>?listnews">lista nyheter</a> |
@@ -771,11 +773,11 @@
 	    [ <a href="<%=basePath%>?setPasswordForm">ändra lösenord</a> ]
 	    [ <a href="<%=basePath%>prefs.jsp">inställningar</a> ]
 	    [ <a href="<%=basePath%>?suspend">pausa</a> ]
-   	</p>
+   	</div>
 <%
     }
     if (parameter(parameters, "reviewMarked") != null) {
-	out.println("<p><table><tr><td>Typ</td><td>text</td><td>författare</td><td>ärende</td></tr>");
+	out.println("<div><table><tr><td>Typ</td><td>text</td><td>författare</td><td>ärende</td></tr>");
 	Mark[] marks = lyskom.getMarks();
 	boolean pyjamas = false;
 	for (int i=0; i < marks.length; i++) {
@@ -813,7 +815,7 @@
 		unreads -= ms.getReadTexts().length;
 	    }
 %>
-	    <p>
+	    <div>
 	    Läser i <%= lookupName(lyskom, conferenceNumber, true) %> - <%= unreads %>
 	    <%= unreads > 1 || unreads == 0 ? "olästa" : "oläst" %>.<br/>
 <%
@@ -865,11 +867,11 @@
 
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_not_member) {
-		out.println("<p class=\"statusError\">Fel: du är inte medlem i " +
-			lookupName(lyskom, conferenceNumber, true) + "</p>");
+		out.println("<div class=\"statusError\">Fel: du är inte medlem i " +
+			lookupName(lyskom, conferenceNumber, true) + "</div>");
 	    } else if (ex1.getError() == Rpc.E_undefined_conference) {
-		out.println("<p class=\"statusError\">Fel: möte " +
-			ex1.getErrorStatus() + " finns inte.</p>");
+		out.println("<div class=\"statusError\">Fel: möte " +
+			ex1.getErrorStatus() + " finns inte.</div>");
 	    } else {
 		throw ex1;
 	    }
@@ -890,7 +892,7 @@
 	    }
 	}
 %>
-	</p>
+	</div>
 <%
     }
     if (parameters.containsKey("reviewFaq")) {
@@ -905,14 +907,14 @@
 		}
 	    }
 	    if (foundFaq) {
-		out.println("<p>Återser FAQ för " + lookupName(lyskom, conf.getNo(), true) + ".</p>");
+		out.println("<div>Återser FAQ för " + lookupName(lyskom, conf.getNo(), true) + ".</div>");
 	    } else {
-		out.println("<p class=\"statusError\">Fel: mötet " + lookupName(lyskom, conf.getNo(), true) + 
-			" har ingen FAQ.</p>");
+		out.println("<div class=\"statusError\">Fel: mötet " + lookupName(lyskom, conf.getNo(), true) + 
+			" har ingen FAQ.</div>");
 	    }
 	} catch (RpcFailure ex1) {
-	    out.println("<p class=\"statusError\">Fel: felkod " + ex1.getError() +
-		", status " + ex1.getErrorStatus() + "</p>");
+	    out.println("<div class=\"statusError\">Fel: felkod " + ex1.getError() +
+		", status " + ex1.getErrorStatus() + "</div>");
 	}
     }
 
@@ -926,8 +928,8 @@
 	} catch (NumberFormatException ex1) {
 	    ConfInfo[] confs = lyskom.lookupName((String) parameters.get("reviewPresentation"), true, true);
 	    if (confs.length == 0) {
-		out.println("<p class=\"statusError\">Hittade inget möte eller person som matchade " 
-		+ "\"" + htmlize((String) parameters.get("reviewPresentation")) + "\"</p>");
+		out.println("<div class=\"statusError\">Hittade inget möte eller person som matchade " 
+		+ "\"" + htmlize((String) parameters.get("reviewPresentation")) + "\"</div>");
 	    } else if (confs.length > 1) {
 		out.println(ambiguousNameMsg(lyskom, new AmbiguousNameException(confs)));
 	    } else {
@@ -937,10 +939,10 @@
 	}
 	if (pres > 0) {
 	    textNumber = conf.getPresentation();
-	    out.println("<p class=\"statusSuccess\">Återser presentation för " +
-	                lookupName(lyskom, conf.getNo(), true) + ".</p>");
+	    out.println("<div class=\"statusSuccess\">Återser presentation för " +
+	                lookupName(lyskom, conf.getNo(), true) + ".</div>");
 	} else {
-	    out.println("<p class=\"statusError\">" + lookupName(lyskom, conf.getNo(), true) + " har ingen presentation.</p>");
+	    out.println("<div class=\"statusError\">" + lookupName(lyskom, conf.getNo(), true) + " har ingen presentation.</div>");
 	}
     }
     if (parameter(parameters, "reviewOriginal") != null) {
@@ -990,7 +992,7 @@
 		d.include(request, response);
 	    } catch (RpcFailure ex1) {
 		if (ex1.getError() == Rpc.E_no_such_text) {
-		    %><p class="statusError">Fel: text <%= textNumber %> existerar inte.</p><%
+		    %><div class="statusError">Fel: text <%= textNumber %> existerar inte.</div><%
 		} else {
 		    throw ex1;
 		}
@@ -1022,8 +1024,8 @@
 	    queryStr.append("&conference=").append(conferenceNumber);
 	}
 	linkText.append(".");
-	out.println("<p><a accesskey=\"N\" href=\"?" + queryStr.toString() + "\">" +
-		linkText.toString() + "</a></p>");
+	out.println("<div><a accesskey=\"N\" href=\"?" + queryStr.toString() + "\">" +
+		linkText.toString() + "</a></div>");
     }
 
     if (parameters.containsKey("lookup")) {
@@ -1063,7 +1065,7 @@
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = lyskom.localToGlobal(conferenceNumber,
 						   membership.getLastTextRead()+1, 255);
-	out.println("<p><table><tr><td>Nummer</td><td>författare</td><td>ärende</td><td>tecken</td></tr>");
+	out.println("<div><table><tr><td>Nummer</td><td>författare</td><td>ärende</td><td>tecken</td></tr>");
 	boolean pyjamas = true;
 	while (mapping.hasMoreElements()) {
 	    int textNo = ((Integer) mapping.nextElement()).intValue();
@@ -1084,7 +1086,7 @@
 	    out.flush();
 	    pyjamas = !pyjamas;
 	}
-	out.println("</table></p>");
+	out.println("</table></div>");
     }
     if (parameter(parameters, "comment") != null && textNumber > 0) {
 	lyskom.changeWhatIAmDoing("Skriver en kommentar");
@@ -1121,19 +1123,19 @@
 		    var div = document.getElementById("countdown");
 	            if (countdownAborted) {
 	                if (div != null) {
-			    div.innerHTML = "<span class=\"countdown\">(avbruten)</span>";
+			    div.innerHTML = "(avbruten)";
 			}
 			return;
 	            }
 		    timeLeft -= 1000;
 		    var s = timeLeft / 1000;
 		    if (div != null && timeLeft > 0) {
-			div.innerHTML = "<span class=\"countdown\">(uppdaterar om " + s + 
-			    (s > 1 ? " sekunder" : " sekund") + ")</span>";
+			div.innerHTML = "(uppdaterar om " + s + 
+			    (s > 1 ? " sekunder" : " sekund") + ")";
 	                
 		    } else if (div != null && !countdownAborted) {
 			if (!refreshInProgress) {
-	                    div.innerHTML = "<span class=\"countdown\">(uppdaterar...)</span>";
+	                    div.innerHTML = "(uppdaterar...)";
 	                    refresh();
 	                }
 		    }
@@ -1155,8 +1157,8 @@
 
 <%		} 
 %>
-	<p>
-	<ul>
+        <div class="news">
+	<ul class="news">
 <%	
 		List unreadConfsList = lyskom.getUnreadConfsListCached();
 		Iterator confIter = unreadConfsList.iterator();
@@ -1221,28 +1223,28 @@
 		}
 		lyskom.changeWhatIAmDoing("Väntar");
 %>
-
 	</ul>
 <%
 		    if (skipped > 0) {
-		        out.println("<p>Hoppade över " + skipped + " möten.</p>");
+		        out.println("<div>Hoppade över " + skipped + " möten.</div>");
 		    }
 		if (manyMemberships && confIter.hasNext()) {
 %>
-		<p>Många möten: det finns troligen fler olästa i de
+		<div>Många möten: det finns troligen fler olästa i de
 	           <%= unreadConfsList.size()-confsum %> möten
-		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">lista nästa 5</a>).</p>
+		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">lista nästa 5</a>).</div>
 <%
 		}
 %>
-		<%= confsum == 0 ? "<b>inga olästa i något möte</b>" : sum + " oläst(a) i " + confsum + " möte(n)" %>
-		<div id="countdown"></div>
+		<div class="unread-summary"><%= confsum == 0 ? "<b>inga olästa i något möte</b>" : sum + " oläst(a) i " + confsum + " möte(n)" %>
+		<div class="countdown" id="countdown"></div>
+	        </div>
 <%		if (sum > 0) {
 		    out.println(jsTitle(serverShort(lyskom) + ": " + 
 			(sum == 1 ? "ett oläst" : sum + " olästa")));
 		}
 %>
-	</p>
+	</div>
 <%
 	    }
 
@@ -1320,11 +1322,15 @@
 
 	if (showStandardBoxes) {
 %>
+    <div class="standard-boxes">
+    <div id="read-text-box">
     <form method="get" action="<%=myURI(request)%>" class="boxed">
     Läs ett inlägg: <input type="text" size="10" name="text">
     <input type="submit" value="ok!">
     </form>
+    </div>
 
+    <div id="only-box">
     <form action="<%=myURI(request)%>" class="boxed" method="post">
     Endast: <input type="text" size="3" name="endast"> inlägg i möte
     <input type="text" size="40" name="endastConferenceName">
@@ -1333,7 +1339,9 @@
     <input type="hidden" name="listnews" value="<%=parameter(parameters, "listnews")%>">
 <%  } %>
     </form>
+    </div>
 
+    <div id="send-message-box">
     <form action="<%=myURI(request)%>" class="boxed" method="post">
     <a name="sendMessage"></a>
     Skicka ett meddelande till:<br/>
@@ -1345,6 +1353,8 @@
     Text:<br/>
     <input onFocus="abortCountdown();" onChange="abortCountdown();" type="text" name="sendText" size="60"><input type="submit" value="ok">
     </form>
+    </div>
+    </div>
 <%
 	    }
 	}
@@ -1356,9 +1366,9 @@
 	    session.setAttribute("goto", myURI(request) + (request.getQueryString() != null ? "?"+request.getQueryString() : ""));
 	} catch (IllegalStateException ex1) {}
 %>
-<p class="intro">
+<div class="intro">
 Du är inte inloggad.
-</p>
+</div>
 
 <form name="lyskomlogin" method="post" action="<%=myURI(request)%>">
 <%
@@ -1411,7 +1421,7 @@ Du är inte inloggad.
 	}
     }
 %>
-<p class="nav">
+<div class="nav">
 <% if (showPOM) { %>
 [ 
 <%
@@ -1427,11 +1437,11 @@ Du är inte inloggad.
 [ <a href="?pom=true">visa menyer</a> ]
 <%  }
     if (debug) { %>
-	<p><a href="<%= basePath%>?debug">debugdata</a>
-	   <a href="prefs.jsp">inställningar</a></p>
+	<div class="debug"><a href="<%= basePath%>?debug">debugdata</a>
+	   <a href="prefs.jsp">inställningar</a></div>
 <%  } %>
-</p>
-<p class="footer">
+</div>
+<div class="footer">
 <%
     List suspendedSessions = null;
     try {
@@ -1464,8 +1474,8 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.71 $
-</p>
+$Revision: 1.72 $
+</div>
 </body>
 </html>
 

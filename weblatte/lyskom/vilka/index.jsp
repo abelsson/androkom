@@ -54,7 +54,7 @@
     }
 
 %>
-<p class="StatusSuccess">Listar <%= who.length %> sessioner:</p>
+<div class="StatusSuccess">Listar <%= who.length %> sessioner:</div>
 <table>
 <tr bgcolor="#aaaaaa" width="80%"><td width="10%"><b>#</b></td><td width="30%"><b>namn</b></td><td width="15%"><b>gör</b></td><td width="35%"><b>i möte</b></td></tr>
 <%
@@ -122,7 +122,7 @@
     if (disconnectLast || !lyskom.getLoggedIn()) lyskom.disconnect(true);
 %>
 </table>
-<p>
+<div>
 <form method="get" action="<%= myURI(request) %>" class="boxed">
 Sorteringsordning:
 <select name="sort">
@@ -139,11 +139,11 @@ Visa sessioner som varit aktiva inom:
 </select><br/>
 <input type="submit" value="ok"/>
 </form>
-</p>
-<p>[ <a href="../">till huvudsidan</a> ]</p>
-<p class="footer">
-$Id: index.jsp,v 1.14 2004/05/28 13:18:59 pajp Exp $
-</p>
+</div>
+<div class="nav">[ <a href="../">till huvudsidan</a> ]</div>
+<div class="footer">
+$Id: index.jsp,v 1.15 2004/06/07 00:53:18 pajp Exp $
+</div>
 </body>
 </html>
 

@@ -64,8 +64,8 @@
 	int oldUserAreaTextNo = lyskom.getMyPerson().getUserArea();
 	lyskom.setUserArea(0);
 	clearPreferenceCache(lyskom);
-	out.println("<p class=\"statusSuccess\">User-Area nollställd!" + 
-	" (var: " + oldUserAreaTextNo + ")</p>");
+	out.println("<div class=\"statusSuccess\">User-Area nollställd!" + 
+	" (var: " + oldUserAreaTextNo + ")</div>");
 	out.flush();
     }
 %>
@@ -102,19 +102,19 @@
     if (request.getParameter("status") != null) {
 	String status = request.getParameter("status");
 	if (status.equals("ok")) {
-	    out.println("<p class=\"statusSuccess\">OK: inställningarna har sparats.</p>");
+	    out.println("<div class=\"statusSuccess\">OK: inställningarna har sparats.</div>");
 	} else {
-	    out.println("<p class=\"statusError\">Fel: felkod " + request.getParameter("error") + "</p>");
+	    out.println("<div class=\"statusError\">Fel: felkod " + request.getParameter("error") + "</div>");
 	}
      }
      if (Debug.ENABLED) {
-	out.println("<p>Inställningar från user-area-text " + (userArea.getTextNo() != 0 ? textLink(request, lyskom, userArea.getTextNo()) : "0") + "</p>");
+	out.println("<div>Inställningar från user-area-text " + (userArea.getTextNo() != 0 ? textLink(request, lyskom, userArea.getTextNo()) : "0") + "</div>");
      }
 %>
     <form method="post" class="boxed">
 	<b>Gemensamma inställningar</b>
-	<p>Inställningar i denna kategori kan påverka även andra
-	   LysKOM-klienter, till exempel elisp-klienten.</p>
+	<div>Inställningar i denna kategori kan påverka även andra
+	   LysKOM-klienter, till exempel elisp-klienten.</div>
 	<%
 	    printBlockPrefs(out, "common", commonPreferences);
 	%>
@@ -122,18 +122,18 @@
     <br/>
     <form method="post" class="boxed">
 	<b>Inställningar för WebLatte</b>
-	<p>Inställningar i denna kategori gäller enbart Weblatte</p>
+	<div>Inställningar i denna kategori gäller enbart Weblatte</div>
 	<%
 	    printBlockPrefs(out, "weblatte", preferences);
 	%>
     </form>
     <form method="post" class="boxed">
 	<b>Töm användararea</b>
-	<p>Denna funktion nollställer användararean (user-area) på servern
+	<div>Denna funktion nollställer användararean (user-area) på servern
 	   så att alla inställningar återfår sitt standardvärde. Notera att
            detta även gäller inställningar specifika för andra klienter som
            lagrats på servern.
-	</p>
+	</div>
 	<input type="submit" name="clearUserArea" value="Töm User-Area"
 	 onClick="return confirm('Vill du verkligen nollställa _alla_ klientinställningar lagrade på servern?');">
     </form>
