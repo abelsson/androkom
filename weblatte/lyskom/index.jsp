@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.30 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.31 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -590,7 +590,7 @@
     if (parameter(parameters, "conference") != null) {
 	conferenceNumber = Integer.parseInt(parameter(parameters, "conference"));
     }
-    if (parameter(parameters, "markAsRead") != null) {
+    if (parameters.containsKey("markAsRead")) {
 	String[] values = request.getParameterValues("markAsRead");
 	Map conferences = new HashMap();
 	for (int i=0; i < values.length; i++) {
@@ -906,12 +906,12 @@
 	    }
 	}
 	if (nextUnreadText > 0) {
-	    if (parameter(parameters, "text") == null) textNumber = nextUnreadText;
+	    if (!parameters.containsKey("text")) textNumber = nextUnreadText;
 	} else if (nextUnreadText == -1) {
 %>
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
 <%
-	    if (textNumber == 0 && parameter(parameters, "text") == null &&
+	    if (textNumber == 0 && !parameters.containsKey("text") &&
 		parameter(parameters, "comment") == null && newTextNo == 0 &&
 		!response.isCommitted()) {
 		listNews = true;
@@ -1408,7 +1408,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.30 $
+$Revision: 1.31 $
 </p>
 </body>
 </html>
