@@ -22,6 +22,7 @@ class Connection {
     int port;
 
     Thread queuedWriter = null;
+    boolean keepRunning = true;
 
     public Connection(Session session)
     throws IOException, UnknownHostException {
@@ -36,7 +37,7 @@ class Connection {
 	queuedWriter = new Thread(new Runnable() {
 		public void run() {
 		    Debug.println("Queued writer start.");
-		    while (true) {
+		    while (keepRunning) {
 			try {
 			    synchronized (writeQueue) {
 				if (writeQueue.isEmpty()) {
@@ -62,11 +63,12 @@ class Connection {
 
 			} catch (IOException ex1) {
 			    Debug.println("I/O error during write: " + ex1.getMessage());
+			    keepRunning = false;
 			} catch (InterruptedException ex2) {
 			    Debug.println("Interrupted during wait(): " + ex2.getMessage());
 			}
 		    }
-		    //Debug.println("Queued writer exit.");
+		    Debug.println("Queued writer exit.");
 		}
 	    });
 	queuedWriter.setName("QueuedWriter-" + writerThreadCount++);
@@ -87,6 +89,8 @@ class Connection {
     public void close()
     throws IOException {
 	sock.close();
+	keepRunning = false;
+	queuedWriter.interrupt();
     }
 
     public InputStream getInputStream() {
@@ -97,8 +101,16 @@ class Connection {
 	return output;
     }
 
-    public void queuedWrite(String s) {
+    public void queuedWrite(String s)
+    throws IOException {
 	synchronized (writeQueue) {
+	    if (!keepRunning) {
+		throw new IllegalStateException("Connection has been terminated.");
+	    }
+	    if (session.listener.getException() != null) {
+		Exception ex1 = session.listener.getException();
+		throw new IOException("Exception in listener: " + ex1.toString());
+	    }
 	    try {
 		writeQueue.addLast(s.getBytes(session.serverEncoding));
 	    } catch (UnsupportedEncodingException ex1) {

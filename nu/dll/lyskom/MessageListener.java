@@ -194,6 +194,11 @@ implements Runnable {
 		disconnect = true;
 	    }
 	    if (readError != null) {
+
+		try {
+		    session.connection.close();
+		} catch (IOException ex1) {}
+
 		// sends a null to all receivers to notify about the disconnection
 		// this is not very clean, we should probably extend the interface
 		// or add an interface with a callback like listenerException(Exception)
@@ -206,7 +211,7 @@ implements Runnable {
 		disconnected = true;
 		if (disconnect) {
 		    if (Debug.ENABLED)
-			Debug.println("Disconnected (" + readError.toString() + ").");
+			Debug.println("Disconnected (" + readError + ").");
 
 		    continue;
 		} else {

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.46 2004/04/23 01:17:57 pajp Exp $
+ * @version $Id: Session.java,v 1.47 2004/04/25 18:35:02 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -2023,6 +2023,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (p != null) return p;
 
 	RpcReply reply = waitFor(doGetPersonStat(persNo).getId());
+	if (!reply.getSuccess()) throw reply.getException();
 
 	p = Person.createFrom(persNo, reply);
 	personCache.add(p);
