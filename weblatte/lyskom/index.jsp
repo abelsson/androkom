@@ -1293,8 +1293,13 @@
 		}
 %>
 		<div class="unread-summary"><%= confsum == 0 ? "<b>inga olästa i något möte</b>" : sum + " oläst(a) i " + confsum + " möte(n)" %><br>
-
+<%
+	        if (confsum == 0) {
+%>
 	        Tips: om du är osäker på vilka möten du ska gå med i, <a href="active.jsp">lista mötesaktivitet</a>.
+<%
+	        }
+%>
 		<div class="countdown" id="countdown"></div>
 	        </div>
 <%		if (sum > 0) {
@@ -1581,7 +1586,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.92 $
+$Revision: 1.93 $
 </div>
 </body>
 </html>
