@@ -1,5 +1,4 @@
-<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
-				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
+<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
@@ -79,11 +78,11 @@
 				  request.getParameter("lyskomDold") != null, false)) {
 		    error = "Felaktigt lösenord!";
 		} else {
-		    session.setAttribute("lyskom", lyskom);
+		    session.setAttribute("lyskom", new SessionWrapper(lyskom));
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.16 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.17 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1232,7 +1231,8 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.16 2004/04/27 21:24:31 pajp Exp $
+<a href="about.jsp">Hjälp och information</a><br />
+$Revision: 1.17 $
 </p>
 </body>
 </html>

@@ -47,8 +47,7 @@ Stackspårning:
 	    lyskom.shutdown();
 	} catch (Exception ex1) {}
     }
-    session.removeAttribute("LysKOMauthenticated");
-    session.removeAttribute("lyskom");
+    session.invalidate();
 %>
   </body>
 </html>
