@@ -3,6 +3,7 @@
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%@ include file='prefs_inc.jsp' %>
+<%
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
