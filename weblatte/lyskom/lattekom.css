@@ -1,4 +1,4 @@
-/* $Id: lattekom.css,v 1.5 2004/05/11 19:57:28 pajp Exp $ */
+/* $Id: lattekom.css,v 1.6 2004/05/11 20:17:14 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
@@ -22,7 +22,6 @@ p {
   background: white;
   margin-top: 0.6em;
   margin-bottom: 0.6em;
-  font-size: small;
 }
 
 td { 
@@ -79,8 +78,6 @@ p.asynchMessage {
   border-style: dotted;
   border-width: 1px;
   border-color: #00f;
-  /*width: 70%;*/
-  font-size: small;
   padding: 1em 1em 1em 1em;
 }
 

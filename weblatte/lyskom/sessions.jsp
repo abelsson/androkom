@@ -30,8 +30,6 @@
     }
     String selected = request.getParameter("select");
 
-    // the "next" session is always at index zero and the last suspended
-    // session is always at the last index
     if (request.getParameter("next") != null) {
 	synchronized (suspendedSessions) {
 	    selected = getSessionId((SessionWrapper) suspendedSessions.get(0));
@@ -88,12 +86,12 @@
 	out.println("<b>Aktiv LysKOM-session:</b> " + sessionInfo(lyskomWrapper) + "<br>");
     }
     synchronized (suspendedSessions) {
-	out.println("<ul>");
+	out.println("<ol>");
 	for (Iterator i = suspendedSessions.iterator(); i.hasNext();) {
 	    SessionWrapper w = (SessionWrapper) i.next();
-	    out.println("<li>Pausad LysKOM-session: " + sessionInfo(w) + "</li>");
+	    out.println("<li>" + sessionInfo(w) + "</li>");
 	}
- 	out.println("</ul>");
+ 	out.println("</ol>");
     }
   %>
   <p>

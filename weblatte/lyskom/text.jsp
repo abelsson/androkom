@@ -10,6 +10,7 @@
         out.println("<a name=\"text" + textNumber + "\"></a>");
 %>
 	<p class="boxed">
+ 	<span class="text">
 <%
 	Text text = null;
 	try {
@@ -261,6 +262,7 @@
 <%
     }
 %>
+	</span>
 	</p>
 <%
     out.flush();

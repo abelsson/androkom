@@ -101,10 +101,10 @@
       ersättas med den du valt, varpå du återförs till huvudsidan och
       kan börja arbeta med den valda sessionen. Till höger om
       sessionslänken på huvudsidan visas även en länk, "<b>>></b>",
-      som tar dig direkt till den senast pausade sessionen. Om du har
-      fler än en pausad session visas även en länk åt andra hållet,
-      "<b>&lt;&lt;</b>", som omvänt tar dig till den tidigast pausade
-      sessionen. På så vis kan du rotera mellan alla sessioner utan
+      som tar dig direkt till den först pausade sessionen i listan. Om
+      du har fler än en pausad session visas även en länk åt andra
+      hållet, "<b>&lt;&lt;</b>", tar dig till den senast pausade
+      sessionen. På så vis kan du stega mellan alla sessioner utan
       att gå via sessions-listan.<br/> Om du har en eller flera
       pausade sessioner när du loggar ut ur en session, så tas du till
       listan över sessioner. Där kan du även välja att "<b>terminera
@@ -210,7 +210,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.8 $
+      $Revision: 1.9 $
     </p>
   </body>
 </html>
