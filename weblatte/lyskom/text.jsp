@@ -252,9 +252,10 @@
 	    boolean showNonDisplayableParts = request.getParameter("showAll") != null;
 	    try {
 		MimeMultipart multipart = new MimeMultipart(text);
+		int partCount = multipart.getCount();
 		//out.println("Texten innehåller " + multipart.getCount() + " delar");
 		boolean contentDisplayed = false;
-		for (int i=0; i < multipart.getCount(); i++) {
+		for (int i=0; i < partCount; i++) {
 		    BodyPart part = multipart.getBodyPart(i);
 		    int subpart = 0;
 		    if (part.isMimeType("multipart/alternative")) {
@@ -297,8 +298,16 @@
 	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    		}
 		    } else if (part.isMimeType("image/*") &&
-			       "inline".equals(((MimeBodyPart)part).getHeader("Content-Disposition", null))) {
+			       ((partCount == 1 && inlineImages) ||
+				"inline".equals(((MimeBodyPart)part).getHeader("Content-Disposition", null)))) {
+	    		if (commonPreferences.getBoolean("dashed-lines")) {
+	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    		}
+			contentDisplayed = true;
 			out.println("<img src=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "\" /><br/>");
+	    		if (commonPreferences.getBoolean("dashed-lines")) {
+	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    		}
 		    } else if (showNonDisplayableParts) {
 			out.println("Visar ej: del " + (i+1) + ": <a href=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "\">data av typen " + partContentTypeObj.getBaseType() + "</a><br/>");
 		    }
