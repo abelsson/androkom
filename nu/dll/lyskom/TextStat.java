@@ -321,6 +321,30 @@ public class TextStat implements java.io.Serializable {
 	return MimeUtility.javaCharset(((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1"));
     }
 
+    public void setContentType(String newContentTypeString) {
+	String oldContentTypeString = getFullContentType();
+	ContentType oldContentType = null;
+	ContentType newContentType = null;
+	try {
+	    oldContentType = new ContentType(oldContentTypeString);
+	    newContentType = new ContentType(newContentTypeString);
+	    // copy all content-type parameters (such as charset) to the new content type
+	    // note that this might not always be what you want. if you want to clear 
+	    // the parameter list, you should set the tagContentType AuxItem manually
+	    // with setAuxItem() instead.
+	    for (Enumeration e = oldContentType.getParameterList().getNames();
+		 e.hasMoreElements();) {
+		String name = (String) e.nextElement();
+		String value = oldContentType.getParameterList().get(name);
+		newContentType.getParameterList().set(name, value);
+	    }
+	    setAuxItem(new AuxItem(AuxItem.tagContentType, newContentType.toString()));
+	} catch (javax.mail.internet.ParseException ex) {
+	    throw new RuntimeException("Error parsing contents while trying to parse content-type: "
+				       + ex.toString());
+	}
+    }
+
     public void setCharset(String charset) {
 	Object[] ct = parseContentTypeAuxItem();
 	String contentType = (String) ct[0];

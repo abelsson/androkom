@@ -133,6 +133,10 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	stat.setCharset(charset);
     }
 
+    public void setContentType(String type) {
+	stat.setContentType(type);
+    }
+
     /**
      * This method is here to implement the DataSource interface,
      * which allows us to use a Text as a MimeMultipart backend.

@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.92 2005/01/27 22:50:54 pajp Exp $
+ * @version $Id: Session.java,v 1.93 2005/02/09 04:50:25 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -550,6 +550,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */    
     public boolean getConnected() {
 	return connected;
+    }
+
+
+    public boolean login(int id, String password)
+    throws IOException {
+	return login(id, password, false, true);
     }
 
     /**
