@@ -246,7 +246,8 @@
 	    attachmentTexts.add(new Integer(((KomToken) i.next()).intValue()));
 	}
         for (int i=comments.length-1; i >= 0; i--) {
-	    if (preferences.getBoolean("read-comments-first")) {
+	    if (preferences.getBoolean("read-comments-first") &&
+                request.getParameter("text") == null) {
 		if (conferenceNumber > 0) {
 		    TextStat ts = null;
 		    try {
