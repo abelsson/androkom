@@ -1,5 +1,4 @@
 <jsp:directive.page language='java' import='nu.dll.lyskom.*' /><jsp:directive.include file='kom.jsp' /><%
-    Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null) {
 	response.sendRedirect("/lyskom/?error=nosession");
 	return;

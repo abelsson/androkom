@@ -8,7 +8,7 @@
     	lyskom.connect(Servers.defaultServer.hostname, 4894);
 	disconnectLast = true;
     }
-    lyskom.changeWhatIAmDoing("Kollar vilkalistan");
+    //lyskom.changeWhatIAmDoing("Kollar vilkalistan");
 
     if (!disconnectLast) {
     	if (lyskom == null || !lyskom.getLoggedIn()) response.sendRedirect("http://dll.nu/lyskom/");
@@ -137,7 +137,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.11 2004/05/10 00:50:46 pajp Exp $
+$Id: index.jsp,v 1.12 2004/05/12 14:19:43 pajp Exp $
 </p>
 </body>
 </html>
