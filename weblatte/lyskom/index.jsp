@@ -1520,9 +1520,6 @@
 Du är inte inloggad.
 </div>
 <div class="news">
-<ul>
-<li><b>2004-11-12: SnoppKOM flyttar</b> till ny server. Använd adressen <tt>kom.sno.pp.se</tt> för att ansluta till SnoppKOM i fortsättningen, eller IP-adressen <tt>212.214.41.199</tt>. Weblatte har uppdaterats med den nya adressen.
-</ul>
 </div>
 <form name="lyskomlogin" method="post" action="<%=myURI(request)%>">
 <%
@@ -1662,7 +1659,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.94 $
+$Revision: 1.95 $
 </div>
 </body>
 </html>
