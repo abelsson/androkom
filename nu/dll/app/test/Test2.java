@@ -569,7 +569,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		}
 		if (rc == 0) { // default-action (read next text)
 		    int textNo = foo.nextUnreadText(false);
-		    if (textNo == -1) { // if no unread text in current conference,
+		    if (textNo == -1 && toread.empty() && toreview.empty()) { // if no unread text in current conference,
 			int nextConf = foo.nextUnreadConference(true); // change conference
 			if (nextConf == -1) {			    
 			    //foo.sendMessage(0, "Skriv nå't då!");
