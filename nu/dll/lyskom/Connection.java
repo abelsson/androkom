@@ -136,7 +136,7 @@ class Connection {
 		if (bytes[bytes.length-1] != '\n') {
 		    line = new byte[bytes.length+1];
 		    System.arraycopy(bytes, 0, line, 0, bytes.length);
-		    line[bytes.length] = '\n';
+		    line[bytes.length] = (byte) '\n';
 		} else {
 		    line = bytes;
 		}
