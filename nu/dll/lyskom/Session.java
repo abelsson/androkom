@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.41 2004/04/15 22:18:21 pajp Exp $
+ * @version $Id: Session.java,v 1.42 2004/04/16 12:01:41 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -196,6 +196,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     ConferenceCache conferenceCache;
     MembershipCache membershipCache;
     TextStatCache textStatCache;
+    Map sessionCache;
     
     ReadTextsMap readTexts;
 
@@ -231,6 +232,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	conferenceCache = new ConferenceCache();
 	membershipCache = new MembershipCache();
 	textStatCache = new TextStatCache();
+	sessionCache = new HashMap();
 	readTexts = new ReadTextsMap();
 	rpcHeap = new RpcHeap();
 	rpcEventListeners = new Vector(1);
@@ -882,7 +884,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException {
 	return writeRpcCall(new RpcCall(count(), Rpc.C_get_info));
     }
-	
+
 
     /**
      * Returns static session information for a given session number. This is guaranteed by
@@ -894,10 +896,19 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public SessionInfo getStaticSessionInfo(int sessionNo)
     throws IOException, RpcFailure {
+	SessionInfo session;
+	synchronized (sessionCache) {
+	    session = (SessionInfo) sessionCache.get(new Integer(sessionNo));
+	    if (session != null) return session;
+	}
 	RpcReply reply = waitFor(doGetStaticSessionInfo(sessionNo));
 	if (!reply.getSuccess()) throw reply.getException();
 
-	return new SessionInfo(0, reply.getParameters());
+	session = new SessionInfo(0, reply.getParameters());
+	synchronized (sessionCache) {
+	    sessionCache.put(new Integer(sessionNo), session);
+	}
+	return session;
     }
 
     /**
