@@ -1,5 +1,5 @@
 // -*- Mode: c -*-
-// $Id: stuff.js,v 1.1 2004/04/15 22:13:20 pajp Exp $
+// $Id: stuff.js,v 1.2 2004/04/15 23:09:32 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;
@@ -23,7 +23,7 @@ function endast_interactive(win, confNo, name) {
 }
 
 function search_interactive(win) {
-  var str = win.prompt("Ange sökvillkor:", "");
+  var str = win.prompt("Ange sökvillkor (lämna blankt för att lista alla möten och personer):", "");
   if (str == null) return;
   document.location.href="/lyskom/?lookup=" + escape(str);
 }
