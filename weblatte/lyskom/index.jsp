@@ -103,10 +103,13 @@
 		    lyskom.shutdown();
 		} else {
 		    session.setAttribute("lyskom", new SessionWrapper(lyskom));
+		    Cookie serverCookie = new Cookie("kom-server", server);
+		    serverCookie.setMaxAge(31536000);
+		    response.addCookie(serverCookie);
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.24 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.25 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1249,7 +1252,17 @@ Du är inte inloggad.
 <select name="server">
 <%
     String selectedServer = request.getParameter("server");
-    if (selectedServer == null) selectedServer = Servers.defaultServer.hostname;
+    if (selectedServer == null) {
+	Cookie[] cookies = request.getCookies();
+	for (int i=0; i < cookies.length; i++) {
+	    if (cookies[i].getName().equals("kom-server")) {
+		selectedServer = cookies[i].getValue();
+	    }
+	}
+    }
+    if (selectedServer == null) {
+	selectedServer = Servers.defaultServer.hostname;
+    }
     for (Iterator i = Servers.list.iterator(); i.hasNext();) {
 	KomServer ks = (KomServer) i.next();
 	out.println("<option ");
@@ -1319,7 +1332,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.24 $
+$Revision: 1.25 $
 </p>
 </body>
 </html>

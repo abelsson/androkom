@@ -20,7 +20,7 @@
       inga garantier för om och när en eventuell bugg kan fixas.<br/>
       Det finns andra webb-baserade LysKOM-klienter, till exempel <a
 	href="http://webkom.lysator.liu.se/">WebKOM</a> och <a
-	href="http://jyskom.lysator.liu.se">JySKOM</a>.
+	href="http://www.lysator.liu.se/jyskom/">JySKOM</a>.
     </p>
     <p>
       Den officiella Weblatte-URLen är:
@@ -121,7 +121,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.4 $
+      $Revision: 1.5 $
     </p>
   </body>
 </html>
