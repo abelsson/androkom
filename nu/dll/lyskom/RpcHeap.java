@@ -14,7 +14,7 @@ class RpcHeap {
     public static List rpcCallStack;
 
     public RpcHeap() {
-	rpcCallStack = new Vector();
+	rpcCallStack = new LinkedList();
     }
 		      
     public void purgeRpcCall(RpcCall r) {

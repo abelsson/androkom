@@ -98,7 +98,7 @@ public class Selection implements Serializable, Tokenizable {
      */
     public int getIntValue(int key) {
 	if (!keys[key]) throw new NoSuchKeyException("key " + key);
-	return ((Integer) values[key].get(0)).intValue();
+	return ((Integer) values[key].elementAt(0)).intValue();
     }
 
     /**
@@ -106,7 +106,7 @@ public class Selection implements Serializable, Tokenizable {
      */
     public KomTime getTimeValue(int key) {
 	if (!keys[key]) throw new NoSuchKeyException("key " + key);
-	return (KomTime) values[key].get(0);
+	return (KomTime) values[key].elementAt(0);
     }
 
     /**
@@ -114,7 +114,7 @@ public class Selection implements Serializable, Tokenizable {
      */
     public KomToken getTokenValue(int key) {
 	if (!keys[key]) throw new NoSuchKeyException("key " + key);
-	return (KomToken) values[key].get(0);
+	return (KomToken) values[key].elementAt(0);
     }
 
     /**
@@ -126,7 +126,7 @@ public class Selection implements Serializable, Tokenizable {
      */
     public boolean remove(int key, Object value) {
 	if (keys[key]) {
-	    return values[key].remove(value);
+	    return values[key].removeElement(value);
 	} else {
 	    return false;
 	}

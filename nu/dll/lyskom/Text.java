@@ -7,7 +7,6 @@ package nu.dll.lyskom;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
-import java.util.Vector;
 import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
