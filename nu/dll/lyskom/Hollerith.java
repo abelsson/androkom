@@ -37,21 +37,19 @@ public class Hollerith extends KomToken implements java.io.Serializable {
     }
 
     public byte[] toNetwork() {
-	// Ehm. (string.length+"H"+string).getBytes() is probably easier,
-	// but may cause encoding problem (String.getBytes()).
-	byte[] b = getContents();
-	String realLen = b.length + "";
-	int holLength = b.length + realLen.length() + 1;
-	realLen = realLen + "H";
-	byte[] argh = new byte[holLength];
-	int i = 0;
-	for (; i < realLen.length(); i++) {
-	    argh[i] = (byte) realLen.charAt(i);
+	try {
+	    String prefixString = contents.length + "H";
+	    byte[] prefixBytes = prefixString.getBytes("ISO-8859-1");
+	    byte[] contents = getContents();
+	    byte[] output = new byte[contents.length + prefixBytes.length];
+	    
+	    System.arraycopy(prefixBytes, 0, output, 0, prefixBytes.length);
+	    System.arraycopy(contents, 0, output, prefixBytes.length, contents.length);
+	    
+	    return output;
+	} catch (java.io.UnsupportedEncodingException e) {
+	    throw new RuntimeException("Unsupported encoding: " + e.getMessage());
 	}
-	for (int j = 0; j < b.length; j++) {
-	    argh[j+i] = b[j];
-	}
-	return argh;
     }
 
 }
