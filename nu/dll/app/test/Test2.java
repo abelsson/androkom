@@ -75,6 +75,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     static String lineSeparator = System.getProperty("line.separator");
 
     static boolean showAux = Boolean.getBoolean("lattekom.showaux");
+    static boolean showPresenceInfo = Boolean.getBoolean("lattekom.showlogins");
     static boolean dontMarkOwnTextsAsRead = Boolean.getBoolean("lattekom.dont-mark-own-texts-as-read");
     static boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
     static boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
@@ -317,21 +318,25 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		consoleWriteLn("----------------------------------------------------------------");
 		break;
 	    case Asynch.login:
-		try {
-		    consoleWriteLn(confNoToName(params[0].intValue()) + " loggade in i LysKOM (" +
-				   komTimeFormat(m.getArrivalTime()) + ")");
-
-		} catch (IOException ex) {
-		    System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
+		if (showPresenceInfo) {
+		    try {
+			consoleWriteLn(confNoToName(params[0].intValue()) + " loggade in i LysKOM (" +
+				       komTimeFormat(m.getArrivalTime()) + ")");
+			
+		    } catch (IOException ex) {
+			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
+		    }
 		}
 		break;
 	    case Asynch.logout:
-		try {
-		    consoleWriteLn(confNoToName(params[0].intValue()) + " loggade ut ur LysKOM (" +
-				   komTimeFormat(m.getArrivalTime()) + ")");
-
-		} catch (IOException ex) {
-		    System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
+		if (showPresenceInfo) {
+		    try {
+			consoleWriteLn(confNoToName(params[0].intValue()) + " loggade ut ur LysKOM (" +
+				       komTimeFormat(m.getArrivalTime()) + ")");
+			
+		    } catch (IOException ex) {
+			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
+		    }
 		}
 		break;
 	    case Asynch.sync_db:
@@ -683,7 +688,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	} else if (foo.nextUnreadText(false) == -1) {
 	    if (foo.nextUnreadConference(false) == -1) {
 		curConf += "(Slut på inlägg) ";
-		setStatus("Väntar på inlägg");
+		setStatus("Kör LatteKOM/T2");
 	    } else {
 		curConf += "(Gå till nästa möte) ";
 		if (conf > 0)
@@ -731,18 +736,22 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     }
 
 
-    public String pad(String in, int length) {
+    public String pad(String in, int length, char padChar) {
 	if (in.length() > length) {
 	    return in.substring(0, length -1);
 	} else if (in.length() < length) {
 	    int diff = length - in.length() - 1;
 	    char[] padding = new char[diff];
 	    for (int i = 0; i < diff; i++)
-		padding[i] = ' ';
+		padding[i] = padChar;
 	    return (new StringBuffer(in).append(padding)).toString();
 	} else {
 	    return in;
 	}
+    }
+
+    public String pad(String in, int length) {
+	return pad(in, length, ' ');
     }
 
 
@@ -1315,10 +1324,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	while (rows.hasMoreElements()) {
 	    consoleWriteLn(rows.nextToken());
 	}
-	consoleWriteLn("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/--------------------");
+	consoleWriteLn(pad("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/", 77, '-'));
 
 	int[] comments = text.getComments();
 	for (int i=0; i < comments.length; i++) {
+	    Debug.println("-- comment: " + comments[i]);
 	    consoleWriteLn("Kommentar i " + textDescription(comments[i]));
 	}
 
@@ -1326,8 +1336,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    AuxItem[] auxs = text.getStat().getAuxItems();
 	    //if (text.getStat().countAuxItems() > 0) consoleWriteLn("\t** Aux-saker:");
 	    for (int i=0; i<text.getStat().countAuxItems(); i++)
-		consoleWriteLn("\tAux-Item["+i+"]: typnummer: "+auxs[i].getNo() + ", data: " +
-				   bytesToString(auxs[i].getData().getContents()));
+		consoleWriteLn(pad("\tAux-Item["+i+"]: typnummer: "+auxs[i].getNo() + ", data: " +
+				   bytesToString(auxs[i].getData().getContents()), 77));
 	}
 	for (int i=0; i < footnotes.length; i++) {
 	    TextStat ts = foo.getTextStat(footnotes[i]);
