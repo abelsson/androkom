@@ -9,7 +9,9 @@ import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.Properties;
 import java.util.Stack;
+import java.util.StringTokenizer;
 
 /**
  * <p>
@@ -210,6 +212,48 @@ public class TextStat implements java.io.Serializable {
     }
 
     /**
+     * Splits the content-type aux item into content type
+     * and auxillary content-type information such as the charset.
+     * Returns an array in which the first element is a String
+     * with the actual content-type, and the second element
+     * is a java.util.Properties containing any other data
+     * trailing the content-type (eg. "charset").
+     */
+    private Object[] parseContentTypeAuxItem() {
+	Object[] r = new Object[2];
+	Hollerith[] _data = getAuxData(AuxItem.tagContentType);
+	String contentType = "text/x-kom-basic";
+	
+	if (_data != null && _data.length > 0) {
+	    contentType = _data[0].getContentString();
+	}
+
+        StringTokenizer toker = new StringTokenizer(contentType, ";");
+        contentType = toker.nextToken();
+        Properties ctData = new Properties();
+        while (toker.hasMoreTokens()) {
+            StringTokenizer tokfan = new StringTokenizer(toker.nextToken(), "=");
+            ctData.setProperty(tokfan.nextToken(), tokfan.nextToken());
+        }
+        if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
+	return new Object[] { contentType, ctData };
+    }
+
+    /**
+     * Returns the content-type for this text.
+     */
+    public String getContentType() {
+	return (String) parseContentTypeAuxItem()[0];
+    }
+
+    /**
+     * Returns the charset for this text.
+     */
+    public String getCharset() {
+	return ((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1");
+    }
+
+    /**
      * Returns the number of AuxItem objects attached to this text.
      */
     public int countAuxItems() {
@@ -217,6 +261,38 @@ public class TextStat implements java.io.Serializable {
 	for (int i=0;i<auxItems.length;i++)
 	    if (auxItems[i] != null) c++;
 	return c;
+    }
+
+    /**
+     * Returns the AuxItem data for a given AuxItem tag.
+     *
+     * @see nu.dll.lyskom.AuxItem
+     */
+    public Hollerith[] getAuxData(int tag) {
+	AuxItem[] items = getAuxItems();
+	int c=0;
+	List list = new LinkedList();
+	for (int i=0; i<items.length; i++) {
+	    if (items[i].getTag() == tag) {
+		list.add(items[i].getData());
+		c++;
+	    }
+	}
+
+	Hollerith[] result = new Hollerith[c];
+	for (int i=0; i<list.size(); i++)
+	    result[i] = (Hollerith) list.get(i);
+
+	return result;
+    }
+
+    public List getAuxItems(int tag) {
+	AuxItem[] items = getAuxItems();
+	List list = new LinkedList();
+	for (int i=0; i < items.length; i++) {
+	    if (items[i].getTag() == tag) list.add(items[i]);
+	}
+	return list;
     }
 
     /**

@@ -48,12 +48,39 @@ public class KomToken implements Serializable {
 
     /**
      * Returns <tt>true</tt> if the supplied object is of type
-     * KomToken, and it's contents are equal to this.
+     * KomToken, and it's contents are equal to this,
+     * or if it is a String which, converted to the default
+     * charset, equals this object's contents, or if it is
+     * an Integer, which, when converted to a Protocol A
+     * representation of its value, is equal to this 
+     * object's contents.
      */
+    // FIXME: untested
     public boolean equals(Object o) {
-	if (!(o instanceof KomToken)) return false;
-	return Arrays.equals(contents, ((KomToken) o).getContents());
+	try {
+	    String charset = Session.defaultServerEncoding;
+	    if (this instanceof Hollerith) {
+		charset = ((Hollerith) this).getCharset();
+	    }
+	    if (o instanceof String || o instanceof KomToken) {
+		byte[] theirdata;
+		if (o instanceof String)
+		    theirdata = ((String) o).getBytes(charset);
+		else
+		    theirdata = ((KomToken) o).getContents();
+
+		return Arrays.equals(contents, theirdata);
+	    }
+	    if (o instanceof Integer) {
+		return equals(new Hollerith(o.toString()));
+	    }
+	    return super.equals(o);
+	} catch (UnsupportedEncodingException ex1) {
+	    throw new RuntimeException("Unsupported encoding", ex1);
+	}
     }
+
+
 
     /**
      * Returns <tt>true</tt> if this KomToken is the last token in a command received from the server.

@@ -27,15 +27,22 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
     public final static int tagContentType  = 1;
     public final static int tagFastReply    = 2;
     public final static int tagCrossReference   = 3;
-    public final static int tagNoCommens        = 4;
+    public final static int tagNoComments       = 4;
     public final static int tagPersonalComment  = 5;
     public final static int tagFaqText          = 14;
     public final static int tagCreatingSoftware = 15;
+    public final static int tagMxAuthor         = 16;
+    public final static int tagMxFrom           = 17;
+    public final static int tagMxReplyTo        = 18;
+    public final static int tagMxTo             = 19;
+    public final static int tagMxCc             = 20;
+    public final static int tagMxDate           = 21;
+    public final static int tagMxMessageId      = 22;
+    public final static int tagMxInReplyTo      = 23;
+    public final static int tagMxMisc           = 24;
 
-    public final static int tagMxMimeMisc       = 10102;
-    public final static int tagMxEnvelopeSender = 10103;
-
-
+    public final static int tagMxMimePartIn = 10101;
+    
     public final static int flagDeleted     = 0;
     public final static int flagInherit     = 1;
     public final static int flagSecret      = 2;

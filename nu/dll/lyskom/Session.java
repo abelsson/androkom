@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.38 2004/04/06 02:21:25 pajp Exp $
+ * @version $Id: Session.java,v 1.39 2004/04/06 05:04:55 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -132,8 +132,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
 
-    public String serverEncoding = defaultServerEncoding;
-	
     /**
      * Not connected to a LysKOM server
      */
@@ -212,6 +210,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     String latteVersion = "$Version$";
     String latteName = "LatteKOM";
+
+    String serverEncoding = defaultServerEncoding;
+    
+    Map serverInfo = null;
+
     private void init() {
 	textCache = new TextCache();
 	personCache = new PersonCache();
@@ -730,11 +733,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	while (i.hasNext()){
 	    Membership m = (Membership) i.next();
 	    if (m.getNo() == confNo) {
-		Debug.println("IS member of " + confNo);
 		return true;
 	    }
 	}
-	Debug.println("is NOT member of " + confNo);
 	return false;
     }
 
@@ -835,6 +836,39 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return writeRpcCall(new RpcCall(count(), Rpc.C_get_client_name).
 	    add(new KomToken(sessionNo)));
     }
+
+    public Map getInfo()
+    throws IOException, RpcFailure {
+	if (serverInfo != null) return serverInfo;
+
+	RpcReply reply = waitFor(doGetInfo());
+	if (!reply.getSuccess()) throw reply.getException();
+	KomToken[] data = reply.getParameters();
+	
+	Map info = new HashMap();
+	int offset = 0;
+	info.put("version", data[offset++]);
+	info.put("conf-pres-conf", data[offset++]);
+	info.put("pers-pres-conf", data[offset++]);
+	info.put("motd-conf", data[offset++]);
+	info.put("kom-news-conf", data[offset++]);
+	info.put("motd-of-lyskom", data[offset++]);
+	int auxListLength = data[offset++].intValue();
+	List auxItems = new LinkedList();
+	for (int i=0; i < auxListLength; i++) {
+	    auxItems.add(new AuxItem(((KomTokenArray) data[offset]).getTokens()));
+	    offset += AuxItem.ITEM_SIZE;
+	}
+	info.put("aux-item-list", auxItems);
+
+	return serverInfo = Collections.unmodifiableMap(info);
+    }
+    
+    public RpcCall doGetInfo()
+    throws IOException {
+	return writeRpcCall(new RpcCall(count(), Rpc.C_get_info));
+    }
+	
 
     /**
      * Returns static session information for a given session number. This is guaranteed by
@@ -1611,7 +1645,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (cc != null) return cc;
 
 	RpcReply reply = waitFor(doGetConfStat(confNo).getId());
-
+	if (!reply.getSuccess()) throw reply.getException();
 	Conference c = new Conference(confNo, reply.getParameters());
 	conferenceCache.add(c);
 	return c;

@@ -377,6 +377,7 @@ public interface Rpc {
     public final static int C_get_conf_stat = 91;
     public final static int C_modify_text_info = 92;
     public final static int C_modify_conf_info = 93;
+    public final static int C_get_info = 94;
 
     public final static int C_query_read_texts = 98;
     public final static int C_get_membership = 99;
