@@ -9,6 +9,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.Stack;
 
 public class TextStat implements java.io.Serializable {
 
@@ -106,15 +107,18 @@ public class TextStat implements java.io.Serializable {
 
     public void clearMiscInfoEntry(int key) {
 	Iterator i = miscInfo.iterator();
+	Stack toRemove = new Stack();
 	int count = 0;
 	while (i.hasNext()) {
 	    Selection selection = (Selection) i.next();
 	    if (selection.contains(key)) {
-		miscInfo.remove(selection);
+		toRemove.push(selection);
 		Debug.println("removed misc-info selection " + selection);
 		count++;
 	    }
 	}
+	while (!toRemove.isEmpty()) miscInfo.remove(toRemove.pop());
+
 	Debug.println("clearMiscInfoEntry: found " + count + " selections with flag " + key);
     }
 
