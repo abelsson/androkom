@@ -14,9 +14,11 @@ public class TabClientCommands extends AbstractCommand {
 	tabPane = tabClient.tabPane;
     }
 
+    static String COMMENT_CMD = "_gui kommentera", FOOTNOTE_CMD = "_gui fotnotera", COMPOSE_CMD = "_gui inlägg";
+
     public int doCommand(String s, String parameters)
 	throws IOException, CmdErrException {
-	if (s.equals("k") || s.equals("f")) {
+	if (s.equals(COMMENT_CMD) || s.equals(FOOTNOTE_CMD)) {
 	    int textNo = 0;
 	    Text text = null;
 	    boolean footnote = s.equals("f");
@@ -98,7 +100,7 @@ public class TabClientCommands extends AbstractCommand {
 	    tabClient.editCount--;
 	    return Command.OK;
 	}
-	if (s.equals("i")) {
+	if (s.equals(COMPOSE_CMD)) {
 	    if (session.getCurrentConference() == -1) {
 		throw new CmdErrException("Du måste vara i ett möte för att kunna skriva ett inlägg.");
 	    }
@@ -152,7 +154,7 @@ public class TabClientCommands extends AbstractCommand {
 	return Command.ERROR;
     }
     public String[] getCommands() {
-	return new String[] { "f", "k", "i" };
+	return new String[] { "_gui fotnotera", "_gui kommentera", "_gui inlägg" };
     }
     public String[] getCommandDescriptions() {
 	return new String[] { "Fotnotera [textnummer]", "Kommentera [textnummer]", "(Skriv) inlägg" };
