@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.85 2004/10/13 17:51:16 pajp Exp $
+ * @version $Id: Session.java,v 1.86 2004/10/13 18:05:58 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -589,7 +589,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	ConfInfo[] names = lookupName(name, true, false);
 	if (names.length != 1) return false;
 
-	login(names[0], password.getBytes(serverEncoding), hidden, getMembership);
+	return login(names[0].getNo(), password, hidden, getMembership);
     }
        
 
