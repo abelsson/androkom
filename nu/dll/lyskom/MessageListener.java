@@ -37,11 +37,12 @@ implements Runnable {
 	this.session = session;
     }
 
+    static int threadCount = 0;
     public void setAsynch(boolean wantAsynch) {
 	if (wantAsynch) {
 	    if (!asynch) {
 		asynch = true;
-		thread = new Thread(this, "MessageListener");
+		thread = new Thread(this, "MessageListener-" + threadCount++);
 		thread.setDaemon(true);
 		thread.start();
 	    }

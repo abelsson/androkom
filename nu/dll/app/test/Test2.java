@@ -346,6 +346,19 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	}
     }
 
+    public void setDefaultUser(String s) {
+	defaultUser = s;
+    }
+
+    /**
+     * This is a bad way of passing passwords; recommended practice is to pass
+     * passwords by char[] and clearing the array directly after use.
+     * But why bother...
+     */
+    public void setDefaultPassword(String s) {
+	defaultPassword = s;
+    }
+
     String defaultUser = null;
     String defaultPassword = null;
     boolean parseArgs(String[] argv) {
@@ -399,6 +412,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	commands = new CommandMap(foo, this);
 	commands.addCommand(ConfCommands.class);
 	commands.addCommand(TextCommands.class);
+    }
+
+    public String getServerString() {
+	return server;
     }
 
     public void run() {
@@ -599,8 +616,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    consoleWrite("\n\n-- Read " + noRead + " texts.\n");
 	    
 	    foo.logout(true);
+	    foo.disconnect(false);
+	    if (!embedded) System.exit(0);
 	    consoleWriteLn("Logged out");
-	    System.exit(0);
 	} catch (ProtocolException ex) {
 	    System.err.println("Protokollfel: "+ex);
 	} catch (IOException ex) {

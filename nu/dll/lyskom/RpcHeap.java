@@ -11,7 +11,7 @@ import java.util.*;
  */
 class RpcHeap {
     static int DEBUG = 1;
-    public static List rpcCallStack;
+    List rpcCallStack;
 
     public RpcHeap() {
 	rpcCallStack = new LinkedList();

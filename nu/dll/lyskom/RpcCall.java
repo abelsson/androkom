@@ -18,8 +18,6 @@ import java.io.OutputStream;
  */
 public class RpcCall implements Rpc {
 
-    public static Vector rpcCallStack;
-
     static final int DEBUG = 3;
 
     int id, number;

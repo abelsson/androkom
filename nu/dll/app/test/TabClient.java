@@ -12,8 +12,10 @@ import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
 import java.awt.Container;
+import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FlowLayout;
+import java.awt.GridLayout;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JPasswordField;
@@ -22,7 +24,7 @@ import javax.swing.JTabbedPane;
 import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
-
+import javax.swing.ViewportLayout;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
@@ -33,36 +35,80 @@ public class TabClient {
     List clients = null;
     JFrame frame = null;
     JTabbedPane tabPane = null;
+
+    class SessionPanel extends JPanel {
+	public SessionPanel(Test2 t2) {
+	    setLayout(new FlowLayout());
+	    JPanel buttonPanel = new JPanel();
+	    buttonPanel.setLayout(new FlowLayout());
+	    buttonPanel.add(new JButton("Stäng"));
+	    add(buttonPanel);
+	    add(new JScrollPane(t2.getConsole()));
+	}
+    }
+
     class SetupPanel extends JPanel {
 	class SetupActionListener extends KeyAdapter implements ActionListener {
 	    JTextField textField = null;
-	    public SetupActionListener(JTextField _textField) {
+	    JTextField nameField = null;
+	    JPasswordField passwordField = null;
+	    public SetupActionListener(JTextField _textField, JTextField _nameField,
+				       JPasswordField _passwordField) {
 		textField = _textField;
+		nameField = _nameField;
+		passwordField = _passwordField;
 	    }
-	    boolean connectTo(String server) {
-		if (server.trim().equals("")) return false;
-		addConnection(server);
+
+	    boolean connect() {
+		if (textField.getText().trim().equals("")) return false;
+		addConnection(textField.getText(), nameField.getText(),
+			      new String(passwordField.getPassword()));
 		return true;
 	    }
 	    public void keyReleased(KeyEvent event) {
 		if (event.getKeyCode() == KeyEvent.VK_ENTER)
-		    connectTo(textField.getText());
+		    connect();
 	    }
 	    public void actionPerformed(ActionEvent event) {
-		connectTo(textField.getText());
+		connect();
 	    }
 	}
 	
 	JTextField serverField = null;
+	JTextField nameField = null;
+	JPasswordField passwordField = null;
+
 	public SetupPanel() {
-	    setLayout(new FlowLayout());
-	    add(new JLabel("Anslut till server: "));
+	    setLayout(new GridLayout(2, 1));
+	    JPanel serverPanel = new JPanel();
+	    serverPanel.setLayout(new FlowLayout());
+	    serverPanel.add(new JLabel("Anslut till server: "));
 	    serverField = new JTextField(30);
-	    serverField.addKeyListener(new SetupActionListener(serverField));
-	    add(serverField);
+	    serverPanel.add(serverField);
 	    JButton connectButton = new JButton("Anslut");
-	    connectButton.addActionListener(new SetupActionListener(serverField));
-	    add(connectButton);
+	    serverPanel.add(connectButton);
+
+	    add(serverPanel);
+	    
+	    JPanel settingsPanel = new JPanel();
+	    settingsPanel.add(new JLabel("Namn: "));
+	    nameField = new JTextField(30);
+	    settingsPanel.add(nameField);
+	    settingsPanel.add(new JLabel("Lösenord: "));
+	    passwordField = new JPasswordField(8);
+	    passwordField.setEchoChar('¤');
+	    settingsPanel.add(passwordField);
+	    add(settingsPanel);
+
+	    // set up the listeners after all the widgets has been
+	    // instantiated, so that we can pass references of them.
+	    serverField.addKeyListener(new SetupActionListener(serverField, nameField,
+							       passwordField));
+	    connectButton.addActionListener(new SetupActionListener(serverField, nameField,
+								    passwordField));
+	    setMaximumSize(getPreferredSize());
+	    Debug.println("MaximumSize: " + getMaximumSize());
+
 	}
     }
 
@@ -79,10 +125,10 @@ public class TabClient {
     }
 
     Map serverNames = new HashMap();
-    void addConnection(String server) {
+    void addConnection(String server, String username, String password) {
 	Test2 t2 = new Test2(true, server);
-	Console console = t2.getConsole();
-
+	if (!username.trim().equals("")) t2.setDefaultUser(username);
+	if (!password.trim().equals("")) t2.setDefaultPassword(password);
 	String tabName = server;
 	int count = 1;
 	if (tabPane.indexOfTab(tabName) != -1) {
@@ -90,12 +136,13 @@ public class TabClient {
 	    tabName = server + " #" + count;
 	}
 	serverNames.put(server, new Integer(count));
-	tabPane.addTab(tabName, new JScrollPane(console));
+	tabPane.addTab(tabName, new SessionPanel(t2));
 	tabPane.setSelectedIndex(tabPane.getTabCount()-1);
-	frame.pack();
 	clients.add(t2);
-	new Thread(t2, tabName+"_Thread").start();
+	frame.pack();
+	new Thread(t2, "connMain-" + connCount++).start();
     }
+    static int connCount = 0;
 
     private void init() {
 	clients = new ArrayList();
@@ -103,14 +150,16 @@ public class TabClient {
 	Container contentPane = frame.getContentPane();
 	tabPane = new JTabbedPane(JTabbedPane.LEFT);
 	contentPane.add(tabPane);
-	tabPane.add("Start", new SetupPanel());
+	JPanel setupRootPanel = new JPanel();
+	setupRootPanel.setLayout(new FlowLayout());
+	SetupPanel setupPanel = new SetupPanel();
+	setupRootPanel.add(setupPanel);
+	tabPane.add("Start", setupRootPanel);
 
 	frame.setTitle("LatteKOM/T2");
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-
-	frame.setSize(800,600);
+	frame.setSize(800,600);	
 	frame.pack();
-
 	frame.setVisible(true);
     }
 

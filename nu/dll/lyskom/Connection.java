@@ -59,11 +59,12 @@ class Connection {
 		    //Debug.println("Queued writer exit.");
 		}
 	    });
-	queuedWriter.setName("QueuedWriter");
+	queuedWriter.setName("QueuedWriter-" + writerThreadCount++);
 	queuedWriter.setDaemon(true);
 	queuedWriter.start();
 
     }
+    static int writerThreadCount = 0;
 
     public String getServer() {
 	return server;
