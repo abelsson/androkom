@@ -269,7 +269,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     }
 
     boolean serverSynch = false;
-    void handleMessages() {
+    boolean handleMessages() {
+	boolean newPrompt = false;
 	while (messages.size() > 0) {
 	    AsynchMessage m = null;
 	    synchronized (messages) {
@@ -278,6 +279,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    KomToken[] params = m.getParameters();
 	    switch (m.getNumber()) {
 	    case Asynch.new_text_old:
+		consoleWriteLn("");
+		newPrompt = true;
 		try {
 		    foo.updateUnreads();
 		} catch (IOException ex1) {
@@ -285,11 +288,14 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		}
 		break;
 	    case Asynch.new_name:
+		consoleWriteLn("");
 		consoleWriteLn(((Hollerith) params[1]).getContentString() + " har bytt namn till " + 
 			       ((Hollerith) params[2]).getContentString() + ".");
+		newPrompt = true;
 		break;
 	    case Asynch.send_message:
 		String recipient = null, sender = null;
+		consoleWriteLn("");
 		try {
 		    recipient = params[0].intValue() != 0 ? confNoToName(params[0].intValue()) : null;
 		    sender = confNoToName(params[1].intValue());
@@ -316,9 +322,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		consoleWriteLn("");
 		consoleWriteLn(((Hollerith) params[2]).getContentString());
 		consoleWriteLn("----------------------------------------------------------------");
+		newPrompt = true;
 		break;
 	    case Asynch.login:
 		if (showPresenceInfo) {
+		    consoleWriteLn("");
 		    try {
 			consoleWriteLn(confNoToName(params[0].intValue()) + " loggade in i LysKOM (" +
 				       komTimeFormat(m.getArrivalTime()) + ")");
@@ -326,10 +334,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    } catch (IOException ex) {
 			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
 		    }
+		    newPrompt = true;
 		}
 		break;
 	    case Asynch.logout:
 		if (showPresenceInfo) {
+		    consoleWriteLn("");
 		    try {
 			consoleWriteLn(confNoToName(params[0].intValue()) + " loggade ut ur LysKOM (" +
 				       komTimeFormat(m.getArrivalTime()) + ")");
@@ -337,15 +347,18 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    } catch (IOException ex) {
 			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
 		    }
+		    newPrompt = true;
 		}
 		break;
 	    case Asynch.sync_db:
+		consoleWriteLn("");
 		serverSynch = !serverSynch;
 		if (serverSynch) {
 		    consoleWriteLn("** Servern synkroniserar just nu databasen.");
 		} else {
 		    consoleWriteLn("** Servern är klar med synkroniseringen.");
 		}
+		newPrompt = true;
 		break;
 		//case Asynch.new_text:
 		//break;
@@ -354,6 +367,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		
 	    }
 	}
+	return newPrompt;
     }
     
     String clientName = null;
@@ -1487,13 +1501,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	if (likesAsynchMessages) {
 	    asynchInvoker.enqueue(new Runnable() {
 		    public void run() {
-			consoleWriteLn("");
-			handleMessages();
-			try {
-			    consoleWrite(genericPrompt());
-			    linesSinceLastPrompt = 0;
-			} catch (IOException ex1) {
-			    throw new RuntimeException("I/O error: " + ex1.getMessage());
+			if (handleMessages()) {
+			    try {
+				consoleWrite(genericPrompt());
+				linesSinceLastPrompt = 0;
+			    } catch (IOException ex1) {
+				throw new RuntimeException("I/O error: " + ex1.getMessage());
+			    }
 			}
 		    }
 		});

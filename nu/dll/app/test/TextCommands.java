@@ -216,7 +216,10 @@ public class TextCommands extends AbstractCommand {
 	Text nText = new Text();
 	nText.addRecipient(session.getCurrentConference());
 	nText = application.editText(nText);
-		
+	if (nText == null) {
+	    application.consoleWriteLn("Avbruten.");
+	    return;
+	}
 	int newText = session.createText(nText);
 	if (newText > 0) {
 	    application.consoleWriteLn("text nummer " + newText + " skapad.");
