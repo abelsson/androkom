@@ -15,7 +15,7 @@
       hemsida</a>.<br/> Weblatte är fortfarande i ett tidigt
       utvecklingsstadium, varför det är sannolikt att buggar kan
       inträffa. Rapporter om fel som inträffar emottages mycket
-      tacksamt (se nästa stycke). Man bör dock vara medveten om att
+      tacksamt (se nedan). Man bör dock vara medveten om att
       Weblatte är ett hobbyprojekt, och som sådant ges naturligtvis
       inga garantier för om och när en eventuell bugg kan fixas.<br/>
       Det finns andra webb-baserade LysKOM-klienter, till exempel <a
@@ -121,7 +121,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.5 $
+      $Revision: 1.6 $
     </p>
   </body>
 </html>
