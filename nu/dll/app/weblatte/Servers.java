@@ -21,6 +21,7 @@ public class Servers {
 	list.add(new KomServer("kom.lysator.liu.se", "LysLysKOM"));
 	list.add(new KomServer("myskom.kfib.org", "MysKOM"));
 	list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
+	list.add(new KomServer("kom.stacken.kth.se", "TokKOM"));
 	list.add(new KomServer("kom.update.uu.se", "UppKOM"));
 	defaultServer = (KomServer) list.get(0);
 	list = Collections.unmodifiableList(list);
