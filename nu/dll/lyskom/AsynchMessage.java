@@ -28,7 +28,7 @@ public class AsynchMessage extends Asynch {
     }
     
     public int getNumber() {
-	return parameters[1].toInt();
+	return parameters[1].intValue();
     }
 
     public Date getArrivalTime() {
@@ -36,7 +36,7 @@ public class AsynchMessage extends Asynch {
     }
 
     public String toString() {
-	StringBuffer blaj = new StringBuffer("AsynchMessage: <#" + number + "> ");
+	StringBuffer blaj = new StringBuffer("AsynchMessage: <#" + getNumber() + "> ");
 
 	if (parameters == null || parameters.length == 0) {
 	    blaj.append("empty");
