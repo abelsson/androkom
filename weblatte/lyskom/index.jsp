@@ -32,7 +32,6 @@
     }
 %>
 <%
-
     Map parameters = parseQueryString(request.getQueryString(), "iso-8859-1");
     Enumeration penum = request.getParameterNames();
     while (penum.hasMoreElements()) {
@@ -77,8 +76,11 @@
 	}
 	session.removeAttribute("lyskom");
 	session.removeAttribute("LysKOMauthenticated");
-
-	response.sendRedirect(basePath + "?r=" + Integer.toHexString(rnd.nextInt()));
+	String target = basePath;
+	if (request.getServerName().startsWith("s-")) {
+	    target = "http://" + baseHost + basePath;
+	}
+	response.sendRedirect(target + "?r=" + Integer.toHexString(rnd.nextInt()));
 	return;
     }
 
@@ -770,14 +772,16 @@
 
     if (!minimalistic) {
     	if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+
 %>
 <script language="JavaScript1.2">
 <%@ include file='stuff.jsp' %>
 </script>
+
 <%
 	} else {
 %>
-	<script language="JavaScript1.2" src="stuff.jsp"></script>
+	<script language="JavaScript1.2" src="stuff.jsp?pleasecache"></script>
 <%
  	}
 %>
@@ -1438,7 +1442,7 @@ Du är inte inloggad.
     if (parameter(parameters, "lyskomNamn") != null) lyskomNamn = parameter(parameters, "lyskomNamn");
 %>
 <table class="boxed">
-<tr><td>namn:</td><td><input type="text" name="lyskomNamn" value="<%= lyskomNamn %>" size="30"></td></tr>
+<tr><td>namn eller <span title="Du kan ange t.ex. &quot;#4711&quot; för att logga in som person nummer 4711">#nummer</span>:</td><td><input type="text" name="lyskomNamn" value="<%= lyskomNamn %>" size="30"></td></tr>
 <tr><td>lösenord:</td><td><input type="password" name="lyskomLosen" size="8"></td></tr>
 <tr><td>dold session:</td><td><input type="checkbox" name="lyskomDold"></td></tr>
 <tr><td>sparsamt gränssnitt:</td><td><input type="checkbox" name="mini"></td></tr>
@@ -1512,6 +1516,8 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     List suspendedSessions = null;
     try {
 	suspendedSessions = (List) session.getAttribute("lyskom.suspended");
+	List actSessions = (List) session.getAttribute("lyskom.active");
+	if (actSessions != null) suspendedSessions.addAll(actSessions);
     } catch (IllegalStateException ex1) {}
     int suspSessCount = 0;
     if (suspendedSessions != null) {
@@ -1525,8 +1531,8 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
 	}
 	out.print("<a href=\"sessions.jsp\"><b>OBS! Du har " +
 		suspSessCount + " " + 
-		(suspSessCount > 1 ? "pausade LysKOM-sessioner" :
-		 "pausad LysKOM-Session") + "</b></a>");
+		(suspSessCount > 1 ? "andra LysKOM-sessioner" :
+		 "till LysKOM-session") + "</b></a>");
 	boolean unreads = false;
 	synchronized (suspendedSessions) {
 	    for (Iterator i=suspendedSessions.iterator();!unreads && i.hasNext();) {
@@ -1540,7 +1546,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.88 $
+$Revision: 1.89 $
 </div>
 </body>
 </html>

@@ -1,12 +1,14 @@
 <%@ page language='java' pageEncoding='iso-8859-1' %>
 <%
 if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
-  response.setContentType("text/javascript;charset=iso-8859-1");
+    response.setContentType("text/javascript;charset=iso-8859-1");
 }
-response.setDateHeader("Expires", System.currentTimeMillis()+(1440*60*1000));
+if (request.getParameter("pleasecache") != null) {
+    //response.setDateHeader("Expires", System.currentTimeMillis()+(1440*60*1000));
+}
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.9 2004/09/09 08:38:57 pajp Exp $
+// $Id: stuff.jsp,v 1.10 2004/10/13 16:28:09 pajp Exp $
 
 var nohide = false;
 var ignorevanligklick = false;

@@ -11,8 +11,8 @@
 	buf.append(lookupNamePlain(lyskom, lyskom.getMyPerson().getNo()));
 	buf.append(" @ ");
 	buf.append(serverShort(lyskom));
-	buf.append("</a>");
-        buf.append(" (<a href=\"http://s-" + sessionId + ".dll.nu/lyskom/\">*</a>)");
+	buf.append(" (" + sessionId + ")</a>");
+        buf.append(" (<a href=\"http://s-" + sessionId + ".dll.nu/lyskom/?listnews\">URL-session</a>)");
 	List unreadConfs = lyskom.getUnreadConfsListCached();
 	if (unreadConfs.size() > 0) {
 	    buf.append(" (olästa)");
@@ -21,6 +21,8 @@
     }
 %>
 <%
+    List activeSessions = (List) session.getAttribute("lyskom.active");
+    if (activeSessions == null) activeSessions = Collections.EMPTY_LIST;
     List suspendedSessions = (List) session.getAttribute("lyskom.suspended");
     if (suspendedSessions == null) {
 	suspendedSessions = new SuspendedSessionList();
@@ -57,6 +59,7 @@
 		String id = getSessionId(w);
 		if (id.equals(newSessionId)) {
 		    w.setSuspended(false);
+		    log("switching session to "  + w);
 		    session.setAttribute("lyskom", w);
 		    session.setAttribute("LysKOMauthenticated", new Boolean(w.getSession().getLoggedIn()));
 		    session.removeAttribute("goto");
@@ -93,9 +96,21 @@
 	}
  	out.println("</ol>");
     }
+    synchronized (activeSessions) {
+	if (activeSessions.size() > 0) {
+	    out.println("<h3>Aktiva LysKOM-sessioner:</h3>");
+	}
+	out.println("<ol>");
+	for (Iterator i = activeSessions.iterator(); i.hasNext();) {
+	    SessionWrapper w = (SessionWrapper) i.next();
+	    out.println("<li>" + sessionInfo(w) + "</li>");
+	}
+ 	out.println("</ol>");
+
+    }
   %>
   <p>
-    &lt;&lt; <a href="<%=basePath%>?invalidate">Terminera alla sessioner</a><br/>
+    &lt;&lt; <a href="http://<%=baseHost + basePath%>?invalidate">Terminera alla sessioner</a><br/>
     &lt;&lt; <a href="<%=basePath%>">Till Weblattes startsida</a>
   </p>
   </body>

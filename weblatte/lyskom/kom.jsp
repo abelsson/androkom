@@ -3,6 +3,7 @@
 <%!
     boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
     File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
+    String baseHost = "dll.nu";
     String basePath = "/lyskom/"; // the absolute path on the webserver
     String appPath = "/lyskom/"; // the weblatte root within the web application
 
@@ -401,19 +402,44 @@ SessionWrapper lyskomWrapper = null;
 Session lyskom = null;
 if (serverName != null && serverName.startsWith("s-")) {
     List sessions = new LinkedList();
-    List _sessions = (List) session.getAttribute("lyskom.suspended");
-    if (_sessions != null) sessions.addAll(_sessions);
-    _sessions = (List) session.getAttribute("lyskom.active");
-    if (_sessions != null) sessions.addAll(_sessions);
-    String requestedId = serverName.replaceAll("s-([0-9A-F]+)\\..*", "$1");
-    Debug.println("requested LysKOM session ID: " + requestedId);
+    List susp_sessions = (List) session.getAttribute("lyskom.suspended");
+    if (susp_sessions != null) {
+	sessions.addAll(susp_sessions);
+    } else {
+	susp_sessions = new LinkedList();
+	session.setAttribute("lyskom.suspended", susp_sessions);
+    }
+    List act_sessions = (List) session.getAttribute("lyskom.active");
+    if (act_sessions != null) {
+	sessions.addAll(act_sessions);
+    } else {
+	act_sessions = new LinkedList();
+	session.setAttribute("lyskom.active", act_sessions);
+    }
+    int dotOffset = serverName.indexOf(".");
+    String requestedId = serverName.substring(2, dotOffset);
     for (Iterator i = sessions.iterator();i.hasNext();) {
         SessionWrapper w = (SessionWrapper) i.next();
         String id = getSessionId(w);
-        if (requestedId != null && requestedId.equals(id)) {
+        if (requestedId.equals(id)) {
             lyskomWrapper = w;
             lyskom = lyskomWrapper.getSession();
+	    susp_sessions.remove(w);
+	    if (!act_sessions.contains(w)) act_sessions.add(w);
+	    w.setSuspended(true);
+	    SessionWrapper oldLyskom = (SessionWrapper) session.getAttribute("lyskom");
+	    if (oldLyskom != null && w != oldLyskom) {
+		oldLyskom.setSuspended(true);
+	    }
+	
+	    session.setAttribute("lyskom", w);
+	    session.setAttribute("LysKOMauthenticated", new Boolean(lyskom.getLoggedIn()));
         }
+    }
+    if (lyskom == null && requestedId != null) {
+	log("Requested session ID " + requestedId + " not found.");
+	response.sendRedirect("http://dll.nu/lyskom/sessions.jsp");
+	return;
     }
 }
 
