@@ -434,7 +434,11 @@ public class Text extends Hollerith implements Serializable, DataSource {
      * Returns the body (everything but the first row) of this text.
      */
     public byte[] getBody() {
-	int i=0; byte[] b = getContents();
+	return getBody(getContents());
+    }
+    
+    protected byte[] getBody(byte[] contents) {
+	int i=0; byte[] b = contents;
 	while (i < b.length && b[i] != '\n') { i++; }
 	if (i >= b.length) {
 	    return b;

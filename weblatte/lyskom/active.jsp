@@ -13,7 +13,6 @@
   <head>
     <title>Aktivitet i LysKOM</title>
     <link rel="stylesheet" href="lattekom.css">
-    <script language="JavaScript1.2" src="stuff.jsp?pleasecache"></script>
   </head>
   <style>
     .pyjamas {
@@ -82,7 +81,7 @@
 <%
     boolean pyjamas = true;
 %>
-  <table style="border: solid; border-width: 1px;">
+  <table style="border: solid; border-width: 1px; width: 80%;">
 <%
     for (Iterator i = allConferences.iterator();i.hasNext();) {
 	Integer conf = (Integer) i.next();
@@ -90,13 +89,42 @@
 	Conference c = lyskom.getConfStat(conf.intValue());
 	if (c.getType().letterbox()) continue;
 	
-	out.print("<tr " + (pyjamas ? "class=\"pyjamas\"" : "") + "><td>" + lookupName(lyskom, conf.intValue(), true));
-	out.print(" (" + texts.size() + (texts.size() == 1 ? " text" : " texter") + ")<br>");
+	out.print("<tr " + (pyjamas ? "class=\"pyjamas\"" : "") + "><td><a name=\"c" + c.getNo() + "\">" + lookupName(lyskom, conf.intValue(), true) + "</a>");
+	out.print(" (" +
+		  "<a href=\"" + request.getRequestURI() + "?base=" + base + "&" + 
+		  "expand=" + c.getNo() + "#c" + c.getNo() + "\">" +
+		  + texts.size() + (texts.size() == 1 ? " text" : " texter") + "</a>)<br>");
 	Text text = lyskom.getText(((Integer) texts.get(0)).intValue(), false, true);
-	out.println("Senaste inlägg: " + textLink(request, lyskom, text.getNo()) +
-		    "<br>Ärende: " + htmlize(text.getSubjectString()) + "<br>");
-	out.println(df.format(lyskom.getTextStat(text.getNo()).getCreationTime().getTime()) + 
-		    "</td></tr>");
+	out.println("Senaste inlägg: " + textLink(request, lyskom, text.getNo()));
+	out.println(", " + df.format(lyskom.getTextStat(text.getNo()).getCreationTime().getTime()));
+	out.println("<br>Ärende: " + htmlize(text.getSubjectString()) + "<br>");
+	out.println("</td></tr>");
+	if (Integer.toString(c.getNo()).equals(request.getParameter("expand"))) {
+	    Collections.reverse(texts);
+	    out.println("<tr><td><table width=100% " + (pyjamas ? "class=\"pyjamas\"" : "") + ">");
+	    for (Iterator j = texts.iterator();j.hasNext();) {
+		Text _text = lyskom.getText(((Integer) j.next()).intValue(), false, false);
+		//if (_text.getNo() == text.getNo()) continue;
+		String body = _text.getBodyString();
+		if (body.length() > 512) {
+		    body = htmlize(body.substring(0, 509)) + 
+			textLink(request, lyskom, _text.getNo(), false, 
+				 "[texten f&ouml;rkortad]");
+		} else {
+		    body = htmlize(body);
+		}
+		out.println("<tr><td title=\"Text " + _text.getNo() + "\">" + textLink(request, lyskom, _text.getNo(), false,
+						  shortdf.format(_text.getCreationTime())) + 
+			    "</td><td>" + lookupName(lyskom, _text.getAuthor(), true) + 
+			    "</td><td width=40% >" + 
+			    _text.getSubjectString() + 
+			    "</td></tr>");
+		out.println("<tr><td colspan=3><pre style=\"background: #ffa;\">" + 
+			    body + "</pre></td></tr>");
+	    }
+	    out.println("</table></td></tr>");
+	}
+
 	pyjamas = !pyjamas;
     }
   %>

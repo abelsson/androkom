@@ -59,6 +59,16 @@
 </script>
 <body>
 <%
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+	out.println("<script language=\"JavaScript1.2\">");
+	%><%@ include file='stuff.jsp' %><%
+	out.println("</script>");
+    } else {
+	out.println("<script language=\"JavaScript1.2\" src=\"stuff.jsp?pleasecache\"></script>");
+    }
+%>
+<%@ include file='dhtmlMenu.jsp' %>
+<%
     boolean expert = debug || request.getParameter("expert") != null;
     Debug.println("____ **** composer.jsp START.");
     request.setCharacterEncoding("utf-8");
@@ -277,7 +287,7 @@
 	parts.add(part);
     }
 
-    String subject = parameters.get("subject") != null ? (String) parameters.get("subject") : "";
+    String subject = (String) parameters.get("subject");
     String body = parameters.get("body") != null ? (String) parameters.get("body") : "";
 
     List recipients = new LinkedList();
@@ -301,7 +311,7 @@
 	    for (int i=0; i < _ccRcpts.length; i++)
 	    	ccRecipients.add(lookupName(lyskom, _ccRcpts[i]));
 
-	    if ("".equals(subject)) subject = new String(oldPresentation.getSubject(), charset);
+	    if (subject == null) subject = new String(oldPresentation.getSubject(), charset);
 	    if ("".equals(body)) body = new String(oldPresentation.getBody(), charset);
 
 	} else {
@@ -311,7 +321,7 @@
 	    } else {
 		recipients.add(lookupName(lyskom, ((KomToken) info.get("conf-pres-conf")).intValue()));
 	    }
-	    if ("".equals(subject)) subject = lyskom.toString(conf.getName());
+	    if (subject == null) subject = lyskom.toString(conf.getName());
 	}
 
 	metadata.append("Skriver presentation för " +
@@ -352,6 +362,9 @@
     if (parameters.get("inCommentTo") != null) {
         lyskom.changeWhatIAmDoing("Skriver en kommentar");
 	commentedTextNo = Integer.parseInt((String) parameters.get("inCommentTo"));
+	if (subject == null) {
+	    subject = lyskom.getText(commentedTextNo).getSubjectString();
+	}
 	metadata.append("Kommentar till text ").
 		append(textLink(request, lyskom, commentedTextNo)).
 		append("<br/>");
@@ -462,6 +475,15 @@
 <% if (errors.length() > 0) { %>
 <div class="statusError"><%=errors.toString()%></div>
 <% } %> <!-- was: application/x-www-form-urlencoded -->
+<%
+    if (commentedTextNo != 0) {
+	out.flush();
+	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "text.jsp?commenting");
+	request.setAttribute("text", new Integer(commentedTextNo));
+	d.include(request, response);
+    }
+    if (subject == null) subject = "";
+%>
 <form enctype="multipart/form-data" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
     out.println(metadata.toString());
@@ -604,7 +626,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.23 2004/07/11 14:15:45 pajp Exp $
+$Id: composer.jsp,v 1.24 2004/11/16 06:03:42 pajp Exp $
 </div>
 </body>
 </html>

@@ -233,6 +233,7 @@
 
     Random rnd = new Random();
     SimpleDateFormat df = new SimpleDateFormat("EEEEE d MMMMM yyyy', klockan 'HH:mm", new Locale("sv", "se"));
+    SimpleDateFormat shortdf = new SimpleDateFormat("d/M -yy' 'HH:mm", new Locale("sv", "se"));
 
     String textLink(HttpServletRequest request, Session lyskom, int textNo)
     throws RpcFailure, IOException {
@@ -290,6 +291,11 @@
 
     String textLink(HttpServletRequest request, Session lyskom, int textNo, boolean includeName)
     throws RpcFailure, IOException {
+	return textLink(request, lyskom, textNo, includeName, null);
+    }
+
+    String textLink(HttpServletRequest request, Session lyskom, int textNo, boolean includeName, String linkText)
+    throws RpcFailure, IOException {
 	StringBuffer sb = new StringBuffer()
 		.append("<a href=\"")
 		/*.append(myURI(request))*/
@@ -304,7 +310,7 @@
 		.append("onMouseOver=\"context_in(").append(textNo).append(", false, true);\" ")
 		.append("onMouseOut=\"context_out()\" ")
 		.append(">")
-		.append(textNo)
+		.append(linkText == null ? ""+textNo : linkText)
 		.append("</a>");
 	if (includeName) {
 	    try {

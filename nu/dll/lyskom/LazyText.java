@@ -1,6 +1,7 @@
 package nu.dll.lyskom;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 
 /**
  * A "Lazy" text doesn't read it's contents from the server until needed.
@@ -11,6 +12,11 @@ public class LazyText extends Text {
     protected LazyText(Session session, int textNo) {
 	this.textNo = textNo;
 	this.session = session;
+    }
+
+    public String getBodyStringAvailable() throws UnsupportedEncodingException {
+	return new String(getBody(contents), getCharset()) + 
+	    (contents.length != getStat().getSize() ? "..." : "");
     }
 
     public byte[] getContents() throws RpcFailure {
