@@ -28,8 +28,22 @@
 	suspendedSessions = new SuspendedSessionList();
 	session.setAttribute("lyskom.suspended", suspendedSessions);
     }
-    if (request.getParameter("select") != null) {
-	String newSessionId = request.getParameter("select");
+    String selected = request.getParameter("select");
+
+    // the "next" session is always at index zero and the last suspended
+    // session is always at the last index
+    if (request.getParameter("next") != null) {
+	synchronized (suspendedSessions) {
+	    selected = getSessionId((SessionWrapper) suspendedSessions.get(0));
+	}
+    }
+    if (request.getParameter("previous") != null) {
+	synchronized (suspendedSessions) {
+	    selected = getSessionId((SessionWrapper) suspendedSessions.get(suspendedSessions.size()-1));
+	}
+    }
+    if (selected != null) {
+	String newSessionId = selected;
 	if (lyskomWrapper != null) {
 	    synchronized (suspendedSessions) {
 		suspendedSessions.add(lyskomWrapper);

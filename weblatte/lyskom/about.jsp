@@ -52,13 +52,11 @@
       kommenterade texten, förutom extra kopiemottagare. Vill du ändra
       mottagare, klicka på knappen "<b>ändra mottagarlista</b>" för
       att komma till en sida där du kan fylla i vilka mottagare din
-      text ska ha.<br/>
-
+      text ska ha.
+    </p>
+    <p>
       När du läst ut ett möte återförs du till listan över olästa
-      möten (undantaget då du kommenterat den sista texten i ett möte
-      - du måste då välja "<b>lista nyheter</b>" manuellt, detta för
-      att du ska kunna få en bekräftelse på att din text skapats och
-      kunna se dess textnummer).<br/>
+      möten.
     </p>
     <p>
       Med dessa enkla medel klarar du av den mest grundläggande
@@ -121,7 +119,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.6 $
+      $Revision: 1.7 $
     </p>
   </body>
 </html>

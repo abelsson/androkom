@@ -109,7 +109,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.26 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.27 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -772,6 +772,20 @@
 	
     }
 
+    if (request.getParameter("addRecipient") != null) {
+	int rtype = Integer.parseInt(request.getParameter("recipientType"));
+	int _textNo = Integer.parseInt(request.getParameter("toText"));
+	ConfInfo lbx = lookupName(lyskom, request.getParameter("addRecipient"), true, true);
+	if (lbx == null) {
+	    out.println("<p class=\"statusError\">Inget möte matchade det angivna namnet.</p>");
+	} else {
+	    int confNo = lbx.getNo();
+	    lyskom.addRecipient(_textNo, confNo, rtype);
+	    out.println("<p class=\"statusSuccess\">OK: ny mottagare för " + textLink(request, lyskom, _textNo) + ": " +
+		lookupName(lyskom, confNo, true) + ".</p>");
+	}
+    }
+
     if (request.getParameter("setPassword") != null) {
 	ConfInfo lbx = lookupName(lyskom, request.getParameter("setPasswordPerson"), true, false);
 	if (lbx == null) {
@@ -790,6 +804,7 @@
 	
     }
 
+    boolean listNews = false;
     Person person = lyskom.getMyPerson();
     Conference letterbox = lyskom.getConfStat(person.getNo());
     if (letterbox.getPresentation() == 0) {
@@ -842,8 +857,16 @@
 	out.flush();
     }
     if (conferenceNumber > 0 && request.getParameter("listSubjects") == null) {
+	Membership ms = lyskom.queryReadTextsCached(conferenceNumber);
+	UConference uconf = lyskom.getUConfStat(conferenceNumber);
+	int unreads = 0;
+	if (uconf.getHighestLocalNo() > ms.getLastTextRead()) {
+	    unreads = uconf.getHighestLocalNo() - ms.getLastTextRead();
+	}
 %>
 	<p>
+	Läser i <%= lookupName(lyskom, conferenceNumber, true) %> - <%= unreads %>
+	<%= unreads > 1 || unreads == 0 ? "olästa" : "oläst" %>.<br/>
 <%
 	int nextUnreadText = 0;
 
@@ -872,8 +895,10 @@
 	    if (textNumber == 0 && request.getParameter("text") == null &&
 		request.getParameter("comment") == null && newTextNo == 0 &&
 		!response.isCommitted()) {
-		response.sendRedirect(myURI(request)+"?listnews");
-		return;
+		listNews = true;
+	    }
+	    if (newTextNo > 0) {
+		listNews = true;
 	    }
 	}
 %>
@@ -1051,8 +1076,8 @@
 %>
 <%
 
-	    boolean listNews = request.getParameter("listnews") != null ||
-	        (justLoggedIn && preferences.getBoolean("list-news-on-login"));
+	    listNews = listNews || (request.getParameter("listnews") != null ||
+	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
 
 	    if (listNews) {
 		if (preferences.getBoolean("auto-refresh-news") &&
@@ -1314,11 +1339,19 @@ Du är inte inloggad.
     try {
 	suspendedSessions = (List) session.getAttribute("lyskom.suspended");
     } catch (IllegalStateException ex1) {}
-    if (suspendedSessions != null && suspendedSessions.size() > 0) {
-	int count = suspendedSessions.size();
+    int suspSessCount = 0;
+    if (suspendedSessions != null) {
+	synchronized (suspendedSessions) {
+	    suspSessCount = suspendedSessions.size();
+	}
+    }
+    if (suspSessCount > 0) {
+	if (suspSessCount > 1) {
+	    out.print("<a title=\"föregående session\" href=\"sessions.jsp?previous\">&lt;&lt;</a> ");
+	}
 	out.print("<a href=\"sessions.jsp\"><b>OBS! Du har " +
-		count + " " + 
-		(count > 1 ? "pausade LysKOM-sessioner" :
+		suspSessCount + " " + 
+		(suspSessCount > 1 ? "pausade LysKOM-sessioner" :
 		 "pausad LysKOM-Session") + "</b></a>");
 	boolean unreads = false;
 	synchronized (suspendedSessions) {
@@ -1328,11 +1361,12 @@ Du är inte inloggad.
 	    }
 	}
 	if (unreads) out.print(" (olästa)");
+	out.print(" <a title=\"nästa session\" href=\"sessions.jsp?next\">>></a>");
 	out.println("<br/>");
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.26 $
+$Revision: 1.27 $
 </p>
 </body>
 </html>

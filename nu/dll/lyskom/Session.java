@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.51 2004/05/09 22:16:09 pajp Exp $
+ * @version $Id: Session.java,v 1.52 2004/05/10 19:24:29 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -722,10 +722,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		return -1;
 	    }
 	    int txtNo = ((Integer) tm.nextElement()).intValue();
-	    while (tm.hasMoreElements() && (txtNo == 0 || readTexts.exists(txtNo))) {
+	    while (tm.hasMoreElements() && (txtNo == 0 || readTexts.exists(txtNo))
+		   && m.isRead(tm.local())) {
 		Debug.println("nextUnreadText(): not returning " + txtNo);
 		txtNo = ((Integer) tm.nextElement()).intValue();
 	    }
+
 	    if (txtNo == 0 || readTexts.exists(txtNo)) {
 		Debug.println("no unread texts found");
 		return -1;
@@ -819,6 +821,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply r = waitFor(doMarkAsRead(confNo, localTextNo).getId());
 	if (!r.getSuccess()) throw r.getException();
 	for (int i=0; i < localTextNo.length; i++) {
+	    Membership ms = queryReadTextsCached(confNo);
+	    if (ms != null) {
+		ms.markAsRead(localTextNo[i]);
+	    }
 	    Debug.println("marked local " + localTextNo[i] + " in conf " + confNo + " as read");
 	}
     }
@@ -2418,6 +2424,22 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public void setPassword(int person, String userPassword, String newPassword)
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doSetPassword(person, userPassword, newPassword));
+	if (!reply.getSuccess()) throw reply.getException();
+    }
+
+    public RpcCall doAddRecipient(int textNo, int confNo, int type) 
+    throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_add_recipient).add(new KomToken(textNo));
+	Selection info = new Selection(1);
+	info.add(type, confNo);
+	req.add(info.toToken());
+	writeRpcCall(req);
+	return req;
+    }
+
+    public void addRecipient(int textNo, int confNo, int type) 
+    throws IOException, RpcFailure {
+	RpcReply reply = waitFor(doAddRecipient(textNo, confNo, type));
 	if (!reply.getSuccess()) throw reply.getException();
     }
 

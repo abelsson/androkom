@@ -85,6 +85,14 @@ public class TextMapping implements Enumeration {
 	return list != null ? (Object) new Integer(localToGlobal(((Integer)
 								  list.get(enumc++)).intValue())) : null;
     }
+
+    /**
+     * Returns the local text number for the last text return by nextElement();
+     */
+    public int local() {
+	return list == null ? 0 : ((Integer) list.get(enumc-1)).intValue();
+    }
+
     public int lastLocal() {
 	return list == null ? -1 : list.size() > 0 ?
 	    ((Integer) list.get(list.size()-1)).intValue() : -1;

@@ -5,7 +5,7 @@ if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.3 2004/05/10 01:11:35 pajp Exp $
+// $Id: stuff.jsp,v 1.4 2004/05/10 19:24:31 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;
@@ -18,6 +18,25 @@ function context_in(no, isLetterBox, isText, name) {
 function context_out() {
   document.inContext = false;
   getMenuObj();
+}
+
+function add_recipient_interactive(win, textNo, rtype) {
+    var rname;
+    switch (rtype) {
+      case 0: 
+          rname = "mottagare";
+          break;
+      case 1:
+          rname = "extra kopiemottagare";
+          break;
+      case 2:
+          rname = "dold kopiemottagare";
+          break;
+    }
+    var recipientName = win.prompt("Vilket möte vill du addera som " + rname + " till text " + textNo + "?");
+    if (recipientName == null) return;
+    document.location.href="/lyskom/?addRecipient=" + escape(recipientName) + 
+      "&toText=" + escape(textNo) + "&recipientType="+escape(rtype);
 }
 
 function endast_interactive(win, confNo, name) {

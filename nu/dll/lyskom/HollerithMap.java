@@ -52,7 +52,11 @@ public class HollerithMap extends Hollerith {
 
     public boolean containsKey(String key) {
 	synchronized (map) {
-	    return map.containsKey(key);
+	    if (!map.containsKey(key)) return false;
+
+	    String value = ((Hollerith) map.get(key)).getContentString();
+	    if (value.equals("nil")) return false;
+	    return true;
 	}
     }
 

@@ -92,6 +92,21 @@ public class Selection implements Serializable, Tokenizable {
 	return values[key].elements();
     }
 
+    public int getKey() {
+	for (int i=0; i < keys.length; i++) {
+	    if (keys[i]) return i;
+	}
+	return -1;
+    }
+
+    public Object getValue() {
+	return values[getKey()].get(0);
+    }
+
+    public int getIntValue() {
+	return ((Integer) getValue()).intValue();
+    }
+
     /**
      * Returns an int representation of the data tagged with <tt>key</tt>,
      * providing that the data is stored as an Integer.
@@ -99,6 +114,11 @@ public class Selection implements Serializable, Tokenizable {
     public int getIntValue(int key) {
 	if (!keys[key]) throw new NoSuchKeyException("key " + key);
 	return ((Integer) values[key].elementAt(0)).intValue();
+    }
+
+    public Object getValue(int key) {
+	if (!keys[key]) return null;
+	return values[key].elementAt(0);
     }
 
     /**

@@ -338,6 +338,8 @@ public interface Rpc {
     public final static int C_mark_as_read = 27;
 
     public final static int C_delete_text = 29;
+    public final static int C_add_recipient = 30;
+    public final static int C_sub_recipient = 31;
 
     public final static int C_get_time = 35;
 

@@ -130,6 +130,30 @@ public class Membership {
 	return readTexts;
     }
 
+    public void markAsRead(int localNo) {
+	// XXX: not thread safe.
+	if (localNo == lastTextRead+1) {
+	    lastTextRead = localNo;
+	} 
+
+	if (localNo > lastTextRead+1) {
+	    int[] tmp = new int[readTexts.length+1];
+	    for (int i=0; i < readTexts.length; i++) {
+		if (localNo == readTexts[i]) return;
+		tmp[i] = readTexts[i];
+	    }
+	    tmp[tmp.length-1] = localNo;
+	}
+    }
+
+    public boolean isRead(int localNo) {
+	if (localNo <= lastTextRead) return true;
+	for (int i=0; i < readTexts.length; i++) {
+	    if (localNo == readTexts[i]) return true;
+	}
+	return false;
+    }
+
     /**
      * Returns the number of the person who added this memberhip
      */

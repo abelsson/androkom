@@ -112,18 +112,26 @@
 <%
 	}
 
+	List miscInfo = text.getStat().getMiscInfo();
+	for (int i=0; i < miscInfo.size(); i++) {
+	    Selection misc = (Selection) miscInfo.get(i);
+	    Debug.println("misc-info key: " + misc.getKey() + ", value: " + misc.getValue());
+	    int key = misc.getKey();
+	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt) {
+		    String title = "";
+		    int value = misc.getIntValue();
+		    String type = "Mottagare";
+		    if (key == TextStat.miscCcRecpt)
+			type = "Extra kopiemottagare";
+		    if (misc.contains(TextStat.miscSentBy)) {
+			title += "Skickat av " + lookupNamePlain(lyskom, misc.getIntValue(TextStat.miscSentBy));
+		    }
+		    if (misc.contains(TextStat.miscSentAt)) {
+			title += (title != "" ? ", " : "Skickad ") + df.format(((KomTime)misc.getValue(TextStat.miscSentAt)).getTime());
+		    }
+		    out.println("<span title=\"" + htmlize(title) + "\">" + type + (title != "" ? "*" : "") + ":</span> " + lookupName(lyskom, value, true) + " " + (preferences.getBoolean("show-local-text-numbers") ? ("&lt;" + text.getLocal(value) + ">") : "") + "<br/>");
 
-	int[] recipients = text.getRecipients();
-	int[] ccRecipients = text.getCcRecipients();
-	for (int i=0; i < recipients.length; i++) {
-%>
-	Mottagare: <%= lookupName(lyskom, recipients[i], true) %><br/>
-<%
-	}
-	for (int i=0; i < ccRecipients.length; i++) {
-%>
-	Extra kopia: <%= lookupName(lyskom, ccRecipients[i], true) %><br/>
-<%
+	    }
 	}
 	if (!contentType.equals("x-kom/user-area")) {
 %>
