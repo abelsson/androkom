@@ -1,6 +1,6 @@
 ** LatteKOM README
 ** -*- Mode: auto-fill -*-
-** $Id: README,v 1.2 2000/08/21 09:49:05 pajp Exp $
+** $Id: README,v 1.3 2000/08/21 10:26:31 pajp Exp $
 
 * Brief description:
 
@@ -26,12 +26,13 @@ References:
 4: http://www.liu.se/
 5: ftp://ftp.lysator.liu.se/pub/lyskom/draft/Protocol-A.texi
 
+
 * About the code - the usual disclaimer, but for real
 
 This code _is_ ugly. I'm only releasing it because that makes more
 sense than letting it grow old in my own digital attics. Also, I'm
-hoping to get some of my enthuisasm back if I get help with the bering
-stuff. :-P
+hoping to get some of my enthuisasm back if I get some help.
+
 
 * Authors:
 
@@ -43,7 +44,7 @@ test implementations, documentation and more.
 
 * License
 
-The license of this the "MIT License". Put shortly, you acn do
+The license of this the "MIT License". Put shortly, you cann do
 anything you want with this code, but don't blame its authors. See the
 file "LICENSE".
 
