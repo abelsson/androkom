@@ -37,6 +37,7 @@ import javax.swing.JPasswordField;
 import javax.swing.JLabel;
 import javax.swing.JTabbedPane;
 
+import org.gnu.readline.*;
 
 import nu.dll.lyskom.*;
 
@@ -80,6 +81,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     static boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
     static boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
     static boolean useGui = Boolean.getBoolean("lattekom.use-gui");
+
+    static int consoleWidth = Integer.getInteger("lattekom.consolewidth", 78).intValue();
 
     static String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
 
@@ -860,7 +863,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		if (vilka[i].getWorkingConference() != 0) {
 		    row += " i möte " + conferenceName;
 		}
-		consoleWriteLn(row);
+		consoleWriteLn(pad(row, consoleWidth));
 		consoleWriteLn("\t(" + bytesToString(vilka[i].getWhatAmIDoing()) + ")");
 	    }
 	    consoleWriteLn("----------------------------------------------------------------");
@@ -1047,7 +1050,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	}
 
 	if (!useGui) {
-	    try {	    
+	    try {
+		String s = Readline.readline("");
+		return s != null ? s : "";
+		/*
 		int b = System.in.read();
 		ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
 		while (b != -1 && b != '\n') {
@@ -1056,6 +1062,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		}
 		if (b == -1) return null;
 		return inByteStream.toString(encoding).trim();
+		*/
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
 	    } catch (IOException ex0) {
@@ -1072,6 +1079,27 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    }
 	}
     }
+
+    void initCrt() {
+	ReadlineLibrary[] libs = { ReadlineLibrary.Editline,
+				   ReadlineLibrary.GnuReadline };
+	for (int i=0; i < libs.length; i++) {
+	    try {
+		Readline.load(libs[i]);
+	    } catch (UnsatisfiedLinkError ex1) {
+		Debug.println("Failed to load readline library " + libs[i].getName());
+	    }
+	}
+	Readline.initReadline("lattekom_t2");
+	Readline.setEncoding(encoding);
+	Runtime.getRuntime()                       // if your version supports
+	    .addShutdownHook(new Thread() {          // addShutdownHook (since 1.3)
+		    public void run() {
+			Readline.cleanup();
+		    }
+		});
+    }
+
     /**
      * Read one row from user input, if the resulting row is the
      * empty string, return a default string instead.
@@ -1342,7 +1370,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	while (rows.hasMoreElements()) {
 	    consoleWriteLn(rows.nextToken());
 	}
-	consoleWriteLn(pad("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/", 77, '-'));
+	consoleWriteLn(pad("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/", consoleWidth, '-'));
 
 	int[] comments = text.getComments();
 	for (int i=0; i < comments.length; i++) {
@@ -1355,7 +1383,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    //if (text.getStat().countAuxItems() > 0) consoleWriteLn("\t** Aux-saker:");
 	    for (int i=0; i<text.getStat().countAuxItems(); i++)
 		consoleWriteLn(pad("\tAux-Item["+i+"]: typnummer: "+auxs[i].getNo() + ", data: " +
-				   bytesToString(auxs[i].getData().getContents()), 77));
+				   bytesToString(auxs[i].getData().getContents()), consoleWidth));
 	}
 	for (int i=0; i < footnotes.length; i++) {
 	    TextStat ts = foo.getTextStat(footnotes[i]);
@@ -1479,6 +1507,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	useGui = embedded;
 	if (useGui) {
 	    initGui(embedded);
+	} else {
+	    initCrt();
 	}
 	foo = new Session();
 	initCommands();
