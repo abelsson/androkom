@@ -45,6 +45,9 @@ public class PreferencesMetaData {
 					"Teckenkodning att använda vid skapande av texter",
 					"weblatte", "list", "iso-8859-1",
 					new String[] { "iso-8859-1", "utf-8" }));
+	list.add(new PreferenceMetaData("chat-hide-messages-from-me",
+					"Dölj egna meddelanden i chatläge",
+					"weblatte", "boolean", "0"));
 
 	for (Iterator i = list.iterator(); i.hasNext();) {
 	    PreferenceMetaData pmd = (PreferenceMetaData) i.next();
