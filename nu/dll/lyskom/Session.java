@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.61 2004/05/17 01:19:01 pajp Exp $
+ * @version $Id: Session.java,v 1.62 2004/05/17 14:59:45 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -415,7 +415,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 					(clientHost != null ? "%" + 
 					 clientHost : "")).toNetwork();
 	byte[] handshake = new byte[userdata.length+1];
-	handshake[0] = 'A';
+	handshake[0] = (byte) 'A';
 	System.arraycopy(userdata, 0, handshake, 1, userdata.length);
     	connection.writeLine(handshake);
 
