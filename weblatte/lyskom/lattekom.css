@@ -1,4 +1,4 @@
-/* $Id: lattekom.css,v 1.13 2004/06/08 00:33:30 pajp Exp $ */
+/* $Id: lattekom.css,v 1.14 2004/09/17 13:42:02 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
@@ -38,7 +38,6 @@ h3 {
 
 p {
   color: black;
-  background: white;
   margin-top: 0.6em;
   margin-bottom: 0.6em;
 }
