@@ -4,9 +4,9 @@ import nu.dll.lyskom.*;
 import java.io.IOException;
 
 public class IntCommands extends AbstractCommand {
-    String[] myCommands = { "sända meddelande" };
-    String[] myDescriptions = { "sända meddelande" };
-    int[] commandIndices = { 0 };
+    String[] myCommands = { "sända meddelande", "tiden" };
+    String[] myDescriptions = { "sända meddelande", "(se) tiden" };
+    int[] commandIndices = { 0, 1 };
 
     public IntCommands() {
 	setCommands(myCommands);
@@ -47,7 +47,17 @@ public class IntCommands extends AbstractCommand {
 		application.consoleWriteLn("Det gick inte att skicka meddelandet. Felkod: " + ex1.getError());
 		return Command.ERROR;
 	    }
-	    //break;
+
+	case 1:
+	    try {
+		KomTime time = session.getTime();
+		application.consoleWriteLn("Aktuell tid är " +
+					   application.fullTimeFormat.format(time.getTime()) + " (enligt servern)");
+		return Command.OK;
+	    } catch (RpcFailure ex1) {
+		application.consoleWriteLn("Fel: " + ex1.getError());
+		return Command.ERROR;
+	    }
 	}
 	return Command.UNHANDLED;
     }

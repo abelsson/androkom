@@ -100,12 +100,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     Locale locale = new Locale("sv", "se");  // language and location
 
-    SimpleDateFormat fullTimeFormat = new SimpleDateFormat("EEEE d MMMM yyyy k:mm", locale);
+    SimpleDateFormat fullTimeFormat = new SimpleDateFormat("EEEE d MMMM yyyy k:mm:ss", locale);
     SimpleDateFormat timestampFormat = fullTimeFormat;
-    SimpleDateFormat thisYearTimeFormat = new SimpleDateFormat("EEEE d MMMM k:mm", locale);
-    SimpleDateFormat yesterdayTimeFormat = new SimpleDateFormat("'igår' HH:mm", locale);
-    SimpleDateFormat withinLastWeekTimeFormat = new SimpleDateFormat("EEEE's' HH:mm", locale);
-    SimpleDateFormat todayTimeFormat = new SimpleDateFormat("'idag' HH:mm", locale);
+    SimpleDateFormat thisYearTimeFormat = new SimpleDateFormat("EEEE d MMMM k:mm:ss", locale);
+    SimpleDateFormat yesterdayTimeFormat = new SimpleDateFormat("'igår' HH:mm:ss", locale);
+    SimpleDateFormat withinLastWeekTimeFormat = new SimpleDateFormat("EEEE's' HH:mm:ss", locale);
+    SimpleDateFormat todayTimeFormat = new SimpleDateFormat("'idag' HH:mm:ss", locale);
 
     AsynchInvoker asynchInvoker;
 

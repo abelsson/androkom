@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.27 2002/06/06 13:48:02 pajp Exp $
+ * @version $Id: Session.java,v 1.28 2002/09/04 15:15:50 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -830,6 +830,20 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	writeRpcCall(req);
 	return req;
     }
+
+    public synchronized RpcCall doGetTime()
+    throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_get_time);
+        writeRpcCall(req);
+	return req;
+    }
+
+    public KomTime getTime()
+    throws IOException {
+	RpcReply reply = waitFor(doGetTime());
+	return KomTime.createFrom(0, reply.getParameters());
+    }
+
 
     /**
      * Returns a Text object corresponding to the specified global
@@ -2384,15 +2398,27 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    Debug.println("asynch-login");
 	    break;
 
-	    
-	case Asynch.new_recipient: // refresh the caches.
+	case Asynch.new_recipient: // TODO: refresh the caches.
 	case Asynch.sub_recipient: // TODO: should also update unread status (where?)
-	case Asynch.new_text_old:
 	    textNo = parameters[0].intValue();
-	    //textPrefetchQueue.add(new Integer(textNo));
-	    //invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
+	    synchronized (textStatCache) {
+		textStatCache.remove(textNo);
+	    }
+	    synchronized (textCache) {
+		if (textCache.contains(textNo)) {
+		    ((Text) textCache.get(textNo)).stat = null;
+		}
+	    }
+
 	    break;
 
+	case Asynch.new_text_old:
+	case Asynch.new_text:
+	    textNo = parameters[0].intValue();
+	    textPrefetchQueue.add(new Integer(textNo));
+	    invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
+	    break;
+	    
 	case Asynch.new_name:
 	    conferenceCache.removeAll(parameters[0].intValue());
 	    break;

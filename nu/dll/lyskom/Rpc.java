@@ -336,6 +336,8 @@ public interface Rpc {
 
     public final static int C_delete_text = 29;
 
+    public final static int C_get_time = 35;
+
     public final static int C_enable = 42;
 
 
