@@ -206,7 +206,7 @@
 	String name = "[" + number + "]";
 	Conference conf = null;
 	try {
-	    conf = lyskom.getConfStat(number);
+	    conf = number != 0 ? lyskom.getConfStat(number) : null;
 	    name = lyskom.toString(conf.getName());
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() != Rpc.E_undefined_conference)
