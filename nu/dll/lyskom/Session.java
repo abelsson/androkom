@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.74 2004/06/09 21:13:56 pajp Exp $
+ * @version $Id: Session.java,v 1.75 2004/06/09 21:37:28 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -304,6 +304,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	conferenceCache.clear();
 	sessionCache.clear();
 	personCache.clear();
+	readTexts.clear();
     }
 
     /**

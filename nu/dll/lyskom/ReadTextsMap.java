@@ -28,6 +28,10 @@ public class ReadTextsMap {
 	return textNumberSet.size();
     }	    
 
+    public void clear() {
+	textNumberSet.clear();
+    }
+
     /**
      * @deprecated changed name to contains(int)
      * @see nu.dll.lyskom.ReadTextsMap#contains(int)
