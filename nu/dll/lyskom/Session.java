@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.48 2004/04/26 00:10:45 pajp Exp $
+ * @version $Id: Session.java,v 1.49 2004/04/27 00:45:05 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -187,6 +187,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     // comment, depth-first order...
     List unreadTexts;
 
+    boolean prefetch = Boolean.getBoolean("lattekom.enable-prefetch");
     List textPrefetchQueue;
     
     int currentConference = -1;
@@ -2807,9 +2808,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	case Asynch.new_text_old:
 	case Asynch.new_text:
-	    textNo = parameters[0].intValue();
-	    textPrefetchQueue.add(new Integer(textNo));
-	    invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
+	    if (prefetch) {
+		textNo = parameters[0].intValue();
+		textPrefetchQueue.add(new Integer(textNo));
+		invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
+	    }
 	    break;
 	    
 	case Asynch.new_name:
