@@ -38,7 +38,20 @@ Stackspårning:
 <%
     out.flush();
     exception.printStackTrace(response.getWriter());
+    out.flush();
+    Throwable cause = exception.getCause();
+    while (cause != null) {
 %>
+
+	Ursprungsfel:
+<%
+	out.flush();
+	cause.printStackTrace(response.getWriter());
+	out.flush();
+	cause = cause.getCause();
+    }
+%>
+
 </pre>
 <%
     out.flush();
