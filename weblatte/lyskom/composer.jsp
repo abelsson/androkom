@@ -143,7 +143,7 @@
     
     Debug.println("____ composer.jsp args: " + parameters);
 
-    boolean multipart = parameters.get("multipart") != null && parameters.get("noMultipart") == null;
+    boolean multipart = (parameters.containsKey("multipart") || parameters.contaiksKey("multipart-file")) && !parameters.contansKey("noMultipart");
 
     List parts = new LinkedList();
     Set handledParts = new HashSet();
@@ -255,7 +255,8 @@
     }
 
     if (multipart && (parts.size() == 0 ||
-	parameters.get("newFile") != null)) {
+	parameters.get("newFile") != null ||
+	parameters.contaisKey("multipart-file"))) {
 	Map part = new HashMap();
 	part.put("content-type", "application/octet-stream");
 	parts.add(part);
@@ -571,7 +572,8 @@
 <input type="submit" value="skicka!" name="createText">
 <%  
     if (!multipart) {
-%><input type="submit" value="multimedia" name="multipart"><%
+%><input type="submit" value="multimedia (fil)" name="multipart-file"><%
+<input type="submit" value="multimedia (text/HTML)" name="multipart">
     } else {
 %><input type="submit" value="vanlig text" name="noMultipart"><%
     }
@@ -581,7 +583,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.13 2004/06/04 15:37:37 pajp Exp $
+$Id: composer.jsp,v 1.14 2004/06/07 01:28:32 pajp Exp $
 </p>
 </body>
 </html>

@@ -387,6 +387,7 @@
 	for (Iterator i = auxMxMimePartIn.iterator(); i.hasNext();) {
 	    attachmentTexts.add(new Integer(((KomToken) i.next()).intValue()));
 	}
+	out.println("<div class=\"text-comment-list\">");
         for (int i=comments.length-1; i >= 0; i--) {
 	    if (preferences.getBoolean("read-comments-first") &&
                 request.getParameter("text") == null) {
@@ -438,7 +439,8 @@
 <%
 	}
 %>
-	<br/>
+	</div>
+	<div class="text-commands">
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
 %>	
@@ -453,6 +455,7 @@
 <%
     }
 %>
+	</div>
 	</div>
 <%
     out.flush();

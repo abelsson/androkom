@@ -41,12 +41,13 @@
 	    	    list.add(conf);
 	    	    explicitRecipients = true;
 	    	} catch (AmbiguousNameException ex1) {
-		    errors.append("<p class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
+		    errors.append("<div class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
 	            errors.append("<ul>");
 	            ConfInfo[] names = ex1.getPossibleNames();
 	            for (int j=0; j < names.length; j++) 
 		        errors.append("<li>" + lookupName(lyskom, names[j].getNo(), true));
 	    	    errors.append("</ul>");
+		    errors.append("</div>");
 	    	}
 	    }
     	}
@@ -70,18 +71,18 @@
 		    CharsetEncoder utf8encoder = utf8Charset.newEncoder();
 		    if (!utf8encoder.canEncode(textContents)) {
 			Debug.println("utf-8 encoding failed also");
-			errors.append("<p class=\"statusError\">Varning: texten " +
+			errors.append("<div class=\"statusError\">Varning: texten " +
 				      " kan inte kodas i vare sig utf-8 eller " + 
 				      charset.displayName() + " (använder " + 
-				      charset.displayName() + ").</p>");
+				      charset.displayName() + ").</div>");
 		    } else {
-			errors.append("<p class=\"statusError\">OBS: " +
+			errors.append("<div class=\"statusError\">OBS: " +
 				      "textens innehåll kunde inte kodas i vald " +
 				      "teckenkodning (\"" + charset.displayName() +
 				      "\"). " + 
 				      "Texten har istället kodats till \"" + 
 				      utf8Charset.displayName() + "\" för att " +
-				      "hela innehållet skall representeras korrekt.</p>");
+				      "hela innehållet skall representeras korrekt.</div>");
 
 			encoder = utf8encoder;
 			charsetName = "utf-8";
@@ -340,21 +341,21 @@
 		    }
 		}
 %>
-	        <p class="statusSuccess">Text nummer <%= textLink(request, lyskom, newTextNo, false) %> är skapad.</p>
+	        <div class="statusSuccess">Text nummer <%= textLink(request, lyskom, newTextNo, false) %> är skapad.</div>
 <%
 	        if (parameter(parameters, "changePresentation") != null) {
 		    int confNo = Integer.parseInt(parameter(parameters, "changePresentation"));
 		    try {
 			lyskom.setPresentation(confNo, newTextNo);
 %>
- 		    	<p class="statusSuccess">Ny presentation för <%=lookupName(lyskom, confNo, true)%> är <%=textLink(request, lyskom, newTextNo)%>.</p>
+ 		    	<div class="statusSuccess">Ny presentation för <%=lookupName(lyskom, confNo, true)%> är <%=textLink(request, lyskom, newTextNo)%>.</div>
 <%
 		    } catch (RpcFailure ex1) {
 			if (ex1.getError() == Rpc.E_permission_denied) {
-			    out.println("<p class=\"statusError\">Du får inte ändra presentation för möte " +
-				lookupName(lyskom, ex1.getErrorStatus(), true) + ".</p>");
+			    out.println("<div class=\"statusError\">Du får inte ändra presentation för möte " +
+				lookupName(lyskom, ex1.getErrorStatus(), true) + ".</div>");
 			    lyskom.deleteText(newTextNo);
-			    out.println("<p class=\"statusError\">Text nummer " + newTextNo + " är borttagen.</p>");
+			    out.println("<div class=\"statusError\">Text nummer " + newTextNo + " är borttagen.</div>");
 			} else {
 			    throw ex1;
 			}
@@ -364,6 +365,6 @@
 	    }
 	}
 	if (errors.length() > 0)
-	    out.println("<p class=\"statusError\">" + errors + "</p>");
+	    out.println("<div class=\"statusError\">" + errors + "</div>");
         request.setAttribute("new-text-no", new Integer(newTextNo));
     }

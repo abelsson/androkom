@@ -845,7 +845,7 @@
 		TextStat stat = lyskom.getTextStat(txtNoObj.intValue());
 		if (!textNumbers.contains(txtNoObj)) textNumbers.add(txtNoObj);
 		int[] comments = stat.getComments();
-		for (int i=comments.length-1; textNumbers.size() < maxTextsToShow && i >= 0; i--) {
+		for (int i=0; textNumbers.size() < maxTextsToShow && i < comments.length; i++) {
 		    TextStat commentStat;
 	    	    try {
 			commentStat = lyskom.getTextStat(comments[i]);
@@ -1474,7 +1474,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.72 $
+$Revision: 1.73 $
 </div>
 </body>
 </html>

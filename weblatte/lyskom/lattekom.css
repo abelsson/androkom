@@ -1,4 +1,4 @@
-/* $Id: lattekom.css,v 1.10 2004/06/07 00:53:17 pajp Exp $ */
+/* $Id: lattekom.css,v 1.11 2004/06/07 01:28:32 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
@@ -158,11 +158,20 @@ p.header {
   border-width: 1px;
   border-color: #339;
   margin-top: 1em;
+  margin-bottom: 1em;
   padding: 0.4em;
 }
 
 .text-body {
   font-size: 8pt
+}
+
+.text-comment-list {
+  margin-bottom: 1em;
+}
+
+.text-commands {
+  margin-top: 1em;
 }
 
 sup {
