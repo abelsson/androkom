@@ -1,4 +1,4 @@
-<!-- $Id: build.xml,v 1.3 2004/02/29 04:45:04 pajp Exp $ -->
+<!-- $Id: build.xml,v 1.4 2004/05/17 01:19:00 pajp Exp $ -->
 
 <project default="all">
   <property name="src" location="."/>
@@ -18,7 +18,7 @@
   </target>
 
   <target name="lattekom.compile" depends="init">
-    <javac destdir="${build}" srcdir="${src}"
+    <javac destdir="${lattekom.build}" srcdir="${src}" deprecation="on"
            includes="nu/dll/lyskom/*"/>
   </target>
 
@@ -27,7 +27,7 @@
   </target>
 
   <target name="lattekom.jar" depends="lattekom.compile">
-    <jar destfile="lattekom.jar" basedir="${build}"/>
+    <jar destfile="lattekom.jar" basedir="${lattekom.build}"/>
   </target>
 
   <target name="all" depends="clean,lattekom.jar,swingkom.jar"/>

@@ -302,11 +302,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    case Asynch.new_text_old:
 		consoleWriteLn("");
 		newPrompt = true;
-		try {
-		    foo.updateUnreads();
-		} catch (IOException ex1) {
-		    throw new RuntimeException("I/O error: " + ex1.getMessage());
-		}
 		break;
 	    case Asynch.new_name:
 		consoleWriteLn("");
@@ -330,19 +325,23 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    consoleFrame.toFront();
 		}
 		consoleWriteLn("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
-		if (params[0].intValue() == foo.getMyPerson().getNo()) {
-		    consoleWriteLn("Personligt meddelande från " + sender + 
-				   " (" + komTimeFormat(m.getArrivalTime()) + "):");
-		} else if (params[0].intValue() == 0) {
-		    consoleWriteLn("Alarmmeddelande från " + sender + " (" + komTimeFormat(m.getArrivalTime()) + "):");
-		} else {
-		    consoleWriteLn("Meddelande till " + recipient);
-		    consoleWriteLn("från " + sender +
-				   " (" + komTimeFormat(m.getArrivalTime()) + "):");
+		try {
+		    if (params[0].intValue() == foo.getMyPerson().getNo()) {
+			consoleWriteLn("Personligt meddelande från " + sender + 
+				       " (" + komTimeFormat(m.getArrivalTime()) + "):");
+		    } else if (params[0].intValue() == 0) {
+			consoleWriteLn("Alarmmeddelande från " + sender + " (" + komTimeFormat(m.getArrivalTime()) + "):");
+		    } else {
+			consoleWriteLn("Meddelande till " + recipient);
+			consoleWriteLn("från " + sender +
+				       " (" + komTimeFormat(m.getArrivalTime()) + "):");
+		    }
+		    consoleWriteLn("");
+		    consoleWriteLn(((Hollerith) params[2]).getContentString());
+		    consoleWriteLn("----------------------------------------------------------------");
+		} catch (IOException ex1) {
+		    System.err.println("I/O-fel: " + ex1.getMessage());
 		}
-		consoleWriteLn("");
-		consoleWriteLn(((Hollerith) params[2]).getContentString());
-		consoleWriteLn("----------------------------------------------------------------");
 		newPrompt = true;
 		break;
 	    case Asynch.login:

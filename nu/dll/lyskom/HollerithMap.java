@@ -88,11 +88,10 @@ public class HollerithMap extends Hollerith {
 	    
 	    KomToken _nextToken = KomTokenReader.readToken(is, charset);
 	    while (_nextToken != null) {
-		Debug.println("HollerithMap.parse(): next token: " + _nextToken);
+		
+		// silently skip non-hollerith tokens
 		while (_nextToken != null && !(_nextToken instanceof Hollerith)) {
-		    Debug.println("skipping unexpected non-hollerith " + _nextToken);
 		    _nextToken = KomTokenReader.readToken(is, charset);
-		    Debug.println("HollerithMap.parse(): (re-read) next token: " + _nextToken);
 		}
 		if (_nextToken == null) continue;
 		Hollerith nextToken = (Hollerith) _nextToken;

@@ -16,10 +16,8 @@ package nu.dll.lyskom;
 public class Membership {
     int position;
     protected KomTime lastTimeRead;
-    /**
-     * @deprecated use getNo() instead!
-     */
-    public int conference;
+
+    protected int conference;
     protected int priority; // is INT8, use byte?
     protected int lastTextRead; // local!
     protected int[] readTexts; // local!

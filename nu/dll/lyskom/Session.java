@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.60 2004/05/16 22:58:47 pajp Exp $
+ * @version $Id: Session.java,v 1.61 2004/05/17 01:19:01 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -411,9 +411,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	connection = new Connection(this);
 	reader = new KomTokenReader(connection.getInputStream(), this);
 
-	connection.write('A'); // protocol A
-	connection.writeLine(new Hollerith(clientUser +
-					   (clientHost != null ? "%" + clientHost : "")).toNetwork());
+	byte[] userdata = new Hollerith(clientUser +
+					(clientHost != null ? "%" + 
+					 clientHost : "")).toNetwork();
+	byte[] handshake = new byte[userdata.length+1];
+	handshake[0] = 'A';
+	System.arraycopy(userdata, 0, handshake, 1, userdata.length);
+    	connection.writeLine(handshake);
 
 	 // "LysKOM\n"
 	String serverResponse = new String(reader.readToken().getContents());
@@ -490,30 +494,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public boolean getConnected() {
 	return connected;
     }
-
-    /**
-     * Supposed to return an array of global text number for all unreads
-     * in a conference. Generally not a good idea.
-     *
-     * @deprecated Follow the standard LysKOM convention to get unreads or use <tt>nextUnreadText()/nextUnreadConference()</tt>
-     * @see nu.dll.lyskom.Session#nextUnreadText(boolean)
-     */
-    public int[] getGlobalUnreadInConf(int conf)
-    throws IOException {
-	int pers = myPerson.getNo();
-	Vector v = new Vector(100); // xxx
-
-	for (int i=0; i<unreadMembership.size(); i++) {
-	    if (unreadMembership == null) continue;
-	    v.addElement((Object) new Integer(((Membership) unreadMembership.get(i)).conference));
-	}
-
-	int c[] = new int[v.size()];
-	Enumeration e = v.elements();
-	for (int i=0; i < v.size() ; i++)
-	    c[i] = ((Integer) e.nextElement()).intValue();
-	return c;
-    }	
 
     public boolean login(int id, String password, boolean hidden)
     throws IOException {
@@ -613,7 +593,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	    Membership m = queryReadTexts(persNo, conf);
 	    membershipCache.add(m);
-	    int possibleUnreads = getUConfStat(m.conference).getHighestLocalNo() - m.lastTextRead;
+	    int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.lastTextRead;
 	    if (possibleUnreads > 0 ) {
 		unreadMembership.add(m);
 	    }
@@ -733,13 +713,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		return -1;
 	    }
 	    int txtNo = ((Integer) tm.nextElement()).intValue();
-	    while (tm.hasMoreElements() && (txtNo == 0 || readTexts.exists(txtNo))
+	    while (tm.hasMoreElements() && (txtNo == 0 || readTexts.contains(txtNo))
 		   && m.isRead(tm.local())) {
 		Debug.println("nextUnreadText(): not returning " + txtNo);
 		txtNo = ((Integer) tm.nextElement()).intValue();
 	    }
 
-	    if (txtNo == 0 || readTexts.exists(txtNo)) {
+	    if (txtNo == 0 || readTexts.contains(txtNo)) {
 		synchronized (unreads) {
 		    unreads.remove(new Integer(conference));
 		}
@@ -1417,7 +1397,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	KomToken[] confs = ((KomTokenArray) parameters[1]).getTokens();
 	int[] iconfs = new int[confs.length];
 	for (int i=0; i<iconfs.length; i++)
-	    iconfs[i] = confs[i].toInteger();
+	    iconfs[i] = confs[i].intValue();
 	return iconfs;
     }
 	
@@ -1847,7 +1827,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = waitFor(doChangeConference(confNo).getId());
 	if (reply.getSuccess()) {
 	    currentConference = confNo;
-	    Debug.println("CHANGED CONFERENCE: to " + confNo);
 	} else {
 	    throw reply.getException();
 	}
@@ -2179,7 +2158,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	RpcReply r = waitFor(doWhoAmI());
 	if (!r.getSuccess()) throw r.getException();
-	mySessionNo = r.getParameters()[0].toInteger();
+	mySessionNo = r.getParameters()[0].intValue();
 	return mySessionNo;
     }
 
@@ -2353,7 +2332,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (!reply.getSuccess())
 	    throw reply.getException();
 
-	return reply.getParameters()[0].toInteger();
+	return reply.getParameters()[0].intValue();
     }
 
     /**
@@ -2446,7 +2425,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public RpcCall doAddRecipient(int textNo, int confNo, int type) 
     throws IOException {
 	RpcCall req = new RpcCall(count(), Rpc.C_add_recipient).add(new KomToken(textNo)).add(new KomToken(confNo));
-	Selection info = new Selection(TextStat.MISC_INFO_COUNT);
+	Selection info = new Selection();
 	info.add(type, null);
 	req.add(info.toToken());
 	writeRpcCall(req);
@@ -2492,15 +2471,15 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = waitFor(doWhoIsOnDynamic(wantVisible, wantInvisible, activeLast).getId());
 
 	KomToken[] parameters = reply.getParameters();
-	DynamicSessionInfo[] ids = new DynamicSessionInfo[parameters[0].toInteger()];
+	DynamicSessionInfo[] ids = new DynamicSessionInfo[parameters[0].intValue()];
 	KomToken[] sessionData = ((KomTokenArray) parameters[1]).getTokens();
 
 
 	for (int i=0, j=5 ; i < ids.length ; i++, j = j + 6)
-	    ids[i] = new DynamicSessionInfo(sessionData[j-5].toInteger(),
-					    sessionData[j-4].toInteger(),
-					    sessionData[j-3].toInteger(),
-					    sessionData[j-2].toInteger(),
+	    ids[i] = new DynamicSessionInfo(sessionData[j-5].intValue(),
+					    sessionData[j-4].intValue(),
+					    sessionData[j-3].intValue(),
+					    sessionData[j-2].intValue(),
 					    new Bitstring(sessionData[j-1]),
 					    sessionData[j].getContents());
 	
@@ -2556,13 +2535,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = waitFor(doReLookup(regexp, wantPersons, wantConfs));
 	if (!reply.getSuccess()) throw reply.getException();
 	KomToken[] parameters = reply.getParameters();
-	ConfInfo[] ids = new ConfInfo[parameters[0].toInteger()];
+	ConfInfo[] ids = new ConfInfo[parameters[0].intValue()];
 	KomToken[] confData = ((KomTokenArray) parameters[1]).getTokens();
 
 	for (int i=0, j=2 ; i < ids.length ; i++, j = j + 3)
 	    ids[i] = new ConfInfo((Hollerith) confData[j-2],
 				  new ConfType(confData[j-1]),
-				  confData[j].toInteger());
+				  confData[j].intValue());
 
 	return ids;
     }
@@ -2596,13 +2575,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    throw reply.getException();
 	}
 	KomToken[] parameters = reply.getParameters();
-	ConfInfo[] ids = new ConfInfo[parameters[0].toInteger()];
+	ConfInfo[] ids = new ConfInfo[parameters[0].intValue()];
 	KomToken[] confData = ((KomTokenArray) parameters[1]).getTokens();
 
 	for (int i=0, j=2 ; i < ids.length ; i++, j = j + 3)
 	    ids[i] = new ConfInfo((Hollerith) confData[j-2],
 				  new ConfType(confData[j-1]),
-				  confData[j].toInteger());
+				  confData[j].intValue());
 
 	return ids;
     }
@@ -2809,18 +2788,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * Receiver of RPC events.
      */
     public void rpcEvent(RpcEvent e) {
-	switch(e.getOp()) {
-	case Rpc.C_query_read_texts:
-	    if (!e.getReply().getSuccess()) return;
-	    int conf = e.getCall().getParameter(1).toInteger();
-	    Membership m = membershipCache.get(conf);
-	    if (m == null) {
-		m = membershipCache.add(new Membership(0,
-						       e.getReply().
-						       getParameters()));
-	    }
-	    break;
-	}
     }
 
     /**

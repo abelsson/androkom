@@ -481,8 +481,12 @@ implements Runnable, RpcEventListener {
 	    if (kom.getLoggedIn()) {
 		abortButton.setText("Koppla ned");
 		connectButton.setText("Återanslut");
-		userNameField.setText(new String(kom.getMyPerson().
-						 getUConference().getName()));
+		try {
+		    userNameField.setText(new String(kom.getMyPerson().
+						     getUConference().getName()));
+		} catch (IOException ex1) {
+		    networkError("I/O-fel: " + ex1.getMessage());
+		}
 		gotLoggedIn();
 	    }
 	    break;

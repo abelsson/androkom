@@ -16,14 +16,12 @@ import java.util.Iterator;
 import java.util.Arrays;
 import java.io.*;
 
-/** NB! Rename this class!
- *
- * NOTE: might be an idea to create a dispatcher worker thread that
- * executes all calls to listener objects. Now, this thread
- * executes the listener callbacks, with the side-effect that they
- * won't be able to call synchronous methods in the Session class
- * (since they rely on this thread to be different from the
- * executing).
+/**
+ * This class implements the reader thread.
+ * 
+ * It uses the sessions KomTokenReader to parse 
+ * any incoming data, and then passes the parsed
+ * result to registered RPC and Asynch listeners.
  *
  */
 class MessageListener
@@ -34,8 +32,8 @@ implements Runnable {
     HollerithStream pendingStream = null;
 
     Exception exception = null;
-    Vector rpcReceivers = new Vector(1);
-    Vector asynchReceivers = new Vector(1);
+    List rpcReceivers = new LinkedList();
+    List asynchReceivers = new LinkedList();
     Thread thread = null;
     Session session;
     boolean disconnect = false;
@@ -204,10 +202,8 @@ implements Runnable {
 		// this is not very clean, we should probably extend the interface
 		// or add an interface with a callback like listenerException(Exception)
 		// for notifying about fatal listener errors.
-		for(Enumeration e = rpcReceivers.elements();
-		    e.hasMoreElements();)
-		    ((RpcReplyReceiver)
-		     e.nextElement()).rpcReply(null);
+		for(Iterator i = rpcReceivers.iterator(); i.hasNext();)
+		    ((RpcReplyReceiver) i.next()).rpcReply(null);
 
 		disconnected = true;
 		if (disconnect) {
@@ -231,19 +227,21 @@ implements Runnable {
 		System.arraycopy(row, 1, params, 0, params.length);
 
 		// notify listeners...
-		for(Enumeration e = rpcReceivers.elements();
-		    e.hasMoreElements();)
-		    ((RpcReplyReceiver)
-		     e.nextElement()).rpcReply(new RpcReply(good, id, params));
+		synchronized (rpcReceivers) {
+		    for (Iterator i=rpcReceivers.iterator();i.hasNext();)
+			((RpcReplyReceiver)
+			 i.next()).rpcReply(new RpcReply(good, id, params));
+		}
 	    } else if (isAsynchMessage) { // Asynch message
-		for(Enumeration e = asynchReceivers.elements();
-		    e.hasMoreElements();) {
-		    AsynchMessageReceiver rcvr = (AsynchMessageReceiver) e.nextElement();
-		    if (Debug.ENABLED) {
-			Debug.println("dispatching asynch message {" +
-				      Arrays.asList(row) + "} to " + rcvr);
+		synchronized (asynchReceivers) {
+		    for (Iterator i=asynchReceivers.iterator();i.hasNext();) {
+			AsynchMessageReceiver rcvr = (AsynchMessageReceiver) i.next();
+			if (Debug.ENABLED) {
+			    Debug.println("dispatching asynch message {" +
+					  Arrays.asList(row) + "} to " + rcvr);
+			}
+			rcvr.asynchMessage(new AsynchMessage(row));
 		    }
-		    rcvr.asynchMessage(new AsynchMessage(row));
 		}
 	    }
 	}
@@ -265,19 +263,27 @@ implements Runnable {
 
     /** add/remove event receivers **/
     public boolean removeRpcReplyReceiver(RpcReplyReceiver r) {
-	return rpcReceivers.removeElement((Object) r);
+	synchronized (rpcReceivers) {
+	    return rpcReceivers.remove(r);
+	}
     }
 	    
     public void addRpcReplyReceiver(RpcReplyReceiver r) {
-	rpcReceivers.addElement((Object) r);
+	synchronized (rpcReceivers) {
+	    rpcReceivers.add(r);
+	}
     }
 
     public void addAsynchMessageReceiver(AsynchMessageReceiver a) {
-	asynchReceivers.addElement((Object) a);
+	synchronized (asynchReceivers) {
+	    asynchReceivers.add(a);
+	}
     }
 
     public boolean removeAsynchMessageReceiver(AsynchMessageReceiver a) {
-	return asynchReceivers.removeElement((Object) a);
+	synchronized (asynchReceivers) {
+	    return asynchReceivers.remove(a);
+	}
     }
 
 }
