@@ -1,3 +1,4 @@
+<%@ page import='java.net.URLEncoder' %>
 <% if (lyskom != null && lyskom.getLoggedIn()) { 
 %>
 <!-- Context menu Script- © Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
