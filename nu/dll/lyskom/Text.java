@@ -13,6 +13,9 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.StringTokenizer;
+import java.util.Properties;
+
 
 import java.io.UnsupportedEncodingException;
 
@@ -78,7 +81,7 @@ public class Text extends Hollerith implements java.io.Serializable {
     public Text(String subject, String body) {
 	stat = new TextStat();
 	try {
-	    setContents((subject+"\n"+body).getBytes(Session.serverEncoding));
+	    setContents((subject+"\n"+body).getBytes(getCharset()));
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported character encoding: " + ex1.getMessage());
 	}
@@ -114,6 +117,48 @@ public class Text extends Hollerith implements java.io.Serializable {
 	    newcontents[i] = contents[i];
 	setContents(newcontents);
 	    
+    }
+
+    /**
+     * Splits the content-type aux item into content type
+     * and auxillary content-type information such as the charset.
+     * Returns an array in which the first element is a String
+     * with the actual content-type, and the second element
+     * is a java.util.Properties containing any other data
+     * trailing the content-type (eg. "charset").
+     */
+    private Object[] parseContentTypeAuxItem() {
+	Object[] r = new Object[2];
+	Hollerith[] _data = getAuxData(AuxItem.tagContentType);
+	String contentType = "text/x-kom-basic";
+	
+	if (_data != null && _data.length > 0) {
+	    contentType = _data[0].getContentString();
+	}
+
+        StringTokenizer toker = new StringTokenizer(contentType, ";");
+        contentType = toker.nextToken();
+        Properties ctData = new Properties();
+        while (toker.hasMoreTokens()) {
+            StringTokenizer tokfan = new StringTokenizer(toker.nextToken(), "=");
+            ctData.setProperty(tokfan.nextToken(), tokfan.nextToken());
+        }
+        if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
+	return new Object[] { contentType, ctData };
+    }
+
+    /**
+     * Returns the content-type for this text.
+     */
+    public String getContentType() {
+	return (String) parseContentTypeAuxItem()[0];
+    }
+
+    /**
+     * Returns the charset for this text.
+     */
+    public String getCharset() {
+	return ((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1");
     }
 
     /**
@@ -339,19 +384,19 @@ public class Text extends Hollerith implements java.io.Serializable {
 		if (body[i] == '\n') {
 		    byte[] thisLine = new byte[i-lastLf];
 		    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		    bodyList.add(new String(thisLine, Session.serverEncoding));
+		    bodyList.add(new String(thisLine, getCharset()));
 		    lastLf = i+1;
 		    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
 		}
 		i++;
 	    }
 	    if (lastLf == 0 && body.length > 0) {
-		bodyList.add(new String(body, Session.serverEncoding));
+		bodyList.add(new String(body, getCharset()));
 		Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
 	    } else if (lastLf < i) {
 		byte[] thisLine = new byte[body.length-lastLf];
 		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		bodyList.add(new String(thisLine, Session.serverEncoding));
+		bodyList.add(new String(thisLine, getCharset()));
 		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
 		
 	    }

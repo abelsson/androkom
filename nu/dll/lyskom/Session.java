@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.35 2004/04/02 06:21:28 pajp Exp $
+ * @version $Id: Session.java,v 1.36 2004/04/06 01:38:00 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -122,14 +122,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * in server I/O should respect this setting. It can be changed by setting the
      * system property "lyskom.encoding". Default is "iso-8859-1".
      */
-    public static String serverEncoding = null;
+    public static String defaultServerEncoding = null;
 
     // set property values
     static {
-	serverEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
+	defaultServerEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
 	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 30).intValue() * 1000;
 	rpcSoftTimeout = Integer.getInteger("lyskom.rpc-soft-timeout", 0).intValue() * 1000;
     }
+
+
+    public String serverEncoding = defaultServerEncoding;
 	
     /**
      * Not connected to a LysKOM server
@@ -229,6 +232,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public Session() {
 	init();
     }
+
+    protected boolean isCachableType(String contentType) {
+	if (contentType.startsWith("x-kom/text")) 
+	    return true;
+
+	if (contentType.startsWith("text/"))
+	    return true;
+
+	return false;
+    }
+
 
     /**
      * Removes any evidence of the given text in the caches
@@ -350,10 +364,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */     
     public boolean connect(String server, int port)
     throws IOException, ProtocolException {
-	connection = new Connection(server, port);
-	reader = new KomTokenReader(connection.getInputStream());
 	this.server = server;
 	this.port = port;
+	connection = new Connection(this);
+	reader = new KomTokenReader(connection.getInputStream(), this);
 	connection.write('A'); // protocol A
 	connection.writeLine(new Hollerith(clientUser +
 					   (clientHost != null ? "%" + clientHost : "")).toNetwork());
@@ -370,6 +384,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	addRpcEventListener(this);
 	state = STATE_CONNECTED;
 	return connected = true;
+    }
+
+    public String toString(byte[] buf) throws UnsupportedEncodingException {
+	return new String(buf, getServerEncoding());
+    }
+
+    public byte[] toByteArray(String s) throws UnsupportedEncodingException {
+	return s.getBytes(getServerEncoding());
+    }
+
+    public String getServerEncoding() {
+	return serverEncoding;
     }
 
     public String getServer() {
@@ -896,7 +922,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	writeRpcCall(req);
 	return req;
     }
-
+    
     public synchronized RpcCall doGetTime()
     throws IOException {
 	RpcCall req = new RpcCall(count(), Rpc.C_get_time);
@@ -961,7 +987,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (!reply.getSuccess()) throw reply.getException();
 
 	text.setContents(reply.getParameters()[0].getContents());
-	textCache.add(text);
+	if (isCachableType(text.getContentType())) {
+	    textCache.add(text);
+	}
+
 	textStatCache.add(text.getStat());
 	return text;
 

@@ -14,6 +14,8 @@ import java.io.Serializable;
  */
 public class Hollerith extends KomToken implements Serializable {
 
+    String charset = Session.defaultServerEncoding;
+
     /**
      * Constructs an empty Hollerith
      */
@@ -21,16 +23,34 @@ public class Hollerith extends KomToken implements Serializable {
 	setContents(null);
     }
 
+    public Hollerith(String s) {
+	this(s, Session.defaultServerEncoding);
+    }
+
+    public Hollerith(byte[] buf, String charset) {
+	setCharset(charset);
+	setContents(buf);
+    }
+
     /**
      * Construct a Hollertith by converting the supplied string into
-     * bytes according to iso-8859-1.
+     * bytes according to the given charset.
      */
-    public Hollerith(String s) {
+    public Hollerith(String s, String charset) {
 	try {
-	    setContents(s.getBytes(Session.serverEncoding));
+	    setCharset(charset);
+	    setContents(s.getBytes(charset));
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException("Unsupported encoding: " + e.getMessage());
 	}
+    }
+
+    protected void setCharset(String c) {
+	charset = c;
+    }
+
+    protected String getCharset() {
+	return charset;
     }
     
     /**
@@ -50,14 +70,14 @@ public class Hollerith extends KomToken implements Serializable {
      */
     public String getContentString() {
 	try {
-	    return new String(getContents(), Session.serverEncoding);
+	    return new String(getContents(), getCharset());
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException("Unsupported encoding: " + e.getMessage());
 	}
     }
 
     /**
-     * Constructs a byte-array representation of this Hollerith (using iso-8859-1) suitable 
+     * Constructs a byte-array representation of this Hollerith suitable 
      * for sending to the server, over the network (into the sea...).
      * <br>
      * A Hollerith is a prefix being the string length and the characted 'H',
@@ -66,7 +86,7 @@ public class Hollerith extends KomToken implements Serializable {
     public byte[] toNetwork() {
 	try {
 	    String prefixString = contents.length + "H";
-	    byte[] prefixBytes = prefixString.getBytes(Session.serverEncoding);
+	    byte[] prefixBytes = prefixString.getBytes("us-ascii");
 	    byte[] contents = getContents();
 	    byte[] output = new byte[contents.length + prefixBytes.length];
 	    

@@ -169,31 +169,22 @@ public class KomTokenArray extends KomToken {
     /**
      * Converts this into a LysKOM ARRAY suitable for sending to the server,
      * by calling each of the objects' toNetwork() method.
-     * <br>
-     * This is implemented using a StringBuffer, so all objects will first
-     * be converted into Strings using iso-8859-1, then transformed
-     * back into a byte array using the same encoding. This should
-     * be consistent, but there is probably some overhead.
+     *
      */
     public byte[] toNetwork() {
 	try {
-	    StringBuffer buff = new StringBuffer();
-	    buff.append(length + " {");
+	    String encoding = Session.defaultServerEncoding;
+	    ByteArrayOutputStream os = new ByteArrayOutputStream(512);
+	    os.write((length + " {").getBytes(encoding));
 	    for (int i=0 ; i < objects.length ; i++) {
-		buff.append(" ");
-		if (objects[i] instanceof KomTokenArray) {
-		    KomTokenArray foo = (KomTokenArray) objects[i];
-		    buff.append(new String(((KomTokenArray) objects[i]).toNetwork(), Session.serverEncoding));
-		} else if (objects[i] instanceof Hollerith) {
-		    buff.append(new String(((Hollerith) objects[i]).toNetwork(), Session.serverEncoding));
-		} else {
-		    buff.append(new String(objects[i].toNetwork(), Session.serverEncoding));
-		}
+		os.write(' ');
+		os.write(objects[i].toNetwork());
 	    }
-	    buff.append(" }");
-	    return buff.toString().getBytes(Session.serverEncoding);
-	} catch (UnsupportedEncodingException ex1) {
-	    throw new RuntimeException("Unsupported encoding: " + ex1.getMessage());
+	    os.write(" }".getBytes(encoding));
+	    return os.toByteArray();
+	} catch (IOException ex1) {
+	    throw new RuntimeException("I/O error creating byte array: " + 
+				       ex1.toString());
 	}
     }
 		

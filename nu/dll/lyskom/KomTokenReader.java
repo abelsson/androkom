@@ -16,12 +16,13 @@ class KomTokenReader {
     final static int DEBUG = 0;
 
     private InputStream input;
+    private Session session;
 
     boolean lastByteWasEol = false;
 
     KomToken lastToken = null;
 
-    public KomTokenReader(InputStream i) {
+    public KomTokenReader(InputStream i, Session session) {
 	input = i;
     }
 
@@ -89,7 +90,7 @@ class KomTokenReader {
 
     public KomToken readToken()
     throws IOException, ProtocolException {
-	StringBuffer buff = new StringBuffer();
+	ByteArrayOutputStream os = new ByteArrayOutputStream(32);
 	boolean readMore = true;
 	int arrlen = -1;
 	byte b = 0;
@@ -113,7 +114,7 @@ class KomTokenReader {
 		if (lastB == b)
 		    break;
 
-		return lastToken = new KomToken(buff.toString().getBytes());
+		return lastToken = new KomToken(os.toByteArray());
 	    case '*':
 		arrlen = (lastToken != null ? lastToken.toInteger() : -1);
 		return (KomToken) new KomTokenArray(arrlen);
@@ -122,10 +123,10 @@ class KomTokenReader {
 		return lastToken = (KomToken) readArray();
 	    case 'H':
 		try {
-		    arrlen = Integer.parseInt(buff.toString());
+		    arrlen = Integer.parseInt(session.toString(os.toByteArray()));
 		} catch (NumberFormatException x) {
 		    throw(new KomProtocolException("Bad hollerith \""+
-						   buff.toString() + "\"?"));
+						   new String(os.toByteArray()) + "\"?"));
 		}
 		byte[] hstring = new byte[arrlen];
 		read(input, hstring);
@@ -138,9 +139,9 @@ class KomTokenReader {
 		} else {
 		    lastByteWasEol = false;
 		}
-		return lastToken = (KomToken) new Hollerith(hstring);
+		return lastToken = (KomToken) new Hollerith(hstring, session.getServerEncoding());
 	    default:
-		buff.append((char) b);
+		os.write(b);
 	    }
 	}
     }

@@ -17,15 +17,17 @@ class Connection {
     private Socket sock;
     private InputStream input;
     private OutputStream output;
+    private Session session;
     String server;
     int port;
 
     Thread queuedWriter = null;
 
-    public Connection(String server, int port)
+    public Connection(Session session)
     throws IOException, UnknownHostException {
-	this.server = server;
-	this.port = port;
+	this.session = session;
+	this.server = session.getServer();
+	this.port = session.getPort();
 
 	sock = new Socket(server, port);
 	input = sock.getInputStream();
@@ -90,7 +92,7 @@ class Connection {
     public void queuedWrite(String s) {
 	synchronized (writeQueue) {
 	    try {
-		writeQueue.addLast(s.getBytes(Session.serverEncoding));
+		writeQueue.addLast(s.getBytes(session.serverEncoding));
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
 	    }
@@ -128,7 +130,7 @@ class Connection {
     throws IOException {
 	synchronized (output) {
 	    try {
-		output.write(s.getBytes(Session.serverEncoding));
+		output.write(s.getBytes(session.serverEncoding));
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
 	    }
@@ -136,29 +138,29 @@ class Connection {
 	}
     }
 
-    /* appending to a StringBuffer doesnt feel very efficient.
-     * Maybe we should use an array buffer instead (which also makes
-     * it easier to take character encoding into account when converting
-     * to string?).
+    /*
+     * Reads until "\n" is encountered.
      */
 
     public String readLine(String s) 
     throws IOException {
-	StringBuffer buff = new StringBuffer();
+	ByteArrayOutputStream os = new ByteArrayOutputStream(80);
 	byte b = (byte) input.read();
 	while (b != -1 && b != '\n') {	    
-	    buff.append((char) b);
+	    os.write(b);
 	    b = (byte) input.read();
 	}
 
 	switch (b) {
 	case -1:
 	    Debug.println("Connection.readLine(): EOF from stream");
+	    break;
 	case 0:
 	    Debug.println("Connection.readLine(): \\0 from stream");
+	    break;
 	}
 	
-	return buff.toString();
+	return new String(os.toByteArray(), session.serverEncoding);
     }
 
 	

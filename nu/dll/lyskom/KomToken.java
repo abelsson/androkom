@@ -81,12 +81,13 @@ public class KomToken implements Serializable {
     }
 
     /**
-     * Converts the supplied string into bytes according to iso-8859-1,
-     * using the result as the contents for this KomToken
+     * Converts the supplied string into bytes according to 
+     * the default encoding, using the result as the contents
+     * for this KomToken
      */
     public KomToken(String s) {
 	try {
-	    contents = s.getBytes(Session.serverEncoding);
+	    contents = s.getBytes(Session.defaultServerEncoding);
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported encoding: " + ex1.getMessage());
 	}
