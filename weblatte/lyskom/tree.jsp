@@ -271,7 +271,7 @@
 	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
         String treeId = Integer.toHexString(rnd.nextInt());
 	session.setAttribute("weblatte.tree." + treeId, textsToView);
-	String link = "?popupComment&hw&hs&treeId=" + treeId;
+	String link = basePath + "?popupComment&hw&hs&treeId=" + treeId;
 	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
