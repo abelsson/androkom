@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.33 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.34 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -367,7 +367,9 @@
     if (parameter(parameters, "mark") != null) {
 	lyskom.markText(Integer.parseInt(parameter(parameters, "mark")), commonPreferences.getInt("default-mark"));
 	out.println("<p class=\"statusSuccess\">Text " +
-		parameter(parameters, "mark") + " har markerats.</p>");
+		textLink(request, lyskom,
+		Integer.parseInt(parameter(parameters, "mark")))
+		+ " har markerats.</p>");
     }
     if (parameter(parameters, "unmark") != null) {
 	lyskom.unmarkText(Integer.parseInt(parameter(parameters, "unmark")));
@@ -570,7 +572,11 @@
 		} else if (m.getNumber() == Asynch.new_text ||
 		    m.getNumber() == Asynch.new_text_old ||
 		    m.getNumber() == Asynch.new_recipient) {
-		    lyskom.updateUnreads();
+	            if (!preferences.getBoolean("many-memberships")) {
+	                lyskom.updateUnreads();
+	            } else {
+			lyskom.getUnreadConfsList(me);
+	  	    }
 		    i.remove();
 		} else {
 		    i.remove();
@@ -1183,9 +1189,29 @@
 <%	
 		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
 		int sum = 0, confsum = 0;
+		int lastconf = 0;
+		int skipTo = 0;
+		int skipped = 0;
+		if (parameters.containsKey("skipTo")) {
+		    skipTo = Integer.parseInt(parameter(parameters, "skipTo"));
+		    Debug.println("skipTo == " + skipTo);
+		}
 		boolean abort = false;
 		while (confIter.hasNext() && !abort) {
 		    int conf = ((Integer) confIter.next()).intValue();
+		    if (skipTo > 0 && skipTo != conf) {
+			skipped++;
+			Debug.println("skipping " + conf);
+			continue;
+		    } else if (skipTo == conf) {
+			skipped++;
+			Debug.println("skipping " + conf + " (==skipTo)");
+			skipTo = 0;
+			continue;
+		    }
+
+
+		    lastconf = conf;
 		    Membership membership = !manyMemberships ?
 			lyskom.queryReadTextsCached(conf) :
 			lyskom.queryReadTexts(me, conf);
@@ -1214,10 +1240,13 @@
 
 	</ul>
 <%
+		    if (skipped > 0) {
+		        out.println("<p>Hoppade över " + skipped + " möten.</p>");
+		    }
 		if (manyMemberships && confIter.hasNext()) {
 %>
-		<p>(Många möten: det finns troligen fler olästa i möten
-		   som inte visas i denna lista.)</p>
+		<p>Många möten: det finns troligen fler olästa i möten
+		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">se efter</a>).</p>
 <%
 		}
 %>
@@ -1448,7 +1477,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.33 $
+$Revision: 1.34 $
 </p>
 </body>
 </html>
