@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.65 2004/05/26 15:19:56 pajp Exp $
+ * @version $Id: Session.java,v 1.66 2004/05/28 01:09:11 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1013,6 +1013,20 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	info.put("aux-item-list", auxItems);
 
 	return serverInfo = Collections.unmodifiableMap(info);
+    }
+
+    public List getAllowedContentTypes()
+    throws IOException, RpcFailure {
+	List auxItems = (List) getInfo().get("aux-item-list");
+	List allowedContentTypes = new LinkedList();
+	for (Iterator i = auxItems.iterator(); i.hasNext();) {
+	    AuxItem item = (AuxItem) i.next();
+	    if (item.getTag() == AuxItem.tagAllowedContentType) {
+		String data = item.getDataString();
+		allowedContentTypes.add(data.substring(data.indexOf(" ")+1));
+	    }
+	}
+	return allowedContentTypes;
     }
     
     public RpcCall doGetInfo()

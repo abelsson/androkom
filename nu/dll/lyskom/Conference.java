@@ -5,6 +5,14 @@
  */
 package nu.dll.lyskom;
 
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.StringTokenizer;
+
+import javax.mail.internet.ContentType;
+
+
 /**
  * Represents the LysKOM data type Conf-Stat, containing all information about a conference.
  *
@@ -75,6 +83,41 @@ public class Conference {
     public AuxItem[] getAuxItems() {
 	return auxItems;
     }
+
+    public boolean allowsMimeType(List serverAllowList, String type) {
+	ContentType ctype;
+	try {
+	    ctype = new ContentType(type);
+	} catch (javax.mail.internet.ParseException ex1) {
+	    throw new IllegalArgumentException("Invalid content-type: " + ex1.toString());
+	}
+	List allowed = getAllowedContentTypes();
+	if (allowed.size() == 0) {
+	    if (serverAllowList == null || serverAllowList.size() == 0) {
+		allowed.add("text/plain");
+	    }
+	}
+	boolean accepts = false;
+	for (Iterator i = allowed.iterator(); !accepts && i.hasNext();) {
+	    String ct = (String) i.next();
+	    Debug.println("Conference.allowsMimeType(" + type + "): testing against " + ct);
+	    accepts = accepts || ct.equals("*/*") || ctype.match(ct);
+	}
+	return accepts;
+    }
+
+    public List getAllowedContentTypes() {
+	List allowed = new LinkedList();
+	AuxItem[] auxItems = getAuxItems();
+	for (int i=0; i < auxItems.length; i++) {
+	    if (auxItems[i].getTag() == AuxItem.tagAllowedContentType) {
+		String data = auxItems[i].getDataString();
+		allowed.add(data.substring(data.indexOf(" ")+1));
+	    }
+	}
+	return allowed;
+    }
+
 
     /**
      * Returns the number of the text containing this conference's presentation (or zero if there is none).

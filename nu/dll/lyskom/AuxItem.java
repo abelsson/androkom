@@ -6,6 +6,8 @@
 
 package nu.dll.lyskom;
 
+import javax.mail.internet.ContentType;
+
 
 /**
  * Aux-Item, a LysKOM data type introduced in version 10.
@@ -40,6 +42,8 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
     public final static int tagMxMessageId      = 22;
     public final static int tagMxInReplyTo      = 23;
     public final static int tagMxMisc           = 24;
+
+    public final static int tagAllowedContentType = 30;
 
     public final static int tagMxMimePartIn = 10101;
     
