@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.23 2002/04/10 15:25:08 pajp Exp $
+ * @version $Id: Session.java,v 1.24 2002/04/15 18:37:24 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -444,9 +444,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		// ok, this textmapping may contain text numbers that
 		// we've already read, lets purge.
 		for (int j=0; j < m.readTexts.length; j++) {
+		    int global = tm.localToGlobal(m.readTexts[j]);
 		    if (tm.removePair(m.readTexts[j])) {
 			Debug.println("Removed already read text " + m.readTexts[j]);
-			markAsRead(m.readTexts[j]);
+			markAsRead(global);
 		    }
 		}
 		unreadTexts.add(tm);
@@ -465,7 +466,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     // send them in batches to the server with mark-as-read.
     public void markAsRead(int textNo) throws IOException, RpcFailure {
 	TextStat stat = getTextStat(textNo, true);
-	Debug.println("markAsRead: " + textNo);
+	Debug.println("markAsRead(" + textNo + "): text-stat is " + stat);
 	List recipientSelections = new LinkedList();
 	List recipientNumbers = new LinkedList();
 	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
