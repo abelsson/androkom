@@ -1254,11 +1254,18 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     String textDescription(int textNo)
     throws IOException {
-	TextStat stat = foo.getTextStat(textNo);
-	if (stat == null) {
-	    return "text " + textNo + " (osynlig)";
-	} else {
-	    return "text " + textNo + " av " + confNoToName(stat.getAuthor());
+	try {
+	    TextStat stat = foo.getTextStat(textNo);
+	    if (stat == null) {
+		return "text " + textNo + " (osynlig)";
+	    } else {
+		return "text " + textNo + " av " + confNoToName(stat.getAuthor());
+	    }
+	} catch (RpcFailure ex1) {
+	    if (ex1.getError() == Rpc.E_no_such_text)
+		return "text " + textNo;
+
+	    return "text " + textNo + " (fel " + ex1.getError() + ")";
 	}
     }
 

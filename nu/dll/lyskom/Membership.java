@@ -35,9 +35,6 @@ public class Membership {
     }
 
     Membership(int offset, KomToken[] tk) {
-	//	for (int i=0; i < tk.length; i++) {
-	//	    Debug.println("Membership KomToken[" + i + "]: " + tk[i]);
-	//	}
 	this.position = tk[offset++].toInteger();
 	this.lastTimeRead = KomTime.createFrom(offset, tk);
 	offset += KomTime.ITEM_SIZE;
@@ -175,7 +172,7 @@ public class Membership {
 	KomToken[] parameters = reply.getParameters();
 	int pcount = 0;
 	int length = parameters[pcount++].toInteger();
-	Debug.println("Reported Membership-List ARRAY length: " + length);
+	dprintln("Reported Membership-List ARRAY length: " + length);
 	KomToken[] memberships = ((KomTokenArray) parameters[pcount++]).getTokens();
 	
 	/*
@@ -184,24 +181,24 @@ public class Membership {
 	*/
 	Membership[] ml = new Membership[memberships.length];
 
-	Debug.println("Membership-List length: "+length+", array length: "+ml.length);
-	Debug.println("From reply: " + reply);
+	dprintln("Membership-List length: "+length+", array length: "+ml.length);
+	dprintln("From reply: " + reply);
 	int i=0, membershipCount = 0;
 	while (i < memberships.length) {
 
 	    int position = memberships[i++].toInteger();
-	    Debug.println("Membership position: " + position);
+	    dprintln("Membership position: " + position);
 	    KomTime lastTimeRead = KomTime.createFrom(i, memberships);
 	    i +=  KomTime.ITEM_SIZE;
-	    Debug.println("Membership last-time-read: " + lastTimeRead.getTime().toString());
+	    dprintln("Membership last-time-read: " + lastTimeRead.getTime().toString());
 	    int conf = memberships[i++].toInteger();
-	    Debug.println("Membership conf-no: " + conf);
+	    dprintln("Membership conf-no: " + conf);
 	    int prio = memberships[i++].toInteger();
-	    Debug.println("Membership prio: " + prio);
+	    dprintln("Membership prio: " + prio);
 	    int lastTextRead = memberships[i++].toInteger(); // !! last -> lastTextRead
-	    Debug.println("Membership last-text-read: " + lastTextRead);
+	    dprintln("Membership last-text-read: " + lastTextRead);
 	    int readTextsLength = memberships[i++].toInteger();
-	    Debug.println("Membership read-texts ARRAY length: " + readTextsLength);
+	    dprintln("Membership read-texts ARRAY length: " + readTextsLength);
 	    KomToken[] readTextsTokens = new KomToken[readTextsLength];
 	    int[] readTexts = new int[readTextsLength];
 
@@ -209,15 +206,15 @@ public class Membership {
 		i += 2; // skip
 	    } else {
 		//i += 1;
-		Debug.println("Membership read-texts exp ARRAY got " + memberships[i].getClass().getName());
+		dprintln("Membership read-texts exp ARRAY got " + memberships[i].getClass().getName());
 		readTextsTokens = ((KomTokenArray) memberships[i]).getTokens();
 		readTexts = new int[readTextsTokens.length];
 		if (readTextsTokens.length == 0) {
-		    Debug.println("Membership read-texts array is actually empty");
+		    dprintln("Membership read-texts array is actually empty");
 		    i += 2;
 		} else {
 		    for (int k=0;k<readTextsTokens.length;k++) {
-			Debug.println("Membership read-texts ARRAY index " + k + ": " + readTextsTokens[k].intValue());
+			dprintln("Membership read-texts ARRAY index " + k + ": " + readTextsTokens[k].intValue());
 			readTexts[k] = readTextsTokens[k].intValue();
 		    }
 		    i += 1;
@@ -226,21 +223,21 @@ public class Membership {
 	    
 
 	    int addedBy = memberships[i++].toInteger(); // not used
-	    Debug.println("Membership added-by: " + new String(memberships[i].getContents()));
+	    dprintln("Membership added-by: " + new String(memberships[i].getContents()));
 	    KomTime addedAt = KomTime.createFrom(i, memberships); // not used
 	    i += KomTime.ITEM_SIZE;
-	    Debug.println("Membership added-at: " + addedAt.getTime().toString());
+	    dprintln("Membership added-at: " + addedAt.getTime().toString());
 	    Bitstring type = new Bitstring();
 	    type = Bitstring.createFrom(i++, memberships); // not used
-	    Debug.println("Membership type: " + new String(type.getContents()));
+	    dprintln("Membership type: " + new String(type.getContents()));
 
 	    ml[membershipCount++] = new Membership(lastTimeRead, conf, prio, lastTextRead,
 				     readTexts);
-	    Debug.println("done, parsed membership of conf " + conf + ", " + i + " elements");
+	    dprintln("done, parsed membership of conf " + conf + ", " + i + " elements");
 	    //for (int k=0;k<memberships[i].length;k++) {
 	    //Debug.print("["+k+"="+memberships[i][k]+"]");
 	    //}
-	    //Debug.println("...");
+	    //dprintln("...");
 	    
 	}
 	return ml;
@@ -249,7 +246,7 @@ public class Membership {
 
     // reads 14 elements? **BROKEN!**
     static Membership createFrom(int offset, KomToken[] tokens) {
-	if (DEBUG>0) Debug.println("-->Membership.createFrom("+offset+", KomToken["+tokens.length+"])");
+	if (DEBUG>0) dprintln("-->Membership.createFrom("+offset+", KomToken["+tokens.length+"])");
 	Membership m = new Membership();
 	m.lastTimeRead = KomTime.createFrom(offset, tokens);
 	offset = offset + 9;
@@ -259,10 +256,10 @@ public class Membership {
 	
 	/*
 	int len = tokens[offset++].toInteger();
-	if (DEBUG>0) Debug.println("Membership->read-texts array len: " +
+	if (DEBUG>0) dprintln("Membership->read-texts array len: " +
 				      len);
 	if (len == -1)
-	    Debug.println("Oops? offset: "+offset+" Token: "+tokens[offset-1]);
+	    dprintln("Oops? offset: "+offset+" Token: "+tokens[offset-1]);
 	*/
 
 	KomToken[] rtexts = ((KomTokenArray) tokens[offset++]).getTokens();
@@ -270,6 +267,10 @@ public class Membership {
 	for(int i=offset;i<rtexts.length;i++)
 	    m.readTexts[i] = rtexts[i].toInteger();
 	return m;
+    }
+
+    private static void dprintln(String s) {
+	if (false) Debug.println(s);
     }
 
 }

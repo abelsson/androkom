@@ -18,7 +18,7 @@ public class Debug {
 
     static {
         try {
-            ENABLED = Boolean.getBoolean("lattekom.debug");
+            ENABLED = Boolean.getBoolean(getPropertyKey());
         } catch (SecurityException ex1) {
             
         } catch (NullPointerException ex2) {
@@ -28,7 +28,6 @@ public class Debug {
         }        
         
     }
-
     
     /**
      * Prints a message to stderr if <tt>ENABLED</tt> is <tt>true</tt>,
@@ -43,6 +42,10 @@ public class Debug {
      */
     public static void print(String msg) {
 	if (ENABLED) System.err.print(msg);
+    }
+
+    public static String getPropertyKey() {
+	return "lattekom.debug";
     }
 }
 

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.25 2002/04/24 08:14:53 pajp Exp $
+ * @version $Id: Session.java,v 1.26 2002/05/06 16:20:24 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -856,6 +856,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	writeRpcCall(textReq);
 
 	RpcReply reply = waitFor(textReq.getId());
+	if (!reply.getSuccess()) throw reply.getException();
+
 	text.setContents(reply.getParameters()[0].getContents());
 	textCache.add(text);
 	textStatCache.add(text.getStat());
@@ -1765,15 +1767,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    return text.getStat();
 
 	RpcReply reply = waitFor(doGetTextStat(textNo).getId());
-	if (reply.getSuccess()) {
-	    ts = TextStat.createFrom(textNo, reply);
-	    textStatCache.add(ts);
-	    return ts;
-	} else {
-	    int error = reply.getException().getError();
-	    if (error == Rpc.E_no_such_text) return null;
-	    throw reply.getException();
-	}
+	if (!reply.getSuccess()) throw (RpcFailure) reply.getException().fillInStackTrace();
+
+	ts = TextStat.createFrom(textNo, reply);
+	textStatCache.add(ts);
+	return ts;
+
 
     }
 
