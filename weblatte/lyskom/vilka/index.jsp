@@ -22,13 +22,19 @@
 <link rel="stylesheet" href="<%= basePath %>/lattekom.css" />
 <body>
 <h2>vilka är inloggade i <%= serverShort(lyskom) %>?</h2>
-<script language="JavaScript1.2" src="<%= basePath %>stuff.js"></script>
+<script language="JavaScript1.2" src="<%= basePath %>stuff.jsp"></script>
 <%@ include file='../dhtmlMenu.jsp' %>
 <%
     out.flush();
     DynamicSessionInfo[] who = lyskom.whoIsOnDynamic(request.getParameter("noVisible") == null,
 						     request.getParameter("wantInvisible") != null,
 						     activeLast);
+    Arrays.sort(who, new Comparator() {
+	    public int compare(Object o1, Object o2) {
+		return ((DynamicSessionInfo) o1).getIdleTime() -
+		       ((DynamicSessionInfo) o2).getIdleTime();
+	    }
+	});
 %>
 <p class="StatusSuccess">Listar <%= who.length %> sessioner:</p>
 <table>
@@ -108,7 +114,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.8 2004/04/26 00:20:19 pajp Exp $
+$Id: index.jsp,v 1.9 2004/05/09 02:17:44 pajp Exp $
 </p>
 </body>
 </html>
