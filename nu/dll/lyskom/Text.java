@@ -88,6 +88,7 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Creates a new text with the supplied contents
      */
     public Text(byte[] contents) {
+	stat = new TextStat();
 	setContents(contents);
     }
 

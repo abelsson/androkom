@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.29 2004/02/29 04:45:05 pajp Exp $
+ * @version $Id: Session.java,v 1.30 2004/03/23 11:44:39 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -203,6 +203,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     KomTokenArray[] emptyKomTokens = { };
 
     String clientHost = null;
+    String clientUser = System.getProperty("user.name", "");
 
     String latteVersion = "$Version$";
     String latteName = "LatteKOM";
@@ -236,6 +237,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void setClientHost(String s) {
 	clientHost = s;
+    }
+
+    /**
+     * Sets the client user name that is reportedduring the intial handshake.
+     * Must be called before connect().
+     */
+    public void setClientUser(String s) {
+	clientUser = s;
     }
     
 
@@ -318,7 +327,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	reader = new KomTokenReader(connection.getInputStream());
 
 	connection.write('A'); // protocol A
-	connection.writeLine(new Hollerith(System.getProperty("user.name", "") +
+	connection.writeLine(new Hollerith(clientUser +
 					   (clientHost != null ? "%" + clientHost : "")).toNetwork());
 
 	 // "LysKOM\n"
@@ -359,6 +368,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	listener.addAsynchMessageReceiver(a);
     }
 
+    /**
+     * Removes an AsyncMessageReceiver.
+     *
+     * @see nu.dll.lyskom.Session#addAsynchMessageReceiver(AsynchMessageReceiver)
+     */
+    public void removeAsynchMessageReceiver(AsynchMessageReceiver a) {
+	listener.removeAsynchMessageReceiver(a);
+    }
 
     /**
      * Return true if connected to a LysKOM server.
@@ -2215,12 +2232,27 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public boolean sendMessage(int recipient, String message)
     throws IOException, RpcFailure {
+	return sendMessage(recipient, message, true);
+    }
+
+    /**
+     * Sends an asynchronous message with the <tt>send-message</tt> call.
+     *
+     * @param recipient The recipient conference, or <tt>0</tt> if it is a broadcast message
+     * @param message The message to be sent to the server
+     * @param block If true, wait until the server has replied to the RPC call
+     */
+    public boolean sendMessage(int recipient, String message, boolean block)
+    throws IOException, RpcFailure {
 	RpcCall msgCall = new RpcCall(count(), Rpc.C_send_message).
 	    add(new KomToken(recipient)).add(new Hollerith(message));
 
 	writeRpcCall(msgCall);
-	RpcReply reply = waitFor(msgCall.getId());
-	if (!reply.getSuccess()) throw reply.getException();
+	if (block) {
+	    RpcReply reply = waitFor(msgCall.getId());
+	    if (!reply.getSuccess()) throw reply.getException();
+	    return true;
+	}
 	return true;
     }
 
