@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.47 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.48 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1236,7 +1236,7 @@
 	    out.print("</td><td>");
 	    out.print(lookupName(lyskom, text.getAuthor(), true));
 	    out.print("</td><td>");
-	    out.print(new String(text.getSubject(), charset));
+	    out.print(htmlize(new String(text.getSubject(), charset)));
 	    out.print("</td><td>");
 	    out.print(""+ text.getStat().getSize());
 	    out.println("</td></tr>");
@@ -1604,7 +1604,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.47 $
+$Revision: 1.48 $
 </p>
 </body>
 </html>
