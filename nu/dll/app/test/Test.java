@@ -1,5 +1,5 @@
 // -*- Mode: Java; c-basic-offset: 4 -*-
-package nu.dll.test;
+package nu.dll.app.test;
 
 import java.io.IOException;
 import java.net.ProtocolException;
@@ -101,7 +101,7 @@ public class Test implements AsynchMessageReceiver {
 			    txt = rc = 0;
 			}
 			if (txt == -1) {
-			    int newConf = foo.nextUnreadConference();
+			    int newConf = foo.nextUnreadConference(true);
 			    if (newConf == -1) {
 				System.out.println("Inga olästa.");
 				crtReadLine("(inget)> ");
@@ -194,7 +194,7 @@ public class Test implements AsynchMessageReceiver {
 
 	}
 	if (cmd.equals("nm")) {
-	    System.out.println("nästa möte - " + confNoToName(foo.nextUnreadConference()));
+	    System.out.println("nästa möte - " + confNoToName(foo.nextUnreadConference(true)));
 	    return -2;
 	}
 	throw(new CmdErrException("Förstod inte \"" + cmd + "\""));
