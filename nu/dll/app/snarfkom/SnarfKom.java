@@ -53,12 +53,9 @@ public class SnarfKom {
 	System.exit(0);
     }
 
-    public void getUnreads() {
+    public void getUnreads() throws IOException {
 	unreadConfs = session.getUnreadConfs(myNo);
 	
-    }
-
-    public int nextUnreadRead() {
     }
 
     public static String readln() {
