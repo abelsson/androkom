@@ -74,6 +74,8 @@ public class KomToken implements Serializable {
     }
 
     public byte[] toNetwork() {
+
+	// uuh.. but this can't happen...?
 	if (this instanceof Hollerith)
 	    return ((Hollerith) this).toNetwork();
 
@@ -95,3 +97,6 @@ public class KomToken implements Serializable {
 	return type;
     }
 }
+
+
+

@@ -11,7 +11,6 @@ import java.io.*;
 
 
 public class Connection {
-    private final static int DEBUG = 1;
 
     private Socket sock;
     private InputStream input;
@@ -68,6 +67,12 @@ public class Connection {
 	output.write('\n');
     }
 
+    /* appending to a StringBuffer doesnt feel very efficient.
+     * Maybe we should use an array buffer instead (which also makes
+     * it easier to take character encoding into account when converting
+     * to string?).
+     */
+
     public String readLine(String s) 
     throws IOException {
 	StringBuffer buff = new StringBuffer();
@@ -76,14 +81,14 @@ public class Connection {
 	    buff.append((char) b);
 	    b = (byte) input.read();
 	}
-	if (DEBUG > 0) {
-	    switch (b) {
-	    case -1:
-		Debug.println("Connection.readLine(): EOF from stream");
-	    case 0:
-		Debug.println("Connection.readLine(): \\0 from stream");
-	    }
+
+	switch (b) {
+	case -1:
+	    Debug.println("Connection.readLine(): EOF from stream");
+	case 0:
+	    Debug.println("Connection.readLine(): \\0 from stream");
 	}
+	
 	return buff.toString();
     }
 

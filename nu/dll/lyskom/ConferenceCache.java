@@ -54,6 +54,24 @@ public class ConferenceCache {
 	}
     }
 
+    public void removeConference(int no) {
+	Object o = confHash.remove(new Integer(no));
+	if (o != null) {
+	    Enumeration e = listeners.elements();
+	    while (e.hasMoreElements())
+		((CacheListener) e.nextElement()).itemRemoved(o);
+	}
+    }
+
+    public void removeUConference(int no) {
+	Object o = uConfHash.remove(new Integer(no));
+	if (o != null) {
+	    Enumeration e = listeners.elements();
+	    while (e.hasMoreElements())
+		((CacheListener) e.nextElement()).itemRemoved(o);
+	}
+    }
+
     public void add(Conference t) {
 	_add((Object) t);
     }

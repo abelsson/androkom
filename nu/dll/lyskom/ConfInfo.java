@@ -31,7 +31,11 @@ public class ConfInfo {
      *
      */
     public String getNameString() {
-	return new String(confName);
+	try {
+	    return new String(confName, "ISO-8859-1");
+	} catch (java.io.UnsupportedEncodingException e) {
+	    throw new RuntimeException("ConfInfo.getNameString(): Unsupported encoding: " + e.getMessage());
+	}
     }
 
     public String toString() {
