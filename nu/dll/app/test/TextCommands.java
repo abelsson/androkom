@@ -169,8 +169,6 @@ public class TextCommands extends AbstractCommand {
 	    InputStream is = hs.getStream();
 	    int blockSize = 512;
 	    byte[] buffer = new byte[blockSize];
-	    int blocks = hs.getSize()/blockSize;
-	    int rest = hs.getSize() - blocks*blockSize;
 	    int bytesRead = 0;
 	    while (bytesRead < hs.getSize()) {
 		int bytesToRead = blockSize;
