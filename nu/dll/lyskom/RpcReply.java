@@ -37,7 +37,7 @@ public class RpcReply {
      * @see nu.dll.lyskom.RpcFailure
      */ 
     public RpcFailure getException() {
-	return exception;
+	return (RpcFailure) exception.fillInStackTrace();
     }
 
     /**

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.34 2004/04/02 05:41:00 pajp Exp $
+ * @version $Id: Session.java,v 1.35 2004/04/02 06:21:28 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -147,7 +147,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     int loginRpcId;
     boolean loggedIn = false;
-    
+    String server = null;
+    int port = 4894;
+
     int rpcCount = 0;
     int lastRpcCall = 0;
 
@@ -350,7 +352,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException, ProtocolException {
 	connection = new Connection(server, port);
 	reader = new KomTokenReader(connection.getInputStream());
-
+	this.server = server;
+	this.port = port;
 	connection.write('A'); // protocol A
 	connection.writeLine(new Hollerith(clientUser +
 					   (clientHost != null ? "%" + clientHost : "")).toNetwork());
@@ -369,6 +372,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return connected = true;
     }
 
+    public String getServer() {
+	return server;
+    }
+
+    public int getPort() {
+	return port;
+    }
+
     /**
      * Connect to specified server on the default port (4894) and do initial handshake
      *
@@ -378,7 +389,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public boolean connect(String server) 
     throws IOException, ProtocolException {
-	return connect(server, 4894);
+	return connect(server, port);
     }
 
     /**
@@ -478,6 +489,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public Person getMyPerson() {
 	return myPerson;
+    }
+
+    /**
+     * Testing, testning.
+     */
+    public List getUnreadConfsListCached() {
+	return unreads;
+    }
+
+    public Membership queryReadTextsCached(int confNo) {
+	return membershipCache.get(confNo);
     }
 
     /**
@@ -1853,7 +1875,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	RpcReply reply = waitFor(doGetTextStat(textNo).getId());
 
-	if (!reply.getSuccess()) throw (RpcFailure) reply.getException().fillInStackTrace();
+	if (!reply.getSuccess()) throw reply.getException();
 
 	ts = TextStat.createFrom(textNo, reply);
 	textStatCache.add(ts);
@@ -2124,9 +2146,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * @param s A String telling the server what you are doing
      */
+    String whatIAmDoing = null;
     public void changeWhatIAmDoing(String s) throws IOException {
+	if (s.equals(whatIAmDoing)) return;
+
 	RpcReply reply = waitFor(doChangeWhatIAmDoing(s));
 	if (!reply.getSuccess()) throw reply.getException();
+	whatIAmDoing = s;
     }
 
 
