@@ -3,6 +3,8 @@ package nu.dll.app.test;
 import nu.dll.lyskom.Session;
 import nu.dll.lyskom.CmdErrException;
 import java.io.IOException;
+import java.util.StringTokenizer;
+import java.util.NoSuchElementException;
 
 abstract class AbstractCommand implements Command {
 
@@ -35,9 +37,39 @@ abstract class AbstractCommand implements Command {
     public String getCommandDescription(int i) {
 	return getCommandDescriptions()[i];
     }
+    public String getCommandDescription(String command) {
+	for (int i=0; i < commands.length; i++) {
+	    if (command.equals(commands[i])) return getCommandDescription(i);
+	}
+	return null;
+    }
 
     public abstract String[] getCommandDescriptions();    
     public String getDescription() {
 	return toString();
     }
+
+    //"g latte"
+    public String getParameters(Match command, String userInput) {
+	int i=0;
+	StringTokenizer tok = new StringTokenizer(command.command);
+	StringTokenizer uTok = new StringTokenizer(userInput);
+	Debug.println("getParameters(): match: " + command.toString());
+	try {
+	    while (i < command.paramOffset && tok.hasMoreTokens()) {
+		tok.nextToken();
+		uTok.nextToken();
+		i++;
+	    }
+	    String result = uTok.nextToken("").substring(1).trim();
+	    if (result.equals("")) return null;
+	    Debug.println("getParameters(): returning parameters: " + result);
+	    return result;
+	} catch (NoSuchElementException ex1) {
+	    Debug.println("getParameters(): returning null");
+	    return null;
+	}
+    }
+
+
 }

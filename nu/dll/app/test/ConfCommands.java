@@ -8,8 +8,10 @@ import java.text.MessageFormat;
 import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
-    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm", "um",
-                            "lä", "smr"};
+    String[] myCommands = { "återse presentation", "}terse presentation", "ändra presentation",
+			    "återse FAQ", "}terse FAQ", "ändra FAQ", "gå möte", "lista nyheter",
+			    "byta namn", "nästa möte", "skapa möte", "lista möten", "utträda möte",
+                            "lista ärenden", "sök möte regexp"};
 
     // descriptions according to commandIndices
     String[] myDescriptions = {
@@ -57,14 +59,15 @@ public class ConfCommands extends AbstractCommand {
 
     public int doCommand(String s, String parameters) throws CmdErrException, IOException {
 	int confNo = 0;
-	if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 
 	switch (getCommandIndex(s)) {
 	case 0: // review presentation
+	    if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    reviewPresentation(confNo);
 	    break;
 	case 1: // change presentation
+	    if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
@@ -72,6 +75,7 @@ public class ConfCommands extends AbstractCommand {
 	    changePresentation(confNo);
 	    break;
 	case 2: // review FAQ
+	    if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
@@ -79,6 +83,7 @@ public class ConfCommands extends AbstractCommand {
 	    reviewFaq(confNo);
 	    break;
 	case 3: // change FAQ
+	    if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
@@ -87,6 +92,8 @@ public class ConfCommands extends AbstractCommand {
 	    break;
 	case 4: // change conference
 	    if (parameters == null) throw new CmdErrException("Du måste ange ett möte att gå till.");
+	    confNo = application.parseNameArgs(parameters, true, true);
+
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    changeConference(confNo);
 	    break;
@@ -94,6 +101,7 @@ public class ConfCommands extends AbstractCommand {
 	    listNews();
 	    break;
 	case 6: // change name
+	    if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
@@ -366,7 +374,11 @@ public class ConfCommands extends AbstractCommand {
 	} else {
 	    myPresentation = new Text(application.confNoToName(confNo),
 				      "");
-	    myPresentation.addRecipient(2); // pres memb
+	    if (myConf.getType().letterbox()) {
+		myPresentation.addRecipient(2); // pres memb
+	    } else {
+		myPresentation.addRecipient(1); // pres conf
+	    }
 	}
 	myPresentation = application.editText(myPresentation);
 	if (myPresentation == null) {

@@ -4,6 +4,8 @@ import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
+import java.util.Iterator;
 
 import nu.dll.lyskom.Session;
 
@@ -89,6 +91,75 @@ public class CommandMap {
     public Command getCommand(String str) {
 	return (Command) commands.get(str);
     }
+
+    // GROSS!
+    public Match[] resolveCommand(String s) {
+	List foundCommands = new LinkedList();
+	Iterator i = commandList.iterator();
+	int lastMatchCount = 0;
+	Match bestMatch = null;
+	boolean ambig = false;
+	while (i.hasNext()) {
+	    Command c = (Command) i.next();
+	    String[] commandStrings = c.getCommands();
+	    for (int j=0; j < commandStrings.length; j++) {
+		StringTokenizer uiTokenizer = new StringTokenizer(s);
+		StringTokenizer cmdTokenizer = new StringTokenizer(commandStrings[j]);
+		int commandTokens = countTokens(commandStrings[j]);
+		boolean match = false;
+		int k=0, matchCount = 0;
+		Debug.print("trying " + commandStrings[j] + ", ");
+		while (k < commandTokens && uiTokenizer.hasMoreTokens()) {
+		    k++;
+		    String uiToken = uiTokenizer.nextToken();
+		    //if (!cmdTokenizer.hasMoreTokens()) continue;
+		    String cmdToken = cmdTokenizer.nextToken();
+		    if (!cmdToken.toLowerCase().startsWith(uiToken.toLowerCase())) continue;		    
+		    match = true; matchCount++;
+		    Debug.print("(match) ");
+		}
+		if (match && matchCount <= commandTokens) {
+		    Match m = new Match(commandStrings[j], matchCount, matchCount);
+		    if (bestMatch == null) {
+			bestMatch = m;
+		    } else {
+			if (m.score > bestMatch.score) {
+			    bestMatch = m;
+			    ambig = false;
+			} else if (m.score == bestMatch.score) {
+			    ambig = true;
+			}
+		    }
+		    Debug.println(s + " matches " + commandStrings[j]);
+		    foundCommands.add(m);
+		} 
+	    }
+	}
+	if (!ambig && bestMatch != null) {
+	    foundCommands.clear();
+	    foundCommands.add(bestMatch);
+	}
+
+	Match[] result = new Match[foundCommands.size()];
+	i = foundCommands.iterator();
+	int j=0;
+	while (i.hasNext()) {
+	    result[j++] = (Match) i.next();
+	}
+	return result;
+	
+    }
+
+    int countTokens(String command) {
+	int i=0;
+	StringTokenizer tok = new StringTokenizer(command);
+	while (tok.hasMoreTokens()) {
+	    tok.nextToken();
+	    i++;
+	}
+	return i;
+    }
+
 
 }
 

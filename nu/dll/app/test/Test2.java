@@ -788,6 +788,21 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	Text t = getLastText();
 	if (s == null) return -1;
 	if (s.equals("")) return 0;
+	Match[] lookedUp = commands.resolveCommand(s);
+	if (lookedUp.length > 1) {
+	    consoleWriteLn("Följande kommandon matchar:");
+	    for (int i=0; i < lookedUp.length; i++) {
+		consoleWriteLn("\t" + lookedUp[i].command);
+	    }
+	    throw new CmdErrException("Flertydigt kommando.");
+	} else if (lookedUp.length == 1) {
+	    Command command = commands.getCommand(lookedUp[0].command);
+	    consoleWriteLn(lookedUp[0].command + " - " + command.getCommandDescription(lookedUp[0].command));
+	    String cmd = lookedUp[0].command;
+	    String parameters = command.getParameters(lookedUp[0], s);
+	    return command.doCommand(cmd, parameters);
+
+	} 
 	StringTokenizer st = new StringTokenizer(s);
 	String cmd = st.nextToken();
 	Command command = commands.getCommand(cmd);
@@ -815,14 +830,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    prevCommand = description;                     // commands with many names 
 		                                                   // (this assumes they are 
 		                                                   // all after each other)
-		    consoleWriteLn("\t" + pad(commandNames[j], 10) + " -- " +
+		    consoleWriteLn("\t" + pad(commandNames[j], 30) + " -- " +
 				   description);
 		}
 	    }
 	    consoleWriteLn("-- övriga kommandon");
-	    consoleWriteLn("\tln                -- lista nyheter");
 	    consoleWriteLn("\tq                 -- avsluta TestKOM");
-	    consoleWriteLn("\trt <text>         -- radera text");
 	    consoleWriteLn("\ts [mötesnamn]     -- skicka meddelande");
 	    consoleWriteLn("\tss <sessionsnr.>  -- visa sessions- och klientinformation");
 	    consoleWriteLn("\tuo                -- uppdatera olästa (typ omstart)");

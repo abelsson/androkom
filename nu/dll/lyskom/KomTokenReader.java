@@ -91,7 +91,6 @@ class KomTokenReader {
 	byte b = 0;
 	byte lastB = 0;
 
-	Debug.println("Reading from input stream " + input.getClass().getName());
 	while (true) {
 	    lastB = b;
 	    b = (byte) input.read();

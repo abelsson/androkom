@@ -60,6 +60,13 @@ public class ConfType extends Bitstring {
     }
 
     /**
+     * is letterbox (person)
+     */
+    public boolean letterbox() {
+	return getBitAt(letterbox);
+    }
+
+    /**
      * Creates a ConfType based on the supplied <tt>boolean[]</tt>.
      */
     public ConfType(boolean[] bits) {

@@ -20,5 +20,7 @@ interface Command {
 
     public String getCommandDescription(int i);
     public String[] getCommandDescriptions();
+    public String getCommandDescription(String command);
     public String getDescription();
+    public String getParameters(Match command, String userInput);
 }
