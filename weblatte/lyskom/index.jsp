@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.42 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.43 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -853,6 +853,21 @@
 	
     }
 
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+%>
+<script language="JavaScript1.2">
+<%@ include file='stuff.jsp' %>
+</script>
+<%
+    } else {
+%>
+	<script language="JavaScript1.2" src="stuff.jsp"></script>
+<%
+    }
+%>
+<%@ include file='dhtmlMenu.jsp' %>
+<%
+
     boolean listNews = false;
     Person person = lyskom.getMyPerson();
     Conference letterbox = lyskom.getConfStat(person.getNo());
@@ -1338,21 +1353,8 @@
 	</form>
 <%
 	}
-	if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
-%>
-<script language="JavaScript1.2">
-<%@ include file='stuff.jsp' %>
-</script>
-<%
-	} else {
-%>
-	<script language="JavaScript1.2" src="stuff.jsp"></script>
-<%
-	}
-%>
-<%@ include file='dhtmlMenu.jsp' %>
-<%
-	    if (showStandardBoxes) {
+
+	if (showStandardBoxes) {
 %>
     <form method="get" action="<%=myURI(request)%>" class="boxed">
     Läs ett inlägg: <input type="text" size="10" name="text">
@@ -1497,7 +1499,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.42 $
+$Revision: 1.43 $
 </p>
 </body>
 </html>
