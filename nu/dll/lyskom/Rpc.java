@@ -324,6 +324,7 @@ public interface Rpc {
     public final static int C_change_what_i_am_doing = 4;
     public final static int C_delete_conf = 11;
 
+    public final static int C_sub_member = 15;
     public final static int C_set_presentation = 16;
 
     // C_get_conf_stat_old = 13

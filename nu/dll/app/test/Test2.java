@@ -23,6 +23,9 @@ import java.util.GregorianCalendar;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
+import java.awt.event.ComponentAdapter;
+import java.awt.event.ComponentListener;
+import java.awt.event.ComponentEvent;
 import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
@@ -758,7 +761,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		if (vilka[i].getWorkingConference() != 0) {
 		    consoleWrite(" i möte " + conferenceName);
 		}
-		consoleWriteLn("\n\t(" + bytesToString(vilka[i].getWhatAmIDoing()) + ")");
+		consoleWriteLn("");
+		consoleWriteLn("\t(" + bytesToString(vilka[i].getWhatAmIDoing()) + ")");
 	    }
 	    consoleWriteLn("----------------------------------------------------------------");
 	    return 1;
@@ -1086,39 +1090,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
         objStream.close();
     }
 
-    /**
-     * Marks the text as read in all recipient conferences which the
-     * user is a member of.
-     *
-     */
-    // note: a better idea is to queue the text numbers up and then
-    // send them in batches to the server with mark-as-read.
     void markAsRead(int textNo) throws IOException, RpcFailure {
-	TextStat stat = foo.getTextStat(textNo, true);
-	Debug.println("markAsRead: " + textNo);
-	List recipientSelections = new LinkedList();
-	List recipientNumbers = new LinkedList();
-	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
-	for (int i=0; i < tags.length; i++) {
-	    recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
-	}
-	
-	Iterator recipientIterator = recipientSelections.iterator();
-	while (recipientIterator.hasNext()) {	    
-	    Selection selection = (Selection) recipientIterator.next();
-	    int rcpt = 0;
-	    for (int i=0; i < tags.length; i++) {
-		if (selection.contains(tags[i])) 
-		    rcpt = selection.getIntValue(tags[i]);		    
-	    }
-	    if (rcpt > 0 && foo.isMemberOf(rcpt)) {
-		int local = selection.getIntValue(TextStat.miscLocNo);
-		Debug.println("markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-		foo.markAsRead(rcpt, new int[] { local });
-	    }
-	}
-	// add the text to the ReadTextsMap
-	foo.getReadTexts().add(textNo);
+	Debug.println("markAsRead(" + textNo + ")");
+	foo.markAsRead(textNo);
     }
 
     void displayText(Text text, boolean markAsRead) throws IOException {
@@ -1271,7 +1245,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	guiInput = new GuiInput();
 	Debug.println("Initialiserar GUI-konsoll.");
 	consoleFrame = createConsoleFrame();
-	console = new Console(80, 25);
+	console = new Console(25, 80);
 	console.setConsoleThingies("");
 	JScrollPane stdoutScroll = new JScrollPane(console,
 						   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
@@ -1285,7 +1259,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	consoleFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	console.requestFocus();
 	console.addConsoleListener(this);
-	
+	console.addComponentListener(new ComponentAdapter() {
+		public void componentResized(ComponentEvent e) {
+		    int rows = console.getRows();
+		    Debug.println("Changed console rows to " + rows);
+		    linesPerScreen = rows; // has no effect, never changes 
+		}
+	    });
 	if (!Debug.ENABLED) {
 	    System.setErr(new PrintStream(new LogOutputStream(console)));
 	}

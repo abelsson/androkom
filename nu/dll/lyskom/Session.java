@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.22 2002/04/08 15:11:17 pajp Exp $
+ * @version $Id: Session.java,v 1.23 2002/04/10 15:25:08 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -446,6 +446,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		for (int j=0; j < m.readTexts.length; j++) {
 		    if (tm.removePair(m.readTexts[j])) {
 			Debug.println("Removed already read text " + m.readTexts[j]);
+			markAsRead(m.readTexts[j]);
 		    }
 		}
 		unreadTexts.add(tm);
@@ -453,6 +454,43 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 	}
     }
+
+
+    /**
+     * Marks the text as read in all recipient conferences which the
+     * user is a member of.
+     *
+     */
+    // note: a better idea is to queue the text numbers up and then
+    // send them in batches to the server with mark-as-read.
+    public void markAsRead(int textNo) throws IOException, RpcFailure {
+	TextStat stat = getTextStat(textNo, true);
+	Debug.println("markAsRead: " + textNo);
+	List recipientSelections = new LinkedList();
+	List recipientNumbers = new LinkedList();
+	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
+	for (int i=0; i < tags.length; i++) {
+	    recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
+	}
+	
+	Iterator recipientIterator = recipientSelections.iterator();
+	while (recipientIterator.hasNext()) {	    
+	    Selection selection = (Selection) recipientIterator.next();
+	    int rcpt = 0;
+	    for (int i=0; i < tags.length; i++) {
+		if (selection.contains(tags[i])) 
+		    rcpt = selection.getIntValue(tags[i]);		    
+	    }
+	    if (rcpt > 0 && isMemberOf(rcpt)) {
+		int local = selection.getIntValue(TextStat.miscLocNo);
+		Debug.println("markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+		markAsRead(rcpt, new int[] { local });
+	    }
+	}
+	// add the text to the ReadTextsMap
+	getReadTexts().add(textNo);
+    }
+
 
     /**
      * Returns the current conference (as entered by changeConference())
@@ -1116,7 +1154,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public List getMyMembershipList()
     throws IOException {
-	return getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, new Bitstring("0"));
+	return membership = getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, new Bitstring("0"));
     }
 
     /**
@@ -1457,6 +1495,48 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    .add(confNo);
 	writeRpcCall(req);
 	return req;
+    }
+
+    /**
+     * Sends the RPC call sub-member to the server.
+     *
+     * @param confNo The conference to remove a member from
+     * @param persNo The person to be removed from a converence
+     * @return An RpcCall object representing this specific RPC call
+     */
+    public RpcCall doSubMember(int confNo, int persNo) throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_sub_member);
+	req.add(new KomToken(confNo)).add(new KomToken(persNo));
+	writeRpcCall(req);
+	return req;
+    }
+
+    /**
+     * Removes the person <tt>persNo</tt> from conference <tt>confNo</tt>.
+     * Only the supervisor of <tt>confNo</tt> or <tt>persNo</tt> can do this.
+     * Also sets the current conference to be -1 if the call succeeds.
+     *
+     * @param confNo The conference to remove a member from
+     * @param persNo The person to be removed from a converence
+     */
+    public void subMember(int confNo, int persNo) throws RpcFailure, IOException {
+	RpcReply reply = waitFor(doSubMember(confNo, persNo));
+	if (!reply.getSuccess()) throw reply.getException();
+	subConfMembership(confNo);
+	currentConference = -1;
+    }
+
+    void subConfMembership(int confNo) {
+	synchronized (membership) {
+	    Iterator i = membership.iterator();
+	    while (i.hasNext()) {
+		Membership m = (Membership) i.next();
+		if (m.getNo() == confNo) {
+		    i.remove();
+		    return;
+		}
+	    }
+	}
     }
 
     /**

@@ -72,13 +72,19 @@ public class TextCommands extends AbstractCommand {
 	case 1: // footnote text
 	    footnote = true;
 	case 2: // comment text
-	    if (textNo < 1 && application.getLastText() == null && application.getLastSavedText() == null) {
+	    if (textNo < 1) {
+		if (footnote && application.getLastSavedText() != null)
+		    textNo = application.getLastSavedText().getNo();
+		else
+		    if (application.getLastText() != null)
+			textNo = application.getLastText().getNo();
+	    }
+
+	    if (textNo < 1) {
 		throw new CmdErrException("Du måste ange ett giltigt textnummer eller läsa/skriva en text först");
 	    }
-	    if (footnote && application.getLastSavedText() != null)
-		text = application.getLastSavedText();
-	    else
-		text = application.getLastText();
+
+	    text = session.getText(textNo);
 	    
 	    if (text == null) {
 		text = session.getText(textNo);

@@ -8,7 +8,7 @@ import java.text.MessageFormat;
 import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
-    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm" };
+    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm", "um" };
 
     // descriptions according to commandIndices
     String[] myDescriptions = {
@@ -21,10 +21,11 @@ public class ConfCommands extends AbstractCommand {
 	"byta namn [möte/person]",
 	"(gå till) nästa m|te",
 	"skapa möte <namn på mötet>",
-	"lista möten [substräng]"
+	"lista möten [substräng]",
+	"utträda (ur) möte <namn på mötet>"
     };
 
-    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9 };
+    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
 
     public ConfCommands() {
 	setCommands(myCommands);
@@ -106,11 +107,31 @@ public class ConfCommands extends AbstractCommand {
 	case 9: // list conferences
 	    listConferences(parameters != null ? parameters : "");
 	    break;
+	case 10:
+	    if (parameters == null) throw new CmdErrException("Du måste ange ett möte att gå till.");
+	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
+	    leaveConference(confNo);
+	    break;
 	default: 
 	    throw new RuntimeException("Unknown command " + s);
 	}
 	return OK;
 
+    }
+
+
+    /**
+     * note: should clear toread stack too.
+     */
+    public void leaveConference(int confNo) throws IOException, CmdErrException {
+	if (application.crtReadLine("Vill du verkligen uttr{da ur " +
+				    application.confNoToName(confNo) + " (j/N)? ", "n").equals("j")) {
+	    try {
+		session.subMember(confNo, session.getMyPerson().getNo());
+	    } catch (RpcFailure ex1) {
+		throw new CmdErrException("Misslyckades: " + ex1.getMessage());
+	    }
+	}
     }
 
     public void listConferences(String substring) throws IOException, CmdErrException {
