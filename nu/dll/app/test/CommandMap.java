@@ -2,18 +2,29 @@ package nu.dll.app.test;
 
 import java.util.Map;
 import java.util.HashMap;
-
+import java.util.List;
+import java.util.LinkedList;
 
 import nu.dll.lyskom.Session;
 
 
 public class CommandMap {
     Map commands = new HashMap();
+    List commandList = new LinkedList();
     Session session = null;
     Test2 application = null;
     public CommandMap(Session session, Test2 application) {
 	this.session = session;
 	this.application = application;	
+    }
+
+    public Command[] getAllCommands() {
+	Object[] objects = commandList.toArray();
+	Command[] allcommands = new Command[objects.length];
+	for (int i=0; i < objects.length; i++) {
+	    allcommands[i] = (Command) objects[i];
+	}
+	return allcommands;
     }
 
     public void addCommand(Class cmd) {
@@ -46,10 +57,12 @@ public class CommandMap {
 
     public void addCommand(String str, Class cmd) {
 	commands.put(str, initCommand(cmd));
+	if (!commandList.contains(cmd)) commandList.add(cmd);
     }
     public void addCommand(String str, Command cmd) {
 	cmd.setEnvironment(session, application);
 	commands.put(str, cmd);
+	if (!commandList.contains(cmd)) commandList.add(cmd);
     }
 
     public Command getCommand(String str) {

@@ -17,5 +17,8 @@ interface Command {
     public int doCommand(String command, String parameters) throws CmdErrException, IOException;
 
     public String[] getCommands();
+
+    public String getCommandDescription(int i);
     public String[] getCommandDescriptions();
+    public String getDescription();
 }

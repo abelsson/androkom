@@ -12,16 +12,16 @@ public class ConfCommands extends AbstractCommand {
 
     // descriptions according to commandIndices
     String[] myDescriptions = {
-	"återse presentation",
-	"ändra presentation",
-	"återse FAQ",
-	"ändra FAQ",
-	"gå till möte",
+	"återse presentation [möte/person]",
+	"ändra presentation [möte/person]",
+	"återse FAQ [möte/person]",
+	"ändra FAQ [möte/person]",
+	"gå (till möte) [möte/brevlåda]",
 	"lista nyheter",
-	"byta namn",
-	"n{sta m|te",
-	"skapa m|te",
-	"lista m|ten"
+	"byta namn [möte/person]",
+	"(gå till) nästa m|te",
+	"skapa möte <namn på mötet>",
+	"lista möten [substräng]"
     };
 
     int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9 };
@@ -29,6 +29,15 @@ public class ConfCommands extends AbstractCommand {
     public ConfCommands() {
 	setCommands(myCommands);
     }
+
+    public String getDescription() {
+	return "Kommandon för möten och brevlådor";
+    }
+
+    public String getCommandDescription(int i) {
+	return myDescriptions[commandIndices[i]];
+    }
+
 
     int getCommandIndex(String command) {
 	String[] commands = getCommands();

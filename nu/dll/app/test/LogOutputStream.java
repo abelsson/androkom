@@ -5,7 +5,9 @@ import java.io.UnsupportedEncodingException;
 
 
 /**
- * $Revision: 1.3 $
+ * Outputstream that writes all output to a Console component.
+ * Useful for redirection of stderr or stdout to a GUI window.
+ * $Revision: 1.4 $
  */
 class LogOutputStream extends OutputStream {
     Console target = null;

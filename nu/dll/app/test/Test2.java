@@ -73,6 +73,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
     static String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
 
+    boolean macBreak = Boolean.getBoolean("lattekom.usecrlf");
+    int linesPerScreen = Integer.getInteger("lattekom.rows", new Integer(24)).intValue();
     String server = System.getProperty("lyskom.server");
 
     Locale locale = new Locale("sv", "se");  // language and location
@@ -93,6 +95,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     String lastWhatIAmDoing = "";
 
     Text lastSavedText = null;
+    int linesSinceLastPrompt = 0;
 
     static {
 	if (encoding == null) {
@@ -293,7 +296,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    consoleWriteLn("från " + sender +
 				   " (" + komTimeFormat(m.getArrivalTime()) + "):");
 		}
-		consoleWriteLn("\n" + ((Hollerith) params[2]).getContentString());
+		consoleWriteLn("");
+		consoleWriteLn(((Hollerith) params[2]).getContentString());
 		consoleWriteLn("----------------------------------------------------------------");
 		break;
 	    case Asynch.login:
@@ -392,12 +396,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    while (server == null) {
 		server = crtReadLine("Vilken server vill du ansluta till? ");
 		if (server == null) { // user might have pressed ^D, or stdin == /dev/null
-		    consoleWriteLn("\nDet verkar vara problem med att läsa från stdin. Det kan hända att\n" +
-				   "Javamiljön för denna applikation inte har någon inmatningsterminal.\n" +
-				   "Om så är fallet, så bör en ny konsoll nu öppnas utav applikationen.\n" +
-				   "Om detta inte sker, starta om programmet med parametern \"-gui\", eller\n" +
-				   "sätt Javasystem-propertyn \"lattekom.use-gui\" till värdet \"true\".\n");
-		    String test = crtReadLine("\nOm denna applikation har en inmatningsterminal, tryck <Enter>.\n");
+		    consoleWriteLn("Det verkar vara problem med att läsa från stdin. Det kan hända att");
+		    consoleWriteLn("Javamiljön för denna applikation inte har någon inmatningsterminal.");
+		    consoleWriteLn("Om så är fallet, så bör en ny konsoll nu öppnas utav applikationen.");
+		    consoleWriteLn("Om detta inte sker, starta om programmet med parametern \"-gui\", eller");
+		    consoleWriteLn("sätt Javasystem-propertyn \"lattekom.use-gui\" till värdet \"true\".");
+		    String test = crtReadLine("\nOm denna applikation har en inmatningsterminal, tryck <Enter>.");
 		    if (test == null) { // assume we must use a GUI console
 			useGui = true;
 			initGui();
@@ -650,6 +654,22 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	return randomStatus[nextRandInt(randomStatus.length)];
     }
 
+
+    public String pad(String in, int length) {
+	if (in.length() > length) {
+	    return in.substring(0, length -1);
+	} else if (in.length() < length) {
+	    int diff = length - in.length() - 1;
+	    char[] padding = new char[diff];
+	    for (int i = 0; i < diff; i++)
+		padding[i] = ' ';
+	    return (new StringBuffer(in).append(padding)).toString();
+	} else {
+	    return in;
+	}
+    }
+
+
     /**
      * Returns:
      * -1 if user wants to quit
@@ -678,34 +698,34 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return command.doCommand(cmd, parameters);
 	}
 	if (cmd.equals("?")) {
-	    consoleWriteLn("-- kommandon\n" +
-			   "\tbn <mötesnamn>    -- byt namn\n" + 
-			   "\tf [inläggsnummer] -- fotnotera inlägg\n" + 
-			   "\tg <mötesnamn>     -- gå till möte\n" +
-			   "\ti                 -- skriv inlägg\n" +
-			   "\tk [inläggsnummer] -- kommentera text\n" +
-			   "\tlm [substräng]    -- lista möten\n" +
-			   "\tlmt               -- lista markerade texter\n" +
-			   "\tln                -- lista nyheter\n" +
-			   "\tmt [text]         -- markera text\n" + 
-			   "\tnm                -- nästa möte med olästa\n" +
-			   "\tq                 -- avsluta TestKOM\n" +
-			   //"\trm <mötesnamn>    -- radera möte\n" +
-			   "\trt <text>         -- radera text\n" +
-			   "\ts [mötesnamn]     -- skicka meddelande\n" + 
-			   "\tsm <mötesnamn>    -- skapa (publikt) möte\n" +
-			   "\tss <sessionsnr.>  -- visa sessions- och klientinformation\n" + 
-			   "\tuo                -- uppdatera olästa (typ omstart)\n" + 
-			   "\tv                 -- lista inloggade aktiva användare\n" + 
-			   "\tå <inläggsnummer> -- återse text\n" +
-			   "\tåf <mötesnamn>    -- återse FAQ\n" + 
-			   "\tåk                -- återse (första) kommentaren\n" +
-			   "\tåp <mötesnamn>    -- återse presentation för person eller möte\n" +
-			   "\tåu                -- återse (första) urinlägget\n" +
-			   "\täf <mötesnamn>    -- ändra FAQ\n" +
-			   "\täp [mötesnamn]    -- ändra/skriv presentation\n" + 
-			   "\trpc <#> [data]    -- skicka RPC-kommando (svaret ignoreras) (farligt)\n" + 
-			   "\n  Mötesnamn kan för det mesta bytas ut mot \"m <nummer>\"\n");
+	    StringBuffer help = new StringBuffer();
+	    Command[] allCommands = commands.getAllCommands();
+	    for (int i=0; i < allCommands.length; i++) {
+		consoleWriteLn("-- " + allCommands[i].getDescription() + ":");
+		String[] commandNames = allCommands[i].getCommands();
+		String prevCommand = "";
+		for (int j=0; j < commandNames.length; j++) {
+		    String description = allCommands[i].getCommandDescription(j);
+		    if (description.equals(prevCommand)) continue; // XXX: hack to get around
+		    prevCommand = description;                     // commands with many names 
+		                                                   // (this assumes they are 
+		                                                   // all after each other)
+		    consoleWriteLn("\t" + pad(commandNames[j], 10) + " -- " +
+				   description);
+		}
+	    }
+	    consoleWriteLn("-- övriga kommandon");
+	    consoleWriteLn("\tln                -- lista nyheter");
+	    consoleWriteLn("\tq                 -- avsluta TestKOM");
+	    consoleWriteLn("\trt <text>         -- radera text");
+	    consoleWriteLn("\ts [mötesnamn]     -- skicka meddelande");
+	    consoleWriteLn("\tss <sessionsnr.>  -- visa sessions- och klientinformation");
+	    consoleWriteLn("\tuo                -- uppdatera olästa (typ omstart)");
+	    consoleWriteLn("\tv                 -- lista inloggade aktiva användare");
+	    consoleWriteLn("\tåk                -- återse (första) kommentaren");
+	    consoleWriteLn("\trpc <#> [data]    -- skicka RPC-kommando (svaret ignoreras) (farligt)");
+	    consoleWriteLn("");
+	    consoleWriteLn("  Mötesnamn kan för det mesta bytas ut mot \"m <nummer>\"");
 	    return 1;
 	}
 	if (cmd.equals("uo")) {
@@ -725,79 +745,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return 1;
 	    
 	}
-	if (cmd.equals("rm")) { // radera möte
-	    consoleWriteLn("-- Den här funktionen är inte implementerad ännu.");
-	    return 1;	    
-	}
-	if (cmd.equals("rt")) { // radera inlägg
-	    int textNo = 0;
-	    try {
-		textNo = Integer.parseInt(st.nextToken());
-	    } catch (NoSuchElementException ex1) {
-		throw new CmdErrException("du måste ange ett inläggsnummer");
-	    } catch (NumberFormatException ex2) {
-		throw new CmdErrException("kunde inte tolka inläggsnummer");
-	    }
-	    if (textNo == 0) throw new CmdErrException("du kan inte ta bort text 0");
-	    try {
-		foo.deleteText(textNo);
-		consoleWriteLn("OK: text " + textNo + " raderad.");
-		return 1;
-	    } catch (RpcFailure ex1) {
-		switch (ex1.getError()) {
-		case Rpc.E_no_such_text:
-		    consoleWriteLn("%Fel: det finns ingen text med nummer " + textNo);
-		    break;
-		case Rpc.E_not_author:
-		    consoleWriteLn("%Fel: du har inte rätt att ta bort text " + textNo);
-		    break;
-		default:
-		    consoleWriteLn("%Fel: felkod " + ex1.getError());
-		    break;
-		}
-	    }
-	}
-	if (cmd.equals("lmt")) {
-	    consoleWriteLn("Markerade inlägg:");
-	    Mark[] marks = foo.getMarks();
-	    for (int i=0; i < marks.length; i++) {
-		consoleWrite("Markering " + (i+1) + ": " + marks[i].getText() + " (" + marks[i].getType() + ")");
-		TextStat ts = foo.getTextStat(marks[i].getText());
-		if (ts != null) {
-		    consoleWriteLn(" av " + confNoToName(ts.getAuthor()));
-		} else {
-		    consoleWriteLn("");
-		}
-	    }
-	    consoleWriteLn("");
-	    return 1;
-	}
-	if (cmd.equals("mt")) {
-	    try {
-		int textNo = (t != null ? t.getNo() : 0);
-		if (st.hasMoreTokens()) {
-		    textNo = Integer.parseInt(st.nextToken());
-		} else if (textNo == 0) {
-		    textNo = Integer.parseInt(crtReadLine("Ange textnummer att markera: "));
-		}
-		
-		int markType = 0;
-		if (st.hasMoreTokens()) {
-		    markType = Integer.parseInt(st.nextToken());
-		} else {
-		    markType = 100;
-		    markType = Integer.parseInt(crtReadLine("Ange markeringstyp (0-255): "));
-		}
 
-		foo.markText(textNo, markType);
-		consoleWriteLn("OK, text " + textNo + " är markerad");
-	    } catch (NumberFormatException ex1) {
-		consoleWriteLn("Ogiltigt värde: " + ex1.getMessage());
-	    } catch (RpcFailure ex1) {
-		throw new CmdErrException(ex1.getMessage());
-	    }
-	    return 1;
-	}
 	if (cmd.equals("v")) {
 	    DynamicSessionInfo[] vilka = foo.whoIsOnDynamic(true, false, 30*60);
 	    consoleWriteLn("Listar " + vilka.length + " aktiva användare:");
@@ -856,18 +804,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    displayText(commented[0]);
 	    return 1;
 	}
-	if (cmd.equals("åu") || cmd.equals("}u")) { // återse urinlägg
-	    // * does not treat footnotes as comments
-	    // * does not handle multiple original texts (only looks at forst comm-to)
-	    consoleWrite("Söker efter urinlägg för text " + t.getNo() + "... ");
-	    TextStat ts = foo.getTextStat(t.getNo());
-	    while (ts.getStatInts(TextStat.miscCommTo).length > 0) {
-		ts = foo.getTextStat(ts.getStatInts(TextStat.miscCommTo)[0]);
-	    }
-	    consoleWriteLn("hittade text " + ts.getNo());
-	    displayText(lastText = t = foo.getText(ts.getNo()));
-	    return 1;
-	}
 	if (cmd.equals("e")) { // endast
 	    String antal = st.nextToken();
 	    try {
@@ -909,9 +845,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		      
     }
     
-    boolean macBreak = Boolean.getBoolean("lattekom.usecrlf");
     void consoleWriteLn(String s) {
-	consoleWrite(s + lineSeparator);
+	linesSinceLastPrompt++;
+	if (linesSinceLastPrompt > linesPerScreen) crtReadLine("(-- tryck Enter för att fortsätta --)");
+	consoleWrite(s + lineSeparator);	
 	if (useGui && macBreak) consoleWrite("\r\n");
 
     }
@@ -939,36 +876,51 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
      * Returns null if EOF is encountered (eg, user presses ^D on an empty line).
      * Otherwise, returns a String with the user input, without trailing '\n'.
      */
-    String crtReadLine(String prompt)
-    throws IOException {
+    String crtReadLine(String prompt) {
+	linesSinceLastPrompt = 0;
 	lastPromptShown = prompt;
 	if (prompt != null) {
 	    consoleWrite(prompt);
 	}
 
 	if (!useGui) {
-	    int b = System.in.read();
-	    ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
-	    while (b != -1 && b != '\n') {
-		inByteStream.write(b);
-		b = System.in.read();
-	    }
-	    if (b == -1) return null;
 	    try {	    
+		int b = System.in.read();
+		ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
+		while (b != -1 && b != '\n') {
+		    inByteStream.write(b);
+		    b = System.in.read();
+		}
+		if (b == -1) return null;
 		return inByteStream.toString(encoding).trim();
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
+	    } catch (IOException ex0) {
+		throw new RuntimeException("Error reading from stdin");
 	    }
 	} else {
 	    synchronized (guiInput) {
 		try {
 		    guiInput.wait();
 		} catch (InterruptedException ex1) {
-		    throw new IOException("Interrupted while waiting for user input");
+		    throw new RuntimeException("Interrupted while waiting for user input");
 		}
 		return guiInput.getString();
 	    }
 	}
+    }
+
+    /**
+     * Read one row from user input, if the resulting row is the
+     * empty string, return a default string instead.
+     * @param prompt The prompt to be used when asking user for input
+     * @param default The default string to be returned if user presses enter
+     * @see nu.dll.app.test.Test2#crtReadLine(String)
+     */
+    public String crtReadLine(String prompt, String defaultValue) {
+	String s = crtReadLine(prompt);
+	if (s == null || s.trim().length() == 0) return defaultValue;
+	return s;
     }
 
     Text editText(Text t)
@@ -1238,7 +1190,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
 	consoleWriteLn("Ärende: " + bytesToString(text.getSubject()));
 	consoleWriteLn("------------------------------------------------------------");
-	consoleWriteLn(bytesToString(text.getBody()));
+	String textBody = bytesToString(text.getBody());
+	StringTokenizer rows = new StringTokenizer(textBody, "\n");
+	while (rows.hasMoreElements()) {
+	    consoleWriteLn(rows.nextToken());
+	}
 	consoleWriteLn("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/--------------------");
 
 	int[] comments = text.getComments();

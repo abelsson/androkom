@@ -3,22 +3,35 @@ package nu.dll.app.test;
 import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.StringTokenizer;
 import java.text.MessageFormat;
 
 import nu.dll.lyskom.*;
 
 public class TextCommands extends AbstractCommand {
-    String[] myCommands = { "å", "}", "f", "k", "i" };
-    int[] commandIndices = { 0, 0, 1, 2, 3 };
+    String[] myCommands = { "å", "}", "f", "k", "i", "rt", "mt", "lmt", "åu", "}u" };
+    int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7 };
     String[] myDescriptions = {
-	"återse text", // 0
-	"fotnotera text", // 1
-	"kommentera text", // 2
-	"skriv inl{gg" // 3
+	"återse (text) <textnummer>", // 0
+	"fotnotera (text) [textnummer]", // 1
+	"kommentera (text)", // 2
+	"(skriv) inlägg", // 3
+	"radera text", // 4
+	"markera text [textnummer] [markeringstyp]", // 5
+	"lista markerade texter", // 6
+	"återse urinlägg [textnummer]" // 7
     };
 
     public TextCommands() {
 	setCommands(myCommands);
+    }
+
+    public String getDescription() {
+	return "Kommandon för läsning, skrivning och annan texthantering";
+    }
+
+    public String getCommandDescription(int i) {
+	return myDescriptions[commandIndices[i]];
     }
 
     int getCommandIndex(String command) {
@@ -37,9 +50,13 @@ public class TextCommands extends AbstractCommand {
 	int textNo = 0;
 	Text text = null;
 	boolean footnote = false;
+	StringTokenizer st = null;
+	
 	if (parameters != null) {
+	    st = new StringTokenizer(parameters, " ");
 	    try {
-		textNo = Integer.parseInt(parameters);
+		if (st.hasMoreTokens())
+		    textNo = Integer.parseInt(st.nextToken());
 	    } catch (NumberFormatException ex1) {
 		textNo = -1;
 	    }
@@ -47,7 +64,7 @@ public class TextCommands extends AbstractCommand {
 
 	switch (getCommandIndex(s)) {
 	case 0: // review text
-	    if (textNo < 1) throw new CmdErrException("Du m}ste ange ett textnummer");
+	    if (textNo < 1) throw new CmdErrException("Du måste ange ett textnummer");
 	    text = session.getText(textNo, true);
 	    application.displayText(textNo);
 	    application.setLastText(text);
@@ -56,7 +73,7 @@ public class TextCommands extends AbstractCommand {
 	    footnote = true;
 	case 2: // comment text
 	    if (textNo < 1 && application.getLastText() == null && application.getLastSavedText() == null) {
-		throw new CmdErrException("Du m}ste ange ett giltigt textnummer eller l{sa/skriva en text f|rst");
+		throw new CmdErrException("Du måste ange ett giltigt textnummer eller läsa/skriva en text först");
 	    }
 	    if (footnote && application.getLastSavedText() != null)
 		text = application.getLastSavedText();
@@ -65,7 +82,7 @@ public class TextCommands extends AbstractCommand {
 	    
 	    if (text == null) {
 		text = session.getText(textNo);
-		if (text == null) throw new CmdErrException("Hittade inget inl{gg");
+		if (text == null) throw new CmdErrException("Hittade inget inlägg");
 	    }
 	    commentOrFootnote(text, footnote);
 	    break;
@@ -73,8 +90,109 @@ public class TextCommands extends AbstractCommand {
 	case 3:  // write text
 	    writeText();
 	    break;
+	case 4:
+	    if (parameters == null || textNo < 1)
+		throw new CmdErrException("Du måste ange ett giltigt textnummer");
+	    deleteText(textNo);
+	    break;
+	case 5:
+	    int markType = -1;
+	    if (parameters == null) { // EWW.
+		try {
+		    textNo = Integer.parseInt(application.crtReadLine("Ange textnummer att markera: "));
+		    markType = Integer.parseInt(application.crtReadLine("Ange markeringstype (1-255, 100)",
+									"100"));
+		} catch (NumberFormatException ex1) {}
+	    } else {
+		if (textNo > 1) {
+		    if (st.hasMoreTokens()) {
+			try {
+			    markType = Integer.parseInt(st.nextToken());
+			} catch (NumberFormatException ex2) {}
+		    }
+		}
+	    }
+	    if (textNo < 1) throw new CmdErrException("Du måste ange ett giltigt textnummer");
+	    markText(textNo, markType > 0 ? markType : 100);
+	    break;
+	case 6: // list marked texts
+	    listMarkedTexts();
+	    break;
+	case 7: // review original
+	    reviewOriginal(textNo);
+	    break;
 	}
+
 	return 1;
+    }
+
+    public void reviewOriginal(int textNo) throws IOException, CmdErrException {
+	// * does not treat footnotes as comments
+	// * does not handle multiple original texts (only looks at forst comm-to)
+	// * bugs out if original text is secret
+	Text t = null;
+	if (textNo < 1) {
+	    t = application.getLastText();
+	} else {
+	    t = session.getText(textNo); 
+	}
+	if (t == null) {
+	    throw new CmdErrException("Du måste ha en text att börja med.");
+	}
+
+	application.consoleWrite("Söker efter urinlägg för text " + t.getNo() + "... ");
+	TextStat ts = session.getTextStat(t.getNo());
+	while (ts.getStatInts(TextStat.miscCommTo).length > 0) {
+	    ts = session.getTextStat(ts.getStatInts(TextStat.miscCommTo)[0]);
+	}
+	application.consoleWriteLn("hittade text " + ts.getNo());
+	t = session.getText(ts.getNo());
+	application.setLastText(t);
+	application.displayText(t);
+    }
+
+    public void listMarkedTexts() throws IOException, CmdErrException {
+	application.consoleWriteLn("Markerade inlägg:");
+	Mark[] marks = session.getMarks();
+	for (int i=0; i < marks.length; i++) {
+	    application.consoleWrite("Markering " + (i+1) + ": " + marks[i].getText() + " (" + marks[i].getType() + ")");
+	    TextStat ts = session.getTextStat(marks[i].getText());
+	    if (ts != null) {
+		application.consoleWriteLn(" av " + application.confNoToName(ts.getAuthor()));
+	    } else {
+		application.consoleWriteLn("");
+	    }
+	}
+	application.consoleWriteLn("");
+    }
+
+    public void markText(int textNo, int markType) throws IOException, CmdErrException {
+	try {
+	    session.markText(textNo, markType);
+	    application.consoleWriteLn("OK, text " + textNo + " är markerad");
+	} catch (RpcFailure ex1) {
+	    throw new CmdErrException(ex1.getMessage());
+	}
+    }
+
+    public void deleteText(int textNo) throws IOException, CmdErrException {
+	if (textNo == 0) throw new CmdErrException("du kan inte ta bort text 0");
+	try {
+	    session.deleteText(textNo);
+	    application.consoleWriteLn("OK: text " + textNo + " raderad.");
+	} catch (RpcFailure ex1) {
+	    switch (ex1.getError()) {
+	    case Rpc.E_no_such_text:
+		application.consoleWriteLn("det finns ingen text med nummer " + textNo);
+		break;
+	    case Rpc.E_not_author:
+		application.consoleWriteLn("du har inte rätt att ta bort text " + textNo);
+		break;
+	    default:
+		application.consoleWriteLn("okänt fel: " + ex1.getMessage());
+		break;
+	    }
+	}
     }
 
     public void writeText() throws IOException, CmdErrException {
@@ -101,7 +219,8 @@ public class TextCommands extends AbstractCommand {
     public void commentOrFootnote(Text text, boolean footnote) throws IOException, CmdErrException {
 	application.setStatus("Skriver en " + (footnote ? "fotnot" : "kommentar"));
 	application.consoleWriteLn("-- " + (footnote ? "Fotnot" : "Kommentar") + " till text " + text.getNo() + ".");
-	application.consoleWriteLn("-- Skriv din " + (footnote ? "fotnot" : "kommentar") +  ", avsluta med \".\" på tom rad.");
+	application.consoleWriteLn("-- Skriv din " + (footnote ? "fotnot" : "kommentar") + 
+				   ", avsluta med \".\" på tom rad.");
 	Text nText = new Text(application.bytesToString(text.getSubject()), "");
 
 	if (!footnote)
@@ -146,7 +265,7 @@ public class TextCommands extends AbstractCommand {
 		application.consoleWriteLn("du är inte författare till text " + ex1.getErrorStatus());
 		break;
 	    default:
-		throw new CmdErrException("Ok{nt fel: " + ex1.getMessage());
+		throw new CmdErrException("Okänt fel: " + ex1.getMessage());
 	    }
 	    return;
 	}

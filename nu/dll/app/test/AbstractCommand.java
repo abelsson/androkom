@@ -32,7 +32,12 @@ abstract class AbstractCommand implements Command {
     public String[] getCommands() {
 	return commands;
     }
+    public String getCommandDescription(int i) {
+	return getCommandDescriptions()[i];
+    }
 
-    public abstract String[] getCommandDescriptions();
-
+    public abstract String[] getCommandDescriptions();    
+    public String getDescription() {
+	return toString();
+    }
 }
