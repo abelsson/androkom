@@ -1,35 +1,273 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
-				 java.net.URLConnection, java.net.URL, java.io.*, java.text.*' %>
-<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
-<%@ include file='kom.jsp' %>
+				 java.net.URLConnection, java.net.URL, java.io.*, java.text.*' %><%@ 
+    page import='java.nio.charset.Charset, javax.mail.internet.ContentType'
+%><%@ 
+    page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
+%><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
+    if (request.getParameter("image") != null) {
+	String name = request.getParameter("image");
+	Map part = (Map) session.getAttribute("wl_composer_image_" + name);
+	if (part == null) {
+	    response.sendError(HttpServletResponse.SC_NOT_FOUND);
+	    return;
+	}
+	FileInputStream is = new FileInputStream((String) part.get("uploaded"));
+	OutputStream os = response.getOutputStream();
+	response.setContentType((String) part.get("content-type"));
+	byte[] byf = new byte[2048];
+	int readBytes;
+	while ((readBytes = is.read(byf, 0, byf.length)) != -1)
+	    os.write(byf, 0, readBytes);
+	return;
+    }
+%>
 <html><head><title>textskrivare</title>
 <link rel="stylesheet" href="lattekom.css" />
+<script type="text/javascript">
+   _editor_url = "<%= basePath %>htmlarea/";
+   _editor_lang = "en";
+</script>
+<script type="text/javascript" src="<%= basePath %>htmlarea/htmlarea.js"></script>
+<script type="text/javascript">
+   var haConfig = new HTMLArea.Config();
+   haConfig.height = '400px';
+   haConfig.width = '500px';
+   function buttonHandler(editor, buttonId) {
+      switch (buttonId) {
+      case "weblatte-query-image":
+	 var image = window.prompt("Ange bildens namn");
+	 if (typeof(image) == undefined) return;
+	 if (image == null) return;
+	 if (image == "") return;
+         editor.insertHTML("<img src=\"composer.jsp?image=" + escape(image) + "\" />");
+         break;
+      }
+   }
+   haConfig.registerButton("weblatte-query-image",  "Infoga bild", "htmlarea/images/ed_image.gif", false, buttonHandler);
+   haConfig.toolbar = [
+	[ "fontname", "space",
+	  "fontsize", "space",
+	  "formatblock", "space",
+	  "bold", "italic", "underline", "separator",
+	  "strikethrough", "subscript", "superscript", "separator",
+	  "copy", "cut", "paste", "space", "undo", "redo" ],	
+	[ "justifyleft", "justifycenter", "justifyright", "justifyfull", "separator",
+	  "insertorderedlist", "insertunorderedlist", "outdent", "indent", "separator",
+	  "forecolor", "hilitecolor", "textindicator", "separator",
+	  "inserthorizontalrule", "createlink", "weblatte-query-image", "inserttable", "htmlmode", "separator",
+	  "popupeditor", "separator", "showhelp", "about" ]
+	];
+</script>
 <body>
 <%
+    boolean expert = debug || request.getParameter("expert") != null;
+    Debug.println("____ **** composer.jsp START.");
     request.setCharacterEncoding("utf-8");
     StringBuffer metadata = new StringBuffer();
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
 	response.sendRedirect("/lyskom/");
 	return;
     }
+    Map parameters = new HashMap();
+    Map fileMap = new HashMap();
+    Map typeMap = new HashMap();
+    List parameterKeys = new LinkedList();
+    String defaultCharset = preferences.getString("create-text-charset");
 
-    if (request.getParameter("createText") != null) {
+    Enumeration parameterEnum = request.getParameterNames();
+    while (parameterEnum.hasMoreElements()) {
+	String key = (String) parameterEnum.nextElement();
+	String value = request.getParameter(key);
+	Debug.println("___ req param: " + key + "=" + value);
+	parameters.put(key, value);
+	parameterKeys.add(key);
+    }
+
+    Debug.println("____ composer.jsp input ct: " + request.getContentType());
+    String _ct = request.getContentType();
+    if (_ct != null && _ct.startsWith("multipart/form-data")) {
+	MultipartParser multip = new MultipartParser(request, 1024*1024);
+    	Debug.println("____ composer.jsp using multipartparser " + multip);
+	Part nextPart = null;
+	while ((nextPart = multip.readNextPart()) != null) {
+	    if (nextPart.isFile()) {
+		FilePart fpart = (FilePart) nextPart;
+		File tempFile = File.createTempFile("weblatte", ".tmp");
+		tempFile.deleteOnExit();
+		fpart.writeTo(tempFile);
+		Debug.println("____ Saved to " + tempFile.getAbsolutePath());
+		fileMap.put(fpart.getName(), tempFile.getAbsolutePath());
+		parameters.put(fpart.getName(), fpart.getFileName());
+		ContentType contentType = new ContentType(fpart.getContentType());
+		if (contentType.match("application/octet-stream")) {
+		    if (fpart.getFileName() == null) continue;
+		    if (fpart.getFileName().toLowerCase().endsWith(".jpg") ||
+			fpart.getFileName().toLowerCase().endsWith(".jpeg")) {
+			contentType = new ContentType("image/jpeg");
+		    } else if (fpart.getFileName().toLowerCase().endsWith(".png")) {
+			contentType = new ContentType("image/png");
+		    } else if (fpart.getFileName().toLowerCase().endsWith(".gif")) {
+			contentType = new ContentType("image/gif");
+		    }
+		}
+		typeMap.put(fpart.getName(), contentType.toString());
+		parameterKeys.add(fpart.getName());
+		String upkey = fpart.getName().substring(0, fpart.getName().lastIndexOf("_")) +
+			"_uploaded";
+		Debug.println("____ uploaded-variable: " + upkey);
+		parameters.put(upkey, tempFile.getAbsolutePath());
+	    } else {
+		String value = ((ParamPart) nextPart).getStringValue();
+		value = new String(value.getBytes("iso-8859-1"), "utf-8");
+		Debug.println("multipart-parameter " + nextPart.getName() + "=" +
+			value);
+		if (parameters.containsKey(nextPart.getName())) {
+		    Object _value = parameters.get(nextPart.getName());
+		    String[] values;
+		    if (_value instanceof String[]) {
+			String[] oldValues = (String[]) _value;
+			values = new String[oldValues.length+1];
+			System.arraycopy(oldValues, 0, values, 0, oldValues.length);
+			values[values.length-1] = value;
+		    } else {
+			values = new String[2];
+			values[0] = (String) _value;
+			values[1] = value;
+		    }
+		    parameters.put(nextPart.getName(), values);
+		} else {
+		    parameters.put(nextPart.getName(), value);
+		}
+		parameterKeys.add(nextPart.getName());
+	    }
+	}
+    }
+    
+    Debug.println("____ composer.jsp args: " + parameters);
+
+    boolean multipart = parameters.get("multipart") != null && parameters.get("noMultipart") == null;
+
+    List parts = new LinkedList();
+    Set handledParts = new HashSet();
+    Iterator parameterKeysIter = parameterKeys.iterator();
+    while (multipart && parameterKeysIter.hasNext()) {
+	String name = (String) parameterKeysIter.next();
+	if (name.startsWith("part_")) {
+	    StringTokenizer kt = new StringTokenizer(name, "_");
+	    kt.nextToken();
+	    int partNo = Integer.parseInt(kt.nextToken());
+	    if (handledParts.contains(new Integer(partNo))) continue;
+	    Debug.println("___ parsing part: " + partNo);
+	    handledParts.add(new Integer(partNo));
+	    if (parameters.get("part_" + partNo + "_delete") != null) continue;
+
+	    String contentType = (String) parameters.get("part_" + partNo + "_type");
+	    String uploaded = (String) parameters.get("part_" + partNo + "_uploaded");
+	    Debug.println("____ uploaded: " + uploaded);
+	    Map part = new HashMap();
+	    part.put("content-type", contentType);
+	    Debug.println("____ content-type: " + contentType);
+	    String urlResource = (String) parameters.get("part_" + partNo + "_url");
+	    Debug.println("____ url: " + urlResource);
+	    if (urlResource != null && !"".equals(urlResource)) {
+		URL url = new URL(urlResource);
+		URLConnection con = new URL(urlResource).openConnection();
+		File storeFile = File.createTempFile("weblatte", ".tmp");
+		storeFile.deleteOnExit();
+		OutputStream os = new FileOutputStream(storeFile);
+		part.put("content-type", con.getContentType());
+	    	Debug.println("____ new content-type: " + con.getContentType());
+		InputStream is = con.getInputStream();
+		byte[] buf = new byte[2048];
+		int read = 0;
+		while ((read = is.read(buf)) > 0) {
+		    os.write(buf, 0, read);
+		}
+		os.close();
+		part.put("uploaded", storeFile.getAbsolutePath());
+		String fpath = url.getPath();
+		int lastSlash = fpath.lastIndexOf("/");
+		if (lastSlash > -1) {
+		    fpath = fpath.substring(lastSlash+1);
+		}
+		part.put("filename", fpath);
+	    } else if (contentType.toLowerCase().startsWith("text/") &&
+		       !"".equals(parameters.get("part_" + partNo + "_contents"))) {
+		part.put("contents", parameters.get("part_" + partNo + "_contents"));
+	    } else if (uploaded != null && !"".equals(uploaded)) {
+		if (fileMap.containsKey("part_" + partNo + "_file"))
+		    part.put("uploaded", fileMap.get("part_" + partNo + "_file"));
+		else
+		    part.put("uploaded", uploaded);
+
+		part.put("filename", parameters.get("part_" + partNo + "_file"));
+		if (typeMap.containsKey("part_" + partNo + "_file"))
+		    part.put("content-type", typeMap.get("part_" + partNo + "_file"));
+		
+	    	Debug.println("____ new content-type: " + part.get("content-type"));
+	    }
+	    Debug.println("Adding part " + part);
+	    parts.add(part);
+	}
+    }
+
+    if (parameters.get("createText") != null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("/"));
+	if (multipart && parts.size() > 0) {
+	    for (Iterator i = parts.iterator();i.hasNext();) {
+		Map part = (Map) i.next();
+		String ctstr = (String) part.get("content-type");
+		if (ctstr == null) continue;
+		ContentType ct = new ContentType(ctstr);
+		if (!ct.match("text/html")) continue;
+		String contents = (String) part.get("contents");
+		Debug.println("will search and replace composer.jsp image references.");
+		Matcher m = Pattern.compile("\"composer.jsp\\?image=(.*)\"").matcher(contents);
+		StringBuffer buf = new StringBuffer();
+		while (m.find()) {
+		    Debug.println("found composer.jsp match: " + m.group(1));
+		    m.appendReplacement(buf, URLDecoder.decode(m.group(1), "iso-8859-1"));
+		}
+		m.appendTail(buf);
+		part.put("contents", buf.toString());
+		if (parameters.containsKey("createAlternative")) {
+		    String plainTextVersion = buf.toString().replaceAll("<[bB][rR].*?>", "\n").replaceAll("<.*?>", "");
+		    part.put("alternative-contents", plainTextVersion);
+		    part.put("alternative-content-type", "text/plain; charset=" +
+			preferences.getString("create-text-charset"));
+		}
+	    }
+	    request.setAttribute("multipart", parts);
+	}
+	request.setAttribute("parsed-parameters", parameters);
 	RequestDispatcher dispatcher = getServletContext().getRequestDispatcher(appPath + "/");
 	dispatcher.forward(request, response);
 	return;	
     }
 
+    if (multipart && (parts.size() == 0 ||
+	parameters.get("newPart") != null)) {
+	Map part = new HashMap();
+	part.put("content-type", "text/html;charset="+defaultCharset);
+	parts.add(part);
+    }
 
-    String subject = request.getParameter("subject") != null ? request.getParameter("subject") : "";
-    String body = request.getParameter("body") != null ? request.getParameter("body") : "";
+    if (multipart && (parts.size() == 0 ||
+	parameters.get("newFile") != null)) {
+	Map part = new HashMap();
+	part.put("content-type", "application/octet-stream");
+	parts.add(part);
+    }
+
+    String subject = parameters.get("subject") != null ? (String) parameters.get("subject") : "";
+    String body = parameters.get("body") != null ? (String) parameters.get("body") : "";
 
     List recipients = new LinkedList();
     List ccRecipients = new LinkedList();
 
-    if (request.getParameter("changePresentation") != null) {
+    if (parameters.get("changePresentation") != null) {
 	Text oldPresentation = null;
-	int confNo = Integer.parseInt(request.getParameter("changePresentation"));
+	int confNo = Integer.parseInt((String) parameters.get("changePresentation"));
 	Conference conf = lyskom.getConfStat(confNo);
 	if (conf.getPresentation() > 0) {
 	    oldPresentation = lyskom.getText(conf.getPresentation());
@@ -64,8 +302,8 @@
 	
     }
 
-    if (request.getParameter("privateReply") != null) {
-	int privateReplyTo = Integer.parseInt(request.getParameter("privateReply"));
+    if (parameters.get("privateReply") != null) {
+	int privateReplyTo = Integer.parseInt((String) parameters.get("privateReply"));
 	Text txt = lyskom.getText(privateReplyTo);
 	recipients.add(lookupName(lyskom, txt.getAuthor()));
 	subject = new String(txt.getSubject());
@@ -75,9 +313,9 @@
     }
 
 
-    if (request.getParameter("footnoteTo") != null) {
+    if (parameters.get("footnoteTo") != null) {
         lyskom.changeWhatIAmDoing("Skriver en fotnot");
-	int footnotedTextNo = Integer.parseInt(request.getParameter("footnoteTo"));
+	int footnotedTextNo = Integer.parseInt((String) parameters.get("footnoteTo"));
 	Text footnotedText = lyskom.getText(footnotedTextNo);
 	int[] _rcpts = footnotedText.getRecipients();
 	int[] _ccRcpts = footnotedText.getCcRecipients();
@@ -93,18 +331,20 @@
     }
 
     int commentedTextNo = 0;
-    if (request.getParameter("inCommentTo") != null) {
+    if (parameters.get("inCommentTo") != null) {
         lyskom.changeWhatIAmDoing("Skriver en kommentar");
-	commentedTextNo = Integer.parseInt(request.getParameter("inCommentTo"));
+	commentedTextNo = Integer.parseInt((String) parameters.get("inCommentTo"));
 	metadata.append("Kommentar till text ").
 		append(textLink(request, lyskom, commentedTextNo)).
 		append("<br/>");
     }
-    if (request.getParameter("inCommentTo") != null &&
-	request.getParameter("addNewRecipient") == null) {
+    if (parameters.get("inCommentTo") != null &&
+	parameters.get("addNewRecipient") == null) {
 	Text commentedText = lyskom.getText(commentedTextNo);
 	int[] _recipients = commentedText.getRecipients();
+	Debug.println("____ composer.jsp, comment to text: " + commentedTextNo);
 	for (int i=0; i < _recipients.length; i++) {
+	    Debug.println("____ composer.jsp, comment recipient: " + _recipients[i]);
 	    Conference conf = lyskom.getConfStat(_recipients[i]);
 	    if (conf.getType().original()) {
 		int superconf = conf.getSuperConf();
@@ -120,8 +360,8 @@
 	}
     }
 
-    if (request.getParameter("inCommentTo") == null &&
-        request.getParameter("footnoteTo") == null) {
+    if (parameters.get("inCommentTo") == null &&
+        parameters.get("footnoteTo") == null) {
         lyskom.changeWhatIAmDoing("Skriver ett inlägg");	
     }
 
@@ -129,8 +369,14 @@
 
 
     for (int rcptType = 1; rcptType <= 2; rcptType++) {
-        String[] recptFields = request.getParameterValues(rcptType == 1 ? "recipient" : "ccRecipient");
-	String[] recptNoFields = request.getParameterValues(rcptType == 1 ? "recipientNo" : "ccRecipientNo");
+	Object recptFieldsObj = parameters.get(rcptType == 1 ? "recipient" : "ccRecipient");
+	Object recptNoFieldsObj = parameters.get(rcptType == 1 ? "recipientNo" : "ccRecipientNo");
+        String[] recptFields = recptFieldsObj instanceof String ?
+		new String[] { (String) recptFieldsObj } :
+		(String[]) recptFieldsObj;
+	String[] recptNoFields = recptNoFieldsObj instanceof String ?
+		new String[] { (String) recptNoFieldsObj } :
+		(String[]) recptNoFieldsObj;
 	List list = rcptType == 1 ? recipients : ccRecipients;
 	if (recptNoFields != null) {
 	    for (int i=0; i < recptNoFields.length; i++) {
@@ -174,48 +420,150 @@
 %>
 <% if (errors.length() > 0) { %>
 <p class="statusError"><%=errors.toString()%></p>
-<% } %>
-<form enctype="application/x-www-form-urlencoded; charset=utf-8" class="boxed" method="post" action="<%=request.getRequestURI()%>">
+<% } %> <!-- was: application/x-www-form-urlencoded -->
+<form enctype="multipart/form-data" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
-    if (request.getParameter("contentType") != null) {
+    if (false && parameters.get("content-type") != null) {
 %>
-    <input type="hidden" name="contentType" value="<%=request.getParameter("contentType")%>">
+    <input type="hidden" name="content-type" value="<%=parameters.get("content-type")%>">
 <%
     }
     out.println(metadata.toString());
+    out.println("<table border=\"0\">");
     for (int rcptType = 1; rcptType <= 2; rcptType++) {
 	List list = rcptType == 1 ? recipients : ccRecipients;
     	for (Iterator i = list.iterator(); i.hasNext();) {
+	    out.print("<tr><td>");
 	    String recipient = (String) i.next();
 	    if (rcptType == 1) out.print("Mottagare: ");
 	    else out.print("Kopiemottagare: ");
-%>
-<input name="<%=rcptType==1?"recipient":"ccRecipient"%>" type="text" size="40" value="<%=recipient%>"><br/>
-<%
+	    out.print("</td><td>");
+	    out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + recipient + "\">");
+	    out.println("</td></tr>");
         }
     }
+    out.println("</table>");
 %>
 <input type="submit" value="lägg till/uppdatera mottagare" name="addNewRecipient"><br/>
 <br/>
 Ämne: <input type="text" size="50" name="subject" value="<%=subject%>"><br/>
-<textarea name="body" cols="71" rows="10"><%=body%></textarea><br/>
-<% if (request.getParameter("inCommentTo") != null) { %>
-<input type="hidden" name="inCommentTo" value="<%=request.getParameter("inCommentTo")%>">
-<% } %>
-<% if (request.getParameter("changePresentation") != null) { %>
-<input type="hidden" name="changePresentation" value="<%=request.getParameter("changePresentation")%>">
-<% } %>
-<% if (request.getParameter("privateReply") != null) { %>
-<input type="hidden" name="inCommentTo" value="<%=request.getParameter("privateReply")%>">
-<% } %>
-<% if (request.getParameter("footnoteTo") != null) { %>
-<input type="hidden" name="footnoteTo" value="<%=request.getParameter("footnoteTo")%>">
-<% } %>
+<%
+    if (!multipart) {
+%><textarea name="body" cols="71" rows="10"><%=body%></textarea><br/><%
+    } else {
+	int count = 0;
+	List imageParts = new LinkedList();
+	for (Iterator i = parts.iterator(); i.hasNext();) {
+	    Map part = (Map) i.next();
+	    out.println("<br/>Del " + (count+1) + ":<br/>");
+	    if (part.containsKey("uploaded")) {
+		if (new ContentType((String)part.get("content-type")).match("image/*")) {
+		    imageParts.add(part);
+		}
+	    }
+	    out.println("<input type=\"submit\" name=\"part_" + count + "_delete\" value=\"ta bort del " + (count+1) + "\"/><br/>");
+	    if (part.containsKey("uploaded")) {
+		out.println("Datatyp: " + part.get("content-type") + "<br/>");
+		out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" +
+			part.get("content-type") + "\" />");
+		out.println("Binärdata: <b>uppladdad</b><br/>");
+		session.setAttribute("wl_composer_image_" + part.get("filename"), part);
+		if (part.containsKey("filename")) {
+		    out.println("<input type=\"hidden\" name=\"part_" + count + "_file\" value=\"" +
+			part.get("filename") + "\"/>");
+		    out.println("Filnamn: " + part.get("filename") + "<br/>");
+		}
+		out.println("<input type=\"hidden\" name=\"part_" + count + "_uploaded\" value=\"" + part.get("uploaded") + "\"/>");
+	    } else {
+		ContentType ctype = new ContentType((String) part.get("content-type"));
+		String url = (String) part.get("url");
+		String contents = (String) part.get("contents");
+		if (contents == null) contents = "";
+		if (url == null) url = "";
+		if (!ctype.match("text/*")) {
+		    out.println("Ladda upp fil: <input type=\"file\" name=\"part_" + count + "_file\"/>");
+		    out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" + ctype.toString() + "\"/>");
+		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"ladda upp\"/><br/>");
+		    out.println("<i>Eller</i> ange URL: <input type=\"text\" name=\"part_" + count + "_url" + "\" size=\"40\" value=\"" + url + "\">");
+		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"hämta\"/><br/>");
+		} else {
+		    out.println("Skriv textinnehåll:<br/>");
+		    String taid = "part_" + count + "_contents";
+		    out.println("<textarea id=\"" + taid + "\" name=\"" + taid + "\" cols=\"71\" rows=\"5\">" + contents + "</textarea><br/>");
+		    out.println("Typ av text: <select name=\"part_" + count + "_type\">");
+		    out.println("<option value=\"text/plain;charset=" + defaultCharset + "\" " + 
+			(ctype.match("text/plain") ? "selected" : "") + ">Ren text</option>");
+		    out.println("<option value=\"text/html;charset=" + defaultCharset + "\" " + 
+			(ctype.match("text/html") ? "selected" : "") + ">HTML</option>");
+		    out.println("</select>");
+		    out.println("<input id=\"" + taid + "_wbtn\" type=\"button\" value=\"aktivera WYSIWYG\" onClick=\"HTMLArea.replace('"+taid+"', haConfig); document.getElementById('"+taid+"_wbtn').disabled = true;\"/><br>");
+		}
+	    }
+	    count++;
+	}
+	out.print("<input type=\"hidden\" id=\"imagePartList\" value=\"");
+	for (Iterator i = imageParts.iterator(); i.hasNext();) {
+	    out.print((String) ((Map) i.next()).get("filename"));
+	    if (i.hasNext()) out.print(";");
+	}
+        out.println("\"/>");
+	out.println("<br/>");
+	out.println("Infoga: <input type=\"submit\" name=\"newPart\" value=\"ny text\"/>");
+	out.println(" <input type=\"submit\" name=\"newFile\" value=\"ny fil\"/>");
+	out.println("<br/>");
+	out.println("Skapa textalernativ till HTML-delar: <input type=\"checkbox\" name=\"createAlternative\"/><br/>");
+	out.println("<br/>");
+    }
+    if (parameters.get("inCommentTo") != null) { 
+%><input type="hidden" name="inCommentTo" value="<%=parameters.get("inCommentTo")%>"><%
+    }
+    if (parameters.get("changePresentation") != null) { 
+%><input type="hidden" name="changePresentation" value="<%=parameters.get("changePresentation")%>"><%
+    }
+    if (parameters.get("privateReply") != null) { 
+%><input type="hidden" name="inCommentTo" value="<%=parameters.get("privateReply")%>"><%
+    } 
+    if (parameters.get("footnoteTo") != null) { 
+%><input type="hidden" name="footnoteTo" value="<%=parameters.get("footnoteTo")%>"><%
+    } 
+    if (multipart) {
+%><input type="hidden" name="multipart" value="<%=parameters.get("multipart")%>"><%
+    }
+
+    /*
+    if (expert) {
+	Map charsets = Charset.availableCharsets();
+	Iterator charsetIterator = charsets.keySet().iterator();
+	out.println("Teckenkodning: <select name=\"charset\">");
+	for (int i=0; i < charsets.size(); i++) {
+	    String cs = (String) charsetIterator.next();
+	    out.print("<option value=\"" + cs.toLowerCase() + "\"");
+	    if (cs.toLowerCase().equals(preferences.getString("create-text-charset").toLowerCase())) {
+	        out.print(" selected");
+	    }
+	    out.println(">" + cs + "</option>");
+	}	
+	out.println("</select><br/>");
+	String contentType = "text/x-kom-basic";
+	if (multipart) contentType = "multipart/related";
+	out.println("Datatyp: <input type=\"text\" size=\"50\" name=\"content-type\" value=\"" + contentType + "\" /><br/>");
+    } 
+    */
+%>
 <input type="submit" value="skicka!" name="createText">
+<%  
+    if (!multipart) {
+%><input type="submit" value="multimedia" name="multipart"><%
+    } else {
+%><input type="submit" value="vanlig text" name="noMultipart"><%
+    }
+   if (!expert && debug) { %>
+<input type="submit" value="avancerat läge" name="createText">
+<%  } %>
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.6 2004/05/23 16:21:29 pajp Exp $
+$Id: composer.jsp,v 1.7 2004/05/26 15:19:56 pajp Exp $
 </p>
 </body>
 </html>

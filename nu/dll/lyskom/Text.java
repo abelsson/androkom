@@ -16,8 +16,17 @@ import java.util.HashMap;
 import java.util.StringTokenizer;
 import java.util.Properties;
 
-
+import java.io.BufferedReader;
+import java.io.InputStream;
+import java.io.InputStreamReader;
+import java.io.OutputStream;
+import java.io.ByteArrayInputStream;
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.io.Serializable;
+
+import javax.activation.DataSource;
+
 
 /**
  * Represents a LysKOM text. An application can construct Text objects and
@@ -32,7 +41,7 @@ import java.io.UnsupportedEncodingException;
  * @see nu.dll.lyskom.Session#getText(int)
  * @see nu.dll.lyskom.Session#createText(Text)
  */
-public class Text extends Hollerith implements java.io.Serializable {
+public class Text extends Hollerith implements Serializable, DataSource {
 
     boolean cached = false;
 
@@ -120,7 +129,53 @@ public class Text extends Hollerith implements java.io.Serializable {
     }
 
     public String getContentType() {
-	return stat.getContentType();
+	String contentTypeString = stat.getFullContentType();
+	if (contentTypeString.equals("multipart/related")) {
+	    try {
+		Debug.println("Text: multipart/related with no boundary, checking body");
+		ByteArrayInputStream is = new ByteArrayInputStream(getBody());
+		BufferedReader rdr = new BufferedReader(new InputStreamReader(is, "us-ascii"));
+		String row = rdr.readLine();
+		if (row.equals("mime:")) {
+		    Debug.println("Text: \"mime:\" header found, assuming WinLMSG format");
+		    String lastRow = null;
+		    String preambleContentType = null;
+		    boolean readingPreamble = true;
+		    while (readingPreamble) {
+			row = rdr.readLine();
+			if (row == null || row.equals("")) {
+			    readingPreamble = false;
+			    continue;
+			}
+			if (row.startsWith("\t"))
+			    row = lastRow + "\n" + row;
+			if (row.startsWith("Content-Type:"))
+			    preambleContentType = row.substring("Content-Type: ".length());
+			lastRow = row;
+		    }
+		    if (preambleContentType != null) {
+			stat.replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
+							     preambleContentType));
+			return preambleContentType;
+		    }
+		}
+	    } catch (IOException ex1) {
+		throw new RuntimeException("Error parsing contents while trying to parse mime: message");
+	    }
+	}
+	return contentTypeString;
+    }
+
+    public String getName() {
+	return "" + textNo;
+    }
+
+    public InputStream getInputStream() throws IOException {
+	return new ByteArrayInputStream(getContents());
+    }
+
+    public OutputStream getOutputStream() throws IOException {
+	throw new IOException("A text does not provide a DataSource output stream");
     }
 
     /** end of constructors **/

@@ -35,14 +35,16 @@ import java.io.IOException;
  * @author Rasmus Sten
  */
 public class HollerithStream extends Hollerith {
-    InputStream stream;
+    protected InputStream stream;
+    protected InputStream wrappedStream = null;
+
     int size;
     boolean exhausted = false;
     protected HollerithStream(InputStream is, int size, String charset) {
 	super();
-	this.stream = is;
 	this.size = size;
 	setCharset(charset);
+	this.stream = is;
     }
 
     /**
@@ -62,17 +64,14 @@ public class HollerithStream extends Hollerith {
      * The returned InputStream must be treated carefully in order
      * not to bring other server I/O out of sync. All other server
      * read operations are blocked until the stream has been read
-     * and marked as such by calling setExhausted().
+     * and marked as such by calling setExhausted(), or closed.
      *
      * If an application wants to abort reading of the InputStream,
-     * (for example, upon recognization that the data type contained
-     * therein isn't supported), it must 1) keep track of the number
-     * of bytes written so far, and 2) call the cancel() method to
-     * let the HollerithStream discard the remaining data and mark
-     * the stream as exhausted.
+     * it _must_ call close() in order to discard the remaining
+     * data and exhaust this HollerithStream.
      *
-     * Failure in calling setExhausted() or cancel() WILL cause
-     * LatteKOM to block indefinitely.
+     * Failure in closing the InputStream or calling setExhausted()
+     * or cancel() WILL cause LatteKOM to block indefinitely.
      *
      * Calling setExhausted() prematurely (before the entire contents
      * of the hollerith has been read) WILL cause LatteKOM to loose
@@ -84,11 +83,15 @@ public class HollerithStream extends Hollerith {
      *
      * @throws IllegalStateException if the stream has already been marked as exhausted
      */
-    public InputStream getStream() {
+    public InputStream getStream() throws IOException {
 	if (isExhausted()) {
 	    throw new IllegalStateException("HollerithStream already exhausted");
 	}
-	return stream;
+	if (wrappedStream == null) {
+	    return wrappedStream = new HollerithInputStream(this);
+	} else {
+	    return wrappedStream;
+	}
     } 
 
     /**
@@ -123,6 +126,7 @@ public class HollerithStream extends Hollerith {
      */
     public void setExhausted() {
 	synchronized (this) {
+	    Debug.println(this + ".setExhausted()");
 	    exhausted = true;
 	    notifyAll();
 	}

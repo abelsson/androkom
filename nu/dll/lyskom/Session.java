@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.64 2004/05/23 16:21:28 pajp Exp $
+ * @version $Id: Session.java,v 1.65 2004/05/26 15:19:56 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -147,7 +147,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	defaultServerEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
 	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 60).intValue() * 1000;
 	rpcSoftTimeout = Integer.getInteger("lyskom.rpc-soft-timeout", 0).intValue() * 1000;
-	defaultBigTextLimit = Integer.getInteger("lyskom.big-text-limit", 20*1024).intValue();
+	defaultBigTextLimit = Integer.getInteger("lyskom.big-text-limit", 150*1024).intValue();
 	defaultBigTextHead = Integer.getInteger("lyskom.big-text-head", 100).intValue();
 	defaultEnabledBigText = Boolean.getBoolean("lyskom.big-text");
 	defaultLazyTextLimit = Integer.getInteger("lyskom.lazy-text-limit", 80).intValue();
@@ -280,14 +280,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	storeAsynchMessages = b;
     }
 
+    boolean dontCacheBinaries = Boolean.getBoolean("lattekom.dont-cache-binaries");
     protected boolean isCachableType(String contentType) {
-	if (contentType.startsWith("x-kom/"))
+	if (dontCacheBinaries) {
+	    if (contentType.startsWith("x-kom/"))
+		return true;
+	    
+	    if (contentType.startsWith("text/"))
+		return true;
+	    return false;
+	} else {
 	    return true;
-
-	if (contentType.startsWith("text/"))
-	    return true;
-
-	return false;
+	}
     }
 
     public void clearCaches() {
@@ -1160,7 +1164,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public synchronized Text getText(int textNo, boolean refreshCache)
     throws IOException, RpcFailure { 
-	return getText(textNo, refreshCache, false);
+	return getText(textNo, refreshCache, true);
     }
 
     /**

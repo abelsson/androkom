@@ -1,9 +1,11 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
+<%@ page import='javax.mail.BodyPart, javax.mail.MessagingException, javax.mail.internet.*' %>
 <%@ include file='kom.jsp' %>
 <%@ include file='prefs_inc.jsp' %>
 <%
+	boolean wantHtml = preferences.getBoolean("show-rich-texts") || request.getParameter("wantHtml") != null;
         boolean popupComment = request.getParameter("popupComment") != null ||
             request.getAttribute("popupComment") != null;
 	boolean footnoteDisplay = request.getParameter("footnote") != null ||
@@ -39,7 +41,12 @@
 	viewedTexts.add(new Integer(text.getNo()));
 
 	boolean noComments = text.getAuxItems(AuxItem.tagNoComments).size() > 0;
-	String contentType = text.getContentType();
+	String contentType = text.getStat().getContentType();
+	if (request.getParameter("forceContentType") != null)
+	    contentType = request.getParameter("forceContentType");
+
+	ContentType contentTypeObj = new ContentType(contentType);
+
 	Hollerith[] ctdata = text.getStat().getAuxData(AuxItem.tagContentType);
 	String rawContentType = (ctdata != null && ctdata.length > 0) ? new String(text.getStat().getAuxData(AuxItem.tagContentType)[0].getContents(), "us-ascii") : "text/x-kom-basic";
 	String charset = text.getCharset();
@@ -175,27 +182,45 @@
 
 	    }
 	}
-	if (!contentType.equals("x-kom/user-area")) {
+	if (!contentTypeObj.match("x-kom/user-area")) {
 %>
 	Ärende: <%= htmlize(subject) %><br/>
 <%
 	} else {
 	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");
 	}
-	if (commonPreferences.getBoolean("dashed-lines")) {
-%>
-	<hr noshade width="95%" align="left" />
-<%
+        if (contentTypeObj.match("multipart/related")) {
+	    out.println("Texten är flerdelad: ");
+	    if (request.getParameter("forceContentType") == null) {
+		out.print("<a href=\"" + basePath + "?text=" + text.getNo() +
+			"&forceContentType=text/plain\">Visa som text</a> ");
+	    } else {
+		out.print("<a href=\"" + basePath + "?text=" + text.getNo() +
+			"\">Visa normalt</a> ");
+	    }
+	    if (request.getParameter("showAll") == null) {
+	    	out.println("<a href=\"" + basePath + "?text=" + text.getNo() +
+			"&showAll\">Visa alla delar</a><br/>");
+	    } else {
+	    	out.println("<a href=\"" + basePath + "?text=" + text.getNo() +
+			"\">Dölj vissa delar</a><br/>");
+	    }
 	}
-	if (contentType.equals("text/x-kom-basic") || contentType.equals("text/plain")) {
+	if (contentTypeObj.match("text/x-kom-basic") || contentTypeObj.match("text/plain")) {
             try {
 		if (request.getParameter("forceCharset") != null) {
 		    charset = request.getParameter("forceCharset");
 		}
                 String textBody = htmlize(new String(text.getBody(), charset));
-%>
-		<pre class="text"><%= textBody %></pre>
-<%
+		if (commonPreferences.getBoolean("dashed-lines")) {
+        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+    		}
+		out.print("<pre class=\"text\">");
+		out.print(textBody);
+		out.println("</pre>");
+		if (commonPreferences.getBoolean("dashed-lines")) {
+        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+    		}
             } catch (UnsupportedEncodingException ex1) {
 %>
 	<p class="statusError">Varning: textens teckenkodning ("<%=ex1.getMessage()%>") kan inte visas ordentligt.<br/>
@@ -206,25 +231,119 @@
 	</p>
 <%
             }
-	} else if (contentType.equals("x-kom/user-area")) {
+	} else if (contentTypeObj.match("x-kom/user-area")) {
+	    if (commonPreferences.getBoolean("dashed-lines")) {
+	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
 	    out.print("<pre>");
 	    out.print(htmlize(new String(text.getContents(), charset)));
 	    out.println("</pre>");
+	    if (commonPreferences.getBoolean("dashed-lines")) {
+	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	} else if (contentTypeObj.match("multipart/related")) {
+	    boolean showNonDisplayableParts = request.getParameter("showAll") != null;
+	    try {
+		MimeMultipart multipart = new MimeMultipart(text);
+		//out.println("Texten innehåller " + multipart.getCount() + " delar");
+		boolean contentDisplayed = false;
+		for (int i=0; i < multipart.getCount(); i++) {
+		    BodyPart part = multipart.getBodyPart(i);
+		    int subpart = 0;
+		    if (part.isMimeType("multipart/alternative")) {
+			MimeMultipart alternative = new MimeMultipart(new MimePartDataSource((MimeBodyPart)part));
+			for (int j=0; j < alternative.getCount(); j++) {
+			    BodyPart _part = alternative.getBodyPart(j);
+			    if (wantHtml && _part.isMimeType("text/html")) {
+				subpart = j;
+				part = _part;
+			    }
+			    if (!wantHtml && _part.isMimeType("text/plain")) {
+				part = _part;
+			    } else if (_part.isMimeType("text/html") && showNonDisplayableParts) {
+				out.println("Visar ej: del " + (i+1) + "." + (j+1) + ": <a href=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + j + "\">data av typen " + new ContentType(_part.getContentType()).getBaseType() + "</a><br/>");
+			    }
+			}
+		    }
+		    ContentType partContentTypeObj = new ContentType(part.getContentType());
+		    if (partContentTypeObj.match("text/*")) {
+	    		if (commonPreferences.getBoolean("dashed-lines")) {
+	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    		}
+
+			if (wantHtml && part.isMimeType("text/html")) {
+			    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"."+subpart+"\" width=\"95%\" type=\"" + partContentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + subpart + "&sanitize\"></object><br/>");
+			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
+			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+			    out.println("<tt>");
+			    contentDisplayed = true;
+			} else if (part.isMimeType("text/html")) {
+			    out.println("<p class=\"statusError\">Texten är en HTML-text.<br/>");
+			    out.println("<a href=\"" + basePath + "?text="+text.getNo()+"&wantHtml\">Klicka här</a> för att visa den.</p>");
+			    contentDisplayed = true;
+			} else {
+			    out.println("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
+			    contentDisplayed = true;
+			}
+
+	    		if (commonPreferences.getBoolean("dashed-lines")) {
+	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    		}
+		    } else if (showNonDisplayableParts) {
+			out.println("Visar ej: del " + (i+1) + ": <a href=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "\">data av typen " + partContentTypeObj.getBaseType() + "</a><br/>");
+		    }
+		}
+		if (!contentDisplayed) {
+		    out.println("<p class=\"statusError\">Texten innehåller enbart data som ej kunde visas.<br/> " +
+			"<a href=\"" + basePath + "?text=" + text.getNo() + "&showAll\">Klicka här</a> " +
+			"för att visa dolda delar.</p>");
+		}
+	    } catch (MessagingException ex1) {
+		out.println("<p class=\"statusError\">Fel: det gick inte att tolka inläggets MIME-innehåll.<br/>");
+		out.println("(" + ex1.getMessage() + ")<br/>");
+		out.println("(<a href=\"/lyskom/?text=" + text.getNo() + "&forceContentType=text/plain\">återse omodifierad</a>)</p>");
+	    }
+        } else if (contentTypeObj.match("multipart/alternative")) {
+  	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	    MimeMultipart multipart = new MimeMultipart(text);
+	    for (int i=0; i < multipart.getCount(); i++) {
+		BodyPart part = multipart.getBodyPart(i);
+		ContentType pct = new ContentType(part.getContentType());
+		if (wantHtml && pct.match("text/html")) {
+		    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
+		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
+		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+		    out.println("<tt>");
+		}
+		if (!wantHtml && pct.match("text/plain") || pct.match("text/x-kom-basic")) {
+		    out.print("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
+		}
+	    }
+  	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	} else if (wantHtml && contentTypeObj.match("text/html")) {
+  	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
+	    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
+	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
+	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+	    out.println("<tt>");
+  	    if (commonPreferences.getBoolean("dashed-lines")) {
+		out.println("<hr noshade width=\"95%\" align=\"left\" />");
+	    }
 	} else {
 %>
 	<p class="statusError">Varning: textens datatyp ("<%=contentType%>") kan inte visas.<br/>
-	<a href="/lyskom/rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata.</p>
+	<a href="rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata.</p>
 <%
 	}
-	if (commonPreferences.getBoolean("dashed-lines")) {
-%>
-	<hr noshade width="95%" align="left" />
-<%
-	} else {
-%>
-	<br/>
-<%
-	}
+
+	if (!commonPreferences.getBoolean("dashed-lines")) out.println("<br/>");
+
 	List fastReplies = text.getAuxItems(AuxItem.tagFastReply);
 	for (Iterator i = fastReplies.iterator(); i.hasNext();) {
 	    AuxItem item = (AuxItem) i.next();
@@ -296,9 +415,10 @@
 	}
 %>
 	</tt>
+	<br/>
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
-%>	<br/>
+%>	
 	<a accesskey="N" href="<%= myURI(request) %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
 	  Läsmarkera denna text (och läs nästa).</a><br/>
 <%

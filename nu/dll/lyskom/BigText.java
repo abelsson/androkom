@@ -81,6 +81,15 @@ public class BigText extends Text {
 	return session.getTextStream(getNo(), 0, getStat().getSize());
     }
 
+    public InputStream getInputStream() throws IOException {
+	try {
+	    return getContentStream().getStream();
+	} catch (RpcFailure ex1) {
+	    if (Debug.ENABLED) ex1.printStackTrace();
+	    throw new IOException("Stream error:" + ex1);
+	}
+    }
+
     /**
      * Returns a byte array containing this texts entire contents.
      *

@@ -13,6 +13,9 @@ import java.util.LinkedList;
 
 
 class Connection {
+
+    boolean debug = Boolean.getBoolean("lattekom.debug-writer");
+
     private LinkedList writeQueue = new LinkedList();
     private Socket sock;
     private InputStream input;
@@ -41,7 +44,7 @@ class Connection {
 			try {
 			    synchronized (writeQueue) {
 				if (writeQueue.isEmpty()) {
-				    Debug.println("Write queue empty.");
+				    if (debug) Debug.println("Write queue empty.");
 				    writeQueue.wait();
 				}
 				synchronized (output) {
@@ -55,7 +58,7 @@ class Connection {
 					    } else {
 						s = new String(bytes);
 					    }
-					    Debug.println("wrote: " + s);
+					    if (debug) Debug.println("wrote: " + s);
 					}
 				    }
 				}

@@ -15,6 +15,8 @@ import java.util.StringTokenizer;
 import java.util.Map;
 import java.util.HashMap;
 
+import javax.mail.internet.ContentType;
+
 /**
  * <p>
  * The Text-Stat LysKOM data type (and this class) contains status information
@@ -208,7 +210,7 @@ public class TextStat implements java.io.Serializable {
 	}
     }
 
-    protected void replaceOrAddAuxItem(AuxItem a) {
+    public void replaceOrAddAuxItem(AuxItem a) {
 	for (int i=0; i < auxItems.length; i++) {
 	    if (a.getTag() == auxItems[i].getTag()) {
 		auxItems[i] = a;
@@ -232,25 +234,46 @@ public class TextStat implements java.io.Serializable {
      * with the actual content-type, and the second element
      * is a java.util.Properties containing any other data
      * trailing the content-type (eg. "charset").
+     * TODO: this should only need to be done once.
+     * TODO: does not correctly parse values containing "="
+     * TODO: there are probably other cases we can't handle as well
      */
     private Object[] parseContentTypeAuxItem() {
-	Object[] r = new Object[2];
+	String contentTypeString = getFullContentType();
+	try {
+	    Object[] r = new Object[2];
+	    ContentType contentType = new ContentType(contentTypeString);
+	    
+	    Properties ctData = new Properties();
+	    Enumeration pnames = contentType.getParameterList().getNames();
+	    while (pnames.hasMoreElements()) {
+		String key = (String) pnames.nextElement();
+		String value = contentType.getParameterList().get(key);
+		ctData.setProperty(key, value);
+	    }
+	    
+	    if (contentType.match("x-kom/text")) contentTypeString = "text/x-kom-basic";
+	    contentType = new ContentType(contentTypeString);
+	    return new Object[] { contentType.toString(), ctData };
+	} catch (javax.mail.internet.ParseException ex1) {
+	    throw new RuntimeException("Error parsing content-type \"" +
+				       contentTypeString +
+				       "\": " + ex1.toString());
+	}
+    }
+
+    public String getFullContentType() {
 	Hollerith[] _data = getAuxData(AuxItem.tagContentType);
 	String contentType = "text/x-kom-basic";
 	
 	if (_data != null && _data.length > 0) {
 	    contentType = _data[0].getContentString();
 	}
+	return contentType;
+    }
 
-        StringTokenizer toker = new StringTokenizer(contentType, ";");
-        contentType = toker.nextToken();
-        Properties ctData = new Properties();
-        while (toker.hasMoreTokens()) {
-            StringTokenizer tokfan = new StringTokenizer(toker.nextToken(), "=");
-            ctData.setProperty(tokfan.nextToken().trim(), tokfan.nextToken());
-        }
-        if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
-	return new Object[] { contentType, ctData };
+    public Properties getContentTypeParameters() {
+	return (Properties) parseContentTypeAuxItem()[1];
     }
 
     /**

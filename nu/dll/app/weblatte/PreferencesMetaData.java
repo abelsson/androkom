@@ -26,7 +26,7 @@ import nu.dll.lyskom.Debug;
  * Reads meta data information from ~/.weblatte.preferences.ini or using the
  * class loader resource nu/dll/app/weblatte/preferences.ini.
  *
- * The data is accessible directly though the instance variable collections
+ * The data is accessible directly through the instance variable collections
  * "list", "blocks" and "blockKeys", which are immutable, so it is always
  * safe to iterate over them without synchronization.
  * 

@@ -1,4 +1,4 @@
-<!-- $Id: build.xml,v 1.4 2004/05/17 01:19:00 pajp Exp $ -->
+<!-- $Id: build.xml,v 1.5 2004/05/26 15:19:54 pajp Exp $ -->
 
 <project default="all">
   <property name="src" location="."/>
@@ -19,7 +19,8 @@
 
   <target name="lattekom.compile" depends="init">
     <javac destdir="${lattekom.build}" srcdir="${src}" deprecation="on"
-           includes="nu/dll/lyskom/*"/>
+           includes="nu/dll/lyskom/*"
+           classpath="lib/activation.jar:lib/sun-javamail.jar" />
   </target>
 
   <target name="clean">

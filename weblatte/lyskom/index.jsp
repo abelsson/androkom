@@ -2,6 +2,7 @@
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
+<%@ page import='javax.mail.BodyPart, javax.mail.internet.*' %>
 <%
     Map parameters = parseQueryString(request.getQueryString(), "iso-8859-1");
     Enumeration penum = request.getParameterNames();
@@ -15,6 +16,9 @@
 	} else {
 	    parameters.put(name, values);
 	}
+    }
+    if (request.getAttribute("parsed-parameters") != null) {
+	parameters.putAll((Map) request.getAttribute("parsed-parameters"));
     }
     if (request.getQueryString() != null) {
 	Debug.println("query: " + request.getQueryString());
@@ -124,7 +128,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.48 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.49 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -684,13 +688,25 @@
     }
     if (parameter(parameters, "createText") != null) {
 
+	boolean isMultipart = request.getParameter("multipart") != null ||
+		request.getAttribute("multipart") != null;
+	List parts = (List) request.getAttribute("multipart");
 	List recipients = new LinkedList();
     	List ccRecipients = new LinkedList();
 
     	StringBuffer errors = new StringBuffer();
+        boolean explicitRecipients = false;
 
-    	for (int rcptType = 1; rcptType <= 2; rcptType++) {
-            String[] recptFields = request.getParameterValues(rcptType == 1 ? "recipient" : "ccRecipient");
+   	for (int rcptType = 1; rcptType <= 2; rcptType++) {
+            String[] recptFields;
+	    Object _fields = parameters.get(rcptType == 1 ? "recipient" : "ccRecipient");
+	    if (_fields == null) {
+		recptFields = new String[0];
+	    } else if (_fields instanceof String[]) {
+		recptFields = (String[]) _fields;
+	    } else {
+		recptFields = new String[] { (String) _fields };
+	    }
 	    List list = rcptType == 1 ? recipients : ccRecipients;
 	    if (recptFields == null) continue;
             for (int i=0; i < recptFields.length; i++) {
@@ -704,6 +720,7 @@
 		    }
 		    if (list.contains(conf.getNameString())) continue;
 	    	    list.add(conf);
+	    	    explicitRecipients = true;
 	    	} catch (AmbiguousNameException ex1) {
 		    errors.append("<p class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
 	            errors.append("<ul>");
@@ -714,68 +731,205 @@
 	    	}
 	    }
     	}
+	Text newText = null;
 	if (errors.length() == 0) {
-	    String charsetName = preferences.getString("create-text-charset");
-	    if (parameters.containsKey("charset"))
-		charsetName = parameter(parameters, "charset");
-	    String subject = parameter(parameters, "subject");
-	    String body = parameter(parameters, "body").replaceAll("\r", "");
-	    String textContents = subject + "\n" + body;   
-	    Charset charset = Charset.forName(charsetName);
-	    Debug.println("using default charset " + charset.displayName());
-	    CharsetEncoder encoder = charset.newEncoder();
+	    if (!isMultipart) {
+		String charsetName = preferences.getString("create-text-charset");
+		if (parameters.containsKey("charset"))
+		    charsetName = parameter(parameters, "charset");
+		String subject = parameter(parameters, "subject");
+		String body = parameter(parameters, "body").replaceAll("\r", "");
+		String textContents = subject + "\n" + body;   
+		Charset charset = Charset.forName(charsetName);
+		Debug.println("using default charset " + charset.displayName());
+		CharsetEncoder encoder = charset.newEncoder();
 
-	    Charset utf8Charset = Charset.forName("utf-8");
-	    encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
-	    if (!encoder.canEncode(textContents) && !charset.equals(utf8Charset)) {
-		Debug.println("default encoding failed, attempting utf-8 fallback");
-		CharsetEncoder utf8encoder = utf8Charset.newEncoder();
-		if (!utf8encoder.canEncode(textContents)) {
-		    Debug.println("utf-8 encoding failed also");
-		    errors.append("<p class=\"statusError\">Varning: texten " +
-				" kan inte kodas i vare sig utf-8 eller " + 
-				charset.displayName() + " (använder " + 
-				charset.displayName() + ").</p>");
-		} else {
-		    errors.append("<p class=\"statusError\">OBS: " +
-			"textens innehåll kunde inte kodas i vald " +
-			"teckenkodning (\"" + charset.displayName() +
-			"\"). " + 
-			"Texten har istället kodats till \"" + 
-			utf8Charset.displayName() + "\" för att " +
-			"hela innehållet skall representeras korrekt.</p>");
+		Charset utf8Charset = Charset.forName("utf-8");
+		encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+		if (!encoder.canEncode(textContents) && !charset.equals(utf8Charset)) {
+		    Debug.println("default encoding failed, attempting utf-8 fallback");
+		    CharsetEncoder utf8encoder = utf8Charset.newEncoder();
+		    if (!utf8encoder.canEncode(textContents)) {
+			Debug.println("utf-8 encoding failed also");
+			errors.append("<p class=\"statusError\">Varning: texten " +
+				      " kan inte kodas i vare sig utf-8 eller " + 
+				      charset.displayName() + " (använder " + 
+				      charset.displayName() + ").</p>");
+		    } else {
+			errors.append("<p class=\"statusError\">OBS: " +
+				      "textens innehåll kunde inte kodas i vald " +
+				      "teckenkodning (\"" + charset.displayName() +
+				      "\"). " + 
+				      "Texten har istället kodats till \"" + 
+				      utf8Charset.displayName() + "\" för att " +
+				      "hela innehållet skall representeras korrekt.</p>");
 
 			encoder = utf8encoder;
 			charsetName = "utf-8";
+		    }
 		}
-	    }
-	    encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	    encoder.reset();
-	    ByteBuffer textBuffer = encoder.encode(CharBuffer.wrap(textContents));
-	    if (!textBuffer.hasArray()) {
-		throw new IOException("returned ByteBuffer is not backed " +
-				      "by an array");
-	    }
-	    byte[] _tmp = textBuffer.array();
-	    byte[] textContentBytes = new byte[textBuffer.limit()];
-	    System.arraycopy(_tmp, 0, textContentBytes, 0, textBuffer.limit());
+		encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+		encoder.reset();
+		ByteBuffer textBuffer = encoder.encode(CharBuffer.wrap(textContents));
+		if (!textBuffer.hasArray()) {
+		    throw new IOException("returned ByteBuffer is not backed " +
+					  "by an array");
+		}
+		byte[] _tmp = textBuffer.array();
+		byte[] textContentBytes = new byte[textBuffer.limit()];
+		System.arraycopy(_tmp, 0, textContentBytes, 0, textBuffer.limit());
+		newText = new Text(textContentBytes, charsetName);
+		wrapText(newText);
 
-  	    Text newText = new Text(textContentBytes, charsetName);
-	    if (parameter(parameters, "contentType") != null) {
-		newText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
-					     new Bitstring("00000000"), 0,
-					     new Hollerith(parameter(parameters, "contentType"))));
+		if (parameters.containsKey( "content-type") && !"".equals(parameters.get("content-type"))) {
+		    newText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
+						 	  new Bitstring("00000000"), 0,
+						 	  new Hollerith(parameter(parameters, "content-type"))));
+		}
+
+	    } else {
+		ByteArrayOutputStream bodyStream = new ByteArrayOutputStream();
+		ContentType ct;
+		byte[] subject = lyskom.toByteArray(parameter(parameters, "subject"));
+
+		if (parts.size() == 1) {
+		    Map partMap = (Map) parts.get(0);
+		    ContentType partContentType = new ContentType((String) partMap.get("content-type"));
+		    String _uploaded = (String) partMap.get("uploaded");
+		    String _contents = (String) partMap.get("contents");
+		    if (_uploaded != null && !_uploaded.equals("")) {
+			File file = new File((String) partMap.get("uploaded"));
+		    	partContentType.getParameterList().set("name", (String) partMap.get("filename"));
+			InputStream is = new FileInputStream(file);
+			int read;
+			byte[] buf = new byte[2048];
+			while ((read = is.read(buf, 0, buf.length)) != -1) {
+			    bodyStream.write(buf, 0, read);
+			}
+			is.close();
+		    } else if (_contents != null && !_contents.equals("")) {
+			String charset = partContentType.getParameterList().get("charset");
+			if (charset == null) charset = preferences.getString("create-text-charset");
+
+			if (partMap.containsKey("alternative-contents")) {
+			    InternetHeaders headers = new InternetHeaders();
+			    headers.addHeader("Content-Transfer-Encoding", "8bit");
+			    headers.addHeader("Content-Type", partContentType.toString());
+			    byte[] contents = _contents.getBytes(charset);
+			    headers.addHeader("Content-Length", ""+contents.length);			   
+			    MimeMultipart alternative = new MimeMultipart("alternative");
+			    ContentType altContentType = new ContentType((String) partMap.get("alternative-content-type"));
+			    altContentType.getParameterList().set("charset", charset);
+			    byte[] altContents = ((String) partMap.get("alternative-contents")).getBytes(charset);
+			    InternetHeaders altHeaders = new InternetHeaders();
+			    altHeaders.addHeader("Content-Type", altContentType.toString());
+			    altHeaders.addHeader("Content-Length", ""+altContents.length);
+			    altHeaders.addHeader("Content-Transfer-Encoding", "8bit");
+
+			    alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
+			    alternative.addBodyPart(new MimeBodyPart(headers, contents));
+				
+			    ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    alternative.writeTo(os);
+			    byte[] _ac = os.toByteArray();
+			    bodyStream.write(_ac);
+			    partContentType = new ContentType(alternative.getContentType());
+			} else {
+			    bodyStream.write(_contents.getBytes(charset));
+			}
+		    }
+		    ct = partContentType;
+		} else {
+		    MimeMultipart multipart = new MimeMultipart("mixed");
+		    for (Iterator i = parts.iterator(); i.hasNext();) {
+			Map partMap = (Map) i.next();
+			ContentType partContentType = new ContentType((String) partMap.get("content-type"));
+			byte[] contents = null;
+			InternetHeaders headers = new InternetHeaders();
+			headers.addHeader("Content-Transfer-Encoding", "8bit");
+
+			String _contents = (String) partMap.get("contents");
+			String _uploaded = (String) partMap.get("uploaded");
+			if (_uploaded != null && !_uploaded.equals("")) {
+			    File file = new File((String) partMap.get("uploaded"));
+			    partContentType.getParameterList().set("name", (String) partMap.get("filename"));
+			    ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    InputStream is = new FileInputStream(file);
+			    int read;
+			    byte[] buf = new byte[2048];
+			    while ((read = is.read(buf, 0, buf.length)) != -1) {
+				os.write(buf, 0, read);
+			    }
+			    os.close();
+			    is.close();
+			    contents = os.toByteArray();
+			} else if (_contents != null && !_contents.equals("")) {
+			    String charset = partContentType.getParameterList().get("charset");
+			    if (charset == null) charset = "iso-8859-1";
+
+			    contents = _contents.getBytes(charset);
+			}
+			headers.addHeader("Content-Type", partContentType.toString());
+
+			if (contents != null) {
+			    headers.addHeader("Content-Length", "" + contents.length);
+			    if (partMap.containsKey("alternative-contents")) {
+				MimeMultipart alternative = new MimeMultipart("alternative");
+				ContentType altContentType = new ContentType((String) partMap.get("alternative-content-type"));
+				String charset = altContentType.getParameterList().get("charset");
+				if (charset == null) charset = preferences.getString("create-text-charset");
+				altContentType.getParameterList().set("charset", charset);
+				byte[] altContents = ((String) partMap.get("alternative-contents")).getBytes(charset);
+				InternetHeaders altHeaders = new InternetHeaders();
+				altHeaders.addHeader("Content-Type", altContentType.toString());
+				altHeaders.addHeader("Content-Length", ""+altContents.length);
+				altHeaders.addHeader("Content-Transfer-Encoding", "8bit");
+
+				alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
+				alternative.addBodyPart(new MimeBodyPart(headers, contents));
+				
+				ByteArrayOutputStream os = new ByteArrayOutputStream();
+				alternative.writeTo(os);
+				byte[] _ac = os.toByteArray();
+				InternetHeaders _hdrs = new InternetHeaders();
+				_hdrs.addHeader("Content-Type", alternative.getContentType());
+				_hdrs.addHeader("Content-Transfer-Encoding", "8bit");
+				_hdrs.addHeader("Content-Length", ""+altContents.length);
+				multipart.addBodyPart(new MimeBodyPart(_hdrs, _ac));
+			    } else {
+			    	multipart.addBodyPart(new MimeBodyPart(headers, contents));
+			    }
+			}
+		    }
+		    ct = new ContentType(multipart.getContentType());
+		    multipart.writeTo(bodyStream);		
+		}
+		newText = new Text();
+		byte[] body = bodyStream.toByteArray();
+		byte[] contents = new byte[subject.length + body.length + 1];
+		System.arraycopy(subject, 0, contents, 0, subject.length);
+		System.arraycopy(body, 0, contents, subject.length+1, body.length);
+		contents[subject.length] = (byte) '\n';
+		newText.setContents(contents);
+		newText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
+						ct.toString()));
 	    }
-	    wrapText(newText);
-	    if (request.getParameterValues("inCommentTo") != null) {
-		String[] cmtToFields = request.getParameterValues("inCommentTo");
+  	    
+
+	    if (parameters.containsKey("inCommentTo")) {
+		String[] cmtToFields;
+		if (parameters.get("inCommentTo") instanceof String[]) {
+		    cmtToFields = (String[]) parameters.get("inCommentTo");
+		} else {
+		    cmtToFields = new String[] { (String) parameters.get("inCommentTo") };
+		}
 		for (int i=0; i < cmtToFields.length; i++) {
 		    int textNo = Integer.parseInt(cmtToFields[i]);
 		    newText.addCommented(textNo);
 
 		    TextStat commentedTextStat = lyskom.getTextStat(textNo);
 		    int[] _recipients = commentedTextStat.getRecipients();
-		    for (int j=0; i < _recipients.length; i++) {
+		    for (int j=0; !explicitRecipients && i < _recipients.length; i++) {
 	    		Conference conf = lyskom.getConfStat(_recipients[j]);
 	    	    	if (conf.getType().original()) {
 			    int superconf = conf.getSuperConf();
@@ -1248,14 +1402,16 @@
     if (parameter(parameters, "comment") != null && textNumber > 0) {
 	lyskom.doChangeWhatIAmDoing("Skriver en kommentar");
 	Text commented = lyskom.getText(textNumber);
+	String ccharset = commented.getCharset();
+	if (ccharset.equals("us-ascii")) ccharset = "iso-8859-1";
 %>
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="inCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
-	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject(), commented.getCharset())) %>"><br/>
+	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject(), ccharset)) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
 	<input type="submit" value="skicka!" name="createText">
-	<input type="submit" name="dispatchToComposer" value="ändra mottagarlista">
+	<input type="submit" name="dispatchToComposer" value="avancerat läge">
 	</form>
 <%
     }
@@ -1604,7 +1760,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.48 $
+$Revision: 1.49 $
 </p>
 </body>
 </html>
