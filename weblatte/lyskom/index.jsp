@@ -3,6 +3,34 @@
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
 <%@ page import='javax.mail.BodyPart, javax.mail.internet.*' %>
+<%!
+    public void addComments(Session lyskom, TextStat stat, List textNumbers, int maxTextsToShow)
+    throws IOException, RpcFailure {
+	int[] comments = stat.getComments();
+	for (int i=0; textNumbers.size() < maxTextsToShow && i < comments.length; i++) {
+	    TextStat commentStat;
+	    try {
+		commentStat = lyskom.getTextStat(comments[i]);
+	    } catch (RpcFailure ex1) {
+		if (ex1.getError() == Rpc.E_no_such_text) {
+		    continue;
+		}
+		throw ex1;
+	    }
+	    for (Iterator iter = commentStat.getAllRecipients().iterator();
+		 iter.hasNext();) {
+		if (lyskom.isMemberOf(((Integer)iter.next()).intValue())) {
+		    Integer commentObj = new Integer(comments[i]);
+		    if (!textNumbers.contains(commentObj) && 
+			!lyskom.getReadTexts().contains(comments[i])) {
+			textNumbers.add(commentObj);
+			addComments(lyskom, commentStat, textNumbers, maxTextsToShow);
+		    }
+		}
+	    }
+	}
+    }
+%>
 <%
     Map parameters = parseQueryString(request.getQueryString(), "iso-8859-1");
     Enumeration penum = request.getParameterNames();
@@ -529,7 +557,7 @@
 	} else {
 	    if (!manyMemberships) {
 		lyskom.updateUnreads(preferences.getBoolean("prequery-local-texts"),
-	  			     preferences.getBoolean("treat-prio-zero-as-passive") ? 1 : 0);
+	  			     preferences.getInt("min-conference-priority"));
 	    } else {
 		out.println("(\"många möten\" aktiverad)...");
 	    }
@@ -848,25 +876,7 @@
 
 		TextStat stat = lyskom.getTextStat(txtNoObj.intValue());
 		if (!textNumbers.contains(txtNoObj)) textNumbers.add(txtNoObj);
-		int[] comments = stat.getComments();
-		for (int i=0; textNumbers.size() < maxTextsToShow && i < comments.length; i++) {
-		    TextStat commentStat;
-	    	    try {
-			commentStat = lyskom.getTextStat(comments[i]);
-		    } catch (RpcFailure ex1) {
-			if (ex1.getError() == Rpc.E_no_such_text) {
-			    continue;
-			}
-			throw ex1;
-		    }
-		    for (Iterator iter = commentStat.getAllRecipients().iterator();
-			 iter.hasNext();) {
-			if (lyskom.isMemberOf(((Integer) iter.next()).intValue())) {
-			    if (!textNumbers.contains(new Integer(comments[i])))
-				textNumbers.add(new Integer(comments[i]));
-			}
-		    }
-		}
+		addComments(lyskom, stat, textNumbers, maxTextsToShow);
 	    }
 
 	} catch (RpcFailure ex1) {
@@ -1111,8 +1121,9 @@
 <%
     }
 
-	    listNews = listNews || (parameter(parameters, "listnews") != null ||
-	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
+	    listNews = (listNews || (parameter(parameters, "listnews") != null ||
+	        (justLoggedIn && preferences.getBoolean("list-news-on-login")))) &&
+	        viewedTexts.size() == 0;
 
 	    if (listNews) {
 		if (!minimalistic && preferences.getBoolean("auto-refresh-news") &&
@@ -1204,8 +1215,7 @@
 			    }
 			}
 
-			if (preferences.getBoolean("treat-prio-zero-as-passive") &&
-			    membership.getPriority() == 0) {
+			if (preferences.getInt("min-conference-priority") > membership.getPriority()) {
 			    confIter.remove();
 			    continue;
 			}
@@ -1497,7 +1507,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.81 $
+$Revision: 1.82 $
 </div>
 </body>
 </html>

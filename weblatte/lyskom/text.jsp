@@ -36,18 +36,23 @@
 	}
         int depthOnPage = 0;
         Integer lastTextDisplayed = (Integer) request.getAttribute("last-text-displayed");
-        if (preferences.getBoolean("indent-comments-on-page") && lastTextDisplayed != null) {
-	    if (lastTextDisplayed.equals(request.getAttribute("text-" +
-		text.getNo() + "-commented")) ||
-		lastTextDisplayed.equals(request.getAttribute("text-" + 
-		text.getNo() + "-footnoted"))) {
+	Integer parent = null;
+        if (preferences.getBoolean("indent-comments-on-page")) {
+	    parent = (Integer) request.getAttribute("text-" + 
+		text.getNo() + "-commented");
+	    if (parent == null) {
+		parent = (Integer) request.getAttribute("text-" + text.getNo() +
+			"-footnoted");
+	    }
+	    if (parent != null) {
 		depthOnPage = ((Integer) request.getAttribute("text-" +
-			lastTextDisplayed + "-depth")).intValue()+1;
+			parent + "-depth")).intValue()+1;
 	    }
 	}
 	if (depthOnPage > preferences.getInt("max-indent")) {
 	    depthOnPage = preferences.getInt("max-indent");
 	}
+	if (Debug.ENABLED) Debug.println("text " + text.getNo() + " page depth: " + depthOnPage + ", parent: " + parent);
         request.setAttribute("text-" + text.getNo() + "-depth", new Integer(depthOnPage));
         request.setAttribute("last-text-displayed", new Integer(text.getNo()));
  	out.println("<div class=\"text\" style=\"margin-left: " + depthOnPage + "em;\">");
@@ -95,6 +100,7 @@
 	List auxMxDate = Arrays.asList(text.getAuxData(AuxItem.tagMxDate));
 	List auxMxMimePartIn = Arrays.asList(text.getAuxData(AuxItem.tagMxMimePartIn));
 
+	List includeTexts = new LinkedList();
 
         out.println(jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
 		lookupName(lyskom, text.getStat().getAuthor()) +
@@ -456,6 +462,11 @@
 	    if (attachmentTexts.contains(new Integer(comments[i]))) {
 		TextStat ts = lyskom.getTextStat(comments[i]);
 		lyskom.markAsRead(comments[i]);
+		ContentType atContentType = new ContentType(ts.getContentType());
+		if (preferences.getBoolean("auto-display-mx-mime-parts") &&
+		    (atContentType.match("text/x-kom-basic") || atContentType.match("text/plain"))) {
+		    includeTexts.add(new Integer(comments[i]));
+		}
 %>
 		Bilaga av typen <%= ts.getContentType() %> i <%= textLink(request, lyskom, comments[i], false) %>
 		 (<a href="/lyskom/rawtext.jsp?text=<%=comments[i]%>">visa</a>)<br/>
@@ -468,6 +479,7 @@
  	}
 	for (int i=0; i < footnotes.length; i++) {
 	    request.setAttribute("text-" + footnotes[i] + "-footnoted", new Integer(text.getNo()));
+	    includeTexts.add(new Integer(footnotes[i]));
 %>
 	    Fotnot i text <%= textLink(request, lyskom, footnotes[i]) %><br/>
 <%
@@ -494,8 +506,8 @@
 <%
     out.flush();
     RequestDispatcher d = getServletContext().getRequestDispatcher("/lyskom/text.jsp?footnote");
-    for (int i=0; i < footnotes.length; i++) {
-	request.setAttribute("text", new Integer(footnotes[i]));
+    for (Iterator i = includeTexts.iterator(); i.hasNext();) {
+	request.setAttribute("text", i.next());
 	d.include(request, response);
     }
 %>

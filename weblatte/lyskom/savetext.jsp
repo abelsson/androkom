@@ -5,7 +5,7 @@
     }
     int newTextNo = 0;
     Map parameters = (Map) request.getAttribute("parsed-parameters");
-    Debug.println("savetext.jsp: parameters: " + parameters);
+    if (Debug.ENABLED) Debug.println("savetext.jsp: parameters: " + parameters);
     if (parameters.containsKey("createText")) {
 	boolean isMultipart = request.getParameter("multipart") != null ||
 		request.getAttribute("multipart") != null;
