@@ -67,6 +67,8 @@ import java.util.Vector;
 /**
  * This handles the LysKOM datatype Dynamic-Session-Info, which contains information about sessions
  * that might be changed over time (such as current conference and what-am-i-doing).
+ *
+ * @author Staffan Malmgren
  */
 public class DynamicSessionInfo {
     public int session;

@@ -7,14 +7,15 @@ import java.util.LinkedList;
 import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
-    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf" };
+    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g" };
     String[] myDescriptions = {
 	"återse presentation",
 	"återse presentation",
 	"ändra presentation",
 	"återse FAQ",
 	"återse FAQ",
-	"ändra FAQ"
+	"ändra FAQ",
+	"gå till möte"
     };
     public ConfCommands() {
 	setCommands(myCommands);
@@ -64,12 +65,58 @@ public class ConfCommands extends AbstractCommand {
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    changeFaq(confNo);
 	    break;
-
+	case 6:
+	    if (parameters == null) throw new CmdErrException("Du måste ange ett möte att gå till.");
+	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
+	    changeConference(confNo);
+	    break;
+	    
 	default: 
 	    throw new RuntimeException("Unknown command " + s);
 	}
 	return OK;
 
+    }
+
+    public void changeConference(int confNo) throws CmdErrException, IOException {
+	application.consoleWriteLn("-- gå till möte: " + application.confNoToName(confNo));
+	try {
+	    session.changeConference(confNo);
+	    session.updateUnreads();
+
+	    // töm att-läsa-listan
+	    synchronized (application.toread) {
+		while (!application.toread.isEmpty()) application.toread.pop();
+	    }
+	} catch (RpcFailure failed) {
+	    application.consoleWrite("-- mötesbytet misslyckades: ");
+	    switch (failed.getError()) {
+	    case Rpc.E_not_member:
+		application.consoleWriteLn("du är inte med i det mötet");
+		String wantsChange = application.crtReadLine("Vill du gå med i mötet? (j/N) ");
+		if (wantsChange.equals("j")) {
+		    try {
+			session.joinConference(confNo);
+			changeConference(confNo);
+		    } catch (RpcFailure failed2) {
+			application.consoleWrite("Det gick inte att gå med i mötet: ");
+			switch (failed2.getError()) {
+			case Rpc.E_access_denied:
+			    application.consoleWriteLn("du fick inte");
+			    break;
+			case Rpc.E_permission_denied:
+			    application.consoleWriteLn("du får inte ändra på detta medlemskap");
+			    break;
+			default:
+			    application.consoleWriteLn("okänd anledning " + failed2.getError());
+			}
+		    }
+		}
+		break;
+	    default:
+		application.consoleWriteLn("okänd anledning " + failed.getError());
+	    }
+	}
     }
 
 

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.21 2002/04/06 00:38:53 pajp Exp $
+ * @version $Id: Session.java,v 1.22 2002/04/08 15:11:17 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -2233,8 +2233,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	case Asynch.sub_recipient: // TODO: should also update unread status (where?)
 	case Asynch.new_text_old:
 	    textNo = parameters[0].intValue();
-	    textPrefetchQueue.add(new Integer(textNo));
-	    invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
+	    //textPrefetchQueue.add(new Integer(textNo));
+	    //invoker.enqueue(new TextPrefetcher(this, textPrefetchQueue));
 	    break;
 
 	case Asynch.new_name:

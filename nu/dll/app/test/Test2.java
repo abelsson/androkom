@@ -59,8 +59,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
     Object consoleLock = new Object();
 
-    Stack toread = new Stack(); // used to store unread comments
-    Stack toreview = new Stack(); // återse-stack
+    protected Stack toread = new Stack(); // used to store unread comments
+    protected Stack toreview = new Stack(); // återse-stack
 
     static String encoding = System.getProperty("lattekom.encoding");
     static String lineSeparator = System.getProperty("line.separator");
@@ -160,6 +160,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	return bytesToString(name);
     }
 
+    /**
+     * Convert byte-arrays coming from the server into String objects, using the
+     * encoding specified by system.property lyskom.encoding (default "iso-8859-1")
+     */
     public String bytesToString(byte[] bytes) {
 	try {
 	    return new String(bytes, Session.serverEncoding);
@@ -190,8 +194,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	if (names.length > 1) {
 	    consoleWriteLn("%Fel: flertydigt namn");
 	    for (int i=0; i < names.length; i++)
-		consoleWriteLn("-- alternativ " + (i+1) + ": " + names[i].getNameString());
-	    return 0;
+		consoleWriteLn("-- Alternativ " + (i+1) + ": " + names[i].getNameString() + " (#" + names[i].getNo()  + ")");
+	    return -1;
 	}
 	return names[0].getNo();
     }
@@ -955,43 +959,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    } else consoleWriteLn("misslyckades att skapa inlägg.");
 	    return 1;
 	}		 
-	if (cmd.equals("äp")) {
-	    int confNo = foo.getMyPerson().getNo();
-	    if (st.hasMoreTokens()) {
-		confNo = parseNameArgs(st.nextToken(), true, true);
-	    }
-	    if (confNo < 1) return 1;
-	    consoleWriteLn("Ändrar presentation för " + confNoToName(confNo));
-	    Conference myConf = foo.getConfStat(confNo);
-	    int myPresentationNo = myConf.getPresentation();
-	    Text myPresentation = null;
-	    if (myPresentationNo > 0) {
-		Text oldPresentation = foo.getText(myPresentationNo);
-		myPresentation = (Text) oldPresentation.clone();
-	    } else {
-		myPresentation = new Text(confNoToName(confNo),
-					  "");
-		myPresentation.addRecipient(2); // pres memb
-	    }
-	    myPresentation = editText(myPresentation);
-	    if (myPresentation == null) {
-		throw new CmdErrException("Editeringen avbruten");
-	    }
-	    int newText = foo.createText(myPresentation);
-	    if (newText > 0) {
-		consoleWriteLn("text nummer " + newText + " skapad.");
-		markAsRead(newText);
-		try {
-		    foo.setPresentation(confNo, newText);
-		    consoleWriteLn("OK, text " + newText + " är ny presentation för " + 
-				   confNoToName(confNo));
-		} catch (RpcFailure ex1) {
-		    consoleWriteLn("%Fel: kunde inte sätta presentation för " + 
-				   confNoToName(confNo) + ": " + ex1.getMessage());
-		}
-	    }
-	    return 1;
-	}
 	if (cmd.equals("ss")) { // status (för) session
 	    try {
 		int sessionNo = Integer.parseInt(st.nextToken());
@@ -1102,6 +1069,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		return 1;
 	    }
 	    String message = crtReadLine("Text att skicka> ");
+	    if (message == null || message.trim().equals("")) {
+		consoleWriteLn("Avbruten");
+	    }
 	    try {
 		foo.sendMessage(confNo, message);
 		if (confNo == 0) consoleWriteLn("Ditt alarmmeddelande har skickats.");
@@ -1109,56 +1079,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    } catch (RpcFailure ex1) {
 		consoleWriteLn("Det gick inte att skicka meddelandet. Felkod: " + ex1.getError());
 	    }
-	    return 1;
-	}
-
-	if (cmd.equals("g")) { // gå (till möte) (g <mötesnamn>)
-	    int confNo = 0;
-	    try {
-		confNo = parseNameArgs(st.nextToken("").substring(1), true, true);
-	    } catch (NoSuchElementException ex1) {
-		throw new CmdErrException("Du måste ange ett möte att gå till.");
-	    }
-	    if (confNo == 0) return 1;
-
-	    consoleWriteLn("-- gå till möte: " + confNoToName(confNo));
-	    try {
-		foo.changeConference(confNo);
-		foo.updateUnreads();
-
-		// töm att-läsa-listan
-		while (!toread.isEmpty()) toread.pop();
-		return 1;
-	    } catch (RpcFailure failed) {
-		consoleWrite("-- mötesbytet misslyckades: ");
-		switch (failed.getError()) {
-		case Rpc.E_not_member:
-		    consoleWriteLn("du är inte med i det mötet");
-		    String wantsChange = crtReadLine("Vill du gå med i mötet? (j/N) ");
-		    if (wantsChange.equals("j")) {
-			try {
-			    foo.joinConference(confNo);
-			    doCommand("g m " + confNo);
-			} catch (RpcFailure failed2) {
-			    consoleWrite("Det gick inte att gå med i mötet: ");
-			    switch (failed2.getError()) {
-			    case Rpc.E_access_denied:
-				consoleWriteLn("du fick inte");
-				break;
-			    case Rpc.E_permission_denied:
-				consoleWriteLn("du får inte ändra på detta medlemskap");
-				break;
-			    default:
-				consoleWriteLn("okänd anledning " + failed2.getError());
-			    }
-			}
-		    }
-		    break;
-		default:
-		    consoleWriteLn("okänd anledning " + failed.getError());
-		}
-	    }
-
 	    return 1;
 	}
 	if (cmd.equals("nm")) { // nästa möte
@@ -1440,37 +1360,34 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
      * user is a member of.
      *
      */
-    void markAsRead(int textNo) throws IOException {
-	Text text = foo.getText(textNo);
-
-	List miscInfo = text.getStat().getMiscInfo();
-	List recipients = new LinkedList();
-	Iterator si = miscInfo.iterator();
-	while (si.hasNext()) {
-	    Selection selection = (Selection) si.next();
-	    int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
-	    for (int j=0; j < tags.length; j++) {
-		if (selection.contains(tags[j])) {
-		    Enumeration e = selection.get(tags[j]);
-		    while (e.hasMoreElements()) recipients.add(e.nextElement());
-		}
-	    }
+    // note: a better idea is to queue the text numbers up and then
+    // send them in batches to the server with mark-as-read.
+    void markAsRead(int textNo) throws IOException, RpcFailure {
+	TextStat stat = foo.getTextStat(textNo, true);
+	Debug.println("markAsRead: " + textNo);
+	List recipientSelections = new LinkedList();
+	List recipientNumbers = new LinkedList();
+	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
+	for (int i=0; i < tags.length; i++) {
+	    recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
 	}
-
-	for (int i=0; i < recipients.size(); i++) {
-	    int rcpt = ((Integer) recipients.get(i)).intValue();
-	    Debug.println("about to mark " + text.getNo() + " as read for recipient #" + i + ": " + rcpt);
-	    if (foo.isMemberOf(rcpt)) {
-		Debug.println("mark-as-read: " + text.getNo() + ", local " +
-			      text.getLocal(rcpt));
-		
-		foo.markAsRead(rcpt, new int[] { text.getLocal(rcpt) });
-	    } else {
-		Debug.println("not member of " + rcpt);
+	
+	Iterator recipientIterator = recipientSelections.iterator();
+	while (recipientIterator.hasNext()) {	    
+	    Selection selection = (Selection) recipientIterator.next();
+	    int rcpt = 0;
+	    for (int i=0; i < tags.length; i++) {
+		if (selection.contains(tags[i])) 
+		    rcpt = selection.getIntValue(tags[i]);		    
+	    }
+	    if (rcpt > 0 && foo.isMemberOf(rcpt)) {
+		int local = selection.getIntValue(TextStat.miscLocNo);
+		Debug.println("markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+		foo.markAsRead(rcpt, new int[] { local });
 	    }
 	}
 	// add the text to the ReadTextsMap
-	foo.getReadTexts().add(text.getNo());
+	foo.getReadTexts().add(textNo);
     }
 
     void displayText(Text text, boolean markAsRead) throws IOException {
