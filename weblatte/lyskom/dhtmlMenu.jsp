@@ -1,11 +1,13 @@
-<% if (lyskom != null && lyskom.getLoggedIn()) { %>
+<% if (lyskom != null && lyskom.getLoggedIn()) { 
+	boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
+%>
 <!-- Context menu Script- © Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
      For full source code and Terms Of Use, visit http://www.dynamicdrive.com -->
 <div id="ie5menu" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
 <div class="menuitems" url="<%= basePath %>?listnews">Lista nyheter</div>
 <div class="menuitems" url="<%= basePath %>composer.jsp" style="font-weight: bold">Skriv inlägg</div>
 <div class="menuitems" target="_top" url="<%= basePath %>frames.jsp">Ramvy</div>
-<%  if (lyskom.getServer().equals("sno.pp.se")) { %>
+<%  if (lyskom.getServer().equals("sno.pp.se") && vemArVem) { %>
 <div class="menuitems" url="<%= basePath %>?uploadForm">Ladda upp bild</div>
 <%  } %>
 <div class="menuitems" url="<%= basePath %>?reviewMarked">Lista markerade texter</div>
@@ -14,7 +16,7 @@
 <div class="menuitems" url="<%= basePath %>prefs.jsp">Inställningar</div>
 <hr>
 <div class="menuitems" url="<%= basePath %>vilka/">Vilka är inloggade?</div>
-<%  if (lyskom.getServer().equals("sno.pp.se")) { %>
+<%  if (lyskom.getServer().equals("sno.pp.se") && vemArVem) { %>
 <div class="menuitems" url="<%= basePath %>bilder/">Vem är vem i SnoppKOM?</div>
 <%  } %>
 <hr>
