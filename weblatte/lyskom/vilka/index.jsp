@@ -13,6 +13,8 @@
     if (!disconnectLast) {
     	if (lyskom == null || !lyskom.getLoggedIn()) response.sendRedirect("http://dll.nu/lyskom/");
     }
+    String sort = request.getParameter("sort");
+    if (sort == null) sort = "";
 
     int activeLast = 3600;
     if (request.getParameter("activeLast") != null &&
@@ -29,12 +31,16 @@
     DynamicSessionInfo[] who = lyskom.whoIsOnDynamic(request.getParameter("noVisible") == null,
 						     request.getParameter("wantInvisible") != null,
 						     activeLast);
-    Arrays.sort(who, new Comparator() {
+    if (sort.equals("")) {
+	Arrays.sort(who, new Comparator() {
 	    public int compare(Object o1, Object o2) {
-		return ((DynamicSessionInfo) o1).getIdleTime() -
-		       ((DynamicSessionInfo) o2).getIdleTime();
+		DynamicSessionInfo s1 = (DynamicSessionInfo) o1;
+		DynamicSessionInfo s2 = (DynamicSessionInfo) o2;
+		return s1.getIdleTime() - s2.getIdleTime();
 	    }
 	});
+    }
+
 %>
 <p class="StatusSuccess">Listar <%= who.length %> sessioner:</p>
 <table>
@@ -101,20 +107,25 @@
 </table>
 <p>
 <form method="get" action="<%= myURI(request) %>" class="boxed">
+Sorteringsordning:
+<select name="sort">
+<option value="" <%= sort.equals("") ? "selected" : "" %>>senast aktiv först
+<option value="none" <%= sort.equals("none") ? "selected" : "" %>>ingen
+</select><br/>
 Visa dolda sessioner <input type="checkbox" <%= request.getParameter("wantInvisible") != null ? "checked" : "" %> name="wantInvisible" /><br/>
 <span title="Visar varje sessions klientprogramvarunamn och version, om tillgänglig">Visa klientinformation <input type="checkbox" <%= request.getParameter("showClientInfo") != null ? "checked" : "" %> name="showClientInfo" /></span><br/>
 Visa sessioner som varit aktiva inom:
 <select name="activeLast">
-<option value="" />1 timme
-<option value="14400" />4 timmar
-<option value="0" />Visa alla
+<option <%= activeLast == 3600 ? "selected" : "" %> value="" />1 timme
+<option <%= activeLast == 14400 ? "selected" : "" %> value="14400" />4 timmar
+<option <%= activeLast == 0 ? "selected" : "" %> value="0" />Visa alla
 </select><br/>
 <input type="submit" value="ok"/>
 </form>
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.9 2004/05/09 02:17:44 pajp Exp $
+$Id: index.jsp,v 1.10 2004/05/09 17:45:37 pajp Exp $
 </p>
 </body>
 </html>

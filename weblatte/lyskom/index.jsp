@@ -82,7 +82,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.20 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.21 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -112,28 +112,27 @@
 	    String gotoURL = (String) session.getAttribute("goto");
     	    if (gotoURL != null) {
 		if (justLoggedIn) {
-		    if (gotoURL.indexOf("?") == -1) {
-			gotoURL = gotoURL + "?jul";
-		    } else {
-			gotoURL = gotoURL + "&jul";
-		    }
+		    session.setAttribute("lyskom.justLoggedIn", Boolean.TRUE);
 		}
 	        session.removeAttribute("goto");
 	        response.sendRedirect(gotoURL);
 	        return;
             }
-	    justLoggedIn = justLoggedIn || request.getParameter("jul") != null;
+	    Boolean justLoggedInObj = (Boolean) session.getAttribute("lyskom.justLoggedIn");
+	    justLoggedIn = justLoggedIn || (justLoggedInObj != null && justLoggedInObj.booleanValue());
+	    session.removeAttribute("lyskom.justLoggedIn");
         }
     } catch (IllegalStateException ex1) {}
     List messages = null;
+    List reviewList = null;
     int interval = 120; // seconds
 %>
 <html><head>
 <script language="JavaScript1.2" src="stuff.jsp"></script>
 <% if (authenticated.booleanValue()) { %>
-<title><%= serverShort(lyskom) %></title>
+<title>Weblatte: <%= serverShort(lyskom) %></title>
 <% } else { %>
-<title>snoppkom (web-latte)</title>
+<title>Weblatte LysKOM-klient</title>
 <% } %>
 </head>
 <link rel="stylesheet" href="lattekom.css" />
@@ -200,6 +199,11 @@
 	    response.sendRedirect(basePath + "frames.jsp?conference=0");
 	    return;
 	}
+        reviewList = (List) session.getAttribute("lyskom.review-list");
+        if (reviewList == null || request.getParameter("conference") == null) {
+	    reviewList = new LinkedList();
+	    session.setAttribute("lyskom.review-list", reviewList);
+    	}
     }
     if (request.getParameter("pom") != null) {
 	session.setAttribute("pom", new Boolean(request.getParameter("pom").equals("true")));
@@ -272,7 +276,7 @@
 	}
     }
     if (request.getParameter("mark") != null) {
-	lyskom.markText(Integer.parseInt(request.getParameter("mark")), 100);
+	lyskom.markText(Integer.parseInt(request.getParameter("mark")), commonPreferences.getInt("default-mark"));
 	out.println("<p class=\"statusSuccess\">Text " +
 		request.getParameter("mark") + " har markerats.</p>");
     }
@@ -786,7 +790,11 @@
 	try {
 	    lyskom.doChangeWhatIAmDoing("Läser");
 	    lyskom.changeConference(conferenceNumber);
-	    nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
+	    if (reviewList != null && reviewList.size() > 0) {
+		nextUnreadText = ((Integer) reviewList.remove(0)).intValue();
+	    } else {
+	        nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
+	    }
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_not_member) {
 		out.println("<p class=\"statusError\">Fel: du är inte medlem i " +
@@ -867,6 +875,7 @@
 		Text text = lyskom.getText(textNumber);
 		request.setAttribute("text", new Integer(textNumber));
 		request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
+		request.setAttribute("reviewList", reviewList);
 		out.flush();
 		RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/text.jsp");
 		d.include(request, response);
@@ -1231,7 +1240,7 @@ Du är inte inloggad.
 </p>
 <p class="footer">
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.20 $
+$Revision: 1.21 $
 </p>
 </body>
 </html>

@@ -5,6 +5,7 @@
 <%@ include file='prefs_inc.jsp' %>
 <%
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
+        List reviewList = (List) request.getAttribute("reviewList");
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
 %>
@@ -197,11 +198,30 @@
 	for (int i=0; i < comments.length; i++) {
 	    if (attachmentTexts.contains(new Integer(comments[i]))) {
 		TextStat ts = lyskom.getTextStat(comments[i]);
+		lyskom.markAsRead(comments[i]);
 %>
 		Bilaga av typen <%= ts.getContentType() %> i <%= textLink(request, lyskom, comments[i], false) %>
 		 (<a href="/lyskom/rawtext.jsp?text=<%=comments[i]%>">visa</a>)<br/>
 <%
 	    } else {
+	        if (preferences.getBoolean("read-comments-first")) {
+		    if (conferenceNumber > 0) {
+			TextStat ts = lyskom.getTextStat(comments[i]);
+			if (ts.hasRecipient(conferenceNumber)) {
+			    if (reviewList.contains(new Integer(comments[i]))) {
+				reviewList.add(0, new Integer(comments[i]));
+			    }
+			    Debug.println("Adding " + comments[i] + " to review-list");
+			} else {
+			    Debug.println("NOT adding " + comments[i] + " to review-list " +
+				" (not in conference " + conferenceNumber + ")");
+			}
+		    } else {
+		        Debug.println("read-comments-first is true, but not in a conference");
+		    }
+	        } else {
+		    Debug.println("read-comments-first is false");
+		}
 %>
 		Kommentar i text <%= textLink(request, lyskom, comments[i]) %><br/>
 <%

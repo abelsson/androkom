@@ -473,6 +473,18 @@ public class TextStat implements java.io.Serializable {
 	return getStatInts(TextStat.miscCcRecpt);
     }
 
+    public boolean hasRecipient(int confNo) {
+	int[] recipients = getRecipients();
+	int[] ccRecipients = getCcRecipients();
+	for (int i=0; i < recipients.length; i++) 
+	    if (recipients[i] == confNo) return true;
+
+	for (int i=0; i < ccRecipients.length; i++) {
+	    if (ccRecipients[i] == confNo) return true;
+	}
+	return false;
+    }
+
     /**
      * Walks through the recipient list of this text and return
      * this texts local text number for that recipient, or -1

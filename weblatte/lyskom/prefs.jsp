@@ -20,7 +20,11 @@
 		out.print("<option value=\"0\" " + 
 			(!block.getBoolean(pmd.key) ? "selected" : "") +
 			">Av</option>");
-	    } else if (pmd.type.equals("list")) {
+	    } else if (pmd.type.equals("integer")) {
+	        out.println("<input type=\"text\" size=\"5\" value=\"" +
+	            block.getInt(pmd.key) + "\" name=\"" + 
+	            pmd.key + "\" />");
+	    } else if (pmd.type.equals("single-select")) {
 	        out.println("<select name=\"" + pmd.key + "\">");
 	        for (int j=0; j < pmd.alternatives.length; j++) {
 	    	    out.print("<option ");
@@ -33,7 +37,7 @@
 	        }
 		out.println("</select>");
 	    } else {
-		out.println("<i class=\"statusError\">Fel: okänd datatyp.</i>");
+		out.println("<i class=\"statusError\">Fel: okänd datatyp \"" + pmd.type + "\".</i>");
 	    }
 	    out.print("</td>");
 	    out.println("</tr>");
