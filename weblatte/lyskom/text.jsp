@@ -127,15 +127,15 @@
 	Skapad <%= df.format(text.getCreationTime()) %><br/>
 <%
 	}
-%>
-<%	if (debug) {
+
+	if (debug) {
 	    Hollerith[] creatingSoftware = text.getStat().getAuxData(AuxItem.tagCreatingSoftware);
 	    for (int i=0; i < creatingSoftware.length; i++) {
 	    	out.println("Klient: " + lyskom.toString(creatingSoftware[i].getContents()) + "<br/>");
             }
-%>
-	    Datatyp: <%= rawContentType %><br/>
-<%	}
+	    out.println("Datatyp: " + rawContentType + "<br/>");
+	}
+
 	for (int i=0; i < commented.length; i++) {
 %>
 	Kommentar till text <%= textLink(request, lyskom, commented[i]) %><br/>
