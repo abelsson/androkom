@@ -102,9 +102,11 @@
 
 	List includeTexts = new LinkedList();
 
-        out.println(jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
+        if (!minimalistic) {
+	    out.println(jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
 		lookupName(lyskom, text.getStat().getAuthor()) +
 		": " + subject));
+	}
 	boolean printAuthor = false;
 	if (footnoteDisplay) {
 	    for (int i=0; i < footnoted.length; i++)

@@ -161,8 +161,10 @@
 		    response.addCookie(serverCookie);
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
-		    if (parameters.containsKey("mini"))
-			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
+		    if (parameters.containsKey("mini")) {
+                        lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
+			minimalistic = true;
+		    }
 		    lyskom.setLatteName("Weblatte " + Version.getVersion());
 		    lyskom.setClientVersion("Weblatte", Version.getVersion() +
 					    (Debug.ENABLED ? " (debug)" : ""));
@@ -1509,7 +1511,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.85 $
+$Revision: 1.86 $
 </div>
 </body>
 </html>

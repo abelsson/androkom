@@ -395,7 +395,7 @@ KomPreferences preferences = null;
 boolean debug = (Debug.ENABLED && Boolean.getBoolean("weblatte.debug")) || request.getParameter("debug") != null;
 SessionWrapper lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
 Session lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
-boolean minimalistic = lyskom != null && lyskom.getAttribute("weblatte.minimalistic") != null;
+boolean minimalistic = lyskom != null && Boolean.TRUE.equals(lyskom.getAttribute("weblatte.minimalistic"));
 if (Debug.ENABLED) {
     Debug.println("wrapper: " + Integer.toHexString(System.identityHashCode(lyskomWrapper)));
     Debug.println("lyskom: " + Integer.toHexString(System.identityHashCode(lyskom)));
