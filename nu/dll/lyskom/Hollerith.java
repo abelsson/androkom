@@ -53,4 +53,3 @@ public class Hollerith extends KomToken implements java.io.Serializable {
     }
 
 }
-  

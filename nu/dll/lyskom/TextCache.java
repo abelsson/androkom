@@ -15,6 +15,10 @@ public class TextCache {
 	hash = new Hashtable();
     }
 
+    public void remove(int textNo) {
+	hash.remove(new Integer(textNo));
+    }
+
     public void add(Text t) {
 	if (t.getNo() == -1)
 	    return; // throw(new TextNumberException("Text has no number"));
@@ -35,9 +39,4 @@ public class TextCache {
 		
 	return t;
     }
-
-    public Text remove(int textNo) {
-	return (Text) hash.remove(new Integer(textNo));
-    }
-
 }

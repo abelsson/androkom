@@ -66,6 +66,10 @@ public class AuxItem implements java.io.Serializable {
     public Hollerith getData() {
 	return data;
     }
+    
+    public String getDataString() {
+	return data.getContentString();
+    }
 
     public AuxItem(int tag, Bitstring flags, int inheritLimit,
 		   Hollerith data) {
@@ -141,10 +145,3 @@ public class AuxItem implements java.io.Serializable {
     }
     
 }
-
-
-
-
-
-
-

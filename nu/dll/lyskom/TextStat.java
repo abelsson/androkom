@@ -5,6 +5,7 @@
  */
 package nu.dll.lyskom;
 import java.util.Enumeration;
+import java.util.Date;
 
 public class TextStat implements java.io.Serializable {
 
@@ -196,6 +197,3 @@ public class TextStat implements java.io.Serializable {
 
     }
 }
-
-
-

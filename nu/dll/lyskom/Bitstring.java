@@ -35,6 +35,12 @@ public class Bitstring extends KomToken implements Serializable {
 	return (getContents()[i] == '1') ? true : false;
     }
 
+    public void setBitAt(int i, boolean value) {
+	byte[] contents = getContents();
+	contents[i] = (byte) (value ? '1' : '0');
+	setContents(contents);
+    }
+
     public boolean[] getBits() {
 	byte[] cont = getContents();
 	boolean[] bs = new boolean[cont.length];

@@ -320,8 +320,11 @@ public abstract class Rpc {
 
     public final static int C_logout = 1;
     public final static int C_change_conference = 2;
+    public final static int C_change_name = 3;
     public final static int C_change_what_i_am_doing = 4;
     public final static int C_delete_conf = 11;
+
+    public final static int C_set_presentation = 16;
 
     // C_get_conf_stat_old = 13
     
@@ -356,11 +359,16 @@ public abstract class Rpc {
     public final static int C_who_is_on_dynamic = 83;
     public final static int C_create_text = 86;
 
+    public final static int C_create_conf = 88;
+    public final static int C_create_person = 89;
+
     public final static int C_get_text_stat = 90;
     public final static int C_get_conf_stat = 91;
 
     public final static int C_query_read_texts = 98;
     public final static int C_get_membership = 99;
+
+    public final static int C_add_member = 100;
 
     public final static int C_local_to_global = 103;
 

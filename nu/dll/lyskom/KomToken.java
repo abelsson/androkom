@@ -51,7 +51,7 @@ public class KomToken implements Serializable {
 	return toInt();
     }
 
-    public int toInt() {
+    public int intValue() {
 	if (contents == null || contents.length == 0)
 	    return -1;
 	try {
@@ -60,6 +60,13 @@ public class KomToken implements Serializable {
 	    // Is this a programming error or runtime error? Hmmm?
 	    throw new RuntimeException("Error parsing " + new String(contents) + " to int");
 	}
+    }
+
+    /**
+     * @deprecated use intValue() instead
+     */
+    public int toInt() {
+	return intValue();
     }
    
     public String toString() {

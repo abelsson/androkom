@@ -119,7 +119,7 @@ public class Membership {
 		for (int k=0;k<memberships[i].length;k++) {
 		    Debug.print("["+k+"="+memberships[i][k]+"]");
 		}
-		Debug.println("Aeeeee!");
+		System.err.println("Aeeeee!");
 		ex.printStackTrace();
 		System.exit(-1);
 	    }

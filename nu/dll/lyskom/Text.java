@@ -8,6 +8,7 @@ package nu.dll.lyskom;
 import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.Date;
 
 public class Text extends Hollerith implements java.io.Serializable {
 
@@ -19,8 +20,7 @@ public class Text extends Hollerith implements java.io.Serializable {
     TextStat stat = null;
 
     public Text setCached(boolean b) {
-	cached = b;
-	return this;
+	cached = b; return this;
     }
 
     public boolean isCached(boolean n) { return cached; }
@@ -191,6 +191,10 @@ public class Text extends Hollerith implements java.io.Serializable {
 	    int[] i= {};
 	    return i;
 	}
+    }
+
+    public Date getCreationTime() {
+	return getStat().getCreationTime().getTime();
     }
 
     public String getCreationTimeString() {

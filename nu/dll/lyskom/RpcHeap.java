@@ -6,9 +6,12 @@
 package nu.dll.lyskom;
 import java.util.*;
 
+/**
+ * (not really a _Heap_, but a just bunch of RpcCall objects)
+ */
 public class RpcHeap {
     static int DEBUG = 1;
-    public static Vector rpcCallStack;
+    public static List rpcCallStack;
 
     public RpcHeap() {
 	rpcCallStack = new Vector();
@@ -17,37 +20,40 @@ public class RpcHeap {
     public void purgeRpcCall(RpcCall r) {
 	if (rpcCallStack == null || rpcCallStack.size() == 0)
 	    return;
-	rpcCallStack.removeElement((Object) r);
+	rpcCallStack.remove(r);
     }
 
     public void purgeRpcCall(int wid) {
 	if (rpcCallStack == null || rpcCallStack.size() == 0)
 	    return;
 
-	for (Enumeration e = rpcCallStack.elements(); e.hasMoreElements();) {
-	    RpcCall r = (RpcCall) e.nextElement();
-	    if (r.getId() == wid) rpcCallStack.removeElement((Object) r);
+	for (Iterator i = rpcCallStack.iterator(); i.hasNext();) {
+	    RpcCall r = (RpcCall) i.next();
+	    if (r.getId() == wid) rpcCallStack.remove(r);
 	}
     }
 
     public void addRpcCall(RpcCall r) {
-	rpcCallStack.addElement((Object) r);
+	rpcCallStack.add(r);
     }
 
     public RpcCall getRpcCall(int wid, boolean reqReply) {
 	if (rpcCallStack == null || rpcCallStack.size() == 0)
 	    return null;
-
-	for (Enumeration e = rpcCallStack.elements(); e.hasMoreElements();) {
-	    Object o = e.nextElement();
+	for (Iterator i = rpcCallStack.iterator(); i.hasNext();) {
+	    Object o = i.next();
 	    if (DEBUG>0) {
 		if (!(o instanceof RpcCall)) {
 		    throw new RuntimeException("Non-RpcCall object in rpcCallStack: "+o.toString());
 		}
 	    }
 	    RpcCall r = (RpcCall) o;
-	    if (r.getId() == wid && reqReply == (r.getReply() != null))
+	    if (r.getId() == wid && reqReply == (r.getReply() != null)) {
+		synchronized (this) {
+		    notifyAll();
+		}
 		return r;
+	    }
 
 	}
 	return null;

@@ -99,6 +99,38 @@ public class DynamicSessionInfo {
 	this.whatAmIDoing = whatAmIDoing;
     }
 
+    public int getSession() {
+	return session;
+    }
+    
+    public int getPerson() {
+	return person;
+    }
+
+    public int getWorkingConference() {
+	return workingConference;
+    }
+
+    public int getIdleTime() {
+	return idleTime;
+    }
+
+    public Bitstring getFlags() {
+	return flags;
+    }
+
+    public byte[] getWhatAmIDoing() {
+	return whatAmIDoing;
+    }
+
+    public String getWhatAmIDoingString() {
+	return new String(whatAmIDoing);
+    }
+
+
+
+
+
 }
 
 

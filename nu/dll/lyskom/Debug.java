@@ -25,7 +25,7 @@ public class Debug {
     //public static boolean ENABLED = false;
 
     public static void println(String msg) {
-	if (ENABLED) System.err.println(msg);
+	if (ENABLED) System.err.println(Thread.currentThread().getName() + ": " + msg);
     }
     public static void print(String msg) {
 	if (ENABLED) System.err.print(msg);

@@ -52,19 +52,25 @@ public class Connection {
     
     public void write(char c)
     throws IOException {
-	output.write(c);
+	synchronized (output) {
+	    output.write(c);
+	}
     }
 
     public void writeLine(byte[] b) 
     throws IOException {
-	output.write(b);
-	output.write('\n');
+	synchronized (output) {
+	    output.write(b);
+	    output.write('\n');
+	}
     }
 
     public void writeLine(String s)
     throws IOException {
-	output.write(s.getBytes());
-	output.write('\n');
+	synchronized (output) {
+	    output.write(s.getBytes());
+	    output.write('\n');
+	}
     }
 
     /* appending to a StringBuffer doesnt feel very efficient.

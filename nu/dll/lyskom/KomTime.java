@@ -5,6 +5,7 @@
  */
 package nu.dll.lyskom;
 
+import java.util.*;
 import java.io.Serializable;
 
 // simple LysKOM Time implementation
@@ -31,6 +32,18 @@ public class KomTime implements Serializable {
 	this.isdst = isdst;
     }
 
+    public Date getTime() {
+	Calendar cal = new GregorianCalendar();
+	cal.set(Calendar.DST_OFFSET, isdst*60*1000);
+	cal.set(Calendar.YEAR, year+1900);
+	cal.set(Calendar.DAY_OF_YEAR, yearday);
+	cal.set(Calendar.HOUR_OF_DAY, hours);
+	cal.set(Calendar.MINUTE, minutes);
+	cal.set(Calendar.SECOND, seconds);
+	cal.set(Calendar.MILLISECOND, 0);
+	return cal.getTime();
+    }
+
     public static KomTime createFrom(int offset, KomToken[] parray) {
 	int pcount = offset;
 	if (false)
@@ -47,4 +60,3 @@ public class KomTime implements Serializable {
     }
 
 }
-

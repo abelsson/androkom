@@ -11,7 +11,16 @@ import java.util.Vector;
 import java.util.Enumeration;
 import java.io.*;
 
-/** NB! Rename this class! **/
+/** NB! Rename this class!
+ *
+ * NOTE: might be an idea to create a dispatcher worker thread that
+ * executes all calls to listener objects. Now, this thread
+ * executed the listener callbacks, with the side-effect that they
+ * won't be able to call synchronous methods in the Session class
+ * (since they relay on this thread to be different from the
+ * executing).
+ *
+ */
 public class MessageListener
 implements Runnable {
 
@@ -19,7 +28,7 @@ implements Runnable {
 
     Vector rpcReceivers = new Vector(1);
     Vector asynchReceivers = new Vector(1);
-
+    Thread thread = null;
     Session session;
 
     boolean asynch = false;
@@ -32,7 +41,8 @@ implements Runnable {
 	if (wantAsynch) {
 	    if (!asynch) {
 		asynch = true;
-		new Thread(this, "LyskomAsynchReadThread").start();
+		thread = new Thread(this, "LyskomAsynchReadThread");
+		thread.start();
 	    }
 	} else {
 	    // TODO: change from synchronous to asynch mode and vice versa?
@@ -40,6 +50,10 @@ implements Runnable {
 	    // this 
 	    asynch = false;
 	}
+    }
+
+    public Thread getThread() {
+	return thread;
     }
 
     // cannot throw exceptions from here, use callback error handling?
