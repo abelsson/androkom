@@ -92,7 +92,7 @@ public class CommandMap {
 	return (Command) commands.get(str);
     }
 
-    // GROSS!
+    // GROSS! GROSS! GROSS! *blrblrbrrbl*
     public Match[] resolveCommand(String s) {
 	List foundCommands = new LinkedList();
 	Iterator i = commandList.iterator();
@@ -103,6 +103,8 @@ public class CommandMap {
 	    Command c = (Command) i.next();
 	    String[] commandStrings = c.getCommands();
 	    for (int j=0; j < commandStrings.length; j++) {
+		boolean rmatch = true;
+
 		StringTokenizer uiTokenizer = new StringTokenizer(s);
 		StringTokenizer cmdTokenizer = new StringTokenizer(commandStrings[j]);
 		int commandTokens = countTokens(commandStrings[j]);
@@ -114,8 +116,11 @@ public class CommandMap {
 		    String uiToken = uiTokenizer.nextToken();
 		    //if (!cmdTokenizer.hasMoreTokens()) continue;
 		    String cmdToken = cmdTokenizer.nextToken();
-		    if (!cmdToken.toLowerCase().startsWith(uiToken.toLowerCase())) continue;		    
-		    match = true; matchCount++;
+		    if (!cmdToken.toLowerCase().startsWith(uiToken.toLowerCase())) {
+			rmatch = false;
+			continue;
+		    }
+		    match = rmatch && true; matchCount++;
 		    Debug.print("(match) ");
 		}
 		if (match && matchCount <= commandTokens) {
