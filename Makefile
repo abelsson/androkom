@@ -21,7 +21,11 @@ kombiff:
 komwho:
 	$(JAVAC) nu/dll/app/komwho/*.java
 
+komtest:
+	$(JAVAC) nu/dll/app/test/*.java
 
 doc:
 	mkdir -p $(DOCDIR) && $(JAVADOC) -d $(DOCDIR) nu/dll/lyskom/*.java
 
+clean:
+	find nu/dll/ -type f -name '*.class' -exec rm -f {} \;
