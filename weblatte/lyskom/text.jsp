@@ -2,9 +2,7 @@
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
-<%
-	Session lyskom = (Session) session.getAttribute("lyskom");
-%><%@ include file='prefs_inc.jsp' %><%
+<%@ include file='prefs_inc.jsp' %>
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
