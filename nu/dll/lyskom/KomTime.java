@@ -5,7 +5,7 @@
  */
 package nu.dll.lyskom;
 
-// simple LysKOM Tihttp://java.sun.com/aboutJava/communityprocess/jsr/jsr_051_ioapis.htmlme implementation
+// simple LysKOM Time implementation
 public class KomTime {
     final static int DEBUG = 1;
     public static int ITEM_SIZE = 9;
