@@ -24,7 +24,19 @@
 <link rel="stylesheet" href="<%= basePath %>/lattekom.css" />
 <body>
 <h2>vilka är inloggade i <%= serverShort(lyskom) %>?</h2>
-<script language="JavaScript1.2" src="<%= basePath %>stuff.jsp"></script>
+<%
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+%>
+<script language="JavaScript1.2">
+<%@ include file='../stuff.jsp' %>
+</script>
+<%
+    } else {
+%>
+	<script language="JavaScript1.2" src="../stuff.jsp"></script>
+<%
+    }
+%>
 <%@ include file='../dhtmlMenu.jsp' %>
 <%
     out.flush();
@@ -125,7 +137,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.10 2004/05/09 17:45:37 pajp Exp $
+$Id: index.jsp,v 1.11 2004/05/10 00:50:46 pajp Exp $
 </p>
 </body>
 </html>
