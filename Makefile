@@ -1,27 +1,27 @@
-JAVAC	= jikes
+JAVAC	= javac
 JAVADOC	= javadoc
 DOCDIR	= apidocs
 
 all:	classes
 
 classes:
-	$(JAVAC) com/micoco/lyskom/*.java
+	$(JAVAC) nu/dll/lyskom/*.java
 
 apps:	classes snarfkom swingkom kombiff komwho
 
 snarfkom:
-	$(JAVAC) com/micoco/app/snarfkom/SnarfKom.java
+	$(JAVAC) nu/dll/app/snarfkom/SnarfKom.java
 
 swingkom:
-	$(JAVAC) com/micoco/app/swingkom/*.java
+	$(JAVAC) nu/dll/app/swingkom/*.java
 
 kombiff:
-	$(JAVAC) com/micoco/app/kombiff/*.java
+	$(JAVAC) nu/dll/app/kombiff/*.java
 
 komwho:
-	$(JAVAC) com/micoco/app/komwho/*.java
+	$(JAVAC) nu/dll/app/komwho/*.java
 
 
 doc:
-	mkdir -p $(DOCDIR) && $(JAVADOC) -d $(DOCDIR) com/micoco/lyskom/*.java
+	mkdir -p $(DOCDIR) && $(JAVADOC) -d $(DOCDIR) nu/dll/lyskom/*.java
 
