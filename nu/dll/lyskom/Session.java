@@ -212,24 +212,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     /**
-     * Updates the undreadMembership array with Membership objects for
-     * each conference that may contain unreads. Poorly implemented.
-     *
-     * deprecated, use updateUnreads instead
-
-    public synchronized void getUnreadStatus()
-    throws IOException {
-	int pers = myPerson.getNo();
-	unreads = getUnreadConfs(pers);
-	for (int i=0; i < unreads.length; i++) {
-	    Membership m = queryReadTexts(pers, unreads[i]);
-	    if (m.lastTextRead < getUConfStat(m.conference).getHighestLocalNo()) {
-		unreadMembership[i] = queryReadTexts(pers, unreads[i]);
-	    }
-	}
-    }
-    */
-    /**
      * Supposed to return an array of global text number for all unreads
      * in a conference. Generally not a good idea. Not used.
      */
