@@ -421,12 +421,13 @@
 
 	    	list.add(conf.getNameString());
 	    } catch (AmbiguousNameException ex1) {
-		errors.append("<p class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
+		errors.append("<div class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
 	        errors.append("<ul>");
 	        ConfInfo[] names = ex1.getPossibleNames();
 	        for (int j=0; j < names.length; j++) 
 		    errors.append("<li>" + lookupName(lyskom, names[j].getNo(), true));
 	    	errors.append("</ul>");
+		errors.append("</div>");
 	    	list.add(recptFields[i]);
 	    }
 	}
@@ -438,7 +439,7 @@
     
 %>
 <% if (errors.length() > 0) { %>
-<p class="statusError"><%=errors.toString()%></p>
+<div class="statusError"><%=errors.toString()%></div>
 <% } %> <!-- was: application/x-www-form-urlencoded -->
 <form enctype="multipart/form-data" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
@@ -582,8 +583,8 @@
 <%  } %>
 </form>
 
-<p class="footer">
-$Id: composer.jsp,v 1.15 2004/06/07 01:37:13 pajp Exp $
-</p>
+<div class="footer">
+$Id: composer.jsp,v 1.16 2004/06/07 01:45:42 pajp Exp $
+</div>
 </body>
 </html>
