@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.40 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.41 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -453,7 +453,10 @@
     int me = lyskom.getMyPerson().getNo();
     Boolean mbInitedObj = (Boolean) lyskom.getAttribute("mbInited");
     if (mbInitedObj == null) mbInitedObj = Boolean.FALSE;
-    boolean manyMemberships = preferences.getBoolean("many-memberships");
+    boolean manyMemberships = lyskom.getAttribute("many-memberships") != null &&
+		((Boolean) lyskom.getAttribute("many-memberships")).booleanValue();
+
+    manyMemberships = manyMemberships || preferences.getBoolean("many-memberships");
     if (!mbInitedObj.booleanValue()) {
 	out.print("<p>Läser in medlemskapsinformation...");
 	out.flush();
@@ -462,15 +465,14 @@
 
 	if (unreadConferences > preferences.getInt("force-many-memberships")
 	    && !manyMemberships) {
-	    preferences.set("many-memberships", "1");
-	    userArea.setBlock("weblatte", preferences.getData());
-	    lyskom.saveUserArea(userArea);
-	    clearPreferenceCache(lyskom);
+	    lyskom.setAttribute("many-memberships", Boolean.TRUE);
 	    out.println("<b>OBS</b>: Du verkar ha olästa " +
 		"i många möten (" + unreadConferences + "). " +
 		"Funktionen \"många möten\" har automatiskt aktiverats, vilket " +
 		"innebär att komplett medlemsskap aldrig läses in, samt att " +
-		"nyhetslistan aldrig visar fler än fem möten åt gången.</p>");
+		"nyhetslistan aldrig visar fler än fem möten åt gången. " +
+	  	"För att aktivera \"många möten\" permanent, ändra dina " + 
+		"<a href=\"prefs.jsp\">inställningar</a>.</p>");
 	    out.flush();
 	    manyMemberships = true;
 	} else {
@@ -1476,7 +1478,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.40 $
+$Revision: 1.41 $
 </p>
 <%
     if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {

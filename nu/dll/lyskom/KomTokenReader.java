@@ -20,6 +20,7 @@ import java.util.Iterator;
 class KomTokenReader {
 
     final static int DEBUG = Integer.getInteger("lattekom.debug-parser", 0).intValue();
+    final static boolean strictHollerith = Boolean.getBoolean("lattekom.strict-hollerith");
     static {
 	if (DEBUG > 0) {
 	    Debug.println("KomTokenReader debug level: " + DEBUG);
@@ -190,9 +191,13 @@ class KomTokenReader {
 		byte[] hstring = new byte[arrlen];
 		int bytesRead = readFill(is, hstring);
 		if (bytesRead != hstring.length) {
-		    throw new IOException("Expected " + hstring.length +
-					  " bytes in hollerith, got " +
-					  bytesRead);
+		    String error = "Expected " + hstring.length +
+			" bytes in hollerith, got " +
+			bytesRead;
+		    if (strictHollerith)
+			throw new IOException(error);
+		    else
+			Debug.println(error);
 		}
 		if (is.read() == '\n') { // eat trailing space/cr
 		    wasEol = true;

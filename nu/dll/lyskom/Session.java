@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.57 2004/05/11 22:15:40 pajp Exp $
+ * @version $Id: Session.java,v 1.58 2004/05/12 23:20:47 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -827,9 +827,16 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply r = waitFor(doMarkAsRead(confNo, localTextNo).getId());
 	if (!r.getSuccess()) throw r.getException();
 	for (int i=0; i < localTextNo.length; i++) {
+	    // update caches
 	    Membership ms = queryReadTextsCached(confNo);
 	    if (ms != null) {
 		ms.markAsRead(localTextNo[i]);
+	    }
+	    UConference cuconf = conferenceCache.getUConference(confNo);
+	    if (cuconf != null) {
+		if (localTextNo[i] > cuconf.highestLocalNo) {
+		    cuconf.highestLocalNo = localTextNo[i];
+		}
 	    }
 	    Debug.println("marked local " + localTextNo[i] + " in conf " + confNo + " as read");
 	}

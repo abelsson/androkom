@@ -56,6 +56,7 @@
   <body>
 <%
     if (lyskom == null) {
+	session.setAttribute("goto", myURI(request) + (request.getQueryString() != null ? "?"+request.getQueryString() : ""));
 	response.sendRedirect(basePath);
 	return;
     }

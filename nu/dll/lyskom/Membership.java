@@ -124,6 +124,7 @@ public class Membership {
     public synchronized void markAsRead(int localNo) {
 	if (localNo == lastTextRead+1) {
 	    lastTextRead = localNo;
+	    return;
 	} 
 
 	if (localNo > lastTextRead+1) {
