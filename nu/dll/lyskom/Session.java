@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.45 2004/04/22 22:00:52 pajp Exp $
+ * @version $Id: Session.java,v 1.46 2004/04/23 01:17:57 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -952,6 +952,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public void setLatteVersion(String clientName, String clientVersion)
     throws IOException, RpcFailure {
 	setClientVersion(latteName + "/" + clientName, latteVersion + "/" + clientVersion);
+    }
+
+    /**
+     * Sets the name used for the Aux-Item creating-software and elsewhere.
+     */
+    public void setLatteName(String clientName) {
+	latteName = clientName;
     }
 
     /**
@@ -2810,8 +2817,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	case Asynch.deleted_text:
 	    textNo = parameters[0].intValue();
 	    Debug.println("async-deleted-text for text " + textNo);
-	    textCache.remove(textNo);
-	    textStatCache.remove(textNo);
+	    purgeTextCache(textNo);
 	    break;
 
 	}
