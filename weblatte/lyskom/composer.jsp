@@ -493,7 +493,7 @@
 	    else out.print("Kopiemottagare: ");
 	    out.print("</td><td>");
 	    if (names == null) {
- 	        out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + htmlize(recipient, false) + "\">");
+ 	        out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"70\" value=\"" + htmlize(recipient, false) + "\">");
 	    } else {
 		out.print("<select name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\">");
 		out.print("<option value=\"\">--- Välj mottagare i listan");
@@ -632,7 +632,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.28 2005/01/27 22:50:54 pajp Exp $
+$Id: composer.jsp,v 1.29 2005/02/03 19:03:09 pajp Exp $
 </div>
 </body>
 </html>

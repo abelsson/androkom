@@ -27,7 +27,7 @@
     </p>
     <p>
       Den officiella Weblatte-URLen är:
-      <a href="http://dll.nu/lyskom/">http://dll.nu/lyskom/</a>.
+      <a href="http://kom.dll.nu/">http://kom.dll.nu</a>.
     </p>
     <p>Om du vill köra en egen Weblatte-server så krävs en JSP-motor
       (Resin rekommenderas) och lite CVS-färdigheter för att hämta hem
@@ -89,7 +89,8 @@
       Weblatte tillhandahåller funktioner för att växla mellan olika
       LysKOM-servrar utan att behöva logga ut och in varje gång. Detta
       gör man genom att "pausa" en LysKOM-session. Genom att välja
-      menyvalet "pausa" så läggs sessionen i bakgrunden, så att du kan
+      menyvalet "starta ny session" så läggs sessionen i bakgrunden,
+      så att du kan
       logga in på en annan LysKOM-server (eller som en annan användare
       på samma server). Om du har en eller fler pausade
       LysKOM-sessioner så visas det längst ned på huvudsidan som en
@@ -101,10 +102,8 @@
       ersättas med den du valt, varpå du återförs till huvudsidan och
       kan börja arbeta med den valda sessionen. Till höger om
       sessionslänken på huvudsidan visas även en länk, "<b>>></b>",
-      som tar dig direkt till den först pausade sessionen i listan. Om
-      du har fler än en pausad session visas även en länk åt andra
-      hållet, "<b>&lt;&lt;</b>", tar dig till den senast pausade
-      sessionen. På så vis kan du stega mellan alla sessioner utan
+      som tar dig direkt till den först pausade sessionen i listan.
+      På så vis kan du stega mellan alla sessioner utan
       att gå via sessions-listan.<br/> Om du har en eller flera
       pausade sessioner när du loggar ut ur en session, så tas du till
       listan över sessioner. Där kan du även välja att "<b>terminera
@@ -136,12 +135,11 @@
     <h3>Om internationell teckenkodning</h3>
     <p>
       Som standard använder Weblatte alltid "iso-8859-1" som
-      teckenkodning för de inlägg du skapar. Detta är den kodning som
-      alla LysKOM-klienter klaras av, och den kan representera de
-      flesta tecken som behövs till vardags. Om du däremot vill skriva
-      inlägg som innehåller icke-latinska tecken, till exempel
-      hebreiska, så måste du instruera Weblatte att använda en
-      teckenkodning som kan representera denna. Med hjälp av
+      teckenkodning för de inlägg du skapar. Om du använder tecken som
+      inte finns med i iso-8859-1 (även kallat "Latin-1", eller
+      "ISO-Latin-1"), så kommer Weblatte att försöka koda inlägget med
+      UTF-8 istället.
+      Med hjälp av
       inställningen "<b>Teckenkodning att använda vid skapande av
       texter</b>" kan du styra hur dina inlägg skall kodas. "utf-8" är
       en Unicode-teckenkodning som klarar nästan allt. Var dock beredd
@@ -191,10 +189,10 @@
       gärna posta i något utav de "officiella" LatteKOM-möten som
       finns på följande KOM-system:
       <ul>
-      <li>SnoppKOM: <tt>LatteKOM (nu.dll.lyskom.*, T2,
-	  SwingKOM, ...)</tt> (möte 19)</li>
-      <li>LysLysKOM: <tt>LysKOM; Javaklienter baserade på
-	  LatteKOM</tt> (möte 11056)</li>
+      <li><a
+      href="http://kom.dll.nu/?server=kom.sno.pp.se&conference=19">SnoppKOM: LatteKOM (nu.dll.lyskom.*, T2,
+	  SwingKOM, ...) (möte 19)</a>
+      <li><a href="http://kom.dll.nu/?server=kom.lysator.liu.se&conference=11056">LysLysKOM: LysKOM; Javaklienter baserade på LatteKOM (möte 11056)</a>
       </ul>
     </p>
     <h2>Upphov, copyright, et.c.</h2>
@@ -203,7 +201,7 @@
       href="http://lattekom.sf.net/">LatteKOM</a>, som är ett
       klientklassbibliotek för LysKOM. LatteKOM och Weblatte är båda
       utvecklade utav <a
-      href="http://dll.nu/lyskom/?lookup=Rasmus%20Sten">Rasmus
+      href="http://kom.dll.nu/?lookup=Rasmus%20Sten">Rasmus
       Sten</a>. All källkod är fritt tillgänglig via <a
       href="http://lattekom.sourceforge.net/">hemsidan på
       SourceForge</a> och vem som helst får kopiera och modifiera den
@@ -212,7 +210,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.15 $
+      $Revision: 1.16 $
     </p>
   </body>
 </html>

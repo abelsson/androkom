@@ -1493,7 +1493,7 @@
     <div id="only-box">
     <form action="<%=myURI(request)%>" class="boxed" method="post">
     Endast: <input type="text" size="3" name="endast"> inlägg i möte
-    <input type="text" size="40" name="endastConferenceName">
+    <input type="text" size="40" name="endastConferenceName" value="<%= conferenceNumber > 0 ? entitize(lookupNameComplete(lyskom, conferenceNumber)) : "" %>">
     <input type="submit" value="ok!">
 <%  if (listNews) { %>
     <input type="hidden" name="listnews" value="<%=parameter(parameters, "listnews")%>">
@@ -1673,7 +1673,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.97 $
+$Revision: 1.98 $
 </div>
 </body>
 </html>

@@ -5,6 +5,7 @@
 <%@ include file='kom.jsp' %>
 <%@ include file='prefs_inc.jsp' %>
 <%
+
 	log("text.jsp start.");
 	boolean wantHtml = preferences.getBoolean("show-rich-texts") || request.getParameter("wantHtml") != null;
         boolean popupComment = request.getParameter("popupComment") != null ||
@@ -279,9 +280,9 @@
 		out.print("<pre class=\"text-body\">");
 		boolean wrap = preferences.getBoolean("word-wrap");
 		if (wrap) {
-		    textBody = Text.wrap(textBody, 70);
+		    textBody = Text.wrap(textBody, 75);
 		}
-		textBody = htmlize(textBody);
+		textBody = htmlize(lyskom, textBody, true);
 
 		Matcher m = textLinkPattern.matcher(textBody);
 		StringBuffer sb = new StringBuffer();

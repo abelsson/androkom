@@ -119,27 +119,69 @@
 	return lyskom.getServer();
     }
 
+
     Pattern weblinkPat = Pattern.compile("((?:https*://(?:(?:(?:(?:(?:[a-zA-Z\\d](?:(?:[a-zA-Z\\d]|-)*[a-zA-Z\\d])?)\\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\\d]|-)*[a-zA-Z\\d])?))|(?:(?:\\d+)(?:\\.(?:\\d+)){3}))(?::(?:\\d+))?)(?:/(?:(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),#~\\?/]|(?:%[a-fA-F\\d]{2}))|[;:@&=])*)(?:/(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),#~\\?/]|(?:%[a-fA-F\\d]{2}))|[;:@&=])*))*)(?:\\?(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),#~\\?/]|(?:%[a-fA-F\\d]{2}))|[;:@&=])*))?)?)|(?:ftp://(?:(?:(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),~\\?/]|(?:%[a-fA-F\\d]{2}))|[;?&=])*)(?::(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),#~\\?/]|(?:%[a-fA-F\\d]{2}))|[;?&=])*))?@)?(?:(?:(?:(?:(?:[a-zA-Z\\d](?:(?:[a-zA-Z\\d]|-)*[a-zA-Z\\d])?)\\.)*(?:[a-zA-Z](?:(?:[a-zA-Z\\d]|-)*[a-zA-Z\\d])?))|(?:(?:\\d+)(?:\\.(?:\\d+)){3}))(?::(?:\\d+))?))(?:/(?:(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),~\\?/]|(?:%[a-fA-F\\d]{2}))|[?:@&=])*)(?:/(?:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),~\\?/]|(?:%[a-fA-F\\d]{2}))|[?:@&=])*))*)(?:;type=[AIDaid])?)?)|(?:mailto:(?:(?:[a-zA-Z\\d$\\-_.+!*'(),;/?:@&=]|(?:%[a-fA-F\\d]{2}))+)))");
+
+    Pattern confNamePattern = Pattern.compile("<(?:(?:möte|person)|(?:m|p)) +(\\d+)[^>]*>", Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
+    Pattern confNamePatternText = Pattern.compile("^(.*)<((?:möte|person)|(?:m|p)) +(\\d+)[^>]*>(.*)$", Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE|Pattern.MULTILINE);
+    // match digits surrounded by whitespace, newlines and/or end of string
+    Pattern textLinkPattern = Pattern.compile("(?:^(\\d+)\\s+.*$|^(\\d+)$|^\\s+(\\d+)$)", Pattern.MULTILINE);
+    Pattern dqesc = Pattern.compile("\"");
+    Pattern sqesc = Pattern.compile("'");
     //Pattern weblinkPat = Pattern.compile("(http://[^ \t\r\n\\\\\\[><,!]{3,}[^ ?.,)>])");
+
+    String htmlize(String s, boolean makeHtml) {
+	try {
+	    return htmlize(null, s, makeHtml);
+	} catch (IOException ex1) {
+	    throw new RuntimeException(ex1.toString());
+	} catch (RpcFailure ex2) {
+	    throw new RuntimeException(ex2.toString());
+	}
+    }
+
+    String htmlize(Session lyskom, String s, boolean makeHtml) throws IOException, RpcFailure {
+	if (makeHtml) {
+	    s = weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
+	    StringBuffer sb = new StringBuffer();
+	    Matcher m = confNamePatternText.matcher(s);
+	    //log("htmlize() lyskom=" + lyskom + ", s=\"" + s.substring(0, s.length() > 10 ? 10 : s.length()) + "\", makeHtml=" + makeHtml);
+	    while (m.find()) {
+		try {
+		    int confNo = Integer.parseInt(m.group(3));
+		    Matcher submatcher = confNamePattern.matcher(m.group());
+		    String match = submatcher.find() ? submatcher.group() : "[Weblatte Regex Error!]";
+		    String replacement;
+		    if (lyskom != null) {
+  		    	replacement = lookupNameHtml(lyskom, confNo, false, submatcher.group(0));
+			if (Debug.ENABLED) log("htmlize(): replacement: " + replacement);
+		    } else {
+			replacement = confLink(true, m.group(2).toLowerCase().startsWith("p"), confNo, null, false, match);
+		    }
+		    String before = m.group(1);
+		    String after = m.group(4);
+		    // we should use 1.5.0's Matcher.quoteReplacement() on replacement instead.
+		    replacement = entitize(before) + replacement.replaceAll("'", "\\\\\\'") + entitize(after);
+		    m.appendReplacement(sb, replacement);
+		} catch (NumberFormatException ex1) {
+		    ex1.printStackTrace();
+		    log("htmlize() warning: unexpected unparsable conf-number: " + m.group());
+		    m.appendReplacement(sb, m.group(0));
+		}
+	    }
+	    m.appendTail(sb);
+	    s = sb.toString();
+	} else {
+	    s = entitize(s);
+	}
+	return s;
+    }
 
     /** makes the given string suitable for HTML presentation */
     String htmlize(String s) {
 	return htmlize(s, true);
     }
 
-    String htmlize(String s, boolean matchLinks) {
-	s = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;");
-	if (matchLinks) {
-	    s = weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
-	}
-	return s;
-    }
-
-    // match digits surrounded by whitespace, newlines and/or end of string
-    Pattern textLinkPattern = Pattern.compile("(?:^(\\d+)\\s+.*$|^(\\d+)$|^\\s+(\\d+)$)", Pattern.MULTILINE);
-
-    Pattern dqesc = Pattern.compile("\"");
-    Pattern sqesc = Pattern.compile("'");
     public String dqescHtml(String s) {
 	return dqesc.matcher(s).replaceAll("&quot;");
     }
@@ -196,8 +238,12 @@
 	return lookupName(lyskom, number, false);
     }
 
-
     String lookupNameHtml(Session lyskom, int number, boolean disablePopup)
+    throws RpcFailure, IOException {
+	return lookupNameHtml(lyskom, number, disablePopup, null);
+    }
+
+    String lookupNameHtml(Session lyskom, int number, boolean disablePopup, String linkText)
     throws RpcFailure, IOException {
 	String name = "[" + number + "]";
 	Conference conf = null;
@@ -213,11 +259,37 @@
 	    KomPreferences prefs = preferences(lyskom, "weblatte");
 	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
             boolean letterbox = conf.getType().getBitAt(ConfType.letterbox);
-	    return "<span " + (disablePopup ? "" : "onClick=\"showmenuie5(event, true);\"") + " class=\"" + (letterbox ? "letterbox-name" : "conference-name") + "\" title=\"" + (letterbox ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + letterbox + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
+	    return confLink(disablePopup, letterbox, conf.getNo(), conf.getNameString(), bold, linkText);
 	} else {
-	    if (number == 0) return "<span class=\"letterbox-name\">[Anonym]</span>";
-	    return htmlize(name);
+	    if (number == 0) return "<span class=\"letterbox-name\">" + (linkText == null ? "[Anonym]" : linkText) + "</span>";
+	    return entitize(linkText == null ? name : linkText);
 	}
+    }
+
+    String confLink(boolean disablePopup, boolean letterbox, int number, String name, boolean bold, String linkText) {
+	if (Debug.ENABLED) log("confLink(" + disablePopup + ", " + letterbox + ", " + number + ", " + (name != null ? "\"" + name + "\"" : "null") + ", " + bold + ", " + linkText + ")");
+	StringBuffer buf = new StringBuffer();
+	buf.append("<span ");
+	buf.append(disablePopup ? "" : "onClick=\"showmenuie5(event, true);\"");
+	buf.append(" class=\"");
+	buf.append(letterbox ? "letterbox-name" : "conference-name");
+	buf.append("\" title=\"");
+	buf.append(letterbox ? "&lt;Person " : "&lt;Möte ");
+	buf.append(number);
+	buf.append(name != null ? (": " + entitize(name)) : "");
+	buf.append("&gt;\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(");
+	buf.append(number);
+	buf.append(", ");
+	buf.append(letterbox);
+	buf.append(", false, '");
+	String ciarg = sqescJS(name != null ? name : linkText);
+	buf.append(ciarg);
+	buf.append("');\">");
+	buf.append(bold ? "<b>" : "");
+	buf.append(entitize(linkText != null ? linkText : name));
+	buf.append(bold ? "</b>" : "");
+	buf.append("</span>");
+	return buf.toString();
     }
 
 
@@ -248,7 +320,6 @@
 	
     }
 
-    Pattern confNamePattern = Pattern.compile("<(?:möte|person) (\\d+)[^>]*>", Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
     ConfInfo lookupName(Session lyskom, String name, boolean wantPersons, boolean wantConferences)
     throws IOException, RpcFailure, AmbiguousNameException {
 	if (name.startsWith("#")) {
@@ -328,21 +399,20 @@
     String myURI(HttpServletRequest request) {
 	String setURI = (String) request.getAttribute("set-uri");
 	if (setURI != null) return setURI;
-	return request.getRequestURI();
+	return request.getRequestURI().replaceAll("index\\.jsp", "");
     }
 
     String utf8ize(String s) throws UnsupportedEncodingException {
 	return new String(s.getBytes("utf-8"), "iso-8859-1");
     }
     String entitize(String s) {
-	return s.
+	return s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;").
 	replaceAll("å", "&#229;").
 	replaceAll("ä", "&#228;").
 	replaceAll("ö", "&#246;").
 	replaceAll("Å", "&#197;").
 	replaceAll("Ä", "&#196;").
 	replaceAll("Ö", "&#214;");
-	
     }
 
     String komStrip(String s) {
@@ -448,7 +518,7 @@ if (serverName != null && serverName.startsWith("s-")) {
         }
     }
     if (lyskom == null && requestedId != null) {
-	log("Requested session ID " + requestedId + " not found.");
+	if (Debug.ENABLED) log("Requested session ID " + requestedId + " not found.");
 	response.sendRedirect("http://" + baseHost + basePath + "sessions.jsp");
 	return;
     }
