@@ -20,9 +20,8 @@ class TextStatCache {
 	    return; // throw(new TextNumberException("Text has no number"));
 
 	Debug.println("TextStatCache: adding "+t.getNo());
-	if (hash.put((Object) new Integer(t.getNo()), (Object) t)!=null) {
+	if (hash.put(new Integer(t.getNo()), t)!=null) {
 	    if (Debug.ENABLED) {
-		new Exception().printStackTrace();
 		Debug.println("TextStatCache: " +
 			      "replacing text-stat #" +
 			      t.getNo()+" in cache");
