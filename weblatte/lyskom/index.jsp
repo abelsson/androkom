@@ -85,7 +85,7 @@
 			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		session.setAttribute("lyskom", lyskom);
 		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.3 $");
+		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.4 $");
 		lyskom.changeWhatIAmDoing("kör web-latte");
 	    }
 	} else if (names != null && names.length == 0) {
@@ -800,6 +800,8 @@
 		buf.append("[").append(Character.toLowerCase(c)).
 		    append(Character.toUpperCase(c)).
 	   	    append("]");
+	    } else if (c == '\\') {
+	        buf.append("\\\\");
 	    } else {
 		buf.append(c);
 	    }
@@ -1066,7 +1068,7 @@ Du är inte inloggad.
 <% } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.3 2004/04/15 23:03:09 pajp Exp $
+$Id: index.jsp,v 1.4 2004/04/15 23:11:35 pajp Exp $
 </p>
 </body>
 </html>
