@@ -257,7 +257,7 @@
 	    if (commonPreferences.getBoolean("dashed-lines")) {
 	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
-	    out.print("<pre>");
+	    out.print("<pre class=\"text-body\">");
 	    out.print(htmlize(new String(text.getContents(), charset)));
 	    out.println("</pre>");
 	    if (commonPreferences.getBoolean("dashed-lines")) {
@@ -308,8 +308,19 @@
 			    out.println("<div class=\"statusError\">Texten är en HTML-text.<br/>");
 			    out.println("<a href=\"" + basePath + "?text="+text.getNo()+"&wantHtml\">Klicka här</a> för att visa den.</div>");
 			    contentDisplayed = true;
+			} else if (part.isMimeType("text/x-kom-basic")) {
+			    String partCharset = partContentTypeObj.getParameterList().get("charset");
+			    if (partCharset == null) partCharset = "iso-8859-1";
+			    BufferedReader reader = new BufferedReader(new InputStreamReader(part.getInputStream(), partCharset));
+			    out.print("<pre class=\"text-body\">");
+			    String row;
+			    while ((row = reader.readLine()) != null) {
+				out.print(row);
+			    }
+			    reader.close();
+			    out.println("</pre>");
 			} else {
-			    out.println("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
+			    out.println("<pre class=\"text-body\">" + htmlize((String) part.getContent()) + "</pre>");
 			    contentDisplayed = true;
 			}
 
@@ -355,7 +366,7 @@
 		    out.println("<object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
 		}
 		if (!wantHtml && pct.match("text/plain") || pct.match("text/x-kom-basic")) {
-		    out.print("<pre class=\"text\">" + htmlize((String) part.getContent()) + "</pre>");
+		    out.print("<pre class=\"text-body\">" + htmlize((String) part.getContent()) + "</pre>");
 		}
 	    }
   	    if (commonPreferences.getBoolean("dashed-lines")) {

@@ -256,6 +256,12 @@
 	 parameters.containsKey("multipart-file"))) {
 	Map part = new HashMap();
 	part.put("content-type", "application/octet-stream");
+        if (parameters.containsKey("body") && !((String)parameters.get("body")).trim().equals("")) {
+	    Map textPart = new HashMap();
+	    textPart.put("content-type", "text/x-kom-basic; charset=" + preferences.getString("create-text-charset"));
+	    textPart.put("contents", parameters.get("body"));
+	    parts.add(textPart);
+	}
 	parts.add(part);
     }
 
@@ -510,8 +516,8 @@
 		    String taid = "part_" + count + "_contents";
 		    out.println("<textarea id=\"" + taid + "\" name=\"" + taid + "\" style=\"width: 100%; height: 25em;\">" + contents + "</textarea><br/>");
 		    out.println("Typ av text: <select name=\"part_" + count + "_type\">");
-		    out.println("<option value=\"text/plain;charset=" + defaultCharset + "\" " + 
-			(ctype.match("text/plain") ? "selected" : "") + ">Ren text</option>");
+		    out.println("<option value=\"text/x-kom-basic;charset=" + defaultCharset + "\" " + 
+			(ctype.match("text/x-kom-basic") ? "selected" : "") + ">Ren text</option>");
 		    out.println("<option value=\"text/html;charset=" + defaultCharset + "\" " + 
 			(ctype.match("text/html") ? "selected" : "") + ">HTML</option>");
 		    out.println("</select>");
@@ -587,7 +593,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.18 2004/06/08 00:33:30 pajp Exp $
+$Id: composer.jsp,v 1.19 2004/06/11 23:48:40 pajp Exp $
 </div>
 </body>
 </html>

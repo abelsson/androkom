@@ -110,7 +110,7 @@
 		ContentType ct;
 		byte[] subject = lyskom.toByteArray(parameter(parameters, "subject"));
 	  	boolean wrapInRfc822 = preferences.getBoolean("post-rich-texts-as-rfc822");
-
+	 	boolean plainTextWithImages = false;
 		if (parts.size() == 1) {
 		    Map partMap = (Map) parts.get(0);
 		    ContentType partContentType = new ContentType((String) partMap.get("content-type"));
@@ -161,6 +161,23 @@
 		    ct = partContentType;
 		} else {
 		    MimeMultipart multipart = new MimeMultipart(wrapInRfc822 ? "related" : "mixed");
+		    boolean hasXkomBasic = false;
+		    boolean hasImage = false;
+		    boolean hasOther = false;
+      		    for (Iterator i = parts.iterator(); i.hasNext();) {
+			ContentType _ct = new ContentType((String) ((Map) i.next()).get("content-type"));
+			if (_ct.match("text/x-kom-basic"))
+			    hasXkomBasic = true;
+			else if (_ct.match("image/*")) {
+			    hasImage = true;
+			} else {
+			    hasOther = true;
+			}
+		    }
+
+		    plainTextWithImages = hasXkomBasic && hasImage && !hasOther;
+
+		    
 		    for (Iterator i = parts.iterator(); i.hasNext();) {
 			Map partMap = (Map) i.next();
 			ContentType partContentType = new ContentType((String) partMap.get("content-type"));
@@ -188,6 +205,10 @@
 			    os.close();
 			    is.close();
 			    contents = bos.toByteArray();
+			    if (plainTextWithImages) {
+				headers.setHeader("Content-Disposition", "inline");
+			    }
+
 			} else if (_contents != null && !_contents.equals("")) {
 			    String charset = partContentType.getParameterList().get("charset");
 	  		    headers.setHeader("Content-Transfer-Encoding", "binary");
@@ -229,7 +250,7 @@
 		}
 		newText = new Text();
 		byte[] body = bodyStream.toByteArray();
-		if (wrapInRfc822 && parts.size() > 1) {
+		if (wrapInRfc822 && parts.size() > 1 && !plainTextWithImages) {
 		    ByteArrayOutputStream rfc822os =
 	  		new ByteArrayOutputStream();
 		    OutputStreamWriter rfc822writer =

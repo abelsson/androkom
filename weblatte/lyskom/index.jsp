@@ -1093,11 +1093,16 @@
 	Text commented = lyskom.getText(textNumber);
 	String ccharset = commented.getCharset();
 	if (ccharset.equals("us-ascii")) ccharset = "iso-8859-1";
+	String subjectString = new String(commented.getSubject());
+	try {
+	    subjectString = new String(commented.getSubject(), ccharset);
+	} catch (UnsupportedEncodingException ex1) {
+	}
 %>
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="inCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
-	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject(), ccharset)) %>"><br/>
+	<input size="50" type="text" name="subject" value="<%= htmlize(subjectString) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
 	<input type="submit" value="skicka!" name="createText">
 	<input type="submit" name="dispatchToComposer" value="avancerat läge">
@@ -1491,7 +1496,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.78 $
+$Revision: 1.79 $
 </div>
 </body>
 </html>
