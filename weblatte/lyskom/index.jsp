@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.51 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.52 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -827,7 +827,6 @@
 			    byte[] altContents = ((String) partMap.get("alternative-contents")).getBytes(charset);
 			    InternetHeaders altHeaders = new InternetHeaders();
 			    altHeaders.addHeader("Content-Type", altContentType.toString());
-			    altHeaders.addHeader("Content-Length", ""+altContents.length);
 			    altHeaders.addHeader("Content-Transfer-Encoding", "binary");
 
 			    alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
@@ -899,7 +898,6 @@
 				InternetHeaders _hdrs = new InternetHeaders();
 				_hdrs.addHeader("Content-Type", alternative.getContentType());
 				_hdrs.addHeader("Content-Transfer-Encoding", "binary");
-				_hdrs.addHeader("Content-Length", ""+altContents.length);
 				multipart.addBodyPart(new MimeBodyPart(_hdrs, _ac));
 			    } else {
 			    	multipart.addBodyPart(new MimeBodyPart(headers, contents));
@@ -1768,7 +1766,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.51 $
+$Revision: 1.52 $
 </p>
 </body>
 </html>

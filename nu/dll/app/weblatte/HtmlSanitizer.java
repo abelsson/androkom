@@ -8,6 +8,7 @@ import java.util.regex.*;
 import java.util.*;
 import java.io.*;
 import java.net.URLEncoder;
+import java.net.URLDecoder;
 
 public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 
@@ -161,10 +162,11 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 			    lcaseValue.startsWith("https://")) {
 			    attributes.put(attribute, value);
 			} else {
+			    String filename = URLDecoder.decode((String) value, "iso-8859-1");
 			    attributes.put(attribute,
 					   "rawtext.jsp?text=" + textNo +
 					   "&name=" +
-					   URLEncoder.encode((String) value, "iso-8859-1"));
+					   URLEncoder.encode(filename, "iso-8859-1"));
 			}
 		    }
 		} else if (tag == HTML.Tag.TD ||

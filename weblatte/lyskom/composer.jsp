@@ -222,7 +222,7 @@
 		if (!ct.match("text/html")) continue;
 		String contents = (String) part.get("contents");
 		Debug.println("will search and replace composer.jsp image references.");
-		Matcher m = Pattern.compile("\"composer.jsp\\?image=(.*)\"").matcher(contents);
+		Matcher m = Pattern.compile("composer.jsp\\?image=([^\">]*)").matcher(contents);
 		StringBuffer buf = new StringBuffer();
 		while (m.find()) {
 		    Debug.println("found composer.jsp match: " + m.group(1));
@@ -571,7 +571,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.8 2004/05/28 00:36:53 pajp Exp $
+$Id: composer.jsp,v 1.9 2004/05/28 17:45:44 pajp Exp $
 </p>
 </body>
 </html>
