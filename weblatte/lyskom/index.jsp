@@ -127,8 +127,10 @@
 		    response.addCookie(serverCookie);
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
+		    if (parameters.containsKey("mini"))
+			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.49 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.50 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -304,7 +306,7 @@
     boolean popupComment = request.getParameter("popupComment") != null;
     request.setAttribute("popupComment", popupComment ? Boolean.TRUE : null);
 
-    boolean showStandardBoxes = parameter(parameters, "hs") == null
+    boolean showStandardBoxes = !minimalistic && parameter(parameters, "hs") == null
 	  && preferences != null && !preferences.getBoolean("hide-standard-boxes"); // "hide standard boxes"
     try {
 	showPOM = session.getAttribute("pom") != null ? 
@@ -325,10 +327,13 @@
 	    if (justLoggedIn || showWelcome) {
 %>
     	<h2>välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!</h2>
-	<p class="intro">Högerklicka på en tom yta för att visa menyn. Du kan även högerklicka på personnamn,
-		mötesnamn och textnummer för att få fram menyer specifika för objektet i fråga.</p>
-	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
 <%
+		if (!minimalistic) {
+%>
+		<p class="intro">Högerklicka på en tom yta för att visa menyn. Du kan även högerklicka på personnamn,
+		mötesnamn och textnummer för att få fram menyer specifika för objektet i fråga.</p>
+<%
+	    	}
 	    }
     if (Debug.ENABLED) Debug.println("unreadconfslist: " + lyskom.getUnreadConfsListCached());
     if (parameter(parameters, "changeName") != null) {
@@ -813,7 +818,7 @@
 
 			if (partMap.containsKey("alternative-contents")) {
 			    InternetHeaders headers = new InternetHeaders();
-			    headers.addHeader("Content-Transfer-Encoding", "8bit");
+			    headers.addHeader("Content-Transfer-Encoding", "binary");
 			    headers.addHeader("Content-Type", partContentType.toString());
 			    byte[] contents = _contents.getBytes(charset);
 			    headers.addHeader("Content-Length", ""+contents.length);			   
@@ -824,7 +829,7 @@
 			    InternetHeaders altHeaders = new InternetHeaders();
 			    altHeaders.addHeader("Content-Type", altContentType.toString());
 			    altHeaders.addHeader("Content-Length", ""+altContents.length);
-			    altHeaders.addHeader("Content-Transfer-Encoding", "8bit");
+			    altHeaders.addHeader("Content-Transfer-Encoding", "binary");
 
 			    alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
 			    alternative.addBodyPart(new MimeBodyPart(headers, contents));
@@ -846,14 +851,15 @@
 			ContentType partContentType = new ContentType((String) partMap.get("content-type"));
 			byte[] contents = null;
 			InternetHeaders headers = new InternetHeaders();
-			headers.addHeader("Content-Transfer-Encoding", "8bit");
 
 			String _contents = (String) partMap.get("contents");
 			String _uploaded = (String) partMap.get("uploaded");
 			if (_uploaded != null && !_uploaded.equals("")) {
+	  		    headers.setHeader("Content-Transfer-Encoding", "base64");
 			    File file = new File((String) partMap.get("uploaded"));
 			    partContentType.getParameterList().set("name", (String) partMap.get("filename"));
-			    ByteArrayOutputStream os = new ByteArrayOutputStream();
+			    ByteArrayOutputStream bos = new ByteArrayOutputStream();
+			    OutputStream os = new Base64.OutputStream(bos);
 			    InputStream is = new FileInputStream(file);
 			    int read;
 			    byte[] buf = new byte[2048];
@@ -862,9 +868,10 @@
 			    }
 			    os.close();
 			    is.close();
-			    contents = os.toByteArray();
+			    contents = bos.toByteArray();
 			} else if (_contents != null && !_contents.equals("")) {
 			    String charset = partContentType.getParameterList().get("charset");
+	  		    headers.setHeader("Content-Transfer-Encoding", "binary");
 			    if (charset == null) charset = "iso-8859-1";
 
 			    contents = _contents.getBytes(charset);
@@ -872,7 +879,6 @@
 			headers.addHeader("Content-Type", partContentType.toString());
 
 			if (contents != null) {
-			    headers.addHeader("Content-Length", "" + contents.length);
 			    if (partMap.containsKey("alternative-contents")) {
 				MimeMultipart alternative = new MimeMultipart("alternative");
 				ContentType altContentType = new ContentType((String) partMap.get("alternative-content-type"));
@@ -883,7 +889,7 @@
 				InternetHeaders altHeaders = new InternetHeaders();
 				altHeaders.addHeader("Content-Type", altContentType.toString());
 				altHeaders.addHeader("Content-Length", ""+altContents.length);
-				altHeaders.addHeader("Content-Transfer-Encoding", "8bit");
+				altHeaders.addHeader("Content-Transfer-Encoding", "binary");
 
 				alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
 				alternative.addBodyPart(new MimeBodyPart(headers, contents));
@@ -893,7 +899,7 @@
 				byte[] _ac = os.toByteArray();
 				InternetHeaders _hdrs = new InternetHeaders();
 				_hdrs.addHeader("Content-Type", alternative.getContentType());
-				_hdrs.addHeader("Content-Transfer-Encoding", "8bit");
+				_hdrs.addHeader("Content-Transfer-Encoding", "binary");
 				_hdrs.addHeader("Content-Length", ""+altContents.length);
 				multipart.addBodyPart(new MimeBodyPart(_hdrs, _ac));
 			    } else {
@@ -1096,20 +1102,22 @@
 	
     }
 
-    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+    if (!minimalistic) {
+    	if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
 %>
 <script language="JavaScript1.2">
 <%@ include file='stuff.jsp' %>
 </script>
 <%
-    } else {
+	} else {
 %>
 	<script language="JavaScript1.2" src="stuff.jsp"></script>
 <%
-    }
+ 	}
 %>
 <%@ include file='dhtmlMenu.jsp' %>
 <%
+    }
 
     boolean listNews = false;
     Person person = lyskom.getMyPerson();
@@ -1666,6 +1674,7 @@ Du är inte inloggad.
 <tr><td>namn:</td><td><input type="text" name="lyskomNamn" value="<%= lyskomNamn %>" size="30"></td></tr>
 <tr><td>lösenord:</td><td><input type="password" name="lyskomLosen" size="8"></td></tr>
 <tr><td>dold session:</td><td><input type="checkbox" name="lyskomDold"></td></tr>
+<tr><td>sparsamt gränssnitt:</td><td><input type="checkbox" name="mini"></td></tr>
 <tr><td>registrera ny användare:</td><td><input type="checkbox" name="createPerson"></td></tr>
 <tr><td>server:</td><td>
 <select name="server">
@@ -1760,7 +1769,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.49 $
+$Revision: 1.50 $
 </p>
 </body>
 </html>

@@ -401,6 +401,17 @@
 		    continue;
 		}
 		if (list.contains(conf.getNameString())) continue;
+		Conference conference = lyskom.getConfStat(conf.getNo());
+		String contentType = multipart ? "multipart/mixed" : "text/plain";
+		if (multipart && parts.size() == 1) {
+		    contentType = (String) ((Map) parts.get(0)).get("content-type");
+		}
+		if (!conference.allowsMimeType(lyskom.getAllowedContentTypes(), contentType)) {
+		    errors.append("Varning: mötet \"" + lookupName(lyskom, conf.getNo(), true) +
+			"\" tillåter inte inlägg utav typen \"" +
+			new ContentType(contentType).getBaseType() + "\".<br/>");
+		}
+
 	    	list.add(conf.getNameString());
 	    } catch (AmbiguousNameException ex1) {
 		errors.append("<p class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
@@ -417,17 +428,13 @@
 
     recipients.add("");
     ccRecipients.add("");
+    
 %>
 <% if (errors.length() > 0) { %>
 <p class="statusError"><%=errors.toString()%></p>
 <% } %> <!-- was: application/x-www-form-urlencoded -->
 <form enctype="multipart/form-data" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
-    if (false && parameters.get("content-type") != null) {
-%>
-    <input type="hidden" name="content-type" value="<%=parameters.get("content-type")%>">
-<%
-    }
     out.println(metadata.toString());
     out.println("<table border=\"0\">");
     for (int rcptType = 1; rcptType <= 2; rcptType++) {
@@ -466,7 +473,8 @@
 		out.println("Datatyp: " + part.get("content-type") + "<br/>");
 		out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" +
 			part.get("content-type") + "\" />");
-		out.println("Binärdata: <b>uppladdad</b><br/>");
+		File f = new File((String) part.get("uploaded"));
+		out.println("Binärdata: <b>uppladdad, " + f.length() + " bytes</b><br/>");
 		session.setAttribute("wl_composer_image_" + part.get("filename"), part);
 		if (part.containsKey("filename")) {
 		    out.println("<input type=\"hidden\" name=\"part_" + count + "_file\" value=\"" +
@@ -563,7 +571,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.7 2004/05/26 15:19:56 pajp Exp $
+$Id: composer.jsp,v 1.8 2004/05/28 00:36:53 pajp Exp $
 </p>
 </body>
 </html>

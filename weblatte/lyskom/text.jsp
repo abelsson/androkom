@@ -189,7 +189,7 @@
 	} else {
 	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");
 	}
-        if (contentTypeObj.match("multipart/related")) {
+        if (contentTypeObj.match("multipart/*")) {
 	    out.println("Texten är flerdelad: ");
 	    if (request.getParameter("forceContentType") == null) {
 		out.print("<a href=\"" + basePath + "?text=" + text.getNo() +
@@ -241,7 +241,7 @@
 	    if (commonPreferences.getBoolean("dashed-lines")) {
 	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
-	} else if (contentTypeObj.match("multipart/related")) {
+	} else if (contentTypeObj.match("multipart/*")) {
 	    boolean showNonDisplayableParts = request.getParameter("showAll") != null;
 	    try {
 		MimeMultipart multipart = new MimeMultipart(text);
