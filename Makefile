@@ -1,4 +1,4 @@
-JAVAC_ARGS = -classpath ~rasmus/Documents/lattekom/main -encoding iso-8859-1
+JAVAC_ARGS = -encoding iso-8859-1
 JAVAC	= javac $(JAVAC_ARGS)
 JAVADOC	= javadoc
 JAR	= jar
