@@ -19,13 +19,19 @@ implements Runnable, RpcEventListener {
     JTextField userNameField;
     JTextField passwordField;
 
+    JDesktopPane desktop;
+
     public final static int DEBUG = 255;
 
     public final static int STATE_NONE = 0;
     public final static int STATE_LOGIN = 1;
     public final static int STATE_CONNECT = 2;
     public final static int STATE_GET_MEMBERSHIP = 3;
+    public final static int STATE_ONLINE = 4;
     int threadState = STATE_NONE;
+
+    volatile boolean markAsRead = false;
+    volatile boolean readRecursive = false;
 
     JButton connectButton;
     JButton abortButton; // cancel or disconnect
@@ -33,10 +39,18 @@ implements Runnable, RpcEventListener {
     JTextArea logArea;
 
     JTabbedPane mainSessionTabPane;
+    JSplitPane messagePane;
+    JScrollPane indexScrollPane, readerScrollPane;
+    
+    Container unreadIndexBox;
+    
+    Dimension tabPaneDimension = new Dimension(700, 100);
+
+    Stack toRead = new Stack();
 
     Session kom;
 
-    static String defaultServer = "kom.lysator.liu.se";
+    static String defaultServer = "sno.pp.se";
     static int defaultPort = 4894;
 
     MembershipList membershipList;
@@ -48,6 +62,7 @@ implements Runnable, RpcEventListener {
 
     public SessionFrame(int id) {
 	super("Connection "+id, true, true, true, true);
+	Debug.println("--> SessionFrame()");
 	this.id = id;
 	frameCount++;
 
@@ -59,38 +74,160 @@ implements Runnable, RpcEventListener {
 
 
 	mainSessionTabPane = new JTabbedPane();
-	mainSessionTabPane.addTab("Setup", null, setupSetupPanel(),
-				  "Session setup options");
-	mainSessionTabPane.addTab("Conferences", null, setupConfSelector(),
-				  "Conference membership list");
-	mainSessionTabPane.addTab("Log", null, setupLogPanel(),
-				  "Session log");
-	//Panel p = new Panel(new GridLayout(1,1));
-	//p.add(mainSessionTabPane);
+	mainSessionTabPane.addTab("Inställningar", null, setupSetupPanel(),
+				  "Sessionsinställningar");
+	mainSessionTabPane.addTab("Möten", null, setupConfSelector(),
+				  "Medlemskapslista");
+	mainSessionTabPane.addTab("Logg", null, setupLogPanel(),
+				  "Sessionslogg");
+	
+
+        
+        
+	//JTextArea indexTree = new JTextArea();
+	//indexTree.setText("index tree!");
+	unreadIndexBox = new Box(BoxLayout.Y_AXIS);
+	
+	//JTextArea readerTextArea = new JTextArea();
+	//readerTextArea.setText("message area");
+	ActionPanel actionPanel = new ActionPanel(this, kom);
+	
+	
+	
+	indexScrollPane = new JScrollPane(unreadIndexBox);
+	indexScrollPane.setPreferredSize(new Dimension(0, 100));
+	readerScrollPane = new JScrollPane(actionPanel);
+	actionPanel.setMinimumSize(new Dimension(0, 0));
+
+	messagePane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
+	messagePane.setOneTouchExpandable(true);
+	messagePane.setDividerLocation(1.0);
+
+	messagePane.setTopComponent(indexScrollPane);
+	//messagePane.setBottomComponent(readerScrollPane);
 
 
-	JPanel mainPanel = new JPanel(new FlowLayout());
-	mainPanel.add(mainSessionTabPane);
+
+	JSplitPane mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSessionTabPane, messagePane);
+	mainPanel.setDividerLocation(150);
+
 	setContentPane(mainPanel);
+
+        //setContentPane(mainSessionTabPane);
 	//passwordField.setSize(50, 50);
+	
+	/*
+	try {
+	    setMaximum(true);
+	} catch (PropertyVetoException ex) {
+	    Debug.println(ex.getClass().getName() + ": " + ex.getMessage());	
+	}*/
+
+	
+	//Dimension minimumSize = new Dimension(100, 50);
+	//indexScrollPane.setMinimumSize(minimumSize);
+	//readerScrollPane.setMinimumSize(minimumSize);
+	
 	pack();
 
-	//setBounds(30, 30, 400, getHeight());
-	setLocation(30, 30);
-
-	//setBounds(30, 30, 400, 100);
+	setPreferredSize(new Dimension(640, 640));
+	setLocation(0,0);
+	
+	
+	
+	
+	
+	show();
 
     }
 
-    JPanel setupLogPanel() {
-	JPanel log = new JPanel(new GridLayout(1,1));
+    JComponent setupLogPanel() {
+	
 	logArea = new JTextArea();
-	log.add(logArea);
-	return log;
+	logArea.setText("");
+	JScrollPane scroller = new JScrollPane(logArea);
+	scroller.setMaximumSize(tabPaneDimension);
+	return scroller;
     }
 
     void log(String s) {
 	logArea.append(s+"\n");
+    }
+
+    class UnreadDisplay extends JPanel {
+        SessionFrame parent;
+        Session kom;
+        JList list;
+        MembershipList mlist;
+
+        Component infoLabel = null;
+        public UnreadDisplay(SessionFrame _parent, Session _kom) throws IOException {
+            parent = _parent;
+            kom = _kom;          
+            setLayout(new BorderLayout());
+            mlist = new MembershipList(kom);
+            list = new JList(mlist);
+            list.addListSelectionListener(new ListSelectionListener() {
+                public void valueChanged(ListSelectionEvent e) {
+                    Membership m = (Membership) mlist.getList()[list.getSelectedIndex()];
+                    try {
+                        updateInfoLabel(m);
+                    } catch (IOException ex) {
+                        SwingKOM.panic(ex);
+                    }
+               } 
+            });
+            
+            kom.updateUnreads();
+            
+            mlist.setList(kom.getUnreadMembership());
+            Membership m = null;
+            if (list.getSelectedIndex() != -1) m = mlist.getList()[list.getSelectedIndex()];
+            updateInfoLabel(m);
+            add(list, BorderLayout.NORTH);
+        }
+        
+        void updateInfoLabel(Membership m) throws IOException {
+            if (m != null) {
+                if (infoLabel != null) { Debug.println("removing " + infoLabel); remove(infoLabel); }
+                infoLabel = new ConfUnreadInfoLabel(m);
+		Debug.println("adding " + infoLabel);
+                add(infoLabel, BorderLayout.SOUTH);
+            } else {
+                if (infoLabel == null) add(infoLabel = new JLabel("***"), BorderLayout.SOUTH);
+            }
+	    repaint();
+        
+        }
+        
+        class ConfUnreadInfoLabel extends JPanel {
+            Membership membership;
+            public ConfUnreadInfoLabel(Membership m) throws IOException {
+                membership = m;
+                setLayout(new FlowLayout(FlowLayout.LEFT));
+                int confNo = membership.getNo();
+                add(new JLabel(new String(kom.getConfName(confNo)) + ": "));
+                int lastTextRead = membership.getLastTextRead();
+                UConference uconf = kom.getUConfStat(confNo);
+                TextMapping unreadMap = kom.localToGlobal(confNo, lastTextRead + 1, 5);
+                if (unreadMap.hasMoreElements()) {
+                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", ((Integer) unreadMap.nextElement()).intValue(),
+                                          kom, null, SwingConstants.LEFT);
+                    t.setSessionFrame(parent);
+                    add(t);
+		    repaint();
+                } else {
+		    JLabel t = new JLabel("inga olästa inlägg");
+		    add(t);
+		    repaint();
+		}
+            }   
+        }
+    }
+
+    Container setupUnreadIndexBox() throws IOException {
+        return new UnreadDisplay(this, kom);
+        
     }
 
     JPanel setupSetupPanel() {
@@ -103,16 +240,25 @@ implements Runnable, RpcEventListener {
 	fields.add(setupButtonPanel());
 	return fields;
     }
+
+    public JDesktopPane getDesktop() {
+        return desktop;   
+    }
+
+    public void setDesktop(JDesktopPane desktop) {
+        this.desktop = desktop;   
+    }
+
     void setStatus(String s) {
-	setTitle("Connection "+id+": "+s);
+	setTitle("LysKOM-session "+id+": "+s);
     }
 
     JPanel setupButtonPanel() {
 	JPanel p = new JPanel();
 	p.setLayout(new FlowLayout(FlowLayout.RIGHT));
 
-	connectButton = new JButton("Connect");
-	abortButton = new JButton("Cancel");
+	connectButton = new JButton("Anslut");
+	abortButton = new JButton("Avbryt");
 
 	p.add(connectButton);
 	p.add(abortButton);
@@ -129,17 +275,21 @@ implements Runnable, RpcEventListener {
     JPanel setupUserPanel() {
 
 	passwordField = new JPasswordField(12);
+	passwordField.setEditable(true);
+	passwordField.setText("seven11");
 
 	JPanel passwordPanel = new JPanel();
 	passwordPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-	passwordPanel.add(new JLabel("Password: ", JLabel.RIGHT));
+	passwordPanel.add(new JLabel("Lösenord: ", JLabel.RIGHT));
 	passwordPanel.add(passwordField);
 
 	userNameField = new JTextField(25);
-	
+	userNameField.setEditable(true);
+	userNameField.setText("Testgubbe");
+
 	JPanel namePanel = new JPanel();
 	namePanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-	namePanel.add(new JLabel("User name: ", JLabel.RIGHT));
+	namePanel.add(new JLabel("Namn: ", JLabel.RIGHT));
 	namePanel.add(userNameField);
 
 	JPanel userPanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
@@ -164,7 +314,7 @@ implements Runnable, RpcEventListener {
 
 	JPanel hostPanel = new JPanel();
 	hostPanel.setLayout(new LabeledPairLayout());
-	hostPanel.add(new JLabel("Hostname: ", JLabel.RIGHT), "label");
+	hostPanel.add(new JLabel("Servernamn: ", JLabel.RIGHT), "label");
 	hostPanel.add(hostField, "field");
 
 	hostPortPanel.add(hostPanel);
@@ -174,11 +324,24 @@ implements Runnable, RpcEventListener {
 
     JPanel setupConfSelector() {
 	JPanel confSel = new JPanel();
-	confSel.setLayout(new GridLayout(1, 1));
+	confSel.setLayout(new BoxLayout(confSel, BoxLayout.Y_AXIS));
 	JList confList = new JList(membershipList);
 	JScrollPane scrollPane = new JScrollPane();
 	scrollPane.getViewport().setView(confList);
 	confSel.add(scrollPane);
+
+	JButton getMembershipBtn = new JButton("Hämta medlemskapslista");
+	confSel.add(getMembershipBtn);
+
+	getMembershipBtn.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    try {
+			kom.doGetMembership(kom.getMyPerson().getNo());
+		    } catch (IOException ex) {
+			SwingKOM.panic(ex);
+		    }
+		}
+	    });
 
 	confList.addListSelectionListener(new ListSelectionListener() {
 	    public void valueChanged(ListSelectionEvent e) {
@@ -202,6 +365,17 @@ implements Runnable, RpcEventListener {
 	    networkError(ex.getMessage());
 	}
     }
+    
+    public void changeConference(int confNo) {
+	try {
+	    kom.changeConference(confNo);
+	    currentConference = confNo;
+	    log("Changed conference to " + confNo);
+	} catch (IOException ex) {
+	    networkError(ex.getMessage());
+	}
+        
+    }
 
     public void rpcEvent(RpcEvent e) {
 	switch (e.getOp()) {
@@ -214,28 +388,33 @@ implements Runnable, RpcEventListener {
 		break;
 	    }
 
-	    Membership m = (Membership) e.getCall().getAux(0);
-	    if (m == null) {
-		try {
-		    m = kom.getMembership(kom.getMyPerson().getNo(),
-					  ((KomToken)
-					   e.getCall().getParameterElements().
-					   nextElement()).toInteger(), 1,
-					  new Bitstring("0"))[0];
-		} catch (IOException ex) {
-		    networkError(ex.getMessage());
-		    return;
-		}
-		    
+            Object aux = e.getCall().getAux(0);
+            if (threadState == STATE_GET_MEMBERSHIP) {
+                Membership m = (Membership) aux;
+                if (m == null) {
+            	try {
+            	    m = kom.getMembership(kom.getMyPerson().getNo(),
+            				  ((KomToken)
+            				   e.getCall().getParameterElements().
+            				   nextElement()).toInteger(), 1,
+            				  new Bitstring("0"))[0];
+            	} catch (IOException ex) {
+            	    networkError(ex.getMessage());
+            	    return;
+            	}
+            	    
+                }
+                currentConference = m.conference;
+                log("Changed conference to " + m);
+
 	    }
 
-	    currentConference = m.conference;
-	    log("Changed conference to " + m);
+	    
 	    
 	    break;
 	default:
 	    if (DEBUG>0)
-		System.err.println("Unhandled RPC event: "+e);
+		Debug.println("SwingKOM unhandled RPC event: "+e);
 	}
 
     }
@@ -255,19 +434,18 @@ implements Runnable, RpcEventListener {
     }
 
     public void run() {
-	if (DEBUG>0)
-	System.err.println("Starting new thread ("+Thread.currentThread()+")");
+	//setCursor(new Cursor(Cursor.WAIT_CURSOR));
 	switch(threadState) {
 	case STATE_CONNECT:
-	    if (DEBUG>0)
-		System.err.println("STATE_CONNECT");
+	threadState = STATE_CONNECT;
+	    Debug.println("STATE_CONNECT");
 	    int uport = 4894;
 	    try { port = uport = Integer.parseInt(portField.getText()); }
 	    catch (NumberFormatException ex) {}
 	    try {
 		kom.connect(server = hostField.getText(), uport);
 	    } catch (IOException ex) {
-		networkError("Connect failed: " + ex.getMessage());
+		networkError("Anslutningen misslyckades: " + ex.getMessage());
 		gotDisconnected();
 	    }
 	    if (kom.getConnected()) {
@@ -276,52 +454,93 @@ implements Runnable, RpcEventListener {
 	
 	    break;
 	case STATE_LOGIN:
-	    if (DEBUG>0)
-		System.err.println("STATE_LOGIN");
-	    setStatus("connected, logging in...");	    
+
+	    Debug.println("STATE_LOGIN");
+	    setStatus("ansluten - loggar in i LYSKOM");	    
 	    try {
 		
 		// look up the names
 		ConfInfo names[] = kom.lookupName(userNameField.getText(),
 						  true, false);
 		if (names.length > 1) {
-		    StringBuffer msg = new StringBuffer("The name specified is ambigous. Possible matches are:\n");
+		    StringBuffer msg = new StringBuffer("Angett namn är flertydigt. Möjliga namn är:\n");
 		    for (int i=0;i<names.length;i++) {
 			msg.append(new String(names[i].confName) + " (" + 
 					      names[i].confNo + ")\n");
 		    }
 		    notify(msg.toString());
 		} else if (names.length == 0) {
-		    notifyError("No user names matching " +
-				userNameField.getText());
+		    notifyError("Det finns inget namn som matchar \"" +
+				userNameField.getText() + "\"");
 		} else {
-		    kom.login(names[0].confNo, passwordField.getText(), false);
+		    if (!kom.login(names[0].confNo, passwordField.getText(), false)) {
+			notifyError("Inloggningen misslyckades");
+		    }
 		}
 	    } catch (IOException ex) {
-		networkError("During login: " + ex.getMessage());
+		networkError("I/O-fel under inloggning: " + ex.getMessage());
 		gotDisconnected();
 	    }
 	    if (kom.getLoggedIn()) {
-		abortButton.setText("Disconnect");
-		connectButton.setText("Reconnect");
+		abortButton.setText("Koppla ned");
+		connectButton.setText("Återanslut");
 		userNameField.setText(new String(kom.getMyPerson().
-						 uconf.name));
+						 getUConference().getName()));
 		gotLoggedIn();
 	    }
 	    break;
 	case STATE_GET_MEMBERSHIP:
-	    if (DEBUG>0)
-		System.err.println("STATE_GET_MEMBERSHIP");	    
-	    try {
-		kom.doGetMembership(kom.getMyPerson().getNo());
-	    } catch (IOException ex) {
-		networkError("While getting membership: "+ex.getMessage());
-		gotDisconnected();
-	    }
+
+            System.err.println("STATE_GET_MEMBERSHIP");	    
+            //kom.doGetMembership(kom.getMyPerson().getNo());
+            //kom.updateUnreads();
+            setCursor(null);
+	
+            threadState = STATE_ONLINE;
+
+            new Thread(this).start();
+
 	    setStatus(kom.getMyPerson().getNo() +
 		      "@"+server+":"+port);
+	    setCursor(null);
+ 	    
+            
 	    break;
+	case STATE_ONLINE:
+	    try {
+                indexScrollPane.setViewportView(unreadIndexBox = setupUnreadIndexBox());
+            } catch (IOException ex) {
+                networkError("I/O-fel: " + ex.getMessage());
+            }
+                
+            
+            break;
 	}
+	Debug.println("--- connect thread finished");
+    }
+    
+    public void showText(int textNo) {
+        try {
+            new InternalTextFrame(this, kom, textNo);   
+        } catch (IOException ex) {
+            networkError("I/O-fel: " + ex.getMessage());   
+        }
+    }
+
+    public int nextUnreadConference(boolean change) throws IOException {
+        int c = kom.nextUnreadConference(change);
+        return c;
+    }
+    
+    public int nextUnreadText(boolean markRead) throws IOException {
+        int t = kom.nextUnreadText(markRead);
+        return t;
+    }
+
+    public synchronized int popText() {
+        Integer i = (Integer) toRead.pop();
+        
+        return i == null ? -1 : i.intValue();
     }
 
     void gotDisconnected() {
@@ -337,6 +556,7 @@ implements Runnable, RpcEventListener {
 	// meanwhile, do something useful..
 	//sessionSetupPanel.setVisible(false);
 	//setContentPane(setupConfSelector());
+	
 
     }
     void gotConnected() {

@@ -28,7 +28,7 @@ public class MembershipList implements ListModel, Runnable {
 	updatingNames = true;
 	try {
 	    for (int i=0;i<names.length;i++) {
-		names[i] = new String(session.getConfName(list[i].conference));
+	        if (i < list.length) names[i] = new String(session.getConfName(list[i].conference));
 	    }
 	    notifyListeners();
 	} catch (java.io.IOException ex) {
@@ -66,8 +66,7 @@ public class MembershipList implements ListModel, Runnable {
 		new Thread(this).start();
 	    }
 	} else {
-	    confRep = names[index] +
-		" (#" + list[index].conference + ")";
+	    confRep = names[index];
 	}
 		
 	return confRep;
@@ -78,7 +77,7 @@ public class MembershipList implements ListModel, Runnable {
     }
 
     public void addListDataListener(ListDataListener l) {
-	listeners.add((Object) l);
+	listeners.addElement((Object) l);
     }
 
     public void removeListDataListener(ListDataListener l) {

@@ -12,26 +12,27 @@ import javax.swing.plaf.metal.*;
 
 public class LKOMFrame extends JFrame {
 
-    static String welcomeMessage = "Swing-LinhKOM v0.1, (c) 1999 Rasmus Sten";
+    static String welcomeMessage = "Swing-LatteKOM v0.1, (c) 1999 Rasmus Sten";
 
     JMenuBar menuBar;
     JLabel statusBar;
     JDesktopPane desktop;
 
-    static final Integer DOCLAYER = new Integer(5);
 
     public LKOMFrame() {
-	super("Swing-LinhKOM");
+	super("Swing-LatteKOM");
 
-	Rectangle defaultRectangle = new Rectangle(700,500);
+	Rectangle defaultRectangle = new Rectangle(1024,768);
 	Point defaultPosition = new Point(10,10);
 	setBounds(defaultRectangle);
 	setLocation(defaultPosition);
 
 	// setup content
         desktop = new JDesktopPane();
-        getContentPane().add(desktop);
-
+        
+	newSession();
+        setContentPane(desktop);
+        
 	setupStatus();
 	setStatus(welcomeMessage);
 	setupMenus();
@@ -42,8 +43,8 @@ public class LKOMFrame extends JFrame {
 	});
 
 
-	newSession();
     }
+    
 
     public void setStatus(String s) {
 	statusBar.setText(s);
@@ -80,14 +81,17 @@ public class LKOMFrame extends JFrame {
 	return file;
     }
 
-    void newSession() {
-	JInternalFrame doc = new SessionFrame(0);
-	desktop.add(doc, DOCLAYER);
+    protected void newSession() {
+	SessionFrame doc = new SessionFrame(0);
+	doc.setDesktop(desktop);
+	doc.setVisible(true);
+	doc.setBackground(Color.lightGray);
+	desktop.add(doc);
 	System.err.println("newSession(): internal frame created");
 	try { 
 	    doc.setSelected(true); 
 	} catch (java.beans.PropertyVetoException e2) {
-	    System.err.println(e2.toString());
+	    System.err.println(e2.getClass().getName() + ": " + e2.toString());
 	}
     }
 
