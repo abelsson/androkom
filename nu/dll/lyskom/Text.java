@@ -207,7 +207,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
 
 	        ContentType preambleContentType = new ContentType(rfc822headers.getHeader("Content-Type", null));
 
-		if (preambleContentType != null && preambleContentType.match("multipart/*") {
+		if (preambleContentType != null && preambleContentType.match("multipart/*")) {
 		    stat.setAuxItem(new AuxItem(AuxItem.tagContentType,
 						preambleContentType.toString()));
 		    contentTypeString = preambleContentType.toString();
