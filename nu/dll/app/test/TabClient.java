@@ -73,7 +73,7 @@ public class TabClient {
 			    shutdown();
 			} catch (IOException ex1) {}
 			tabPane.setSelectedIndex(tabPane.getTabCount()-2);
-			tabPane.remove(tabPane.indexOfTab(tabName));
+			tabPane.removeTabAt(tabPane.indexOfTab(tabName));
 		    }
 		});
 
