@@ -54,7 +54,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     int wakeOnReplyFrom = -1;
 
     // Conferences in which we might have unread texts
-    int[] unreads;
+    int[] unreads = new int[] {};
     Membership[] membership = new Membership[0];
     
     // Membership for the corresponding conferences

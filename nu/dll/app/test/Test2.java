@@ -559,7 +559,8 @@ public class Test2 implements AsynchMessageReceiver {
 	    System.out.println("-- gå till möte: " + confNoToName(confNo));
 	    try {
 		foo.changeConference(confNo);
-		return 0;
+		foo.updateUnreads();
+		return 1;
 	    } catch (RpcFailure failed) {
 		System.out.print("-- mötesbytet misslyckades: ");
 		switch (failed.getError()) {
