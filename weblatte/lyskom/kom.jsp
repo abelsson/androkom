@@ -171,6 +171,7 @@
     String lookupNamePlain(Session lyskom, int number)
     throws RpcFailure, IOException {
 	String name = "[" + number + "]";
+	if (number == 0) return name;
 	UConference uconf = null;
 	try {
 	    uconf = lyskom.getUConfStat(number);
