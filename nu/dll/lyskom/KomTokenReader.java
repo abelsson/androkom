@@ -13,7 +13,12 @@ import java.util.Enumeration;
 
 class KomTokenReader {
 
-    final static int DEBUG = 0;
+    final static int DEBUG = Integer.getInteger("lattekom.debug-parser", 0).intValue();
+    static {
+	if (DEBUG > 0) {
+	    Debug.println("KomTokenReader debug lever: " + DEBUG);
+	}
+    }
 
     private InputStream input;
     private Session session;
@@ -95,6 +100,7 @@ class KomTokenReader {
     throws IOException, ProtocolException {
 	return readToken(-1);
     }
+
     protected KomToken readToken(int hollerithLimit)
     throws IOException, ProtocolException {
 	ByteArrayOutputStream os = new ByteArrayOutputStream(32);
@@ -105,7 +111,8 @@ class KomTokenReader {
 	if (Debug.ENABLED && hollerithLimit > -1) {
 	    Debug.println("readToken(" + hollerithLimit + ")");
 	}
-	while (true) {
+	boolean tokenCompleted = false;
+	while (!tokenCompleted) {
 	    lastB = b;
 	    b = (byte) input.read();
 	    if (debugBuffer != null) debugBuffer.append((char) b);
@@ -123,13 +130,19 @@ class KomTokenReader {
 		if (lastB == b)
 		    break;
 
-		return lastToken = new KomToken(os.toByteArray());
+		lastToken = new KomToken(os.toByteArray());
+		tokenCompleted = true;
+		break;
 	    case '*':
 		arrlen = (lastToken != null ? lastToken.toInteger() : -1);
-		return (KomToken) new KomTokenArray(arrlen);
+		lastToken = (KomToken) new KomTokenArray(arrlen);
+		tokenCompleted = true;
+		break;
 	    case '{':
 		input.read(); // eat up leading space
-		return lastToken = (KomToken) readArray();
+		lastToken = (KomToken) readArray();
+		tokenCompleted = true;
+		break;
 	    case 'H':
 		try {
 		    arrlen = Integer.parseInt(session.toString(os.toByteArray()));
@@ -141,24 +154,27 @@ class KomTokenReader {
 		    if (Debug.ENABLED)
 			Debug.println("Returning HollerithStream of " + arrlen + " bytes");
 		    lastToken = new HollerithStream(input, arrlen, session.getServerEncoding());
-		    return lastToken;
+		    tokenCompleted = true;
+		    break;
 		}
 		byte[] hstring = new byte[arrlen];
 		read(input, hstring);
-		if (DEBUG>2)
-		    Debug.println("readToken(): hollerith: \""+
-				       new String(hstring) + "\"");
 		if (input.read() == '\n') { // eat trailing space/cr
-		    if (DEBUG>2) Debug.println("EOL");
 		    lastByteWasEol = true;
 		} else {
 		    lastByteWasEol = false;
 		}
-		return lastToken = new Hollerith(hstring, session.getServerEncoding());
+	        lastToken = new Hollerith(hstring, session.getServerEncoding());
+		tokenCompleted = true;
+		break;
 	    default:
 		os.write(b);
 	    }
 	}
+	if (DEBUG > 2) {
+	    Debug.println("readToken(): " + lastToken + (lastByteWasEol ? " (END OF LINE)" : ""));
+	}
+	return lastToken;
     }
 }
 

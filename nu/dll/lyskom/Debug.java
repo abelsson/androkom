@@ -19,6 +19,9 @@ public class Debug {
     static {
         try {
             ENABLED = Boolean.getBoolean(getPropertyKey());
+	    if (ENABLED) {
+		println("LatteKOM debug output enabled.");
+	    }
         } catch (SecurityException ex1) {
             
         } catch (NullPointerException ex2) {

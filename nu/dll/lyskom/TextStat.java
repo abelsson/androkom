@@ -12,6 +12,8 @@ import java.util.Iterator;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.StringTokenizer;
+import java.util.Map;
+import java.util.HashMap;
 
 /**
  * <p>
@@ -143,6 +145,7 @@ public class TextStat implements java.io.Serializable {
 
     //public Selection miscInfo;
     List miscInfo = new LinkedList();
+    Map localMap = new HashMap();
 
     /**
      * Creates an empty TextStat object
@@ -416,6 +419,59 @@ public class TextStat implements java.io.Serializable {
 	}
 	return stats;
     }
+
+    /**
+     * Returns an array containing all recipients for this text.
+     */
+    public int[] getRecipients() {
+	return getStatInts(TextStat.miscRecpt);
+    }
+
+    /**
+     * Returns an array containing all CC-recipients for this text.
+     */
+    public int[] getCcRecipients() {
+	return getStatInts(TextStat.miscCcRecpt);
+    }
+
+    /**
+     * Walks through the recipient list of this text and return
+     * this texts local text number for that recipient, or -1
+     * if the recipient is not found in this texts recipient list.
+     *
+     * @param confNo The recipient to search for
+     * @see nu.dll.lyskom.Session#localToGlobal(int, int, int)
+     * @see nu.dll.lyskom.TextMapping
+     */
+    // more error handling (as everywhere)
+    public int getLocal(int confNo)
+    throws RuntimeException { 
+	Integer locNo = (Integer) localMap.get(new Integer(confNo));
+	if (locNo != null) return locNo.intValue();
+
+	List miscInfo = getMiscInfoSelections(TextStat.miscLocNo);
+	Iterator i = miscInfo.iterator();
+	while (i.hasNext()) {	    
+	    Selection selection = (Selection) i.next();
+
+	    int rcpt = 0;
+	    if (selection.contains(TextStat.miscRecpt))
+		rcpt = selection.getIntValue(TextStat.miscRecpt);
+	    if (selection.contains(TextStat.miscCcRecpt))
+		rcpt = selection.getIntValue(TextStat.miscCcRecpt);
+
+	    if (rcpt == confNo) {
+		int no = selection.getIntValue(TextStat.miscLocNo);
+		localMap.put(new Integer(confNo), new Integer(no));
+		return no;
+	    }
+
+	}
+	Debug.println("Text.getLocal(" + confNo + "): recipient not found");
+	return -1;
+    }
+
+
 
     /* Gah. all createFrom() should be constructors, I guess. */
     static TextStat createFrom(int no, RpcReply reply) {

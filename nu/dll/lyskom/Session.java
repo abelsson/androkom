@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.42 2004/04/16 12:01:41 pajp Exp $
+ * @version $Id: Session.java,v 1.43 2004/04/20 01:03:23 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1631,7 +1631,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public  void endast(int confNo, int no)
     throws IOException, RpcFailure {
 	int highest = getUConfStat(confNo).getHighestLocalNo();
-	setLastRead(confNo, highest-no);
+	int lastRead = highest-no;
+	if (lastRead < 0) lastRead = 0;
+	setLastRead(confNo, lastRead);
     }
 
 

@@ -47,7 +47,15 @@ class Connection {
 				    while (!writeQueue.isEmpty()) {
 					byte[] bytes = (byte[]) writeQueue.removeFirst();
 					output.write(bytes);
-					Debug.println("wrote: " + new String(bytes));
+					if (Debug.ENABLED) {
+					    String s;
+					    if (bytes[bytes.length-1] == '\n') {
+						s = new String(bytes, 0, bytes.length-1);
+					    } else {
+						s = new String(bytes);
+					    }
+					    Debug.println("wrote: " + s);
+					}
 				    }
 				}
 			    }

@@ -38,7 +38,6 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     int textNo = -1;
     TextStat stat = null;
-    Map localMap = new HashMap();
 
     Text setCached(boolean b) {
 	cached = b; return this;
@@ -103,6 +102,13 @@ public class Text extends Hollerith implements java.io.Serializable {
     }
 
     /** end of constructors **/
+
+    /**
+     * @see nu.dll.lyskom.TextStat#getLocal(int)
+     */
+    public int getLocal(int confNo) {
+	return stat.getLocal(confNo);
+    }
 
     /**
      * Trims the contents on this text - removes trailing whitespace to follow LysKOM conventions.
@@ -258,43 +264,6 @@ public class Text extends Hollerith implements java.io.Serializable {
     public Text addFootnoted(int no) {
 	addMiscInfoEntry(TextStat.miscFootnTo, no);
 	return this;
-    }
-
-    /**
-     * Walks through the recipient list of this text and return
-     * this texts local text number for that recipient, or -1
-     * if the recipient is not found in this texts recipient list.
-     *
-     * @param confNo The recipient to search for
-     * @see nu.dll.lyskom.Session#localToGlobal(int, int, int)
-     * @see nu.dll.lyskom.TextMapping
-     */
-    // more error handling (as everywhere)
-    public int getLocal(int confNo)
-    throws RuntimeException { 
-	Integer locNo = (Integer) localMap.get(new Integer(confNo));
-	if (locNo != null) return locNo.intValue();
-
-	List miscInfo = stat.getMiscInfoSelections(TextStat.miscLocNo);
-	Iterator i = miscInfo.iterator();
-	while (i.hasNext()) {	    
-	    Selection selection = (Selection) i.next();
-
-	    int rcpt = 0;
-	    if (selection.contains(TextStat.miscRecpt))
-		rcpt = selection.getIntValue(TextStat.miscRecpt);
-	    if (selection.contains(TextStat.miscCcRecpt))
-		rcpt = selection.getIntValue(TextStat.miscCcRecpt);
-
-	    if (rcpt == confNo) {
-		int no = selection.getIntValue(TextStat.miscLocNo);
-		localMap.put(new Integer(confNo), new Integer(no));
-		return no;
-	    }
-
-	}
-	Debug.println("Text.getLocal(" + confNo + "): recipient not found");
-	return -1;
     }
 
     /**

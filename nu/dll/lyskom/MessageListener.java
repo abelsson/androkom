@@ -28,8 +28,6 @@ import java.io.*;
 class MessageListener
 implements Runnable {
 
-    private final static int DEBUG = 0;
-
     Map streamReceivers = new HashMap();
 
     HollerithStream pendingStream = null;
