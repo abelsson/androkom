@@ -16,6 +16,11 @@ import java.util.Date;
 import java.text.SimpleDateFormat;
 import java.text.MessageFormat;
 
+import org.leen.java.awt.console.*;
+
+import javax.swing.JFrame;
+import javax.swing.JScrollPane;
+
 import nu.dll.lyskom.*;
 
 /**
@@ -23,7 +28,19 @@ import nu.dll.lyskom.*;
  * Takes two optional arguments: the username and the password.
  *
  */
-public class Test2 implements AsynchMessageReceiver {
+public class Test2 implements AsynchMessageReceiver, ConsoleListener {
+
+    class GuiInput {
+	String string = "";
+	public void setString(String s) {
+	    this.string = s;
+	}
+
+	public String getString() {
+	    return string;
+	}
+    }
+
     Session foo;
     int noRead = 0;
     Text lastText = null;
@@ -40,14 +57,19 @@ public class Test2 implements AsynchMessageReceiver {
     static String encoding = System.getProperty("lattekom.encoding");
     static String lineSeparator = System.getProperty("line.separator");
 
-    boolean showAux = Boolean.getBoolean("lattekom.showaux");
-    boolean dontMarkOwnTextsAsRead = Boolean.getBoolean("lattekom.dont-mark-own-texts-as-read");
-    boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
-    boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
-    String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
+    static boolean showAux = Boolean.getBoolean("lattekom.showaux");
+    static boolean dontMarkOwnTextsAsRead = Boolean.getBoolean("lattekom.dont-mark-own-texts-as-read");
+    static boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
+    static boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
+    static boolean useGui = Boolean.getBoolean("lattekom.use-gui");
+
+    static String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
+
+    GuiInput guiInput = null;
+
     static {
 	if (encoding == null) {
-	    if (System.getProperty("os.name").startsWith("Windows")) encoding = "Cp437";
+	    if (System.getProperty("os.name").startsWith("Windows") && !useGui) encoding = "Cp437";
 	    else encoding = "ISO-8859-1";
 	}
     }
@@ -209,7 +231,7 @@ public class Test2 implements AsynchMessageReceiver {
 	}
     }
 
-    public Test2(String[] argv) {
+    public void run(String[] argv) {
 	try {
 
 	    String server = System.getProperty("lyskom.server") == null ? "sno.pp.se" :
@@ -1012,6 +1034,7 @@ public class Test2 implements AsynchMessageReceiver {
 	    byte[] sBytes = s.getBytes(encoding);
 	    consByteStream.write(sBytes, 0, sBytes.length);
 	    consByteStream.writeTo(System.out);
+	    if (useGui) stdoutScroll.getVerticalScrollBar().setValue(stdoutScroll.getVerticalScrollBar().getMaximum());
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
 	} catch (IOException ex2) {
@@ -1031,17 +1054,28 @@ public class Test2 implements AsynchMessageReceiver {
 	    consoleWrite(prompt);
 	}
 
-	int b = System.in.read();
-	ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
-	while (b != -1 && b != '\n') {
-	    inByteStream.write(b);
-	    b = System.in.read();
-	}
-	if (b == -1) return null;
-	try {	    
-	    return inByteStream.toString(encoding).trim();
-	} catch (UnsupportedEncodingException ex1) {
-	    throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
+	if (!useGui) {
+	    int b = System.in.read();
+	    ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
+	    while (b != -1 && b != '\n') {
+		inByteStream.write(b);
+		b = System.in.read();
+	    }
+	    if (b == -1) return null;
+	    try {	    
+		return inByteStream.toString(encoding).trim();
+	    } catch (UnsupportedEncodingException ex1) {
+		throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
+	    }
+	} else {
+	    synchronized (guiInput) {
+		try {
+		    guiInput.wait();
+		} catch (InterruptedException ex1) {
+		    System.err.println("Interrupted while waiting for user input");
+		}
+		return guiInput.getString();
+	    }
 	}
     }
 
@@ -1336,11 +1370,62 @@ public class Test2 implements AsynchMessageReceiver {
 
 	}
     }
-	
+
+    static JFrame createConsoleFrame() {
+	    JFrame frame = new JFrame();
+	    frame.setSize(800,600);
+	    frame.setVisible(true);
+	    return frame;
+    }
+
+    public void consoleAction(ConsoleEvent event) {
+	Debug.println("consoleAction(" + event + ")");
+	if (event.getType() == ConsoleEvent.COMMAND_ENTERED) {
+	    synchronized (guiInput) {
+	        guiInput.setString((String) event.getCommunique());
+		guiInput.notify();
+	    }
+	}
+    }
+
 	
     public static void main(String[] argv) {
+	Test2 t2 = new Test2();
+
 	consoleWriteLn("IJKLKOM (c) 1999 Rasmus Sten");
-	new Test2(argv);
+	t2.run(argv);
+    }
+
+    static JScrollPane stdoutScroll;
+    public Test2() {
+	if (useGui) {
+	    guiInput = new GuiInput();
+
+	    System.out.println("Enabling console GUI");
+	    JFrame stdout = createConsoleFrame();
+	    Console stdoutConsole = new Console(80, 25);
+	    stdoutScroll = new JScrollPane(stdoutConsole,
+					   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+					   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	    stdout.getContentPane().add(new JScrollPane(stdoutConsole));
+	    stdout.repaint();
+	    stdout.setTitle("LatteKOM console");
+
+	    System.setOut(new PrintStream(new LogOutputStream(stdoutConsole)));
+
+	    stdoutConsole.addConsoleListener(this);
+	    if (Debug.ENABLED) {
+		Console stdErrConsole = new Console(80,25);
+		JFrame stderr = createConsoleFrame();
+		stderr.getContentPane().add(new JScrollPane(stdErrConsole));
+		stderr.setVisible(true);
+		stderr.setTitle("LatteKOM stderr console");
+		stderr.repaint();
+		System.setErr(new PrintStream(new LogOutputStream(stdErrConsole)));
+	    } else {
+		System.setErr(new PrintStream(new LogOutputStream(stdoutConsole)));
+	    }
+	}	
     }
 
     public void asynchMessage(AsynchMessage m) {
