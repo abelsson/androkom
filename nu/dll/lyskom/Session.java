@@ -789,7 +789,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	t.trimContents();
 	t.getStat().addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware,
 					   new Bitstring("00000000"), 0,
-					   new Hollerith("jkom 0.0")));
+					   new Hollerith("lattekom 0.0")));
 	return doCreateText(t.getContents(), t.getStat().getMiscInfo(),
 			    t.getStat().getAuxItems());
     }
