@@ -85,6 +85,7 @@
     if (lyskomWrapper != null) {
 	out.println("<b>Aktiv LysKOM-session:</b> " + sessionInfo(lyskomWrapper) + "<br>");
     }
+    out.println("<h3>Pausade LysKOM-sessioner:</h3>");
     synchronized (suspendedSessions) {
 	out.println("<ol>");
 	for (Iterator i = suspendedSessions.iterator(); i.hasNext();) {

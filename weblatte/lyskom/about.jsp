@@ -5,7 +5,7 @@
     <title>Weblatte - hjälp och information</title>
     <link rel="stylesheet" href="lattekom.css" />
   </head>
-  <body>
+  <body class="about">
     <h2>Weblatte - en kort introduktion</h2>
     <p>
       Weblatte är en LysKOM-klient för dig som lätt vill kunna läsa
@@ -210,7 +210,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.9 $
+      $Revision: 1.10 $
     </p>
   </body>
 </html>

@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.36 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.37 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1149,7 +1149,6 @@
     }
 %>
 <%
-
 	    listNews = listNews || (parameter(parameters, "listnews") != null ||
 	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
 
@@ -1196,7 +1195,6 @@
 		int skipped = 0;
 		if (parameters.containsKey("skipTo")) {
 		    skipTo = Integer.parseInt(parameter(parameters, "skipTo"));
-		    Debug.println("skipTo == " + skipTo);
 		}
 		synchronized (unreadConfsList) {
 		    boolean abort = false;
@@ -1204,20 +1202,18 @@
 			int conf = ((Integer) confIter.next()).intValue();
 			if (skipTo > 0 && skipTo != conf) {
 			    skipped++;
-			    Debug.println("skipping " + conf);
 			    continue;
 			} else if (skipTo == conf) {
 			    skipped++;
-			    Debug.println("skipping " + conf + " (==skipTo)");
 			    skipTo = 0;
 			    continue;
 			}
 
-
 			lastconf = conf;
-			Membership membership = !manyMemberships ?
-			    lyskom.queryReadTextsCached(conf) :
-			    lyskom.queryReadTexts(me, conf);
+			Membership membership = lyskom.queryReadTextsCached(conf);
+			if (membership == null) {
+			    membership = lyskom.queryReadTexts(me, conf);
+			}
 
 			int[] readTexts = membership.getReadTexts();
 			UConference uconf = lyskom.getUConfStat(conf);
@@ -1253,7 +1249,8 @@
 		    }
 		if (manyMemberships && confIter.hasNext()) {
 %>
-		<p>Många möten: det finns troligen fler olästa i möten
+		<p>Många möten: det finns troligen fler olästa i de
+	           <%= unreadConfsList.size()-confsum %> möten
 		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">lista nästa 5</a>).</p>
 <%
 		}
@@ -1485,7 +1482,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.36 $
+$Revision: 1.37 $
 </p>
 </body>
 </html>

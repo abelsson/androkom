@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.56 2004/05/11 19:57:17 pajp Exp $
+ * @version $Id: Session.java,v 1.57 2004/05/11 22:15:40 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -560,16 +560,23 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     /**
-     * Testing, testning.
+     *
      */
     public List getUnreadConfsListCached() {
 	return unreads;
     }
 
+    /**
+     *
+     */
     public Membership queryReadTextsCached(int confNo) {
 	return membershipCache.get(confNo);
     }
 
+    /**
+     * Updates the unreadMembership array with Membership objects for
+     * conferences that may contain unreads.
+     */
     public void updateUnreads()
     throws IOException {
 	updateUnreads(null);
@@ -577,7 +584,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     /**
      * Updates the unreadMembership array with Membership objects for
-     * conferences that _may_ contain unreads.
+     * conferences that may contain unreads.
      */
     public void updateUnreads(List _unreads)
     throws IOException {
