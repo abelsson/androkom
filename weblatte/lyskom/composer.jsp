@@ -1,9 +1,9 @@
-<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
-				 java.net.URLConnection, java.net.URL, java.io.*, java.text.*' %><%@ 
-    page import='java.nio.charset.Charset, javax.mail.internet.ContentType'
-%><%@ 
-    page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
-%><%@ page errorPage='fubar.jsp'
+<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*'
+    import='java.util.*,java.net.URLConnection'
+    import='java.net.URL, java.io.*, java.text.*'
+    import='java.nio.charset.Charset, javax.mail.internet.ContentType'
+    pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
+    errorPage='fubar.jsp'
 %><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
     if (request.getParameter("image") != null) {
 	String name = request.getParameter("image");
@@ -380,13 +380,13 @@
 	    if (conf.getType().original()) {
 		int superconf = conf.getSuperConf();
 		if (superconf > 0) {
-		    recipients.add(lookupName(lyskom, superconf));
+		    recipients.add(lookupNameComplete(lyskom, superconf));
 		} else {
 		   throw new RuntimeException("Du får inte skriva kommentarer i " +
 					      conf.getNameString());
 		}
 	    } else {
-		recipients.add(lookupName(lyskom, _recipients[i]));
+		recipients.add(lookupNameComplete(lyskom, _recipients[i]));
 	    }
 	}
     }
@@ -397,7 +397,7 @@
     }
 
     StringBuffer errors = new StringBuffer();
-
+    Map ambigs = new HashMap();
 
     for (int rcptType = 1; rcptType <= 2; rcptType++) {
 	Object recptFieldsObj = parameters.get(rcptType == 1 ? "recipient" : "ccRecipient");
@@ -447,15 +447,9 @@
 			new ContentType(contentType).getBaseType() + "\".<br/>");
 		}
 
-	    	list.add(conf.getNameString());
+	    	list.add(lookupNameComplete(lyskom, conf.getNo()));
 	    } catch (AmbiguousNameException ex1) {
-		errors.append("<div class=\"statusError\">Fel: namnet är flertydigt. Följande namn matchar:");
-	        errors.append("<ul>");
-	        ConfInfo[] names = ex1.getPossibleNames();
-	        for (int j=0; j < names.length; j++) 
-		    errors.append("<li>" + lookupName(lyskom, names[j].getNo(), true));
-	    	errors.append("</ul>");
-		errors.append("</div>");
+		ambigs.put(recptFields[i], Arrays.asList(ex1.getPossibleNames()));
 	    	list.add(recptFields[i]);
 	    }
 	}
@@ -491,12 +485,24 @@
     for (int rcptType = 1; rcptType <= 2; rcptType++) {
 	List list = rcptType == 1 ? recipients : ccRecipients;
     	for (Iterator i = list.iterator(); i.hasNext();) {
-	    out.print("<tr><td>");
 	    String recipient = (String) i.next();
+	    List names = (List) ambigs.get(recipient);
+
+	    out.print("<tr><td>");
 	    if (rcptType == 1) out.print("Mottagare: ");
 	    else out.print("Kopiemottagare: ");
 	    out.print("</td><td>");
-	    out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + recipient + "\">");
+	    if (names == null) {
+ 	        out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + htmlize(recipient) + "\">");
+	    } else {
+		out.print("<select name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\">");
+		out.print("<option value=\"\">--- Välj mottagare i listan");
+		for (Iterator ai = names.iterator();ai.hasNext();) {
+		    String h = htmlize(lookupNameComplete(lyskom, ((ConfInfo) ai.next()).getNo()));
+		    out.print("<option value=\"" + h + "\">" + h);
+		}
+		out.print("</select>");
+	    }
 	    out.println("</td></tr>");
         }
     }
@@ -626,7 +632,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.24 2004/11/16 06:03:42 pajp Exp $
+$Id: composer.jsp,v 1.26 2005/01/27 19:05:51 pajp Exp $
 </div>
 </body>
 </html>

@@ -54,6 +54,10 @@ public class Conference {
 	setFrom(tokens);
     }
 
+    public ConfInfo getConfInfo() {
+	return new ConfInfo(name, type, no);
+    }
+
     /**
      * Returns this conference's number.
      */

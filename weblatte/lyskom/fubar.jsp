@@ -46,7 +46,7 @@ Request-parametrar: <%
 %>
 
 Felklass: <%= exception.getClass().getName() %>
-Felmeddelande: <%= exception.getMessage() %>
+Felmeddelande: <%= htmlize(exception.getMessage()) %>
 
 Stackspårning:
 <%

@@ -172,6 +172,11 @@
 	    .append("\";</script>").toString();
     }
 
+    String lookupNameComplete(Session lyskom, int number)
+    throws RpcFailure, IOException {
+	Conference conf = lyskom.getConfStat(number);
+	return "<" + (conf.getType().letterbox() ? "Person" : "Möte") + " " + number + ": " + conf.getNameString() + ">";
+    }
 
     String lookupNamePlain(Session lyskom, int number)
     throws RpcFailure, IOException {
@@ -258,6 +263,7 @@
 	
     }
 
+    Pattern confNamePattern = Pattern.compile("<(?:möte|person) (\\d+)[^>]*>", Pattern.CASE_INSENSITIVE|Pattern.UNICODE_CASE);
     ConfInfo lookupName(Session lyskom, String name, boolean wantPersons, boolean wantConferences)
     throws IOException, RpcFailure, AmbiguousNameException {
 	if (name.startsWith("#")) {
@@ -265,6 +271,16 @@
 	    String nameStr = name.substring(1);
 	    int confNo = Integer.parseInt(nameStr);
 	    return lyskom.lookupName(lookupName(lyskom, confNo), wantPersons, wantConferences)[0];
+	}
+
+	// match "<Möte 4711: conference name>" type strings
+	Matcher m = confNamePattern.matcher(name);
+	if (m.matches()) {
+	    try {
+		return lyskom.getConfStat(Integer.parseInt(m.group(1))).getConfInfo();
+	    } catch (NumberFormatException ex1) {
+		throw new RuntimeException(ex1.toString());
+	    }
 	}
 	ConfInfo[] names = lyskom.lookupName(name, wantPersons, wantConferences);
 	if (names.length == 0) return null;

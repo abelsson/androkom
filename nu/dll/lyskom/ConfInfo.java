@@ -13,13 +13,15 @@ public class ConfInfo {
 
     // Conf-Type ::= BITSTRING
     public int confNo = -1;
-    public byte[] confName;
+
+    /** @deprecated use the Hollerith confNameH instead */
+    public byte[] confName; // kept for backward-compatibility
+    Hollerith confNameH;
     public ConfType confType;
-    String charset = Session.defaultServerEncoding;
 
     protected ConfInfo(Hollerith confName,  ConfType confType, int confNo) {
 	this.confName = confName.getContents();
-	this.charset = confName.getCharset();
+	this.confNameH = confName;
 	this.confType = confType;
 	this.confNo = confNo;
     }
@@ -33,11 +35,7 @@ public class ConfInfo {
      *
      */
     public String getNameString() {
-	try {
-	    return new String(confName, charset);
-	} catch (java.io.UnsupportedEncodingException e) {
-	    throw new RuntimeException("ConfInfo.getNameString(): Unsupported encoding: " + e.getMessage());
-	}
+	return confNameH.getContentString();
     }
 
     public String toString() {
