@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.37 2004/04/06 01:55:45 pajp Exp $
+ * @version $Id: Session.java,v 1.38 2004/04/06 02:21:25 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -992,8 +992,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (isCachableType(text.getContentType())) {
 	    textCache.add(text);
 	}
-
 	textStatCache.add(text.getStat());
+
+	// if this text is a comment or footnoted,
+	// remove the footnoted or commented texts from
+	// cache.
+	int[] texts = text.getCommented();
+	for (int i=0; i < texts.length; i++)
+	    purgeTextCache(texts[i]);
+	texts = text.getFootnoted();
+	for (int i=0; i < texts.length; i++)
+	    purgeTextCache(texts[i]);
+
 	return text;
 
     }
@@ -1315,7 +1325,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	for (int i=0; i < m.length; i++) {
 	    if (m[i] != null) {
 		l.add(m[i]);
-		Debug.println("getMembershipList(): adding conf " + m[i].getNo());
 		membershipCache.add(m[i]);
 	    }
 	}
