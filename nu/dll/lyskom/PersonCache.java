@@ -19,6 +19,10 @@ class PersonCache {
 	hash = new Hashtable();
     }
 
+    public void remove(int persNo) {
+	hash.remove(new Integer(persNo));
+    }
+
     public void add(Person p) {
 	if (p.getNo() == -1)
 	    return; // throw(new PersonNumberException("Person has no number"));

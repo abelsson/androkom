@@ -13,20 +13,24 @@ import java.util.Iterator;
 import java.util.TreeMap;
 import java.util.Map;
 import java.util.HashMap;
+
 class TextCache {
     static int DEBUG = 1;
 
-    int maxAge = 10*1000;
+    int maxAge = 60*60*1000; // one hour
     int maxSize = 100;
 
     Hashtable hash;
     TreeMap ageMap = new TreeMap();
-    
+
     public TextCache() {
 	hash = new Hashtable();
     }
 
     public void remove(int textNo) {
+	if (Debug.ENABLED) {
+	    Debug.println("TextCache.remove(" + textNo + ")");
+	}
 	hash.remove(new Integer(textNo));
 	ageMap.remove(new Integer(textNo));	
     }
@@ -53,10 +57,7 @@ class TextCache {
     public Text get(int textNo) {
 	checkLimits(textNo);
 	Text t = (Text) hash.get(new Integer(textNo));
-	if (t != null)
-	    if (DEBUG > 0) 
-		Debug.println("TextCache: returning "+textNo);
-		
+	Debug.println("TextCache: returning "+t);
 	return t;
     }
 

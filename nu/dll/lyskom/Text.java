@@ -47,7 +47,9 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Returns <tt>true</tt> if this text was retreived from text cache rather than
      * directly from the server
      */
-    public boolean isCached(boolean n) { return cached; }
+    public boolean isCached() {
+	return cached;
+    }
 
     /* constructors */
     /**
@@ -358,6 +360,10 @@ public class Text extends Hollerith implements java.io.Serializable {
      */
     public String getCreationTimeString() {
 	return getStat().getCreationTime().toString();
+    }
+
+    public String toString() {
+	return "<TEXT " + getNo() + ": " + contents.length + " bytes" + (isCached() ? " (cached)" : "") + ">";
     }
 
     /**

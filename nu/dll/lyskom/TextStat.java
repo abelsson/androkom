@@ -499,10 +499,21 @@ public class TextStat implements java.io.Serializable {
 	KomToken[] miscInfoTokens =
 	    ((KomTokenArray) params[pcount++]).getTokens();
 
-	int auxItemArrayLength = params[pcount++].intValue();
-	Debug.println("TextStat.createFrom(): aux-item list length: " + auxItemArrayLength);
-	KomToken[] auxItemTokens =
-	    ((KomTokenArray) params[pcount++]).getTokens();
+
+	KomToken auxItemArrayLengthToken = params[pcount++];
+	if (auxItemArrayLengthToken.isEmpty()) {
+	    auxItemArrayLengthToken = params[pcount++];
+	}
+
+	int auxItemArrayLength = auxItemArrayLengthToken.intValue();
+	KomToken auxItemArrayToken = params[pcount++];
+	if (Debug.ENABLED) {
+	    Debug.println("TextStat.createFrom(): aux-item list length: " + auxItemArrayLength);
+	    Debug.println("Aux-Item Array token class: " + auxItemArrayToken.getClass().getName());
+	    Debug.println("Aux-Item Array token contents: " + new String(auxItemArrayToken.getContents()));
+	}
+
+	KomToken[] auxItemTokens = ((KomTokenArray) auxItemArrayToken).getTokens();
 
 	int mcount = 0;
 

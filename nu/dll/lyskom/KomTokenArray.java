@@ -24,6 +24,8 @@ public class KomTokenArray extends KomToken {
      * Constructs an empty KomTokenArray
      */
     public KomTokenArray(int length) { // empty array
+	if (length < 0) 
+	    throw new IllegalArgumentException("ARRAY length must be >= 0");
 	this.length = length;
 	objects = new KomToken[0];
     }
@@ -163,7 +165,16 @@ public class KomTokenArray extends KomToken {
     }
 
     public String toString() {
-	return "ARRAY("+objects.length+"):"+new String(toNetwork());
+	StringBuffer buf = new StringBuffer("ARRAY(");
+	buf.append(objects.length).append("/").append(length).append("):{");
+	for (int i=0; i < objects.length; i++) {
+	    buf.append(objects[i].toString());
+	    if (i < objects.length-2)
+		buf.append(", ");
+	}
+	buf.append("}");
+	if (isEol()) buf.append("(EOL)");
+	return buf.toString();
     }
 
     /**

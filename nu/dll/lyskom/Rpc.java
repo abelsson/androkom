@@ -351,6 +351,7 @@ public interface Rpc {
 
     public final static int C_disconnect = 55;
     public final static int C_who_am_i = 56;
+    public final static int C_set_user_area = 57;
 
     public final static int C_find_next_text_no = 60;
     public final static int C_find_previous_text_no = 61;

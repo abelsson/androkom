@@ -89,7 +89,7 @@ public class KomToken implements Serializable {
 	return eol;
     }
 
-    void setEol(boolean b) {
+    protected void setEol(boolean b) {
 	eol = b;
     }
 
@@ -132,7 +132,7 @@ public class KomToken implements Serializable {
      */
     public int intValue() {
 	if (contents == null || contents.length == 0)
-	    return -1;
+	    throw new RuntimeException("intValue() invoked on token with zero length data");
 	try {
 	    return Integer.parseInt(new String(contents));
 	} catch (NumberFormatException ex) {
@@ -152,11 +152,10 @@ public class KomToken implements Serializable {
 	String ktype = "TOKEN";
 	if (this instanceof Hollerith)
 	    return ((Hollerith) this).toString();
-	else if (this instanceof KomTokenArray)
-	    return ((KomTokenArray) this).toString();
 	else if (type == COMPL)
 	    ktype = "COMPL";
-	return ktype + ":\"" + new String(getContents()) + "\"";
+	return ktype + ":\"" + new String(getContents()) + "\"" + 
+	    (isEol() ? "(EOL)" : "");
     }
 
     /**
@@ -186,6 +185,10 @@ public class KomToken implements Serializable {
      */
     public void setContents(byte[] c) {
 	contents = c;
+    }
+
+    protected boolean isEmpty() {
+	return contents == null || contents.length == 0;
     }
 
     /**

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.43 2004/04/20 01:03:23 pajp Exp $
+ * @version $Id: Session.java,v 1.44 2004/04/22 01:38:37 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -206,7 +206,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     Vector rpcEventListeners;
 
     Person myPerson = null;
-
+    int myPersonNo = 0;
+    UserArea userArea = null;
+    
     boolean connected = false;
 
     int lastText = 0;
@@ -253,7 +255,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     protected boolean isCachableType(String contentType) {
-	if (contentType.startsWith("x-kom/text")) 
+	if (contentType.startsWith("x-kom/"))
 	    return true;
 
 	if (contentType.startsWith("text/"))
@@ -522,6 +524,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	loggedIn = reply.getSuccess();
 	if (loggedIn) {
 	    myPerson = getPersonStat(id);
+	    myPersonNo = myPerson.getNo();
 	    myPerson.uconf = getUConfStat(id);
 	    if (getMembership) {
 		membership = getMyMembershipList();
@@ -534,7 +537,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Returns the Person object of the currently registered user.
      */
-    public Person getMyPerson() {
+    public Person getMyPerson()
+    throws IOException, RpcFailure {
+	if (myPerson == null) {
+	    Debug.println("getMyPerson(): retrieving person status...");
+	    myPerson = getPersonStat(myPersonNo, true);
+	} else {
+	    Debug.println("getMyPerson(): using cached person status.");
+	}
 	return myPerson;
     }
 
@@ -872,7 +882,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	int auxListLength = data[offset++].intValue();
 	List auxItems = new LinkedList();
 	for (int i=0; i < auxListLength; i++) {
-	    auxItems.add(new AuxItem(((KomTokenArray) data[offset]).getTokens()));
+	    AuxItem item = new AuxItem(((KomTokenArray) data[offset]).getTokens());
+	    if (Debug.ENABLED) Debug.println("Server aux-item: " + item);
+	    auxItems.add(item);
 	    offset += AuxItem.ITEM_SIZE;
 	}
 	info.put("aux-item-list", auxItems);
@@ -1023,17 +1035,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public synchronized Text getText(int textNo, boolean refreshCache)
     throws IOException, RpcFailure { 
 	if (textNo == 0) throw new RuntimeException("attempt to retreive text zero");
+
+	Debug.println("** getText(): getting text " + textNo + "; refreshCache: " + refreshCache);
+
 	Text text = refreshCache ? null : textCache.get(textNo);
-	
-	// need to make sure that the text has contents,
-	// since we also store TextStat skeletons in the Text cache.
-	// ** do we still? they should be in the textStatCache only...?
-	if (text != null && text.getContents() != null)
-	    return text.setCached(true);
+	if (text != null) {
+	    text.setCached(true);
+	    Debug.println("** getText(): Returning cached text " + textNo);
+	    return text;
+	}
 
 	//if (text == null) text = new Text(textNo);
 
-	Debug.println("** getting text " + textNo);
 
 	TextStat textStat = getTextStat(textNo, refreshCache);
 	if (textStat == null) return null;
@@ -1063,6 +1076,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	text.setContents(reply.getParameters()[0].getContents());
 	if (isCachableType(text.getContentType())) {
 	    textCache.add(text);
+	} else {
+	    if (Debug.ENABLED) {
+		Debug.println("Not caching " + text + " (" + text.getContentType() + ")");
+	    }
 	}
 	textStatCache.add(text.getStat());
 
@@ -1607,6 +1624,59 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public UConference getUConfStat(int confNo)
     throws IOException, RpcFailure {
 	return getUConfStat(confNo, false);
+    }
+
+    public void saveUserArea(UserArea userArea)
+    throws RpcFailure, IOException {
+	saveUserArea(myPersonNo, userArea);
+    }
+
+    public void saveUserArea(int persNo, UserArea userArea)
+    throws RpcFailure, IOException {
+	Text userDataText = new Text(userArea.toNetwork());
+	userDataText.setCharset(userArea.getCharset());
+	userDataText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
+						      new Bitstring("00000000"), 0,
+						      new Hollerith(UserArea.contentType)));
+	int textNo = createText(userDataText);
+	setUserArea(persNo, textNo);
+    }
+
+    public RpcCall doSetUserArea(int persNo, int userAreaTextNo) 
+    throws RpcFailure, IOException {
+	return writeRpcCall(new RpcCall(count(), Rpc.C_set_user_area).
+			    add(new KomToken(persNo)).
+			    add(new KomToken(userAreaTextNo)));
+    }
+
+    public void setUserArea(int persNo, int userAreaText) 
+    throws RpcFailure, IOException {
+	RpcReply r = waitFor(doSetUserArea(persNo, userAreaText));
+	if (!r.getSuccess()) throw r.getException();
+
+	if (persNo == myPersonNo) {
+	    Debug.println("setUserArea(): clearing myPerson.");
+	    myPerson = null;
+	}
+	personCache.remove(persNo);
+    }
+
+    public void setUserArea(int userAreaText)
+    throws IOException, RpcFailure {
+	setUserArea(myPersonNo, userAreaText);
+    }
+
+    public UserArea getUserArea()
+    throws RpcFailure, IOException {
+	int userAreaTextNo = getMyPerson().getUserArea();
+	if (userAreaTextNo == 0) return new UserArea(getServerEncoding());
+	if (userArea != null && userAreaTextNo == userArea.getTextNo()) {
+	    return userArea;
+	}
+	Text t = getText(userAreaTextNo);
+	if (t == null) return null; // ?!
+	userArea = new UserArea(t);
+	return userArea;
     }
 
     /**
@@ -2551,6 +2621,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    // do a check before the wait() in case the reply has arrived already
 		    if (null == (call = rpcHeap.getRpcCall(id, true))) {
 			waitCount++;
+			if (!listener.isConnected()) {
+			    if (listener.getException() != null) {
+				throw new IOException("Exception in listener thread: " +
+						      listener.getException().toString());
+			    } else {
+				throw new IOException("Listener is disconnected.");
+			    }
+			}
 			rpcHeap.wait(rpcSoftTimeout > 0 ? rpcSoftTimeout : rpcTimeout);			
 		    } else {
 			Debug.println("waitFor(" + id + ") returning after " + (System.currentTimeMillis() - waitStart)
@@ -2563,6 +2641,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    // ...?
 		}
 		call = rpcHeap.getRpcCall(id, true);
+		if (call == null && listener.getException() != null) {
+		    throw new IOException("Exception in listener: " + 
+					  listener.getException());
+		}
 	    }
 
 	    if (call == null) {
@@ -2594,12 +2676,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void rpcEvent(RpcEvent e) {
 	switch(e.getOp()) {
-	case Rpc.C_get_text:
-	    int textNo = e.getCall().getParameter(1).intValue();
-	    textCache.remove(textNo);
-	    textStatCache.remove(textNo);
+// 	case Rpc.C_get_text:
+// 	    int textNo = e.getCall().getParameter(1).intValue();
+// 	    textCache.remove(textNo);
+// 	    textStatCache.remove(textNo);
 	    
-	    break;
+// 	    break;
 	case Rpc.C_query_read_texts:
 	    int conf = e.getCall().getParameter(1).toInteger();
 	    Membership m = membershipCache.get(conf);
@@ -2619,6 +2701,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @see nu.dll.lyskom.RpcReplyReceiver
      */
     public void rpcReply(RpcReply r) {
+
+	if (r == null) {
+	    synchronized (rpcHeap) {
+		rpcHeap.notifyAll();
+	    }
+	    return;
+	}
 
 	RpcCall originCall = rpcHeap.getRpcCall(r.getId(), false);
 	if (originCall != null) {

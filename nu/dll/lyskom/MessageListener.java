@@ -32,11 +32,13 @@ implements Runnable {
 
     HollerithStream pendingStream = null;
 
+    Exception exception = null;
     Vector rpcReceivers = new Vector(1);
     Vector asynchReceivers = new Vector(1);
     Thread thread = null;
     Session session;
     boolean disconnect = false;
+    boolean disconnected = false;
 
     boolean asynch = false;
 
@@ -98,6 +100,10 @@ implements Runnable {
 	synchronized (streamReceivers) {
 	    streamReceivers.remove(new Integer(rpcId));
 	}
+    }
+
+    protected Exception getException() {
+	return exception;
     }
 
     // cannot throw exceptions from here, use callback error handling?
@@ -177,21 +183,36 @@ implements Runnable {
 		}
 	    } catch (ProtocolException ex) {
 		Debug.println("ProtocolException: " + ex.getClass().getName() + ": " + ex.getMessage());
-		readError = ex;
+		exception = (Exception) (readError = ex);
+		
 	    } catch (IOException ex) {
 		Debug.println("IOException: " + ex.getClass().getName() + ": " + ex.getMessage());
-		readError = ex;
-	    } catch (Throwable ex) {
-		readError = ex;
+		exception = (Exception) (readError = ex);
+	    } catch (Exception ex) {
+		ex.printStackTrace();
+		exception = (Exception) (readError = ex);
 		disconnect = true;
 	    }
 	    if (readError != null) {
+		// sends a null to all receivers to notify about the disconnection
+		// this is not very clean, we should probably extend the interface
+		// or add an interface with a callback like listenerException(Exception)
+		// for notifying about fatal listener errors.
+		for(Enumeration e = rpcReceivers.elements();
+		    e.hasMoreElements();)
+		    ((RpcReplyReceiver)
+		     e.nextElement()).rpcReply(null);
+
+		disconnected = true;
 		if (disconnect) {
-		    System.err.println("Disconnected.");
+		    if (Debug.ENABLED)
+			Debug.println("Disconnected (" + readError.toString() + ").");
+
 		    continue;
+		} else {
+		    throw new RuntimeException("Fatal read error occured, read thread exiting",
+					       readError);
 		}
-		throw new RuntimeException("Fatal read error occured, read thread exiting",
-					   readError);
 
 	    }
 	    if (row.length == 0) {
@@ -225,6 +246,10 @@ implements Runnable {
 	for (int i=0;i<rtoks.length;i++)
 	    rtoks[i] = tokens[i+1];
 	return rtoks;
+    }
+
+    protected boolean isConnected() {
+	return !disconnected;
     }
     
 

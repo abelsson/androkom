@@ -33,7 +33,7 @@ class TextStatCache {
 
     public TextStat get(int textNo) {
 	TextStat t = (TextStat) hash.get(new Integer(textNo));
-	if (t != null) Debug.println("TextCache: returning "+textNo);
+	if (t != null) Debug.println("TextStatCache: returning "+t);
 		
 	return t;
     }

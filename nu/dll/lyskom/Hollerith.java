@@ -66,7 +66,7 @@ public class Hollerith extends KomToken implements Serializable {
     }
 
     /**
-     * Returns this Holleriths contents as a String, translated according to the server's encoding.
+     * Returns this Holleriths contents as a String, translated according to it's encoding.
      */
     public String getContentString() {
 	try {
