@@ -182,7 +182,13 @@
 
     String lookupName(Session lyskom, int number, boolean useHtml)
     throws RpcFailure, IOException {
-	if (useHtml) return lookupNameHtml(lyskom, number);
+	return lookupName(lyskom, number, useHtml, false);
+    }
+
+
+    String lookupName(Session lyskom, int number, boolean useHtml, boolean disablePopup)
+    throws RpcFailure, IOException {
+	if (useHtml) return lookupNameHtml(lyskom, number, disablePopup);
 	else return lookupNamePlain(lyskom, number);
     }
 
@@ -192,7 +198,7 @@
     }
 
 
-    String lookupNameHtml(Session lyskom, int number)
+    String lookupNameHtml(Session lyskom, int number, boolean disablePopup)
     throws RpcFailure, IOException {
 	String name = "[" + number + "]";
 	Conference conf = null;
@@ -208,7 +214,7 @@
 	    KomPreferences prefs = preferences(lyskom, "weblatte");
 	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
             boolean letterbox = conf.getType().getBitAt(ConfType.letterbox);
-	    return "<span onClick=\"showmenuie5(event, true);\" class=\"" + (letterbox ? "letterbox-name" : "conference-name") + "\" title=\"" + (letterbox ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + letterbox + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
+	    return "<span " + (disablePopup ? "" : "onClick=\"showmenuie5(event, true);\"") + " class=\"" + (letterbox ? "letterbox-name" : "conference-name") + "\" title=\"" + (letterbox ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + letterbox + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
 	} else {
 	    return htmlize(name);
 	}

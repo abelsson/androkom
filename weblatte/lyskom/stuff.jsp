@@ -5,9 +5,12 @@ if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.7 2004/06/04 19:57:20 pajp Exp $
+// $Id: stuff.jsp,v 1.8 2004/06/04 23:07:00 pajp Exp $
 
 var nohide = false;
+var ignorevanligklick = false;
+var nh_interval_ref;
+var ignorevanlig_interval_ref;
 
 function context_in(no, isLetterBox, isText, name) {
   //alert("no: " + no + ", letterbox: " + isLetterBox + ", isText: " + isText + ", name: \"" + name + "\"");
@@ -77,11 +80,6 @@ function change_name_interactive(win, def) {
     escape(newName);
 }
 
-function _test_context(confNo, isLetterbox) {
-   //alert(confNo + " is a " + (isLetterbox ? "person" : "conference"));
-   window.open("context.jsp?confNo=" + confNo, "ctx", "chrome");
-}
-
 function getMenuObj() {
   if (ie5||ns6) {
     if (typeof(document.inContext)=="undefined" || document.inContext == false) {
@@ -105,10 +103,23 @@ function showhidemenu(e) {
     }
 }
 
+function disablevanligklick() {
+  ignorevanligklick = true;
+  ignorevanlig_interval_ref = window.setInterval(enablevanligklick, 500);
+}
+
+function enablevanligklick() {
+  ignorevanligklick = false;
+  window.clearInterval(ignorevanlig_interval_ref);
+}
 
 function showmenuie5(e, vanligklick){
   if (typeof(vanligklick) == "undefined") vanligklick = false;
   hidemenuie5(e);
+  if (vanligklick && ignorevanligklick) {
+    return true;
+  }
+
   getMenuObj();
 
   //Find out how close the mouse is to the corner of the window

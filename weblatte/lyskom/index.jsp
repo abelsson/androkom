@@ -1211,7 +1211,7 @@
 			confsum++;
 			out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
 				  conf + "\">" + 
-				  lookupName(lyskom, conf, true) + "</a>: " +
+				  lookupName(lyskom, conf, true, true) + "</a>: " +
 				  unreads + " " + (unreads > 1 ? "olästa" : "oläst"));
 			out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
 				    conf + "&listSubjects\">lista ärenden</a> ]");
@@ -1464,7 +1464,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.70 $
+$Revision: 1.71 $
 </p>
 </body>
 </html>
