@@ -198,13 +198,27 @@ public class TextStat implements java.io.Serializable {
     public void addAuxItem(AuxItem a) {
 	if (auxItemCount == auxItems.length) {
 	    AuxItem[] newArray = new AuxItem[++auxItemCount];
+
 	    for (int i=0;i<auxItems.length;i++) newArray[i] = auxItems[i];
+
 	    auxItems = newArray;
 	    auxItems[auxItems.length-1] = a;
-	    return;
 	} else {
 	    auxItems[auxItemCount++] = a;
 	}
+	if (Debug.ENABLED) {
+	    Debug.println("TextStat.addAuxItem(): added " + a);
+	}
+    }
+
+    protected void replaceOrAddAuxItem(AuxItem a) {
+	for (int i=0; i < auxItems.length; i++) {
+	    if (a.getTag() == auxItems[i].getTag()) {
+		auxItems[i] = a;
+		return;
+	    }
+	}
+	addAuxItem(a);
     }
 
     public boolean containsAuxItem(int tag) {
@@ -236,7 +250,7 @@ public class TextStat implements java.io.Serializable {
         Properties ctData = new Properties();
         while (toker.hasMoreTokens()) {
             StringTokenizer tokfan = new StringTokenizer(toker.nextToken(), "=");
-            ctData.setProperty(tokfan.nextToken(), tokfan.nextToken());
+            ctData.setProperty(tokfan.nextToken().trim(), tokfan.nextToken());
         }
         if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
 	return new Object[] { contentType, ctData };
@@ -254,6 +268,31 @@ public class TextStat implements java.io.Serializable {
      */
     public String getCharset() {
 	return ((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1");
+    }
+
+    public void setCharset(String charset) {
+	Object[] ct = parseContentTypeAuxItem();
+	String contentType = (String) ct[0];
+	Properties props = (Properties) ct[1];
+	props.setProperty("charset", charset);
+	replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
+					createContentTypeString(contentType, props)));
+    }
+
+    private String createContentTypeString(String contentType, Properties p) {
+	return contentType + "; " + concatenateProperties(p);
+    }
+
+    private static String concatenateProperties(Properties p) {
+	StringBuffer buf = new StringBuffer();
+	for (Iterator i = p.entrySet().iterator();i.hasNext();) {
+	    Map.Entry entry = (Map.Entry) i.next();
+	    buf.append(entry.getKey());
+	    buf.append("=");
+	    buf.append(entry.getValue());
+	    if (i.hasNext()) buf.append(";");
+	}
+	return buf.toString();
     }
 
     public int getSize() {
@@ -472,8 +511,6 @@ public class TextStat implements java.io.Serializable {
     }
 
 
-
-    /* Gah. all createFrom() should be constructors, I guess. */
     static TextStat createFrom(int no, RpcReply reply) {
 	KomToken[] params = reply.getParameters();
 	TextStat ts = new TextStat(no);
@@ -507,11 +544,6 @@ public class TextStat implements java.io.Serializable {
 
 	int auxItemArrayLength = auxItemArrayLengthToken.intValue();
 	KomToken auxItemArrayToken = params[pcount++];
-	if (Debug.ENABLED) {
-	    Debug.println("TextStat.createFrom(): aux-item list length: " + auxItemArrayLength);
-	    Debug.println("Aux-Item Array token class: " + auxItemArrayToken.getClass().getName());
-	    Debug.println("Aux-Item Array token contents: " + new String(auxItemArrayToken.getContents()));
-	}
 
 	KomToken[] auxItemTokens = ((KomTokenArray) auxItemArrayToken).getTokens();
 

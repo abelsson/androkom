@@ -76,12 +76,21 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     /**
      * Creates a new text with the supplied subject and body, converted into bytes using
-     * the default encoding iso-8559-1.
+     * the default encoding.
      */
     public Text(String subject, String body) {
+	this(subject, body, Session.defaultServerEncoding);
+    }
+
+    /**
+     * Creates a new text with the supplied subject and body, converted into bytes using
+     * the supplied encoding and setting the text's encoding properly.
+     */
+    public Text(String subject, String body, String charset) {
 	stat = new TextStat();
 	try {
-	    setContents((subject+"\n"+body).getBytes(getCharset()));
+	    setCharset(charset);
+	    setContents((subject+"\n"+body).getBytes(charset));
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported character encoding: " + ex1.getMessage());
 	}
@@ -97,6 +106,11 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     public String getCharset() {
 	return stat.getCharset();
+    }
+
+    public void setCharset(String charset) {
+	super.setCharset(charset);
+	stat.setCharset(charset);
     }
 
     public String getContentType() {

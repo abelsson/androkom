@@ -98,16 +98,21 @@ public class RpcCall implements Rpc {
 	    parameters.size() + ")";
     }
 
+    public void writeTo(OutputStream stream) 
+    throws IOException {
+	stream.write((id+" ").getBytes("us-ascii"));
+	stream.write((number+"").getBytes("us-ascii"));
+	for (Enumeration e = parameters.elements(); e.hasMoreElements();) {
+	    stream.write(' ');
+	    stream.write(((KomToken) e.nextElement()).toNetwork());
+	}
+	stream.write('\n');	
+    }
+
     public byte[] toNetwork() {
 	try {
 	    ByteArrayOutputStream stream = new ByteArrayOutputStream();
-	    stream.write((id+" ").getBytes());
-	    stream.write((number+"").getBytes());
-	    for (Enumeration e = parameters.elements(); e.hasMoreElements();) {
-		stream.write(' ');
-		stream.write(((KomToken) e.nextElement()).toNetwork());
-	    }
-	    stream.write('\n');
+	    writeTo(stream);
 	    return stream.toByteArray();
 	} catch (IOException ex) {
 	    Debug.println("RpcCall.toNetwork(): "+ex.getMessage());

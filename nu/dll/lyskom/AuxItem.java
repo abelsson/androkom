@@ -117,6 +117,16 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	return data.getContentString();
     }
 
+
+    /**
+     * Convenience constructor using flags "00000000" and inherit-limit zero.
+     *
+     * Converts the data to bytes using the default server encoding.
+     */
+    public AuxItem(int tag, String data) {
+	this(tag, new Bitstring("00000000"), 0, new Hollerith(data, Session.defaultServerEncoding));
+    }
+
     /**
      * Constructor used to create new AuxItem objects for RPC calls.
      */

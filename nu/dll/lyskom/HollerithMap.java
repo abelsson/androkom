@@ -67,7 +67,7 @@ public class HollerithMap extends Hollerith {
 		os.write(new Hollerith(key, charset).toNetwork());
 		os.write(' ');
 		os.write(value.toNetwork());
-		if (i.hasNext()) os.write(' ');
+		if (i.hasNext()) os.write('\n');
 	    }
 	    setContents(os.toByteArray());
 	} catch (IOException ex1) {

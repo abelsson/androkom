@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.44 2004/04/22 01:38:37 pajp Exp $
+ * @version $Id: Session.java,v 1.45 2004/04/22 22:00:52 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -197,9 +197,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     MembershipCache membershipCache;
     TextStatCache textStatCache;
     Map sessionCache;
+
+    Map sessionAttributes = new HashMap();
     
     ReadTextsMap readTexts;
-
     
     RpcHeap rpcHeap;
 
@@ -207,6 +208,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     Person myPerson = null;
     int myPersonNo = 0;
+    int mySessionNo = 0;
+
     UserArea userArea = null;
     
     boolean connected = false;
@@ -344,11 +347,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Disconnects from the server
      *
-     * @param force This parameter has no effect (currently)
+     * @param force (unused) Do not wait for the server to reply to the disconnect command
      */
     public void disconnect(boolean force)
     throws IOException {
-	
+	mySessionNo = 0;
+
 	// if we're not connected, then state could never be anything
 	// but STATE_DISCONNECTED, right? So we can return without
 	// explicitly setting state to that.
@@ -359,6 +363,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	listener.removeAsynchMessageReceiver(this);
 	listener.removeRpcReplyReceiver(this);
 	listener.disconnect();
+	invoker.quit();
 	connection.close();
 	connection = null;
 	connected = false;
@@ -370,6 +375,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	try {
 	    shutdown();
 	} catch (Throwable t1) {
+	    t1.printStackTrace();
 	    System.err.println("Exception in " + this + "::finalize(): " + t1.toString());
 	}
 	if (Debug.ENABLED) System.err.println("<-- " + this + "::finalize().");
@@ -540,10 +546,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public Person getMyPerson()
     throws IOException, RpcFailure {
 	if (myPerson == null) {
-	    Debug.println("getMyPerson(): retrieving person status...");
 	    myPerson = getPersonStat(myPersonNo, true);
-	} else {
-	    Debug.println("getMyPerson(): using cached person status.");
 	}
 	return myPerson;
     }
@@ -1635,9 +1638,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws RpcFailure, IOException {
 	Text userDataText = new Text(userArea.toNetwork());
 	userDataText.setCharset(userArea.getCharset());
-	userDataText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
-						      new Bitstring("00000000"), 0,
-						      new Hollerith(UserArea.contentType)));
+	userDataText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType, UserArea.contentType));
+
 	int textNo = createText(userDataText);
 	setUserArea(persNo, textNo);
     }
@@ -2111,9 +2113,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     public int whoAmI()
     throws IOException, RpcFailure {
+	if (mySessionNo > 0) return mySessionNo;
+
 	RpcReply r = waitFor(doWhoAmI());
 	if (!r.getSuccess()) throw r.getException();
-	return r.getParameters()[0].toInteger();
+	mySessionNo = r.getParameters()[0].toInteger();
+	return mySessionNo;
     }
 
     /**
@@ -2207,14 +2212,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	t.trimContents();
 	TextStat s = t.getStat();
 	if (!s.containsAuxItem(AuxItem.tagCreatingSoftware)) {
-	    s.addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware,
-				     new Bitstring("00000000"), 0,
-				     new Hollerith(latteName)));
+	    s.addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware, latteName));
 	}
 	if (!s.containsAuxItem(AuxItem.tagContentType)) {
 	    s.addAuxItem(new AuxItem(AuxItem.tagContentType,
-				     new Bitstring("00000000"), 0,
-				     new Hollerith("text/x-kom-basic")));
+				     "text/x-kom-basic; charset=" +
+				     getServerEncoding()));
 	}
 	return doCreateText(t.getContents(), s.getMiscInfo(),
 			    s.getAuxItems());
@@ -2444,7 +2447,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * @param textNo The number of the text to delete
      */
-    public void deleteText(int textNo)throws IOException, RpcFailure {
+    public void deleteText(int textNo) throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doDeleteText(textNo));
 	if (!reply.getSuccess()) throw reply.getException();
 	purgeTextCache(textNo);
@@ -2586,6 +2589,56 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
 
+
+    public void removeAttributes(String pattern) {
+	synchronized (sessionAttributes) {
+	    for (Iterator i = sessionAttributes.keySet().iterator();
+		 i.hasNext();) {
+
+		String key = (String) i.next();
+		if (key.matches(pattern)) {
+		    if (Debug.ENABLED)
+			Debug.println("Removing attribute \"" + key + "\"");
+
+		    i.remove();
+		}
+	    }
+	}
+    }
+
+    /**
+     * Removes an attribute from the Session.
+     */
+    public Object removeAttribute(String key) {
+	synchronized (sessionAttributes) {
+	    return sessionAttributes.remove(key);
+	}
+    }
+
+    /**
+     * Stores an arbitrary attribute object in this Session.
+     *
+     * @see #getAttribute(String)
+     */
+    public Object setAttribute(String key, Object value) {
+	synchronized (sessionAttributes) {
+	    return sessionAttributes.put(key, value);
+	}
+    }
+
+    /**
+     * Retrieves an object previously stored with setAttribute()
+     *
+     * @see #setAttribute(String, Object);
+     */
+
+    public Object getAttribute(String key) {
+	synchronized (sessionAttributes) {
+	    return sessionAttributes.get(key);
+	}
+    }
+
+
     /**
      * This methods provides a synchronous way of waiting for RPC
      * replies. Note that this method should never be called from
@@ -2676,12 +2729,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void rpcEvent(RpcEvent e) {
 	switch(e.getOp()) {
-// 	case Rpc.C_get_text:
-// 	    int textNo = e.getCall().getParameter(1).intValue();
-// 	    textCache.remove(textNo);
-// 	    textStatCache.remove(textNo);
-	    
-// 	    break;
 	case Rpc.C_query_read_texts:
 	    int conf = e.getCall().getParameter(1).toInteger();
 	    Membership m = membershipCache.get(conf);
@@ -2721,9 +2768,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 	    rpcHeap.notifyAll();
 	}
-
-	//if (wakeOnReplyFrom == r.getId())
-	//mainThread.interrupt();
 
 	if (originCall != null) {
 	    notifyRpcEventListeners(new RpcEvent(this, originCall));
