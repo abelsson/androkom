@@ -1,11 +1,12 @@
 <%@ page language='java' import='nu.dll.lyskom.*, java.text.*, java.util.*' %>\
 <%@ page import='java.util.regex.*, java.io.*, nu.dll.app.weblatte.*, java.net.URLDecoder' %>\
 <%!
+    boolean experimental = Boolean.getBoolean("weblatte.experimental");
     boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
     File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
     String baseHost = "dll.nu";
-    String basePath = "/lyskom/"; // the absolute path on the webserver
-    String appPath = "/lyskom/"; // the weblatte root within the web application
+    String basePath = System.getProperty("weblatte.basepath", "/lyskom/"); // the absolute path on the webserver
+    String appPath = System.getProperty("weblatte.webapp-path", "/lyskom/"); // the weblatte root within the web application
 
     public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {
         if (lyskom == null) return null;

@@ -1126,7 +1126,7 @@
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="inCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
-	<input size="50" type="text" name="subject" value="<%= htmlize(subjectString) %>"><br/>
+	<input size="50" type="text" name="subject" value="<%= dqescHtml(subjectString) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
 	<input type="submit" value="skicka!" name="createText">
 	<input type="submit" name="dispatchToComposer" value="avancerat läge">
@@ -1579,7 +1579,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.90 $
+$Revision: 1.91 $
 </div>
 </body>
 </html>
