@@ -5,10 +5,11 @@
     }
     int newTextNo = 0;
     Map parameters = (Map) request.getAttribute("parsed-parameters");
-    if (debug) Debug.println("savetext.jsp: parameters: " + parameters);
+    Debug.println("savetext.jsp: parameters: " + parameters);
     if (parameters.containsKey("createText")) {
 	boolean isMultipart = request.getParameter("multipart") != null ||
 		request.getAttribute("multipart") != null;
+	Debug.println("savetext.jsp: multipart: " + isMultipart);
 	List parts = (List) request.getAttribute("multipart");
 	List recipients = new LinkedList();
     	List ccRecipients = new LinkedList();
@@ -113,6 +114,7 @@
 	 	boolean plainTextWithImages = false;
 		if (parts.size() == 1) {
 		    Map partMap = (Map) parts.get(0);
+		    Debug.println("savetext.jsp: only one part: " + partMap);
 		    ContentType partContentType = new ContentType((String) partMap.get("content-type"));
 		    String _uploaded = (String) partMap.get("uploaded");
 		    String _contents = (String) partMap.get("contents");
@@ -129,6 +131,8 @@
 			    bodyStream.write(buf, 0, read);
 			}
 			is.close();
+			Debug.println("read file " + file.getAbsolutePath() + 
+			   " into text with content-type " + partContentType);
 		    } else if (_contents != null && !_contents.equals("")) {
 			String charset = partContentType.getParameterList().get("charset");
 			if (charset == null) charset = preferences.getString("create-text-charset");

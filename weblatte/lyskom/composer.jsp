@@ -193,9 +193,6 @@
 		    fpath = fpath.substring(lastSlash+1);
 		}
 		part.put("filename", fpath);
-	    } else if (contentType.toLowerCase().startsWith("text/") &&
-		       !"".equals(parameters.get("part_" + partNo + "_contents"))) {
-		part.put("contents", parameters.get("part_" + partNo + "_contents"));
 	    } else if (uploaded != null && !"".equals(uploaded)) {
 		if (fileMap.containsKey("part_" + partNo + "_file"))
 		    part.put("uploaded", fileMap.get("part_" + partNo + "_file"));
@@ -207,6 +204,9 @@
 		    part.put("content-type", typeMap.get("part_" + partNo + "_file"));
 		
 	    	Debug.println("____ new content-type: " + part.get("content-type"));
+	    } else if (contentType.toLowerCase().startsWith("text/") &&
+                       !"".equals(parameters.get("part_" + partNo + "_contents"))) {
+                part.put("contents", parameters.get("part_" + partNo + "_contents"));
 	    }
 	    Debug.println("Adding part " + part);
 	    parts.add(part);
@@ -593,7 +593,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.19 2004/06/11 23:48:40 pajp Exp $
+$Id: composer.jsp,v 1.20 2004/06/13 14:36:48 pajp Exp $
 </div>
 </body>
 </html>

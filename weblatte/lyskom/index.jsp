@@ -699,6 +699,7 @@
     }
     if (parameter(parameters, "createText") != null) {
 	out.flush();
+	Debug.println("index.jsp: dispatching to savetext.jsp...");
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/savetext.jsp");
 	d.include(request, response);
 	newTextNo = ((Integer) request.getAttribute("new-text-no")).intValue();
@@ -1496,7 +1497,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.79 $
+$Revision: 1.80 $
 </div>
 </body>
 </html>
