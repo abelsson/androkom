@@ -130,9 +130,8 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("Weblatte", "$Revision: 1.65 $".
-      					    replaceAll("\\$" + "Revision: (.*) " + "\\$", "$1") + 
-					    (Debug.ENABLED ? " (devel)" : ""));
+		    lyskom.setClientVersion("Weblatte", Version.getVersion() +
+					    (Debug.ENABLED ? " (debug)" : ""));
 		    lyskom.changeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
@@ -1278,7 +1277,8 @@
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
 <%
 	    if (textNumber == 0 && !parameters.containsKey("text") &&
-		parameter(parameters, "comment") == null && newTextNo == 0) {
+		parameter(parameters, "comment") == null && newTextNo == 0 &&
+	        textNumbers.size() == 0) {
 		listNews = true;
 	    }
 	    if (newTextNo > 0) {
@@ -1858,7 +1858,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.65 $
+$Revision: 1.66 $
 </p>
 </body>
 </html>
