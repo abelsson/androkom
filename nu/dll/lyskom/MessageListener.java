@@ -91,10 +91,11 @@ implements Runnable {
 		     e.nextElement()).rpcReply(new RpcReply(good, id, params));
 	    } else if (descriptor.startsWith(":")) { // Asynch message
 		for(Enumeration e = asynchReceivers.elements();
-		    e.hasMoreElements();)
-		    ((AsynchMessageReceiver)
-		     e.nextElement()).
-			asynchMessage(new AsynchMessage(row));
+		    e.hasMoreElements();) {
+		    AsynchMessageReceiver rcvr = (AsynchMessageReceiver) e.nextElement();
+		    Debug.println("dispatching asynch message to " + rcvr);
+		    rcvr.asynchMessage(new AsynchMessage(row));
+		}
 	    }
 	}
 	System.err.println("MessageListener.run() finishing");

@@ -7,7 +7,23 @@ package nu.dll.lyskom;
 
 public class KomProtocolException extends RuntimeException {
 
+    Exception nestedException = null;
+
+    public KomProtocolException(String s, Exception e) {
+	super(s);
+	nestedException = e;
+    }
+
+    public KomProtocolException(Exception e) {
+	super(e.getMessage());
+	nestedException = e;
+    }
+
     public KomProtocolException(String s) {
 	super(s);
+    }
+
+    public Exception getException() {
+	return nestedException;
     }
 }	

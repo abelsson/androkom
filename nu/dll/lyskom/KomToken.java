@@ -45,14 +45,19 @@ public class KomToken implements Serializable {
     public KomToken(String s) {
 	contents = s.getBytes();
     }
-
-    // todo: rename to toInt(), and let toInteger return an Integer object.
+    
+    // alias for toInt(). should actually return an Integer object
     public int toInteger() {
+	return toInt();
+    }
+
+    public int toInt() {
 	if (contents == null || contents.length == 0)
 	    return -1;
 	try {
 	    return Integer.parseInt(new String(contents));
 	} catch (NumberFormatException ex) {
+	    // Is this a programming error or runtime error? Hmmm?
 	    throw new RuntimeException("Error parsing " + new String(contents) + " to int");
 	}
     }

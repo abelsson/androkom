@@ -1024,8 +1024,51 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     }
 
+    /**
+     * http://www.lysator.liu.se/lyskom/protocol/10.4/protocol-a.html#About%20Asynchronous%20Messages
+     *
+     * An asynchronous message is sent as a colon immediately followed by the
+     * number of message parameters, the message number and the message
+     * parameters. For example, message number 5 could be sent as:
+     * <pre>   :3 5 119 11HDavid Byers 13HDavid C Byers</pre>
+     *
+     *
+     */
     public void asynchMessage(AsynchMessage m) {
-	if (false) Debug.println("Asynch: "+m.toString());
+	Debug.println("Session.asynchMessage(): "+m.toString());
+
+	KomToken[] parameters = m.getParameters();
+
+	int textNo = 0;
+	
+	switch (m.getNumber()) {
+	case Asynch.new_text_old:
+	    /* if the new text is a comment to a previously read and cached text,
+	     * the cached copy of the commented text's text-stat must be
+	     * invalidated or refreshed
+	     */
+	    textNo = parameters[0].toInt();
+	    Debug.println("async-new-text-old for text " + textNo);
+	    break;
+
+	case Asynch.deleted_text:
+	    textNo = parameters[0].toInt();
+	    Debug.println("async-deleted-text for text " + textNo);
+	    textCache.remove(textNo);
+	    break;
+
+	case Asynch.new_recipient:
+	    textNo = parameters[0].toInt();
+	    Debug.println("async-new-recipient for text " + textNo);
+	    textCache.remove(textNo);
+	    break;
+
+	case Asynch.sub_recipient:
+	    textNo = parameters[0].toInt();
+	    Debug.println("async-sub-recipient for text " + textNo);	    
+	    textCache.remove(textNo);
+	    break;	    
+	}
 
     }
 

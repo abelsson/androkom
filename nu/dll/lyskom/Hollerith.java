@@ -12,7 +12,11 @@ public class Hollerith extends KomToken implements java.io.Serializable {
     }
 
     public Hollerith(String s) {
-	setContents(s.getBytes());
+	try {
+	    setContents(s.getBytes("ISO-8859-1"));
+	} catch (java.io.UnsupportedEncodingException e) {
+	    throw new RuntimeException("Unsupported encoding: " + e.getMessage());
+	}
     }
     
     public Hollerith(byte[] b) {
@@ -25,7 +29,11 @@ public class Hollerith extends KomToken implements java.io.Serializable {
     }
 
     public String getContentString() {
-	return new String(getContents());
+	try {
+	    return new String(getContents(), "ISO-8859-1");
+	} catch (java.io.UnsupportedEncodingException e) {
+	    throw new RuntimeException("Unsupported encoding: " + e.getMessage());
+	}
     }
 
     public byte[] toNetwork() {

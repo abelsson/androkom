@@ -35,4 +35,9 @@ public class TextCache {
 		
 	return t;
     }
+
+    public Text remove(int textNo) {
+	return (Text) hash.remove(new Integer(textNo));
+    }
+
 }
