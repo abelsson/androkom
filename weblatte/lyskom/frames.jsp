@@ -1,5 +1,6 @@
 <%@ page language='java' import='nu.dll.lyskom.*' %>
 <%@ include file='kom.jsp'%>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%
     Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null) response.sendRedirect(basePath);

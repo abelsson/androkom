@@ -1,4 +1,5 @@
 <%@ page language='java' import='nu.dll.lyskom.*, java.io.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='../kom.jsp' %>
 <%
     boolean disconnectLast = false;
@@ -103,7 +104,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.4 2004/04/20 01:02:33 pajp Exp $
+$Id: index.jsp,v 1.5 2004/04/22 22:16:10 pajp Exp $
 </p>
 </body>
 </html>

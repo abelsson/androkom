@@ -1,5 +1,6 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%
 	Session lyskom = (Session) session.getAttribute("lyskom");
@@ -36,10 +37,22 @@
 	if (charset == null) charset = "iso-8859-1";
 	if (charset.equals("us-ascii")) charset = "iso-8859-1"; // some broken elisp clients lie...
 	if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
+	byte[] subjectBytes = text.getSubject();
+	// a bit clumsy but it allows us to always fallback on the default
+	// system encoding, and if neither iso-8859-1 nor the text-specifies
+	// charset is supported, it will be indicated by appending the
+	// name in brackets
+	String subject = new String(subjectBytes);
+	try {
+	    subject = new String(subjectBytes, "iso-8859-1");
+	    subject = new String(subjectBytes, charset);
+	} catch (UnsupportedEncodingException ex1) {
+	    subject = subject + " [" + charset + "]";
+	}
 %>
         <%= jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
 		lookupName(lyskom, lyskom.getTextStat(text.getNo()).getAuthor()) +
-		": " + new String(text.getSubject())) %>
+		": " + subject) %>
 	<tt>Text nummer <%= textLink(request, lyskom, text.getNo(), false) %> av
 <%
 	List auxMxAuthor = Arrays.asList(text.getAuxData(AuxItem.tagMxAuthor));
@@ -76,7 +89,10 @@
 	<% } %>
 	<br/>
 	Skapad <%= df.format(text.getCreationTime()) %><br/>
-<%
+<%	if (Debug.ENABLED) {
+%>
+	Datatyp: <%= rawContentType %><br/>
+<%	}
 	int[] commented = text.getCommented();
 	int[] comments = text.getComments();
 	int[] footnoted = text.getFootnoted();
@@ -107,7 +123,7 @@
 	}
 	if (!contentType.equals("x-kom/user-area")) {
 %>
-	Ärende: <%= new String(text.getSubject()) %><br/>
+	Ärende: <%= subject %><br/>
 <%
 	} else {
 	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");

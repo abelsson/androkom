@@ -1,10 +1,12 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
 				 java.net.URLConnection, java.net.URL, java.io.*, java.text.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <html><head><title>textskrivare</title>
 <link rel="stylesheet" href="lattekom.css" />
 <body>
 <%
+    request.setCharacterEncoding("utf-8");
     StringBuffer metadata = new StringBuffer();
     Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
@@ -164,7 +166,7 @@
 <p class="statusError"><%=errors.toString()%></p>
 <% } %>
 
-<form class="boxed" method="post" action="<%=request.getRequestURI()%>">
+<form enctype="application/x-www-form-urlencoded; charset=utf-8" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
     if (request.getParameter("contentType") != null) {
 %>
@@ -205,7 +207,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.2 2004/04/15 22:33:47 pajp Exp $
+$Id: composer.jsp,v 1.3 2004/04/22 22:16:07 pajp Exp $
 </p>
 </body>
 </html>

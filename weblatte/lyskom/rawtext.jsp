@@ -11,6 +11,9 @@
     if (_contentType != null && _contentType.length > 0) {
 	contentType = _contentType[0].getContentString();
     }
+    if (request.getParameter("forceContentType") != null) {
+        contentType = request.getParameter("forceContentType");
+    }
     response.setContentType(contentType);
     OutputStream os = response.getOutputStream();
     if (text instanceof BigText) {

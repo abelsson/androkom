@@ -1,4 +1,5 @@
 <%@ page language='java' import='nu.dll.lyskom.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%!
     static class TextTreeNode {

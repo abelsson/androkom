@@ -1,7 +1,9 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%
+
     String server = request.getParameter("server") != null ? 
 	request.getParameter("server") : Servers.defaultServer.hostname;
     Session lyskom = (Session) session.getAttribute("lyskom");
@@ -81,8 +83,9 @@
 		    session.setAttribute("lyskom", lyskom);
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.9 $");
-		    lyskom.changeWhatIAmDoing("kör web-latte");
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.10 $" + 
+					    (Debug.ENABLED ? " (devel)" : ""));
+		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
 		error = "Namnet du angav (\"" + htmlize(request.getParameter("lyskomNamn")) + "\") " +
@@ -120,14 +123,14 @@
 	        response.sendRedirect(gotoURL);
 	        return;
             }
-	    justLoggedIn = request.getParameter("jul") != null;
+	    justLoggedIn = justLoggedIn || request.getParameter("jul") != null;
         }
     } catch (IllegalStateException ex1) {}
     List messages = null;
     int interval = 120; // seconds
 %>
 <html><head>
-<script language="JavaScript1.2" src="stuff.js"></script>
+<script language="JavaScript1.2" src="stuff.jsp"></script>
 <% if (authenticated.booleanValue()) { %>
 <title><%= serverShort(lyskom) %></title>
 <% } else { %>
@@ -559,7 +562,8 @@
     	}
 	if (errors.length() == 0) {
   	    Text newText = new Text(request.getParameter("subject"),
-			request.getParameter("body").replaceAll("\r", ""));
+			request.getParameter("body").replaceAll("\r", ""),
+	                preferences.getString("create-text-charset"));
 	    if (request.getParameter("contentType") != null) {
 		newText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
 					     new Bitstring("00000000"), 0,
@@ -642,7 +646,8 @@
 	request.getParameter("inCommentTo") == null) {
 	Text commentedText = lyskom.getText(Integer.parseInt(request.getParameter("postCommentTo")));
 	Text newText = new Text(request.getParameter("subject"),
-			request.getParameter("body").replaceAll("\r", ""));
+			request.getParameter("body").replaceAll("\r", ""),
+			preferences.getString("create-text-charset"));
 	wrapText(newText);
 	newText.addCommented(commentedText.getNo());
 	int[] recipients = commentedText.getRecipients();
@@ -755,7 +760,7 @@
 	int nextUnreadText = 0;
 
 	try {
-	    lyskom.changeWhatIAmDoing("Läser");
+	    lyskom.doChangeWhatIAmDoing("Läser");
 	    lyskom.changeConference(conferenceNumber);
 	    nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
 	} catch (RpcFailure ex1) {
@@ -893,6 +898,7 @@
 		buf.append(c);
 	    }
 	}
+
 	String regex = buf.toString();
 	ConfInfo[] confs = lyskom.reLookup(regex, true, true);
 	out.println("Följande möten och personer matchar \"" + htmlize(regex) + "\":<br>");
@@ -930,15 +936,14 @@
 	}
 	out.println("</table></p>");
     }
-
     if (request.getParameter("comment") != null && textNumber > 0) {
-	lyskom.changeWhatIAmDoing("Skriver en kommentar");
+	lyskom.doChangeWhatIAmDoing("Skriver en kommentar");
 	Text commented = lyskom.getText(textNumber);
 %>
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="postCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
-	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject())) %>"><br/>
+	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject(), commented.getCharset())) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
 	<input type="submit" value="skicka!">
 	<input type="submit" name="dispatchToComposer" value="ändra mottagarlista">
@@ -949,7 +954,8 @@
 <%
 
 	    boolean listNews = request.getParameter("listnews") != null ||
-	        (justLoggedIn && commonPreferences.getBoolean("print-number-of-unread-on-entrance"));
+	        (justLoggedIn && preferences.getBoolean("list-news-on-login"));
+
 	    if (listNews) {
 		if (preferences.getBoolean("auto-refresh-news") &&
 		    (request.getHeader("User-Agent").indexOf("MSIE") >= 0 ||
@@ -1006,7 +1012,7 @@
 		    out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
 			conf + "&listSubjects\">lista ärenden</a> ]");
 		}
-		lyskom.changeWhatIAmDoing("Väntar på inlägg");
+		lyskom.doChangeWhatIAmDoing("Väntar på inlägg");
 %>
 
 	</ul>
@@ -1194,7 +1200,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.9 2004/04/22 02:17:18 pajp Exp $
+$Id: index.jsp,v 1.10 2004/04/22 22:16:07 pajp Exp $
 </p>
 </body>
 </html>

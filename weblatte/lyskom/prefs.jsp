@@ -1,4 +1,5 @@
 <%@ page language='java' import='nu.dll.lyskom.*' %>
+<%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%!
     void printBlockPrefs(JspWriter out, String blockName, KomPreferences block)
@@ -19,6 +20,18 @@
 		out.print("<option value=\"0\" " + 
 			(!block.getBoolean(pmd.key) ? "selected" : "") +
 			">Av</option>");
+	    } else if (pmd.type.equals("list")) {
+	        out.println("<select name=\"" + pmd.key + "\">");
+	        for (int j=0; j < pmd.alternatives.length; j++) {
+	    	    out.print("<option ");
+		    if (block.getString(pmd.key).equals(pmd.alternatives[j])) {
+			out.print("selected ");
+		    }
+		    out.print("value=\"" + pmd.alternatives[j] + "\">");
+		    out.print(pmd.alternatives[j]);
+		    out.println("</option>");
+	        }
+		out.println("</select>");
 	    } else {
 		out.println("<i class=\"statusError\">Fel: okänd datatyp.</i>");
 	    }
@@ -46,6 +59,7 @@
     if (request.getParameter("clearUserArea") != null) {
 	int oldUserAreaTextNo = lyskom.getMyPerson().getUserArea();
 	lyskom.setUserArea(0);
+	clearPreferenceCache(lyskom);
 	out.println("<p class=\"statusSuccess\">User-Area nollställd!" + 
 	" (var: " + oldUserAreaTextNo + ")</p>");
 	out.flush();
@@ -70,8 +84,10 @@
 
 	try {
 	    lyskom.saveUserArea(userArea);
+	    clearPreferenceCache(lyskom);
 	    response.sendRedirect(myURI(request) + "?status=ok&block=" + blockName);
 	} catch (RpcFailure ex1) {
+	    ex1.printStackTrace();
 	    response.sendRedirect(myURI(request) + "?status=err&error=" +
 		ex1.getError() + "&err-stat=" + ex1.getErrorStatus());
         }
