@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.31 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.32 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -169,6 +169,21 @@
     List messages = null;
     List reviewList = null;
     int interval = 120; // seconds
+    if (authenticated.booleanValue()) {
+    	if (parameter(parameters, "privateReply") != null) {
+	    request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
+	    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
+	    d.forward(request, response);
+	    return;	
+    	}
+    	if (parameter(parameters, "changePresentation") != null &&
+	    parameter(parameters, "createText") == null) {
+	    request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
+	    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
+	    d.forward(request, response);
+	    return;		
+    	}
+    }
 %>
 <html><head>
 <% if (authenticated.booleanValue()) { %>
@@ -358,20 +373,6 @@
 	lyskom.unmarkText(Integer.parseInt(parameter(parameters, "unmark")));
 	out.println("<p class=\"statusSuccess\">Text " +
 		parameter(parameters, "unmark") + " har avmarkerats.</p>");
-    }
-    if (parameter(parameters, "privateReply") != null) {
-	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
-	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
-	d.forward(request, response);
-	return;	
-
-    }
-    if (parameter(parameters, "changePresentation") != null &&
-	parameter(parameters, "createText") == null) {
-	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
-	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
-	d.forward(request, response);
-	return;		
     }
 
     if (parameter(parameters, "endast") != null) {
@@ -1408,7 +1409,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.31 $
+$Revision: 1.32 $
 </p>
 </body>
 </html>
