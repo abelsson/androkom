@@ -1,7 +1,5 @@
 package nu.dll.app.test;
 
-import org.leen.java.awt.console.*;
-
 import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
