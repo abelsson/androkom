@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.87 2004/11/12 03:22:26 pajp Exp $
+ * @version $Id: Session.java,v 1.88 2004/11/12 03:25:46 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1772,8 +1772,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 						   no, wantReadTexts));
 	if (!call.getReply().getSuccess()) throw call.getReply().getException();
 	KomToken[] parameters = call.getReply().getParameters();
-	return Membership.createFromArray(0, parameters,
-					  call.getOp() == Rpc.C_get_membership_10);
+	Membership[] memberships =  Membership.createFromArray(0, parameters,
+							       call.getOp() == Rpc.C_get_membership_10);
+	Arrays.sort(memberships, new Comparator() {
+		public int compare(Object o1, Object o2) {
+		    return ((Membership) o2).getPriority() - ((Membership) o1).getPriority();
+		}
+	    });
+	return memberships;
     }
 
     /**
