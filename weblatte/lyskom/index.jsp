@@ -106,7 +106,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.22 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.23 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1291,14 +1291,23 @@ Du är inte inloggad.
     } catch (IllegalStateException ex1) {}
     if (suspendedSessions != null && suspendedSessions.size() > 0) {
 	int count = suspendedSessions.size();
-	out.println("<a href=\"sessions.jsp\"><b>OBS! Du har " +
+	out.print("<a href=\"sessions.jsp\"><b>OBS! Du har " +
 		count + " " + 
 		(count > 1 ? "pausade LysKOM-sessioner" :
-		 "pausad LysKOM-Session") + "</b></a><br/>");
+		 "pausad LysKOM-Session") + "</b></a>");
+	boolean unreads = false;
+	synchronized (suspendedSessions) {
+	    for (Iterator i=suspendedSessions.iterator();!unreads && i.hasNext();) {
+		if (((SessionWrapper) i.next()).getSession().getUnreadConfsListCached().size() > 0)
+		    unreads = true;
+	    }
+	}
+	if (unreads) out.print(" (olästa)");
+	out.println("<br/>");
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.22 $
+$Revision: 1.23 $
 </p>
 </body>
 </html>
