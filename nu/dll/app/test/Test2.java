@@ -1,5 +1,5 @@
 // -*- Mode: Java; c-basic-offset: 4 -*-
-package nu.dll.test;
+package nu.dll.app.test;
 
 import java.io.IOException;
 import java.net.ProtocolException;
