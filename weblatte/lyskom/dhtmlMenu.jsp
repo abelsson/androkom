@@ -11,6 +11,7 @@
 <div class="menuitems" url="<%= basePath %>?reviewMarked">Lista markerade texter</div>
 <div class="menuitems" script="change_name_interactive(window, '<%= dqescJS(lookupName(lyskom, lyskom.getMyPerson().getNo())) %>');">Byt namn...</div>
 <div class="menuitems" script="search_interactive(window);">Sök möte/person...</div>
+<div class="menuitems" url="<%= basePath %>prefs.jsp">Inställningar</div>
 <hr>
 <div class="menuitems" url="<%= basePath %>vilka/">Vilka är inloggade?</div>
 <%  if (lyskom.getServer().equals("sno.pp.se")) { %>

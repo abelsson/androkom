@@ -17,7 +17,7 @@
     	public static List list  = new LinkedList();
     	public static KomServer defaultServer;
 	static {
-	    //list.add(defaultServer = new KomServer("localhost", "RasmusKOM"));
+	    if (Debug.ENABLED) list.add(defaultServer = new KomServer("localhost", "RasmusKOM"));
 	    list.add(new KomServer("sno.pp.se", "SnoppKOM"));
 	    list.add(new KomServer("kom.lysator.liu.se", "LysLysKOM"));
 	    list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
@@ -25,6 +25,131 @@
             defaultServer = (KomServer) list.get(0);
 	}
     }
+
+    static class PreferenceMetaData {
+	public String key, description, block, type, defaultValue;
+	public PreferenceMetaData(String key, String description,
+				  String block, String type, String defaultValue) {
+	    this.key = key;
+	    this.description = description;
+	    this.block = block;
+	    this.type = type;
+	    this.defaultValue = defaultValue;
+	}
+    }
+
+
+    static class PreferencesMetaData {
+	public static List list = new LinkedList();
+	public static Map blocks = new HashMap();
+	public static Map blockKeys = new HashMap();
+	static {
+	    list.add(new PreferenceMetaData("created-texts-are-read",
+					    "Markera skapade texter som lästa",
+					    "common", "boolean", "1"));
+	    list.add(new PreferenceMetaData("dashed-lines",
+					    "Visa streck kring inläggskroppen",
+					    "common", "boolean", "1"));
+	    list.add(new PreferenceMetaData("print-number-of-unread-on-entrance",
+					    "Visa antal olästa vid inloggning",
+					    "common", "boolean", "1"));
+
+	    list.add(new PreferenceMetaData("hide-standard-boxes",
+					    "Dölj standardboxarna för endast, läsa inlägg och sända meddelande",
+					    "weblatte", "boolean", "0"));
+	    list.add(new PreferenceMetaData("show-plain-old-menu",
+					    "Visa textmenyer",
+					    "weblatte", "boolean", "0"));
+	    list.add(new PreferenceMetaData("always-show-welcome",
+					    "Visa alltid välkomsttext",
+					    "weblatte", "boolean", "1"));
+	    list.add(new PreferenceMetaData("auto-refresh-news",
+					    "Uppdatera nyhetslista automatiskt",
+					    "weblatte", "boolean", "1"));
+	    list.add(new PreferenceMetaData("start-in-frames-mode",
+					    "Starta med ramvy",
+					    "weblatte", "boolean", "0"));
+	    list.add(new PreferenceMetaData("my-name-in-bold",
+					    "Visa mitt eget namn i fetstil",
+					    "weblatte", "boolean", "0"));
+
+	    for (Iterator i = list.iterator(); i.hasNext();) {
+		PreferenceMetaData pmd = (PreferenceMetaData) i.next();
+		List blockList = (List) blocks.get(pmd.block);
+		if (blockList == null) blockList = new LinkedList();
+		Map blockMap = (Map) blockKeys.get(pmd.block);
+		if (blockMap == null) blockMap = new HashMap();
+		blockList.add(pmd);
+		blockMap.put(pmd.key, pmd);
+		blocks.put(pmd.block, blockList);
+		blockKeys.put(pmd.block, blockMap);
+	    }
+	    list = Collections.unmodifiableList(list);
+	    blocks = Collections.unmodifiableMap(blocks);
+	}
+
+	static String getDefault(String blockName, String key) {
+	    Map block = (Map) blockKeys.get(blockName);
+	    if (block == null)
+		throw new IllegalArgumentException("Bad block \"" + blockName + "\"");
+	    if (!block.containsKey(key))
+		throw new IllegalArgumentException("Block \"" + 
+				blockName + "\" does not have a key \"" +
+				key + "\"");
+	    PreferenceMetaData pmd = (PreferenceMetaData) block.get(key);
+	    return pmd.defaultValue;
+	}
+
+	static boolean containsKey(String blockName, String key) {
+	    Map block = (Map) blockKeys.get(blockName);
+	    if (block == null)
+		throw new IllegalArgumentException("Bad block \"" + blockName + "\"");
+	    return block.containsKey(key);
+	}
+    }
+
+    static class KomPreferences {
+	HollerithMap map;
+        String blockName;
+	public KomPreferences(HollerithMap map, String blockName) {
+	    this.map = map;
+ 	    this.blockName = blockName;
+	}
+
+	public boolean getBoolean(String key) {
+	    if (!map.containsKey(key)) {
+		String defaultValue = PreferencesMetaData.getDefault(blockName, key);
+		return defaultValue.equals("1");
+	    }
+	    return map.get(key).equals("1");
+	}
+
+	public String getString(String key) {
+	    if (!map.containsKey(key)) {
+		return PreferencesMetaData.getDefault(blockName, key);
+	    }
+	    return map.get(key).getContentString();
+	}
+
+	public void set(String key, String value) {
+	    map.put(key, value);
+	}
+
+	public Hollerith getData() {
+	    return map;
+	}
+    }
+
+    public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {
+	UserArea userArea = lyskom.getUserArea();
+	Hollerith data = userArea.getBlock(blockName);
+	if (data != null) {
+	    return new KomPreferences(new HollerithMap(data), "weblatte");
+	} else {
+	    return new KomPreferences(new HollerithMap(lyskom.getServerEncoding()), "weblatte");
+	}
+    }
+
 
     final static int SORT_FILEID = 1, SORT_MODIFIED = 2, SORT_MUGNAME = 3;
     Collator collator = Collator.getInstance(new Locale("sv", "SE"));
@@ -181,7 +306,10 @@
 		throw ex1;
 	}
 	if (conf != null) {
-	    return "<span title=\"" + (conf.getType().getBitAt(ConfType.letterbox) ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + conf.getType().getBitAt(ConfType.letterbox) + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + htmlize(name) + "</span>";
+	    boolean isMe = lyskom.getMyPerson().getNo() == number;
+	    KomPreferences prefs = preferences(lyskom, "weblatte");
+	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
+	    return "<span title=\"" + (conf.getType().getBitAt(ConfType.letterbox) ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + conf.getType().getBitAt(ConfType.letterbox) + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
 	} else {
 	    return htmlize(name);
 	}
@@ -303,4 +431,7 @@
 %>\
 <%
 String dir = getServletContext().getRealPath("/lyskom/bilder/");
+UserArea userArea = null;
+KomPreferences commonPreferences = null;
+KomPreferences preferences = null;
 %>\

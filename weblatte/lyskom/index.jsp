@@ -8,97 +8,109 @@
     Boolean authenticated = (Boolean) session.getAttribute("LysKOMauthenticated");
     if (authenticated == null) authenticated = Boolean.FALSE;
     String error = null;
-    if (request.getParameter("lyskomNamn") != null ||
-        (lyskom == null && session.getAttribute("lyskomPersonNo") != null)) {
+    boolean justLoggedIn = false;
+    try {
+	if (request.getParameter("lyskomNamn") != null ||
+	    (lyskom == null && session.getAttribute("lyskomPersonNo") != null)) {
 
-	if (lyskom == null) {
-	    lyskom = new Session();
-	}
-	if (!lyskom.getConnected()) {
-	    lyskom.setClientHost(request.getRemoteAddr());
-	    lyskom.setClientUser("www");
-	    lyskom.connect(server, 4894);
-	    lyskom.setBigTextEnabled(true);
-	    LinkedList messages = new LinkedList();
-	    session.setAttribute("lyskom.messages", messages);
-	    lyskom.addAsynchMessageReceiver(new MessageReceiver(messages));
-	}
-	ConfInfo[] names = null;
-	int person = 0;
-	String password = (String) session.getAttribute("lyskomPassword");
-	if (password == null) password = request.getParameter("lyskomLosen");
+	    if (lyskom == null) {
+		lyskom = new Session();
+	    }
+	    if (!lyskom.getConnected()) {
+		lyskom.setClientHost(request.getRemoteAddr());
+		lyskom.setClientUser("www");
+	    
+		lyskom.connect(server, 4894);
+		lyskom.setBigTextEnabled(true);
+		LinkedList messages = new LinkedList();
+		session.setAttribute("lyskom.messages", messages);
+		lyskom.addAsynchMessageReceiver(new MessageReceiver(messages));
+	    }
+	    ConfInfo[] names = null;
+	    int person = 0;
+	    String password = (String) session.getAttribute("lyskomPassword");
+	    if (password == null) password = request.getParameter("lyskomLosen");
 
-	if (request.getParameter("lyskomNamn") != null) {
-            String namnParam = request.getParameter("lyskomNamn");
-	    if (request.getParameter("createPerson") != null) {
-		try {
-		    lyskom.createPerson(namnParam, password, new Bitstring("00000000"),
-					new AuxItem[0]);
-		} catch (RpcFailure ex1) {
-		    person = -1;
-		    switch (ex1.getError()) {
-		    case Rpc.E_login_first:
-			error = "Du måste vara inloggad för att skapa en ny person.";
-			break;
-		    case Rpc.E_permission_denied:
-			error = "Du har inte tillräckligt med rättighet att skapa en ny person";
-			break;
-		    case Rpc.E_person_exists:
-			error = "Angivet namn är upptaget.";
-			break;
-		    case Rpc.E_illegal_aux_item:
-			error = "...";
-			break;
-		    case Rpc.E_index_out_of_range:
-			error = "KOM-servern har nått sin max-gräns för antalet skapade möten/personer.";
-			break;
-		    default:
-			throw ex1;
+	    if (request.getParameter("lyskomNamn") != null) {
+		String namnParam = request.getParameter("lyskomNamn");
+		if (request.getParameter("createPerson") != null) {
+		    try {
+			lyskom.createPerson(namnParam, password, new Bitstring("00000000"),
+					    new AuxItem[0]);
+		    } catch (RpcFailure ex1) {
+			person = -1;
+			switch (ex1.getError()) {
+			case Rpc.E_login_first:
+			    error = "Du måste vara inloggad för att skapa en ny person.";
+			    break;
+			case Rpc.E_permission_denied:
+			    error = "Du har inte tillräckligt med rättighet att skapa en ny person";
+			    break;
+			case Rpc.E_person_exists:
+			    error = "Angivet namn är upptaget.";
+			    break;
+			case Rpc.E_illegal_aux_item:
+			    error = "...";
+			    break;
+			case Rpc.E_index_out_of_range:
+			    error = "KOM-servern har nått sin max-gräns för antalet skapade möten/personer.";
+			    break;
+			default:
+			    throw ex1;
+			}
 		    }
 		}
-	    }
-            if (namnParam.startsWith("#")) namnParam = "Person " + namnParam.substring(1);
-            if (namnParam.toLowerCase().startsWith("person ")) {
-		StringTokenizer st = new StringTokenizer(namnParam);
-		st.nextToken();
-		person = Integer.parseInt(st.nextToken());
-            }
-	    if (person == 0) {
-		names = lyskom.lookupName(request.getParameter("lyskomNamn"), true, false);
-		if (names.length == 1) person = names[0].getNo();
-	    }
-	} else {
-	    person = ((Integer) session.getAttribute("lyskomPersonNo")).intValue();
-	}
-	if (person > 0) {
-	    if (!lyskom.login(person, password,
-			      request.getParameter("lyskomDold") != null, false)) {
-		error = "Felaktigt lösenord!";
-	    } else {
-		if (names != null) {
-		    session.setAttribute("lyskomPersonNo", new Integer(names[0].getNo()));
-		    session.setAttribute("lyskomPassword", request.getParameter("lyskomLosen"));
-		    session.setAttribute("lyskomPerson", lyskom.getMyPerson());
+		if (namnParam.startsWith("#")) namnParam = "Person " + namnParam.substring(1);
+		if (namnParam.toLowerCase().startsWith("person ")) {
+		    StringTokenizer st = new StringTokenizer(namnParam);
+		    st.nextToken();
+		    person = Integer.parseInt(st.nextToken());
 		}
-		session.setAttribute("lyskomName",
-			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
-		session.setAttribute("lyskom", lyskom);
-		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.7 $");
-		lyskom.changeWhatIAmDoing("kör web-latte");
+		if (person == 0) {
+		    names = lyskom.lookupName(request.getParameter("lyskomNamn"), true, false);
+		    if (names.length == 1) person = names[0].getNo();
+		}
+	    } else {
+		person = ((Integer) session.getAttribute("lyskomPersonNo")).intValue();
 	    }
-	} else if (names != null && names.length == 0) {
-	    error = "Namnet du angav (\"" + htmlize(request.getParameter("lyskomNamn")) + "\") " +
-		"finns inte. Välj \"Registrera ny användare\" för att skapa en ny KOM-person.";
-	} else if (names != null && names.length > 1) {
-	    StringBuffer buf = new StringBuffer("Flertydigt namn, följande matchar:<br/>\n<ul>");
-	    for (int i=0; i < names.length; i++) 
-		buf.append("<li>").append(lookupName(lyskom, names[i].getNo(), true)).append("\n");
-	    error = buf.append("</ul>\n").toString();
-	} else {
-	    error = "Ett fel uppstod.";
+	    if (person > 0) {
+		if (!lyskom.login(person, password,
+				  request.getParameter("lyskomDold") != null, false)) {
+		    error = "Felaktigt lösenord!";
+		} else {
+		    if (names != null) {
+			session.setAttribute("lyskomPersonNo", new Integer(names[0].getNo()));
+			session.setAttribute("lyskomPassword", request.getParameter("lyskomLosen"));
+			session.setAttribute("lyskomPerson", lyskom.getMyPerson());
+                        justLoggedIn = true;
+		    }
+		    session.setAttribute("lyskomName",
+					 new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
+		    session.setAttribute("lyskom", lyskom);
+		    authenticated = Boolean.TRUE;
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.8 $");
+		    lyskom.changeWhatIAmDoing("kör web-latte");
+		}
+	    } else if (names != null && names.length == 0) {
+		error = "Namnet du angav (\"" + htmlize(request.getParameter("lyskomNamn")) + "\") " +
+		    "finns inte. Välj \"Registrera ny användare\" för att skapa en ny KOM-person.";
+	    } else if (names != null && names.length > 1) {
+		StringBuffer buf = new StringBuffer("Flertydigt namn, följande matchar:<br/>\n<ul>");
+		for (int i=0; i < names.length; i++) 
+		    buf.append("<li>").append(lookupName(lyskom, names[i].getNo(), true)).append("\n");
+		error = buf.append("</ul>\n").toString();
+	    } else {
+		error = "Ett fel uppstod.";
+	    }
 	}
+    } catch (ConnectException ex1) {
+	lyskom = null;
+	error = "Det gick inte att ansluta till servern: " + ex1.getMessage();
+    } catch (UnknownHostException ex2) {
+	lyskom = null;
+	error = "Det gick inte att slå upp serverns DNS-namn: " + ex2.getMessage();
     }
+
     try {
  	session.setAttribute("LysKOMauthenticated", authenticated);
         if (authenticated.booleanValue()) {
@@ -120,39 +132,6 @@
 <% } else { %>
 <title>snoppkom (web-latte)</title>
 <% } %>
-<% if (authenticated.booleanValue() && request.getParameter("listnews") != null) {
-	if (request.getHeader("User-Agent").indexOf("MSIE") >= 0 ||
-	    request.getHeader("User-Agent").indexOf("Gecko") >= 0) {
-%>
-	    <script language="JavaScript1.2">
-		var interval = <%= interval %>*1000;
-		var timeLeft = interval;
-	        var refreshInProgress = false;
-		function countdown() {
-		    timeLeft -= 1000;
-		    var s = timeLeft / 1000;
-		    var div = document.getElementById("countdown");
-		    if (div != null && timeLeft > 0) {
-			div.innerHTML = "(uppdaterar om " + s + 
-			    (s > 1 ? " sekunder" : " sekund") + ")";
-		    } else if (div != null) {
-			if (!refreshInProgress) {
-	                    div.innerHTML = "(uppdaterar...)";
-	                    refresh();
-	                }
-		    }
-		}
-		function refresh() {
-	            refreshInProgress = true;
-		    document.location.href = "<%=basePath%>?listnews&saveMessages&autoRefresh";
-		}
-		var ivref = window.setInterval(countdown, 1000);
-	    </script>
-	    <noscript><meta http-equiv="Refresh" content="120; URL=<%=myURI(request)%>?listnews&saveMessages&autoRefresh" /></noscript>
-<%	} else { %>
-	    <meta http-equiv="Refresh" content="120; URL=<%=myURI(request)%>?listnews&saveMessages&autoRefresh" />
-<%	} 
-   } %>
 </head>
 <link rel="stylesheet" href="lattekom.css" />
 <body>
@@ -169,9 +148,34 @@
 	for (Iterator i = info.entrySet().iterator(); i.hasNext();) {
 	    Map.Entry entry = (Map.Entry) i.next();
 	    out.println("info-key \"" + entry.getKey() + "\", type: " +
-		entry.getValue().getClass().getName() + ", value: \"" + 
-		entry.getValue().toString());
+		entry.getValue().getClass().getName() + ", value: &lt;" + 
+		entry.getValue().toString() + "&gt;");
 	}
+	out.println("------");
+	if (lyskom != null) {
+	    Person me = lyskom.getMyPerson();
+	    out.println("User area: " + me.getUserArea());
+	    userArea = lyskom.getUserArea();
+	    if (userArea != null) {
+		String[] blocks = userArea.getBlockNames();
+		for (int i=0; i < blocks.length; i++) {
+		    String blockName = blocks[i];
+		    Hollerith block = userArea.getBlock(blockName);
+		    out.println("User-Area block <a href=\"?debug&uablock=" +
+			blockName + "\">\"" + blockName + "\"</a>, " +
+			block.getContents().length + " bytes");
+		}
+
+		if (request.getParameter("uablock") != null) {
+		    String blockName = request.getParameter("uablock");
+		    Hollerith block = userArea.getBlock(blockName);
+		    out.println("------ Block \"" + blockName + "\" contents:");
+		    out.println(block.getContentString());
+		    out.println("------");
+		}
+	    }
+	}
+	
 	out.println("</pre>");
     }
     if (request.getParameter("logout") != null) {
@@ -186,23 +190,39 @@
 	[ <a href="<%= basePath %>">logga in</a> ]
 	</p>
 	<%
+    } else if (authenticated.booleanValue()) {
+	%><%@ include file='prefs_inc.jsp' %><%
+	if (justLoggedIn && preferences.getBoolean("start-in-frames-mode")) {
+	    response.sendRedirect(basePath + "frames.jsp?conference=0");
+	    return;
+	}
     }
     if (request.getParameter("pom") != null) {
 	session.setAttribute("pom", new Boolean(request.getParameter("pom").equals("true")));
     }
 
-    boolean showPOM = false;
-    boolean showWelcome = request.getParameter("hw") == null; // "hw" = "hide welcome message"
-    boolean showStandardBoxes = request.getParameter("hs") == null; // "hide standard boxes"
+    boolean showPOM = preferences != null && preferences.getBoolean("show-plain-old-menu");
+    boolean showWelcome = request.getParameter("hw") == null &&
+		(preferences != null && preferences.getBoolean("always-show-welcome"));
+
+    boolean showStandardBoxes = request.getParameter("hs") == null
+	  && preferences != null && !preferences.getBoolean("hide-standard-boxes"); // "hide standard boxes"
     try {
 	showPOM = session.getAttribute("pom") != null ? 
-	    ((Boolean) session.getAttribute("pom")).booleanValue() : false;
+	    ((Boolean) session.getAttribute("pom")).booleanValue() : showPOM;
     } catch (IllegalStateException ex1) {}
 
 
     if (authenticated.booleanValue()) {
 	if (true) {
-	    if (showWelcome) {
+	    if (Debug.ENABLED) {
+		out.print("<pre style=\"color: blue;\">DEBUGLÄGE: ");
+		out.print("Person: " + lyskom.getMyPerson().getNo());
+		out.print(", User-Area: " + lyskom.getMyPerson().getUserArea());
+		out.print(", Session: " + lyskom.whoAmI());
+		out.println("</pre>");
+	    }
+	    if (justLoggedIn || showWelcome) {
 %>
     	<h2>välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!</h2>
 	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
@@ -573,15 +593,22 @@
 	    newTextNo = lyskom.createText(newText);
 	    newText = lyskom.getText(newTextNo);
 	    if (newTextNo > 0) {
-	    	int[] recipientNos = newText.getRecipients();
-	    	for (int i=0; i < recipientNos.length; i++) {
-		    try {
-		        lyskom.markAsRead(recipientNos[i], new int[] { newText.getLocal(recipientNos[i]) });	
-		    } catch (RpcFailure ex1) {
-		    	if (ex1.getError() != Rpc.E_not_member)
-			    throw ex1;
+		if (commonPreferences.getBoolean("created-texts-are-read")) {
+		    int[] recipientNos = newText.getRecipients();
+		    int[] ccRecps = newText.getCcRecipients();
+		    int[] allRecps = new int[recipientNos.length+ccRecps.length];
+		    System.arraycopy(recipientNos, 0, allRecps, 0, recipientNos.length);
+		    System.arraycopy(ccRecps, 0, allRecps, recipientNos.length, ccRecps.length);
+		    recipientNos = allRecps;
+		    for (int i=0; i < recipientNos.length; i++) {
+			try {
+			    lyskom.markAsRead(recipientNos[i], new int[] { newText.getLocal(recipientNos[i]) });	
+			} catch (RpcFailure ex1) {
+			    if (ex1.getError() != Rpc.E_not_member)
+				throw ex1;
+			}
 		    }
-	    	}
+		}
 %>
 	        <p class="statusSuccess">Text nummer <%= textLink(request, lyskom, newTextNo, false) %> är skapad.</p>
 <%
@@ -692,6 +719,7 @@
               <a href="<%=basePath%>?reviewMarked">lista markerade</a> ]
 	    <br/>
 	    [ <a href="<%=basePath%>?setPasswordForm">ändra lösenord</a> ]
+	    [ <a href="<%=basePath%>prefs.jsp">inställningar</a> ]
    	</p>
 <%
     }
@@ -918,7 +946,41 @@
     }
 %>
 <%
-	    if (request.getParameter("listnews") != null) {
+
+	boolean listNews = request.getParameter("listnews") != null ||
+	        (justLoggedIn && commonPreferences.getBoolean("print-number-of-unread-on-entrance"));
+	
+	    if (listNews) {
+		if (preferences.getBoolean("auto-refresh-news") &&
+		    (request.getHeader("User-Agent").indexOf("MSIE") >= 0 ||
+	    	     request.getHeader("User-Agent").indexOf("Gecko") >= 0)) {
+%>
+	    <script language="JavaScript1.2">
+		var interval = <%= interval %>*1000;
+		var timeLeft = interval;
+	        var refreshInProgress = false;
+		function countdown() {
+		    timeLeft -= 1000;
+		    var s = timeLeft / 1000;
+		    var div = document.getElementById("countdown");
+		    if (div != null && timeLeft > 0) {
+			div.innerHTML = "(uppdaterar om " + s + 
+			    (s > 1 ? " sekunder" : " sekund") + ")";
+		    } else if (div != null) {
+			if (!refreshInProgress) {
+	                    div.innerHTML = "(uppdaterar...)";
+	                    refresh();
+	                }
+		    }
+		}
+		function refresh() {
+	            refreshInProgress = true;
+		    document.location.href = "<%=basePath%>?listnews&saveMessages&autoRefresh";
+		}
+		var ivref = window.setInterval(countdown, 1000);
+	    </script>
+
+<%		} 
 %>
 	<p>
 	<ul>
@@ -1041,7 +1103,7 @@
     Endast: <input type="text" size="3" name="endast"> inlägg i möte
     <input type="text" size="40" name="endastConferenceName">
     <input type="submit" value="ok!">
-<%  if (request.getParameter("listnews") != null) { %>
+<%  if (listNews) { %>
     <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
 <%  } %>
     </form>
@@ -1049,7 +1111,7 @@
     <form action="<%=myURI(request)%>" class="boxed" method="post">
     <a name="sendMessage"></a>
     Skicka ett meddelande till:<br/>
-<%  if (request.getParameter("listnews") != null) { %>
+<%  if (listNews) { %>
     <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
 <%  } %>
     <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>"><br/>
@@ -1123,12 +1185,16 @@ Du är inte inloggad.
 %>
 <a href="vilka/">vilka är inloggade?</a> |
 <a href="?pom=false">dölj menyer</a> ]
-<% } else if (showStandardBoxes) { %>
+<%  } else { %>
 [ <a href="?pom=true">visa menyer</a> ]
-<% } %>
+<%  }
+    if (Debug.ENABLED) { %>
+	<p><a href="<%= basePath%>?debug">debugdata</a>
+	   <a href="prefs.jsp">inställningar</a></p>
+<%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.7 2004/04/20 01:02:31 pajp Exp $
+$Id: index.jsp,v 1.8 2004/04/22 02:03:05 pajp Exp $
 </p>
 </body>
 </html>

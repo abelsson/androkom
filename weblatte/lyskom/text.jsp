@@ -3,6 +3,7 @@
 <%@ include file='kom.jsp' %>
 <%
 	Session lyskom = (Session) session.getAttribute("lyskom");
+%><%@ include file='prefs_inc.jsp' %><%
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
@@ -104,11 +105,18 @@
 	Extra kopia: <%= lookupName(lyskom, ccRecipients[i], true) %><br/>
 <%
 	}
-
+	if (!contentType.equals("x-kom/user-area")) {
 %>
 	Ärende: <%= new String(text.getSubject()) %><br/>
+<%
+	} else {
+	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");
+	}
+	if (commonPreferences.getBoolean("dashed-lines")) {
+%>
 	<hr noshade width="95%" align="left" />
 <%
+	}
 	if (contentType.equals("text/x-kom-basic") || contentType.equals("text/plain")) {
             try {
 		if (request.getParameter("forceCharset") != null) {
@@ -124,19 +132,29 @@
 	<a href="<%= basePath %>rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata
         eller <a href="<%= basePath %>index.jsp?text=<%=text.getNo()%>&forceCharset=iso-8859-1">här</a> för att
 	tolka innehållet enligt iso-8859-1.<br/>
-	Textens fullständinga datatyp är "<b><%= htmlize(rawContentType) %></b>".
+	Textens fullständiga datatyp är "<b><%= htmlize(rawContentType) %></b>".
 	</p>
 <%
             }
+	} else if (contentType.equals("x-kom/user-area")) {
+	    out.print("<pre>");
+	    out.print(htmlize(new String(text.getContents(), charset)));
+	    out.println("</pre>");
 	} else {
 %>
 	<p class="statusError">Varning: textens datatyp ("<%=contentType%>") kan inte visas.<br/>
 	<a href="/lyskom/rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata.</p>
 <%
 	}
+	if (commonPreferences.getBoolean("dashed-lines")) {
 %>
 	<hr noshade width="95%" align="left" />
 <%
+	} else {
+%>
+	<br/>
+<%
+	}
 	List fastReplies = text.getAuxItems(AuxItem.tagFastReply);
 	for (Iterator i = fastReplies.iterator(); i.hasNext();) {
 	    AuxItem item = (AuxItem) i.next();
