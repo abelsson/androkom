@@ -13,7 +13,7 @@ import java.util.Enumeration;
 
 public class KomTokenReader {
 
-    final static int DEBUG = 3;
+    final static int DEBUG = 0;
 
     private InputStream input;
 
@@ -67,8 +67,8 @@ public class KomTokenReader {
 	Enumeration e = v.elements();
 	for (int i=0;i<foo.length;i++)
 	    foo[i] = (KomToken) e.nextElement();
-	if (DEBUG > 2)
-	    Debug.println("RCV: " + debugBuffer.toString());
+
+	Debug.println("RCV: " + debugBuffer.toString());
 	return foo;
     }
 

@@ -9,14 +9,18 @@ package nu.dll.lyskom;
 import java.net.*;
 import java.io.*;
 
+import java.util.LinkedList;
+
 
 public class Connection {
-
+    private LinkedList writeQueue = new LinkedList();
     private Socket sock;
     private InputStream input;
     private OutputStream output;
     String server;
     int port;
+
+    Thread queuedWriter = null;
 
     public Connection(String server, int port)
     throws IOException, UnknownHostException {
@@ -26,7 +30,38 @@ public class Connection {
 	sock = new Socket(server, port);
 	input = sock.getInputStream();
 	output = sock.getOutputStream();
-	
+
+	queuedWriter = new Thread(new Runnable() {
+		public void run() {
+		    Debug.println("Queued writer start.");
+		    while (true) {
+			try {
+			    synchronized (writeQueue) {
+				if (writeQueue.isEmpty()) {
+				    Debug.println("Write queue empty.");
+				    writeQueue.wait();
+				}
+				synchronized (output) {
+				    while (!writeQueue.isEmpty()) {
+					byte[] bytes = (byte[]) writeQueue.removeFirst();
+					output.write(bytes);
+					Debug.println("wrote: " + new String(bytes));
+				    }
+				}
+			    }
+
+			} catch (IOException ex1) {
+			    Debug.println("I/O error during write: " + ex1.getMessage());
+			} catch (InterruptedException ex2) {
+			    Debug.println("Interrupted during wait(): " + ex2.getMessage());
+			}
+		    }
+		    //Debug.println("Queued writer exit.");
+		}
+	    });
+	queuedWriter.setName("QueuedWriter");
+	queuedWriter.start();
+
     }
 
     public String getServer() {
@@ -49,7 +84,29 @@ public class Connection {
     public OutputStream getOutputStream() {
 	return output;
     }
+
+    public void queuedWrite(String s) {
+	synchronized (writeQueue) {
+	    try {
+		writeQueue.addLast(s.getBytes(Session.serverEncoding));
+	    } catch (UnsupportedEncodingException ex1) {
+		throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
+	    }
+	    writeQueue.notifyAll();
+	}
+    }
+
+    public void queuedWrite(byte[] b) {
+	synchronized (writeQueue) {
+	    writeQueue.addLast(b);
+	    writeQueue.notifyAll();
+	}
+    }
     
+    /**
+     *
+     * @deprecated use writeLine() or queuedWrite() instead
+     */ 
     public void write(char c)
     throws IOException {
 	synchronized (output) {
@@ -68,7 +125,11 @@ public class Connection {
     public void writeLine(String s)
     throws IOException {
 	synchronized (output) {
-	    output.write(s.getBytes());
+	    try {
+		output.write(s.getBytes(Session.serverEncoding));
+	    } catch (UnsupportedEncodingException ex1) {
+		throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
+	    }
 	    output.write('\n');
 	}
     }

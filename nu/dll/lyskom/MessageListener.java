@@ -17,7 +17,7 @@ import java.io.*;
  * executes all calls to listener objects. Now, this thread
  * executed the listener callbacks, with the side-effect that they
  * won't be able to call synchronous methods in the Session class
- * (since they relay on this thread to be different from the
+ * (since they rely on this thread to be different from the
  * executing).
  *
  */

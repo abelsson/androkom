@@ -49,9 +49,6 @@ public class RpcHeap {
 	    }
 	    RpcCall r = (RpcCall) o;
 	    if (r.getId() == wid && reqReply == (r.getReply() != null)) {
-		synchronized (this) {
-		    notifyAll();
-		}
 		return r;
 	    }
 

@@ -18,9 +18,11 @@ import java.util.*;
 
 public class Session
 implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
-    public final static int MAX_TIMEOUT = 20000;
-    public final static int DEFAULT_TIMEOUT = 1000;
+    public static int rpcTimeout = 20000;
+    public static int rpcSoftTimeout = 1000;
 
+    public static String serverEncoding = null;
+	
     /**
      * Not connected to a LysKOM server
      */
@@ -89,6 +91,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     String clientHost = null;
 
+    static {
+	serverEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
+	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 30).intValue() * 1000;
+	rpcSoftTimeout = Integer.getInteger("lyskom.rpc-soft-timeout", 0).intValue() * 1000;
+    }
+
+
     private void init() {
 	textCache = new TextCache();
 	personCache = new PersonCache();
@@ -129,7 +138,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * This method could probably be private.
      */    
-    public void notifyRpcEventListeners(RpcEvent ev) {
+    protected void notifyRpcEventListeners(RpcEvent ev) {
  	for (Enumeration e = rpcEventListeners.elements();
 	     e.hasMoreElements();)
 	    ((RpcEventListener) e.nextElement()).rpcEvent(ev);
@@ -199,6 +208,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Adds a listener for asynchronous messages (called through
      * the AsynchMessageReceiver interface).
+     *
+     * At the moment, registered received must return quickly, and
+     * specifically, may not call the waitFor() method. 
      */
     public void addAsynchMessageReceiver(AsynchMessageReceiver a) {
 	listener.addAsynchMessageReceiver(a);
@@ -214,7 +226,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     /**
      * Supposed to return an array of global text number for all unreads
-     * in a conference. Generally not a good idea. Not used.
+     * in a conference. Generally not a good idea.
+     *
+     * @deprecated Follow the standard LysKOM convention to get unreads or use nextUnreadText()/nextUnreadConference()
      */
     public synchronized int[] getGlobalUnreadInConf(int conf)
     throws IOException {
@@ -316,7 +330,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     /**
      * Returns the conference number of the next conference that _may_ contain
-     * an unread text.
+     * an unread text, or -1 if no unread conference is found.
      *
      * @param change if true, this method also calls changeConference()
      */
@@ -361,9 +375,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * @param updateUnread if true, also marks the returned text as read
      *
-     * NOTE: This method is _very_ inefficient and expensive on the
-     * server, most notably the use of localToGlobal() for each text is
-     * very stupid.
+     * Implementation note: still inefficient.
      */   
     public int nextUnreadText(int conference, boolean updateUnread)
     throws IOException {
@@ -401,6 +413,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	}
     }
 
+    /** 
+     * Same as session.nextUnreadText(session.getCurrentConference(), [boolean]);
+     *
+     * @param updateUnread if true, marks the returned text as unread
+     */
     public int nextUnreadText(boolean updateUnread)
     throws IOException {
 	if (currentConference == -1) {
@@ -411,6 +428,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     }
 
+    /**
+     * Returns <tt>true</tt> if the current user is a member of confNo,
+     * otherwise <tt>false</tt>
+     *
+     * @param confNo Conference number
+     */
     public boolean isMemberOf(int confNo) {
 	Iterator i = membership.iterator();
 	while (i.hasNext()){
@@ -424,6 +447,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return false;
     }
 
+    /**
+     * Returns the highest possible number of unreads for a specific conference
+     *
+     * @param confNo Conference number
+     */
     public int getUnreadCount(int confNo)
     throws IOException {
 	if (unreads.size() == 0 || !unreads.contains(new Integer(confNo)))
@@ -440,7 +468,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     /**
      * Returns a ReadTextsMap object.
-     * The ReadTextsMap should be rethought.
+     * The ReadTextsMap is a set containing all texts read during this session.
      */
     public ReadTextsMap getReadTexts() { return readTexts; }
 
@@ -530,7 +558,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public RpcCall writeRpcCall(RpcCall c, boolean store)
     throws IOException {
 	if (store) rpcHeap.addRpcCall(c);
-	c.writeNetwork(connection.getOutputStream());
+	connection.queuedWrite(c.toNetwork());
+	//c.writeNetwork(connection.getOutputStream());
 	return c; 
     }
     
@@ -546,6 +575,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return writeRpcCall(c, true);
     }
 
+
+    /**
+     * Calls LysKOM function mark-text, then returns immediately.
+     *
+     * @param textNo the text number to mark
+     * @param markType the type of mark to set
+     */
     public RpcCall doMarkText(int textNo, int markType)
     throws IOException {
 	RpcCall req = new RpcCall(count(), Rpc.C_mark_text);
@@ -555,12 +591,24 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return req;
     }
 
+    /**
+     * Place a personal mark on a LysKOM text.
+     * Blocks until the server has replied.
+     *
+     * @param textNo the text number to mark
+     * @param markType the type of mark to set
+     */
     public void markText(int textNo, int markType)
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doMarkText(textNo, markType));
 	if (!reply.getSuccess()) throw reply.getException();
     }
 
+    /**
+     * Calls LsyKOM function unmark-text, then returns immediately.
+     *
+     * @param textNo the text number to unmark
+     */
     public RpcCall doUnmarkText(int textNo)
     throws IOException {
 	RpcCall req = new RpcCall(count(), Rpc.C_unmark_text);
@@ -569,12 +617,22 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return req;
     }
 
+    /**
+     * Unmarks a text.
+     * Blocks until the server has replied.
+     *
+     * @param textNo the text number to unmark
+     */
+
     public void unmarkText(int textNo) 
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doUnmarkText(textNo));
 	if (!reply.getSuccess()) throw reply.getException();
     }
 
+    /** 
+     * Calls LysKOM function get-marks, then returns immediately
+     */
     public RpcCall doGetMarks()
     throws IOException, RpcFailure {
 	RpcCall call = new RpcCall(count(), Rpc.C_get_marks);
@@ -582,6 +640,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return call;
     }
 
+    /**
+     * Returns an array of Mark objects with all text-marks for this user.
+     */
     public Mark[] getMarks()
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doGetMarks());
@@ -597,6 +658,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     }
 
+    /**
+     * Calls the LysKOM function local-to-global, then returns immediately.
+     *
+     * @param confNo The conference number in which to map text numbers
+     * @param firstLocalNo The first local number to map
+     * @param noOfExistingTexts The maximum number of texts that the returned mappnig should contain
+     */
     public RpcCall doLocalToGlobal(int confNo, int firstLocalNo,
 						int noOfExistingTexts)
     throws IOException {
@@ -618,6 +686,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * LysKOM call: local-to-global, but without the limitation that
      * noOfExistingTexts must be between 1-255 inclusive
+
+     * @param confNo The conference number in which to map text numbers
+     * @param firstLocalNo The first local number to map
+     * @param noOfExistingTexts The maximum number of texts that the returned mappnig should contain
+
      */
     public  TextMapping localToGlobal(int confNo, int firstLocalNo,
 						  int noOfExistingTexts)
@@ -1311,16 +1384,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = null;
 	int waited = 0;
 	while (rcfjant == null) {
+	    Debug.println("Waiting for RPC reply to command #" + id);
 	    synchronized (rpcHeap) {
 		try {
-		    Debug.println("Waiting for RPC reply to command #" + id);
 		    if (Thread.currentThread() == listener.getThread()) {
 			throw new IOException("waitFor() called from asynch dispatcher thread");
 		    } else {
-			if (null == (rcfjant = rpcHeap.getRpcCall(id, true)))
-			    rpcHeap.wait(DEFAULT_TIMEOUT);
-			else
+			if (null == (rcfjant = rpcHeap.getRpcCall(id, true))) {
+			    rpcHeap.wait(rpcSoftTimeout);
+			} else {
 			    return rcfjant.getReply();
+			}
 		    }
 
 		} catch (InterruptedException ex1) {
@@ -1330,9 +1404,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 
 	    if (rcfjant == null) {
-		//wakeOnReplyFrom = id;
-		waited += DEFAULT_TIMEOUT;
-		if (waited > MAX_TIMEOUT) {
+		waited += rpcSoftTimeout;
+		if (waited > rpcTimeout) {
 		    IOException e = new IOException("Time out waiting for RPC reply #"+id);
 		    e.printStackTrace();
 		    throw(e);
@@ -1341,7 +1414,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		reply = rcfjant.getReply();
 	    }
 	}
-	//wakeOnReplyFrom = -1;
 	return reply;
     }
 
@@ -1376,9 +1448,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    Debug.println("!");
 	}
 
+
 	RpcCall originCall = rpcHeap.getRpcCall(r.getId(), false);
 	if (originCall != null) {
 	    originCall.setReply(r);
+	}
+
+	synchronized (rpcHeap) {
+	    rpcHeap.notifyAll();
 	}
 
 	//if (wakeOnReplyFrom == r.getId())
@@ -1398,7 +1475,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * parameters. For example, message number 5 could be sent as:
      * <pre>   :3 5 119 11HDavid Byers 13HDavid C Byers</pre>
      *
-     *
+     * this method is called by the AsynchReader thread
      */
     public void asynchMessage(AsynchMessage m) {
 	Debug.println("Session.asynchMessage(): "+m.toString());
