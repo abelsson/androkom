@@ -1054,7 +1054,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     private synchronized int count() {
 	rpcCount++;
-	return lastRpcCall += random.nextInt(63)+1;
+	//return lastRpcCall += random.nextInt(63)+1;
+	return rpcCount;
     }
 
     public KomTokenReader getKomTokenReader() {

@@ -79,7 +79,8 @@ public class Test2 implements AsynchMessageReceiver {
 	byte[] name = foo.getConfName(n);
 	if (name == null)
 	    return "Person "+n+" (N/A)";
-	return "\u001b[01;34m" + new String(name) + "\u001b[0m;";
+	//return "\u001b[01;34m" + new String(name) + "\u001b[0m;";
+	return new String(name);
     }
 
     public int parseNameArgs(String arg, boolean wantPersons, boolean wantConfs)
@@ -307,7 +308,8 @@ public class Test2 implements AsynchMessageReceiver {
 		    if (textNo == -1) { // if no unread text in current conference,
 			int nextConf = foo.nextUnreadConference(true); // change conference
 			if (nextConf == -1) {			    
-			    foo.sendMessage(0, "Skriv nå't då!");
+			    //foo.sendMessage(0, "Skriv nå't då!");
+			    consoleWriteLn("Det finns inget att läsa.");
 			}
 			else {
 			    int unr = foo.getUnreadCount(nextConf);
@@ -374,7 +376,7 @@ public class Test2 implements AsynchMessageReceiver {
 	    setStatus("Läser kommentarer.");
 	} else if (foo.nextUnreadText(false) == -1) {
 	    if (foo.nextUnreadConference(false) == -1) {
-		curConf += "(Slut på inlägg, skrik lite) ";
+		curConf += "(Slut på inlägg) ";
 		setStatus("Väntar på inlägg.");
 	    } else {
 		curConf += "(Gå till nästa möte) ";
