@@ -127,7 +127,7 @@
       möte, samt att nyhetslistan begränsas till att visa fem möten åt
       gången. När du har mindre än 50 olästa möten så kan du
       deaktivera funktionen under "Inställningar". Du kan givetvis
-      aktivera "många möten" även om du inte har fler än 200 olästa
+      aktivera "många möten" även om du inte har fler än 50 olästa
       möten, om du föredrar den snabbare inloggningen som funktionen
       ger. Du kan justera gränsen för när "många möten" skall
       aktiveras genom inställningen "Max antal olästa möten innan
@@ -212,7 +212,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.13 $
+      $Revision: 1.14 $
     </p>
   </body>
 </html>
