@@ -3,7 +3,6 @@
 <%@ include file='../kom.jsp' %>
 <%
     boolean disconnectLast = false;
-    Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null) {
 	lyskom = new Session();
     	lyskom.connect(Servers.defaultServer.hostname, 4894);
@@ -109,7 +108,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.7 2004/04/25 18:29:49 pajp Exp $
+$Id: index.jsp,v 1.8 2004/04/26 00:20:19 pajp Exp $
 </p>
 </body>
 </html>

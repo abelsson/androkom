@@ -201,7 +201,7 @@
 
     String ambiguousNameMsg(Session lyskom, AmbiguousNameException ex) 
     throws RpcFailure, IOException {
-	return ambiguousNameMsg(null, ex);
+	return ambiguousNameMsg(lyskom, null, ex);
     }
 
     String ambiguousNameMsg(Session lyskom, String name, AmbiguousNameException ex)
@@ -281,7 +281,11 @@
 	
     }
 
-    class AmbiguousNameException extends Exception {
+    String komStrip(String s) {
+	return s.replaceAll(" *\\(.*?\\) *", "").trim();
+    }
+
+    class AmbiguousNameException extends RuntimeException {
 	ConfInfo[] possibleNames;
 	public AmbiguousNameException(ConfInfo[] names) {
 	    this.possibleNames = names;
@@ -291,7 +295,7 @@
 	}
     }
 
-    class MessageReceiver implements AsynchMessageReceiver {
+    static class MessageReceiver implements AsynchMessageReceiver {
 	LinkedList list;
 	public MessageReceiver(LinkedList list) {
 	    this.list = list;
@@ -309,5 +313,6 @@ String dir = getServletContext().getRealPath("/lyskom/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
-boolean debug = Debug.ENABLED;
+boolean debug = Debug.ENABLED || request.getParameter("debug") != null;
+Session lyskom = (Session) session.getAttribute("lyskom");
 %>\

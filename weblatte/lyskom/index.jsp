@@ -6,7 +6,6 @@
 <%
     String server = request.getParameter("server") != null ? 
 	request.getParameter("server") : Servers.defaultServer.hostname;
-    Session lyskom = (Session) session.getAttribute("lyskom");
     Boolean authenticated = (Boolean) session.getAttribute("LysKOMauthenticated");
     if (authenticated == null) authenticated = Boolean.FALSE;
     String error = null;
@@ -84,7 +83,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.12 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.13 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -405,7 +404,7 @@
 		if (m.getNumber() == Asynch.send_message) {
 		    int recipient = m.getParameters()[0].intValue();
 		    int sender    = m.getParameters()[1].intValue();
-		    String text   = new String(m.getParameters()[2].getContents());
+		    String text   = lyskom.toString(m.getParameters()[2].getContents());
 		    if (recipient == lyskom.getMyPerson().getNo()) {
 			lastReceivedOrSent = lookupName(lyskom, sender);
 		    } else if (recipient != 0) {
@@ -434,20 +433,36 @@
 	    }
 	}
     }
+
+    if (request.getParameter("stopChat") != null) {
+        session.setAttribute("lyskom.chat-running", Boolean.FALSE);
+    }
+
     if (request.getParameter("sendToName") != null) {
-	String _text = request.getParameter("sendText");
+	String stn = request.getParameter("sendToName");
 	try {
-	    if (request.getParameter("sendToName").trim().equals("")) {
+	    if (request.getParameter("chat") != null) {
+		if (!stn.trim().equals("")) {
+	            ConfInfo conf = lookupName(lyskom, stn, true, true);
+	            response.sendRedirect(basePath + "chat.jsp?default=" + conf.getNo());
+	            return;
+		} else {
+		    response.sendRedirect(basePath + "chat.jsp");
+		    return;
+		}
+	    } 
+	    String _text = request.getParameter("sendText");
+	    if (stn.trim().equals("")) {
 		lyskom.sendMessage(0, _text);
 		%><p class="statusSuccess">Alarmmeddelande skickat.</p><%
 	    } else {
-	    	ConfInfo recipient = lookupName(lyskom, request.getParameter("sendToName"), true, true);
+	    	ConfInfo recipient = lookupName(lyskom, stn, true, true);
 	    	if (recipient != null) {
 		    lyskom.sendMessage(recipient.getNo(), _text);
 		    lastReceivedOrSent = lookupName(lyskom, recipient.getNo());
 		    %><p class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</p><%
 	    	} else {
-		    %><p class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(request.getParameter("sendToName"))%>".</p><%
+		    %><p class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</p><%
 	    	}
 	    }
 	} catch (RpcFailure ex2) {
@@ -1017,7 +1032,7 @@
 		    out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
 			conf + "&listSubjects\">lista ärenden</a> ]");
 		}
-		lyskom.doChangeWhatIAmDoing("Väntar på inlägg");
+		lyskom.changeWhatIAmDoing("Väntar på inlägg");
 %>
 
 	</ul>
@@ -1125,7 +1140,9 @@
 <%  if (listNews) { %>
     <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
 <%  } %>
-    <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>"><br/>
+    <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>">
+    <input type="submit" name="chat" value="starta chat" />
+<br/>
     Text:<br/>
     <input type="text" name="sendText" size="60"><input type="submit" value="ok">
     </form>
@@ -1205,7 +1222,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.12 2004/04/25 18:29:43 pajp Exp $
+$Id: index.jsp,v 1.13 2004/04/26 00:20:17 pajp Exp $
 </p>
 </body>
 </html>
