@@ -85,7 +85,7 @@
 			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		session.setAttribute("lyskom", lyskom);
 		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.2 $");
+		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.3 $");
 		lyskom.changeWhatIAmDoing("kör web-latte");
 	    }
 	} else if (names != null && names.length == 0) {
@@ -309,6 +309,13 @@
 	    }
 	} catch (AmbiguousNameException ex1) {
 	    out.println(ambiguousNameMsg(lyskom, ex1));
+	} catch (RpcFailure ex2) {
+	  if (ex2.getError() == Rpc.E_access_denied) {
+	      out.println("misslyckades.</p><p class=\"statusError\">Fel: du får inte gå med i mötet.");
+	      Conference conf = lyskom.getConfStat(ex2.getErrorStatus());
+	      out.println("Administratör för mötet är " +
+	          lookupName(lyskom, conf.getSuperConf(), true) + " - vänd dig dit för mer information.</p>");
+	  }
 	}
     }
  
@@ -1059,7 +1066,7 @@ Du är inte inloggad.
 <% } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.2 2004/04/15 22:33:56 pajp Exp $
+$Id: index.jsp,v 1.3 2004/04/15 23:03:09 pajp Exp $
 </p>
 </body>
 </html>
