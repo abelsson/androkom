@@ -24,6 +24,7 @@
         out.println("<a name=\"text" + textNumber + "\"></a>");
 
 	Text text = null;
+
 	try {
 	    text = lyskom.getText(textNumber);
 	} catch (RpcFailure ex1) {
@@ -33,9 +34,9 @@
 		return;
 	    }
 	}
-%>
- 	<div class="text">
-<%
+
+ 	out.println("<div class=\"text\">");
+
 	List viewedTexts = (List) request.getAttribute("viewedTexts");
 	if (viewedTexts == null) {
 	    viewedTexts = new LinkedList();
