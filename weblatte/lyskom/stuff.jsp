@@ -1,5 +1,11 @@
+<%@ page language='java' pageEncoding='iso-8859-1' %>
+<%
+if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
+  response.setContentType("text/javascript;charset=iso-8859-1");
+}
+%>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.2 2004/05/10 00:41:34 pajp Exp $
+// $Id: stuff.jsp,v 1.3 2004/05/10 01:11:35 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;
