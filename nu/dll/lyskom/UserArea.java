@@ -57,7 +57,12 @@ public class UserArea {
     private void parse(Text text)
     throws IllegalArgumentException {
 	if (!text.getContentType().equals(contentType)) {
-	    throw new IllegalArgumentException("Supplied Text is not of type x-kom/user-area");
+	    if (Debug.ENABLED) {
+		Debug.println("Supplied Text has content type " +
+			      "\"" + text.getContentType() + "\" " + 
+			      "instead of expected \"" + contentType + 
+			      "\"");
+	    }
 	}
 	parse(text.getContents(), text.getCharset());
     }
