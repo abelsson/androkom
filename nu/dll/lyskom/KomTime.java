@@ -13,7 +13,7 @@ public class KomTime {
     int seconds, minutes, hours, mday, month, year, weekday, yearday, isdst;
 
     public String toString() {
-	return "["+(year+1900)+"-"+month+"-"+mday+", "+hours+":"+minutes+"]";
+	return "["+(year+1900)+"-"+(month+1)+"-"+mday+", "+hours+":"+minutes+"]";
     }
 
     public KomTime(int sec, int min, int hours, int mday, int month,
