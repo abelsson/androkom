@@ -8,7 +8,6 @@
 <%
     request.setCharacterEncoding("utf-8");
     StringBuffer metadata = new StringBuffer();
-    Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
 	response.sendRedirect("/lyskom/");
 	return;
@@ -210,7 +209,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.4 2004/04/23 01:16:56 pajp Exp $
+$Id: composer.jsp,v 1.5 2004/04/27 21:24:31 pajp Exp $
 </p>
 </body>
 </html>

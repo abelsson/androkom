@@ -83,7 +83,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.15 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.16 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -943,11 +943,11 @@
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = lyskom.localToGlobal(conferenceNumber,
 						   membership.getLastTextRead()+1, 255);
-	out.println("<p><table><tr><td>Nummer</td><td>författare</td><td>ärende</td></tr>");
+	out.println("<p><table><tr><td>Nummer</td><td>författare</td><td>ärende</td><td>tecken</td></tr>");
 	boolean pyjamas = true;
 	while (mapping.hasMoreElements()) {
 	    int textNo = ((Integer) mapping.nextElement()).intValue();
-	    Text text = lyskom.getText(textNo);
+	    Text text = lyskom.getText(textNo, false, true);
 	    String charset = text.getCharset();
 	    if ("us-ascii".equals(charset)) charset = "iso-8859-1";
 	    if (pyjamas) out.print("<tr bgcolor=\"#ccffff\">");
@@ -958,6 +958,8 @@
 	    out.print(lookupName(lyskom, text.getAuthor(), true));
 	    out.print("</td><td>");
 	    out.print(new String(text.getSubject(), charset));
+	    out.print("</td><td>");
+	    out.print(""+ text.getStat().getSize());
 	    out.println("</td></tr>");
 	    out.flush();
 	    pyjamas = !pyjamas;
@@ -1230,7 +1232,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.15 2004/04/27 00:38:18 pajp Exp $
+$Id: index.jsp,v 1.16 2004/04/27 21:24:31 pajp Exp $
 </p>
 </body>
 </html>

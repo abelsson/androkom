@@ -18,7 +18,7 @@
 	textsToView.add(new Integer(textNumber));
 	if (depth == 0) {
 	    buf.append("<br/><i>");
-            Text text = lyskom.getText(textNumber);
+            Text text = lyskom.getText(textNumber, false, true);
 	    String charset = text.getCharset();
 	    if ("us-ascii".equals(charset)) charset = "iso-8859-1";
 
