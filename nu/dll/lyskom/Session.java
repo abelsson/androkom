@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.49 2004/04/27 00:45:05 pajp Exp $
+ * @version $Id: Session.java,v 1.50 2004/04/27 21:26:00 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -127,6 +127,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public static boolean defaultEnabledBigText;
     public static int defaultBigTextLimit;
     public static int defaultBigTextHead;
+    public static int defaultLazyTextLimit;
 
     // set property values
     static {
@@ -136,6 +137,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	defaultBigTextLimit = Integer.getInteger("lyskom.big-text-limit", 20*1024).intValue();
 	defaultBigTextHead = Integer.getInteger("lyskom.big-text-head", 100).intValue();
 	defaultEnabledBigText = Boolean.getBoolean("lyskom.big-text");
+	defaultLazyTextLimit = Integer.getInteger("lyskom.lazy-text-limit", 80).intValue();
     }
 
 
@@ -229,6 +231,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     boolean enableBigText = defaultEnabledBigText;
     int bigTextLimit = defaultBigTextLimit;
     int bigTextHead = defaultBigTextHead;
+    int lazyTextLimit = defaultLazyTextLimit;
     
     Map serverInfo = null;
 
@@ -1045,6 +1048,21 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public synchronized Text getText(int textNo, boolean refreshCache)
     throws IOException, RpcFailure { 
+	return getText(textNo, refreshCache, false);
+    }
+
+    /**
+     * Returns a Text object corresponding to the specified global
+     * text number.
+     *
+     * @param textNo Global text number
+     * @param refreshCache If <tt>true</tt>, this call will never return a cached copy of a text.
+     * @param useLazyText If <tt>true</tt> the text contents exceeding the lazy-text-limit will not be read until getContents() is called
+     * @see nu.dll.lyskom.Session#getText(int)
+     *
+     */
+    public synchronized Text getText(int textNo, boolean refreshCache, boolean useLazyText)
+    throws IOException, RpcFailure { 
 	if (textNo == 0) throw new RuntimeException("attempt to retreive text zero");
 
 	Debug.println("** getText(): getting text " + textNo + "; refreshCache: " + refreshCache);
@@ -1066,18 +1084,26 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	//if (text.getStat() == null) return null; // no such text
 
 	boolean textIsBig = textStat.getSize() > bigTextLimit;
-	if (Debug.ENABLED) Debug.println(textNo + " is big: " + textIsBig);
+	int contentLimit = textStat.getSize();
+
 	if (enableBigText && textIsBig) {
 	    Debug.println("Creating a BigText");
 	    text = new BigText(this, textNo);
+	    contentLimit = bigTextHead;
 	} else {
-	    text = new Text(textNo);
+	    if (useLazyText) {
+		Debug.println("Creating a LazyText");
+		text = new LazyText(this, textNo);
+		contentLimit = textStat.getSize() > lazyTextLimit ? lazyTextLimit : textStat.getSize();
+	    } else {
+		text = new Text(textNo);
+	    }
 	}
 	text.setStat(textStat);
 	
 	RpcCall textReq = new RpcCall(count(), Rpc.C_get_text).
 	    add(new KomToken(textNo)).add("0").
-	    add(new KomToken(enableBigText && textIsBig ? bigTextHead : textStat.getSize()));
+	    add(new KomToken(contentLimit));
 
 	writeRpcCall(textReq);
 	
@@ -1097,12 +1123,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	// if this text is a comment or footnoted,
 	// remove the footnoted or commented texts from
 	// cache.
-	int[] texts = text.getCommented();
-	for (int i=0; i < texts.length; i++)
-	    purgeTextCache(texts[i]);
-	texts = text.getFootnoted();
-	for (int i=0; i < texts.length; i++)
-	    purgeTextCache(texts[i]);
+	// that was a really stupid idea, wasn't it?
+// 	int[] texts = text.getCommented();
+// 	for (int i=0; i < texts.length; i++)
+// 	    purgeTextCache(texts[i]);
+// 	texts = text.getFootnoted();
+// 	for (int i=0; i < texts.length; i++)
+// 	    purgeTextCache(texts[i]);
 
 	return text;
     }

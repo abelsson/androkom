@@ -280,7 +280,7 @@ public class TextStat implements java.io.Serializable {
     }
 
     private String createContentTypeString(String contentType, Properties p) {
-	return contentType + "; " + concatenateProperties(p);
+	return contentType + ";" + concatenateProperties(p);
     }
 
     private static String concatenateProperties(Properties p) {
