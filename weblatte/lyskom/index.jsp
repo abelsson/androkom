@@ -109,7 +109,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.25 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.26 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1254,7 +1254,7 @@ Du är inte inloggad.
     String selectedServer = request.getParameter("server");
     if (selectedServer == null) {
 	Cookie[] cookies = request.getCookies();
-	for (int i=0; i < cookies.length; i++) {
+	for (int i=0; cookies != null && i < cookies.length; i++) {
 	    if (cookies[i].getName().equals("kom-server")) {
 		selectedServer = cookies[i].getValue();
 	    }
@@ -1332,7 +1332,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.25 $
+$Revision: 1.26 $
 </p>
 </body>
 </html>
