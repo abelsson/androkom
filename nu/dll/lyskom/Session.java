@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.33 2004/03/28 16:31:42 pajp Exp $
+ * @version $Id: Session.java,v 1.34 2004/04/02 05:41:00 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1975,14 +1975,19 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public RpcCall doCreateText(Text t)
     throws IOException {
 	t.trimContents();
-	t.getStat().addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware,
-					   new Bitstring("00000000"), 0,
-					   new Hollerith(latteName)));
-	t.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
-					   new Bitstring("00000000"), 0,
-					   new Hollerith("x-kom/text")));
-	return doCreateText(t.getContents(), t.getStat().getMiscInfo(),
-			    t.getStat().getAuxItems());
+	TextStat s = t.getStat();
+	if (!s.containsAuxItem(AuxItem.tagCreatingSoftware)) {
+	    s.addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware,
+				     new Bitstring("00000000"), 0,
+				     new Hollerith(latteName)));
+	}
+	if (!s.containsAuxItem(AuxItem.tagContentType)) {
+	    s.addAuxItem(new AuxItem(AuxItem.tagContentType,
+				     new Bitstring("00000000"), 0,
+				     new Hollerith("text/x-kom-basic")));
+	}
+	return doCreateText(t.getContents(), s.getMiscInfo(),
+			    s.getAuxItems());
     }
 
 

@@ -141,12 +141,16 @@ public class Text extends Hollerith implements java.io.Serializable {
     public Hollerith[] getAuxData(int tag) {
 	AuxItem[] items = stat.getAuxItems();
 	int c=0;
+	List list = new LinkedList();
 	for (int i=0; i<items.length; i++)
-	    if (items[i].getTag() == tag) c++;
+	    if (items[i].getTag() == tag) {
+		list.add(items[i].getData());
+		c++;
+	    }
 
 	Hollerith[] result = new Hollerith[c];
-	for (int i=0; i<items.length; i++)
-	    if (items[i].getTag() == tag) result[i] = items[i].getData();
+	for (int i=0; i<list.size(); i++)
+	    result[i] = (Hollerith) list.get(i);
 
 	return result;
     }

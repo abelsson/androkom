@@ -202,6 +202,13 @@ public class TextStat implements java.io.Serializable {
 	}
     }
 
+    public boolean containsAuxItem(int tag) {
+	for (int i=0; i < auxItems.length; i++) {
+	    if (auxItems[i].getTag() == tag) return true;
+	}
+	return false;
+    }
+
     /**
      * Returns the number of AuxItem objects attached to this text.
      */
