@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.34 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.35 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -327,6 +327,7 @@
 	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
 <%
 	    }
+    if (Debug.ENABLED) Debug.println("unreadconfslist: " + lyskom.getUnreadConfsListCached());
     if (parameter(parameters, "dispatchToComposer") != null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
@@ -1233,6 +1234,7 @@
 				unreads + " " + (unreads > 1 ? "olästa" : "oläst"));
 		    out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
 			conf + "&listSubjects\">lista ärenden</a> ]");
+	            out.flush();
 		    if (manyMemberships && confsum >= 5) abort = true;
 		}
 		lyskom.changeWhatIAmDoing("Väntar");
@@ -1246,7 +1248,7 @@
 		if (manyMemberships && confIter.hasNext()) {
 %>
 		<p>Många möten: det finns troligen fler olästa i möten
-		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">se efter</a>).</p>
+		   som inte visas i denna lista (<a href="<%= basePath %>?listnews&skipTo=<%= lastconf %>">lista nästa 5</a>).</p>
 <%
 		}
 %>
@@ -1477,7 +1479,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.34 $
+$Revision: 1.35 $
 </p>
 </body>
 </html>

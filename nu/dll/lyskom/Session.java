@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.54 2004/05/11 02:51:09 pajp Exp $
+ * @version $Id: Session.java,v 1.55 2004/05/11 17:27:47 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -723,6 +723,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 
 	    if (txtNo == 0 || readTexts.exists(txtNo)) {
+		unreads.remove(new Integer(conference));
 		Debug.println("no unread texts found");
 		return -1;
 	    }
@@ -1876,6 +1877,15 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     void subConfMembership(int confNo) {
+	synchronized (unreads) {
+	    for (Iterator i = unreads.iterator(); i.hasNext();)
+		if (((Integer) i.next()).intValue() == confNo)
+		    i.remove();
+	    
+	}
+	
+	if (membership == null) return;
+
 	synchronized (membership) {
 	    Iterator i = membership.iterator();
 	    while (i.hasNext()) {
@@ -2741,9 +2751,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    // ...?
 		}
 		call = rpcHeap.getRpcCall(id, true);
-		if (call == null && listener.getException() != null) {
+		if (call == null && listener != null && listener.getException() != null) {
 		    throw new IOException("Exception in listener: " + 
 					  listener.getException());
+		} else if (listener == null) {
+		    throw new IOException("MessageListener has gone away!");
 		}
 	    }
 
