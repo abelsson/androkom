@@ -31,7 +31,7 @@ dist:
 
 komtest-dist: dist
 	$(JAR) -cfm t2.jar manifests/t2-manifest nu/dll/app/test/*.class
-	$(JAR) -cfm lattekom-t2.jar manifests/t2-manifest nu/dll/lyskom/*.class nu/dll/app/test/*.class
+	$(JAR) -c0fm lattekom-t2.jar manifests/t2-manifest nu/dll/lyskom/*.class nu/dll/app/test/*.class
 
 swingkom-dist:
 	$(JAR) -cfm lattekom-swing.jar manifests/swing-manifest nu/dll/lyskom/*.class nu/dll/app/swingkom/*.class
