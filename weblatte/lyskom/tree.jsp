@@ -70,6 +70,7 @@
   <body class="treeView">
 
 <%
+
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
 	response.sendRedirect("/lyskom/");
 	return;

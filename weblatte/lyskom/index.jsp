@@ -3,12 +3,35 @@
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
 <%
+    if (request.getQueryString() != null) {
+	Debug.println("query: " + request.getQueryString());
+    } else {
+	Debug.println("no query string");
+    }
     String server = request.getParameter("server") != null ? 
 	request.getParameter("server") : Servers.defaultServer.hostname;
     Boolean authenticated = (Boolean) session.getAttribute("LysKOMauthenticated");
     if (authenticated == null) authenticated = Boolean.FALSE;
     String error = null;
     boolean justLoggedIn = false;
+
+    if (lyskom != null && request.getParameter("suspend") != null) {
+	List suspendedSessions = (List) session.getAttribute("lyskom.suspended");
+	if (suspendedSessions == null) {
+	    suspendedSessions = new SuspendedSessionList();
+	    session.setAttribute("lyskom.suspended", suspendedSessions);
+	}
+	synchronized (suspendedSessions) {
+	    lyskomWrapper.setSuspended(true);
+	    suspendedSessions.add(lyskomWrapper);
+	}
+	session.removeAttribute("lyskom");
+	session.removeAttribute("LysKOMauthenticated");
+
+	response.sendRedirect(basePath);
+	return;
+    }
+
     try {
 	if (request.getParameter("lyskomNamn") != null ||
 	    (lyskom == null && session.getAttribute("lyskomPersonNo") != null)) {
@@ -23,7 +46,7 @@
 		lyskom.connect(server, 4894);
 		lyskom.setBigTextEnabled(true);
 		LinkedList messages = new LinkedList();
-		session.setAttribute("lyskom.messages", messages);
+		lyskom.setAttribute("weblatte.messages", messages);
 		lyskom.addAsynchMessageReceiver(new MessageReceiver(messages));
 	    }
 	    ConfInfo[] names = null;
@@ -77,12 +100,13 @@
 		if (!lyskom.login(person, password,
 				  request.getParameter("lyskomDold") != null, false)) {
 		    error = "Felaktigt lösenord!";
+		    lyskom.shutdown();
 		} else {
 		    session.setAttribute("lyskom", new SessionWrapper(lyskom));
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
-		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.21 $" + 
+		    lyskom.setLatteName("Weblatte");
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.22 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -115,6 +139,7 @@
 		    session.setAttribute("lyskom.justLoggedIn", Boolean.TRUE);
 		}
 	        session.removeAttribute("goto");
+		Debug.println("redirecting according to goto-url: " + gotoURL);
 	        response.sendRedirect(gotoURL);
 	        return;
             }
@@ -181,11 +206,29 @@
 	
 	out.println("</pre>");
     }
+    if (request.getParameter("invalidate") != null) {
+	session.invalidate();
+	authenticated = Boolean.FALSE;
+	%>
+	<h2>utloggad.</h2>
+	<p>
+	[ <a href="<%= basePath %>">logga in</a> ]
+	</p>
+	<%
+    }
     if (request.getParameter("logout") != null) {
 	if (lyskom != null) {
 	    lyskom.shutdown();
 	}
-	if (session != null) session.invalidate();
+	List suspendedSessions = (LinkedList) session.getAttribute("lyskom.suspended");
+	if (suspendedSessions != null && suspendedSessions.size() > 0) {
+	    session.removeAttribute("lyskom");    
+	    session.removeAttribute("LysKOMauthenticated");
+	    response.sendRedirect(basePath + "sessions.jsp?loggedOut");
+	    return;
+	} else {
+	    if (session != null) session.invalidate();
+	}
 	authenticated = Boolean.FALSE;
 	%>
 	<h2>utloggad.</h2>
@@ -228,6 +271,7 @@
 		out.print("Person: " + lyskom.getMyPerson().getNo());
 		out.print(", User-Area: " + lyskom.getMyPerson().getUserArea());
 		out.print(", Session: " + lyskom.whoAmI());
+		out.print(", Wrapper: " + Integer.toHexString(System.identityHashCode(lyskomWrapper)));
 		out.println("</pre>");
 	    }
 	    if (justLoggedIn || showWelcome) {
@@ -311,7 +355,7 @@
 	    	out.flush();
 	    	lyskom.endast(conf.getNo(), textcount);
 	    	out.println(" ok.</p>");
-	    	session.removeAttribute("mbInited");
+	    	lyskom.removeAttribute("mbInited");
 	    } else {
 	    	%><p class="statusError">Fel: mötet finns inte.</p><%
 	    }
@@ -343,7 +387,7 @@
 		lyskom.joinConference(confNo);
 		out.print("OK!</p>");
 		out.flush();
-		session.setAttribute("mbInited", Boolean.FALSE);
+		lyskom.setAttribute("mbInited", Boolean.FALSE);
 	    } else {
 		out.println("<p class=\"statusError\">Fel: hittar inget sådant möte</p>");
 	    }
@@ -374,7 +418,7 @@
 		lyskom.subMember(confNo, lyskom.getMyPerson().getNo());
 		out.println("OK!</p>");
 		out.flush();
-		session.setAttribute("mbInited", Boolean.FALSE);
+		lyskom.setAttribute("mbInited", Boolean.FALSE);
 	    } else {
 		out.println("<p class=\"statusError\">Fel: hittar inget sådant möte</p>");
 	    }
@@ -385,7 +429,7 @@
 	}
     }
 
-    Boolean mbInitedObj = (Boolean) session.getAttribute("mbInited");
+    Boolean mbInitedObj = (Boolean) lyskom.getAttribute("mbInited");
     if (mbInitedObj == null) mbInitedObj = Boolean.FALSE;
     if (!mbInitedObj.booleanValue()) {
 	out.print("<p>Läser in medlemskapsinformation...");
@@ -394,7 +438,7 @@
 	out.println("klart.</p>");
 	mbInitedObj = Boolean.TRUE;
     }    
-    session.setAttribute("mbInited", mbInitedObj);
+    lyskom.setAttribute("mbInited", mbInitedObj);
 
     if (request.getParameter("autoRefresh") == null) {
 	lyskom.doUserActive();
@@ -441,7 +485,7 @@
     }
 
 
-    messages = (List) session.getAttribute("lyskom.messages");
+    messages = (List) lyskom.getAttribute("weblatte.messages");
     if (messages != null && messages.size() > 0) {
 	synchronized (messages) {
 	    Iterator i = messages.iterator();
@@ -754,6 +798,7 @@
 	    <br/>
 	    [ <a href="<%=basePath%>?setPasswordForm">ändra lösenord</a> ]
 	    [ <a href="<%=basePath%>prefs.jsp">inställningar</a> ]
+	    [ <a href="<%=basePath%>?suspend">pausa denna session</a> ]
    	</p>
 <%
     }
@@ -1239,8 +1284,21 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
+<%
+    List suspendedSessions = null;
+    try {
+	suspendedSessions = (List) session.getAttribute("lyskom.suspended");
+    } catch (IllegalStateException ex1) {}
+    if (suspendedSessions != null && suspendedSessions.size() > 0) {
+	int count = suspendedSessions.size();
+	out.println("<a href=\"sessions.jsp\"><b>OBS! Du har " +
+		count + " " + 
+		(count > 1 ? "pausade LysKOM-sessioner" :
+		 "pausad LysKOM-Session") + "</b></a><br/>");
+    }
+%>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.21 $
+$Revision: 1.22 $
 </p>
 </body>
 </html>

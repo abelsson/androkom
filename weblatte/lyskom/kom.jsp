@@ -5,6 +5,7 @@
     String appPath = "/lyskom/"; // the weblatte root within the web application
 
     public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {
+        if (lyskom == null) return null;
 	KomPreferences prefs = (KomPreferences) lyskom.getAttribute("weblatte.preferences." + blockName);
 	if (prefs == null) {
 	    Hollerith data = null;
@@ -309,6 +310,7 @@
     }
 %>\
 <%
+
 String dir = getServletContext().getRealPath("/lyskom/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;
@@ -316,4 +318,8 @@ KomPreferences preferences = null;
 boolean debug = Debug.ENABLED || request.getParameter("debug") != null;
 SessionWrapper lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
 Session lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
+if (Debug.ENABLED) {
+    Debug.println("wrapper: " + Integer.toHexString(System.identityHashCode(lyskomWrapper)));
+    Debug.println("lyskom: " + Integer.toHexString(System.identityHashCode(lyskom)));
+}
 %>\

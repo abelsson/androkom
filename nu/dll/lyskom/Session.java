@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.50 2004/04/27 21:26:00 pajp Exp $
+ * @version $Id: Session.java,v 1.51 2004/05/09 22:16:09 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -283,6 +283,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	synchronized (textStatCache) {
 	    textStatCache.remove(textNo);
 	}
+    }
+
+    public void invokeLater(Runnable r) {
+	invoker.enqueue(r);
     }
 
     /**

@@ -18,6 +18,7 @@
 <div class="menuitems" url="<%= basePath %>bilder/">Vem är vem i SnoppKOM?</div>
 <%  } %>
 <hr>
+<div class="menuitems" url="<%= basePath %>?suspend" target="_top">Pausa</div>
 <div class="menuitems" url="<%= basePath %>?purgeOtherSessions">Logga ut mina andra sessioner</div>
 <div class="menuitems" url="<%= basePath %>?logout" target="_top"><b>Logga ut</b></div>
 </div>
