@@ -6,12 +6,12 @@
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
-    <title>WebLatte: ett fel har uppstått</title>
+    <title>Weblatte: ett fel har uppstått</title>
     <link rel="stylesheet" href="lattekom.css" />
   </head>
 
   <body>
-    <h1>WebLatte: ett fel har uppstått</h1>
+    <h1>Weblatte: ett fel har uppstått</h1>
     <p>
         Tyvärr har ett fel uppstått som WebLatte inte kunde hantera på egen hand.
         Du har blivit utloggad, och måste <a href="<%= basePath %>">logga in på nytt</a>

@@ -71,13 +71,25 @@ public class PreferencesMetaData {
 	    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
 
 	    String block = null;
-	    String row;
+	    String row = null;
 	    Properties object = null;
 	    boolean newBlock = false;
-	    while ((row = reader.readLine()) != null) {
-		if (row.trim().equals("")) continue;
-		if (row.startsWith("#")) continue;
-
+	    boolean lastRow = false;
+	    do {
+		lastRow = row == null && object != null;
+		if (row == null) row = "";
+		if (!lastRow && row.trim().equals("")) {
+		    row = reader.readLine();
+		    continue;
+		}
+		if (row.startsWith("#")) {
+		    row = reader.readLine();
+		    continue;
+		}
+		if (lastRow) {
+		    Debug.println("In last row, block=" + block + ", object: " + 
+				  object);
+		}
 		String newBlockName = null;
 		if (row.startsWith("[")) {
 		    // new block name, but don't assign it until we've
@@ -92,13 +104,13 @@ public class PreferencesMetaData {
 		}
 
 		String key = null, value = null;
-		if (!newBlock) {
+		if (!newBlock && !lastRow) {
 		    StringTokenizer st = new StringTokenizer(row, ":");
 		    key = st.nextToken().trim().toLowerCase();
 		    value = st.nextToken().trim();
 		}
 
-		if (newBlock || key.equals("name")) { // new object
+		if (lastRow || newBlock || key.equals("name")) { // new object
 		    // construct a PreferenceMetaData instance out of the information in the
 		    // object data we've recorded in the Preferences object
 		    if (object != null) {
@@ -106,13 +118,13 @@ public class PreferencesMetaData {
 			String type = object.getProperty("type").trim().toLowerCase();
 			
 			PreferenceMetaData pmd = null;
-			if (type.equals("boolean")) {
+			if (type.equals("boolean") || type.equals("integer")) {
 			    pmd = new PreferenceMetaData(name,
 							 object.getProperty("description"),
 							 block,
 							 type,
 							 object.getProperty("default"));
-			} else if (type.equals("list")) {
+			} else if (type.equals("single-select")) {
 			    // create-text-charset is a special case where
 			    // the list values are read from the charset
 			    // available on the system, but a "values" key
@@ -165,10 +177,11 @@ public class PreferencesMetaData {
 
 		if (object != null && key != null) {
 		    object.setProperty(key, value);
-		} else if (!newBlock) {
+		} else if (!newBlock && !lastRow) {
 		    throw new IOException("A \"name\" property must appear first in every object.");
 		}
-	    }
+		row = reader.readLine();
+	    } while (!lastRow);
 
 	} catch (Exception ex1) {
 	    throw new RuntimeException("Unable to read meta-data properties.", ex1);

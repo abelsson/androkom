@@ -25,6 +25,19 @@ public class KomPreferences {
 	return map.get(key).equals("1");
     }
 
+    public int getInt(String key) {
+	try {
+	    if (!map.containsKey(key))
+		return Integer.parseInt(PreferencesMetaData.getInstance().getDefault(blockName, key));
+
+	    return Integer.parseInt(map.get(key).getContentString());
+	} catch (NumberFormatException ex1) {
+	    throw new RuntimeException("Unable to parse key \"" + key +
+				       "\" to integer (" +
+				       ex1.getMessage() + ")");
+	}
+    }
+
     public String getString(String key) {
 	if (!map.containsKey(key)) {
 	    return PreferencesMetaData.getInstance().getDefault(blockName, key);
