@@ -1,54 +1,182 @@
 package nu.dll.app.weblatte;
 
+import java.util.Collections;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Map;
-import java.util.HashMap;
-import java.util.Iterator;
-import java.util.Collections;
+import java.util.Properties;
+import java.util.StringTokenizer;
 
+import java.nio.charset.Charset;
+
+import java.io.InputStreamReader;
+import java.io.InputStream;
+import java.io.BufferedReader;
+import java.io.IOException;
+import java.io.File;
+import java.io.FileInputStream;
+
+import nu.dll.lyskom.Debug;
+
+/**
+ * Singleton class handling all meta-data regarding User-Area user configuration.
+ *
+ * Reads meta data information from ~/.weblatte.preferences.ini or using the
+ * class loader resource nu/dll/app/weblatte/preferences.ini.
+ *
+ * The data is accessible directly though the instance variable collections
+ * "list", "blocks" and "blockKeys", which are immutable, so it is always
+ * safe to iterate over them without synchronization.
+ * 
+ * Convenience methods getDefault() and containsKey() are also provided.
+ */
 public class PreferencesMetaData {
-    public static List list = new LinkedList();
-    public static Map blocks = new HashMap();
-    public static Map blockKeys = new HashMap();
-    static {
-	list.add(new PreferenceMetaData("created-texts-are-read",
-					"Markera skapade texter som lästa",
-					"common", "boolean", "1"));
-	list.add(new PreferenceMetaData("dashed-lines",
-					"Visa streck kring inläggskroppen",
-					"common", "boolean", "1"));
+    public List list = new LinkedList();
+    public Map blocks = new HashMap();
+    public Map blockKeys = new HashMap();
 
+    private static PreferencesMetaData instance = new PreferencesMetaData();
 
-	list.add(new PreferenceMetaData("list-news-on-login",
-					"Lista nyheter vid inloggning",
-					"weblatte", "boolean", "1"));
-	list.add(new PreferenceMetaData("hide-standard-boxes",
-					"Dölj standardboxarna för endast, läsa inlägg och sända meddelande",
-					"weblatte", "boolean", "0"));
-	list.add(new PreferenceMetaData("show-plain-old-menu",
-					"Visa textmenyer",
-					"weblatte", "boolean", "0"));
-	list.add(new PreferenceMetaData("always-show-welcome",
-					"Visa alltid välkomsttext",
-					"weblatte", "boolean", "1"));
-	list.add(new PreferenceMetaData("auto-refresh-news",
-					"Uppdatera nyhetslista automatiskt",
-					"weblatte", "boolean", "1"));
-	list.add(new PreferenceMetaData("start-in-frames-mode",
-					"Starta med ramvy",
-					"weblatte", "boolean", "0"));
-	list.add(new PreferenceMetaData("my-name-in-bold",
-					"Visa mitt eget namn i fetstil",
-					"weblatte", "boolean", "0"));
-	list.add(new PreferenceMetaData("create-text-charset",
-					"Teckenkodning att använda vid skapande av texter",
-					"weblatte", "list", "iso-8859-1",
-					new String[] { "iso-8859-1", "utf-8" }));
-	list.add(new PreferenceMetaData("chat-hide-messages-from-me",
-					"Dölj egna meddelanden i chatläge",
-					"weblatte", "boolean", "0"));
+    private PreferencesMetaData() {
 
+	Map charsets = Charset.availableCharsets();
+	String[] charsetNames = new String[charsets.size()];
+	Iterator charsetIterator = charsets.keySet().iterator();
+	for (int i=0; i < charsets.size(); i++) {
+	    charsetNames[i] = (String) charsetIterator.next();
+	}
+
+	try {
+	    // first check if there's a file ~/.weblatte.preferences.ini
+	    // and if it doesn't exist, instead use the default, loaded
+	    // as a resource stream.
+	    File prefsIniFile = new File(new File(System.getProperty("user.home")),
+						   ".weblatte.preferences.ini");
+	    InputStream is = null;
+	    if (prefsIniFile.exists()) {
+		Debug.println("Reading preferences meta-data from " +
+			      prefsIniFile.getAbsolutePath());
+		is = new FileInputStream(prefsIniFile);
+	    } else {
+		Debug.println("Reading preferences meta-data as a class " +
+			      "loader resource");
+		is = getClass().getClassLoader().
+		    getResourceAsStream("nu/dll/app/weblatte/preferences.ini");
+		if (is == null) {
+		    throw new RuntimeException("No preferences meta-data available.");
+		}
+	    }
+	    BufferedReader reader = new BufferedReader(new InputStreamReader(is, "ISO-8859-1"));
+
+	    String block = null;
+	    String row;
+	    Properties object = null;
+	    boolean newBlock = false;
+	    while ((row = reader.readLine()) != null) {
+		if (row.trim().equals("")) continue;
+		if (row.startsWith("#")) continue;
+
+		String newBlockName = null;
+		if (row.startsWith("[")) {
+		    // new block name, but don't assign it until we've
+		    // seen if we have just finished reading an object
+		    newBlockName = row.replaceAll("[\\[\\]]", "");
+		    newBlock = true;
+		} else {
+		    newBlock = false;
+		}
+		if (!newBlock && block == null) {
+		    throw new IOException("Meta-data file must start with a block identifier (ie \"[common]\")");
+		}
+
+		String key = null, value = null;
+		if (!newBlock) {
+		    StringTokenizer st = new StringTokenizer(row, ":");
+		    key = st.nextToken().trim().toLowerCase();
+		    value = st.nextToken().trim();
+		}
+
+		if (newBlock || key.equals("name")) { // new object
+		    // construct a PreferenceMetaData instance out of the information in the
+		    // object data we've recorded in the Preferences object
+		    if (object != null) {
+			String name = object.getProperty("name");
+			String type = object.getProperty("type").trim().toLowerCase();
+			
+			PreferenceMetaData pmd = null;
+			if (type.equals("boolean")) {
+			    pmd = new PreferenceMetaData(name,
+							 object.getProperty("description"),
+							 block,
+							 type,
+							 object.getProperty("default"));
+			} else if (type.equals("list")) {
+			    // create-text-charset is a special case where
+			    // the list values are read from the charset
+			    // available on the system, but a "values" key
+			    // may override that.
+			    if (name.equals("create-text-charset") && !object.containsKey("values")) {
+				pmd = new PreferenceMetaData(name, 
+							     object.getProperty("description"),
+							     block,
+							     type,
+							     object.getProperty("default"),
+							     charsetNames);
+			    } else {
+				// parse the "values" key, which is a semicolon separated list
+				// of possible values of the preference
+				StringTokenizer valuesSt =
+				    new StringTokenizer(object.getProperty("values"),
+							";");
+				List foo = new LinkedList();
+				while (valuesSt.hasMoreTokens()) {
+				    foo.add(valuesSt.nextToken().trim());
+				}
+				String[] valuesArr = new String[foo.size()];
+				Iterator fooIter = foo.iterator();
+				for (int i=0; i < valuesArr.length; i++) {
+				    valuesArr[i] = (String) fooIter.next();
+				}
+				pmd = new PreferenceMetaData(name,
+							     object.getProperty("description"),
+							     block,
+							     type,
+							     object.getProperty("default"),
+							     valuesArr);
+			    }
+			} else {
+			    throw new IOException("Unknown data type: " + type);
+			}
+
+			Debug.println("Added \"" + name + "\" in block \"" + block + "\".");
+			list.add(pmd);
+
+		    }
+		    object = new Properties();
+		}
+
+		if (newBlock) {
+		    Debug.println("New block: " + newBlockName);
+		    block = newBlockName;
+		    object = null;
+		}
+
+		if (object != null && key != null) {
+		    object.setProperty(key, value);
+		} else if (!newBlock) {
+		    throw new IOException("A \"name\" property must appear first in every object.");
+		}
+	    }
+
+	} catch (Exception ex1) {
+	    throw new RuntimeException("Unable to read meta-data properties.", ex1);
+	}
+
+	// iterate through all the PMD's and create appropriate maps
+	// in order to speed up later retreival of the objects based
+	// on block and key name.
 	for (Iterator i = list.iterator(); i.hasNext();) {
 	    PreferenceMetaData pmd = (PreferenceMetaData) i.next();
 	    List blockList = (List) blocks.get(pmd.block);
@@ -64,7 +192,11 @@ public class PreferencesMetaData {
 	blocks = Collections.unmodifiableMap(blocks);
     }
 
-    public static String getDefault(String blockName, String key) {
+    public static PreferencesMetaData getInstance() {
+	return instance;
+    }
+
+    public String getDefault(String blockName, String key) {
 	Map block = (Map) blockKeys.get(blockName);
 	if (block == null)
 	    throw new IllegalArgumentException("Bad block \"" + blockName + "\"");
@@ -76,7 +208,7 @@ public class PreferencesMetaData {
 	return pmd.defaultValue;
     }
 
-    public static boolean containsKey(String blockName, String key) {
+    public boolean containsKey(String blockName, String key) {
 	Map block = (Map) blockKeys.get(blockName);
 	if (block == null)
 	    throw new IllegalArgumentException("Bad block \"" + blockName + "\"");

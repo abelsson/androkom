@@ -2,6 +2,13 @@ package nu.dll.app.weblatte;
 
 import nu.dll.lyskom.*;
 
+
+/**
+ * Provides an interface to a HollerithMap keeping configuration data.
+ *
+ * Uses PreferencesMetaData to provide default values where no data
+ * is available in the wrapped HollerithMap.
+ */
 public class KomPreferences {
     HollerithMap map;
     String blockName;
@@ -12,7 +19,7 @@ public class KomPreferences {
 
     public boolean getBoolean(String key) {
 	if (!map.containsKey(key)) {
-	    String defaultValue = PreferencesMetaData.getDefault(blockName, key);
+	    String defaultValue = PreferencesMetaData.getInstance().getDefault(blockName, key);
 	    return defaultValue.equals("1");
 	}
 	return map.get(key).equals("1");
@@ -20,7 +27,7 @@ public class KomPreferences {
 
     public String getString(String key) {
 	if (!map.containsKey(key)) {
-	    return PreferencesMetaData.getDefault(blockName, key);
+	    return PreferencesMetaData.getInstance().getDefault(blockName, key);
 	}
 	return map.get(key).getContentString();
     }

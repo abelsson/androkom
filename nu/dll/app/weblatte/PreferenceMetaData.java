@@ -1,5 +1,9 @@
 package nu.dll.app.weblatte;
 
+/**
+ * Represents the meta-data for a specific configuration item.
+ *
+ */
 public class PreferenceMetaData {
     public String key, description, block, type, defaultValue;
     public String[] alternatives = null;
