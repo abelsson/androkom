@@ -1501,7 +1501,7 @@
 	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
 
 	    if (listNews) {
-		if (preferences.getBoolean("auto-refresh-news") &&
+		if (!minimalistic && preferences.getBoolean("auto-refresh-news") &&
 		    (request.getHeader("User-Agent").indexOf("MSIE") >= 0 ||
 	    	     request.getHeader("User-Agent").indexOf("Gecko") >= 0)) {
 %>
@@ -1858,7 +1858,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.66 $
+$Revision: 1.67 $
 </p>
 </body>
 </html>
