@@ -28,6 +28,10 @@ public class RpcFailure extends RuntimeException {
     public int getErrorStatus() {
 	return errorStatus;
     }
+
+    public String getMessage() {
+	return "RPC error " + errorCode + ", status " + errorStatus;
+    }
     
 
 }

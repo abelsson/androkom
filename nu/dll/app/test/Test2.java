@@ -533,7 +533,9 @@ public class Test2 implements AsynchMessageReceiver {
 	    } catch (NoSuchElementException ex1) {
 		if (!crtReadLine("Vill du skicka ett alarmmeddelande? (j/N) ").equals("j")) return 1;
 	    }
-
+	    if (confNo != 0) {
+		System.out.println("Skicka meddelande till " + confNoToName(confNo));
+	    }
 	    String message = crtReadLine("Text att skicka> ");
 	    try {
 		foo.sendMessage(confNo, message);
@@ -557,6 +559,7 @@ public class Test2 implements AsynchMessageReceiver {
 	    System.out.println("-- gå till möte: " + confNoToName(confNo));
 	    try {
 		foo.changeConference(confNo);
+		return 0;
 	    } catch (RpcFailure failed) {
 		System.out.print("-- mötesbytet misslyckades: ");
 		switch (failed.getError()) {

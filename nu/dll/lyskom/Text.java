@@ -136,7 +136,7 @@ public class Text extends Hollerith implements java.io.Serializable {
 	    }
 	}
 	int[] ccs = getCcRecipients();
-	for (int i=0; i < rcpts.length; i++) {
+	for (int i=0; i < rcpts.length && locals.hasMoreElements(); i++) {
            int local = ((Integer) locals.nextElement()).intValue();
 	   if (ccs[i] == confNo) {
                 return local;
@@ -148,8 +148,9 @@ public class Text extends Hollerith implements java.io.Serializable {
 	while(locals.hasMoreElements()) {
 	    sb.append("<" + (Integer) locals.nextElement() + ">");
 	}
-	throw(new RuntimeException("No local number found for rcpt " + confNo + " in text " + getNo() +
-				   ", " + sb.toString()));
+	return 0;
+	//throw(new RuntimeException("No local number found for rcpt " + confNo + " in text " + getNo() +
+	//", " + sb.toString()));
 
     }
 
