@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.77 2004/06/10 01:06:31 pajp Exp $
+ * @version $Id: Session.java,v 1.78 2004/06/10 01:50:51 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -653,12 +653,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void updateUnreads()
     throws IOException {
-	updateUnreads(null, false);
+	updateUnreads(null, false, 0);
     }
 
-    public void updateUnreads(boolean getReadTexts)
+    public void updateUnreads(boolean getReadTexts, int minPrio)
     throws IOException {
-	updateUnreads(null, getReadTexts);
+	updateUnreads(null, getReadTexts, minPrio);
     }
 
     /**
@@ -670,7 +670,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * getUnreadConfsListCached(). If null, getUnreadConfsList()
      * will be called to retrieve that data instead.
      */
-    public void updateUnreads(List _unreads, boolean getReadTexts)
+    public void updateUnreads(List _unreads, boolean getReadTexts, int minPrio)
     throws IOException {
 	if (membership == null) getMyMembershipList(getReadTexts);
 	int persNo = myPerson.getNo();
@@ -718,14 +718,20 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	// fresh data about all the conferences we are interested in.
 	// theoretically, assuming the caches aren't purged, the
 	// remaining code should never result in another server call.
-	for (int i=0; i < unreads.size(); i++) {
-	    int conf = ((Integer) unreads.get(i)).intValue();
-	    Membership m = queryReadTexts(persNo, conf);
-	    int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.getLastTextRead();
-	    possibleUnreads -= m.getReadTexts().length;
-
-	    if (possibleUnreads > 0 ) {
-		unreadMembership.add(m);
+	synchronized (unreads) {
+	    unreads.clear();
+	    for (int i=0; i < unreads.size(); i++) {
+		int conf = ((Integer) unreads.get(i)).intValue();
+		Membership m = queryReadTexts(persNo, conf);
+		if (m.getPriority() < minPrio) continue;
+		
+		int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.getLastTextRead();
+		possibleUnreads -= m.getReadTexts().length;
+		
+		if (possibleUnreads > 0 ) {
+		    unreads.add(new Integer(conf));
+		    unreadMembership.add(m);
+		}
 	    }
 	}
     }
