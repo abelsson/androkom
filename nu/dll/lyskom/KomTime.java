@@ -19,6 +19,11 @@ public class KomTime implements Serializable {
 	return "["+(year+1900)+"-"+(month+1)+"-"+mday+", "+hours+":"+minutes+"]";
     }
 
+    public boolean equals(Object o) {
+	if (!(o instanceof KomTime)) return false;
+	return toString().equals(o.toString());
+    }
+
     public KomTime(int sec, int min, int hours, int mday, int month,
 		    int year, int weekday, int yearday, int isdst) {
 	this.seconds = sec;
@@ -30,6 +35,19 @@ public class KomTime implements Serializable {
 	this.weekday = weekday;
 	this.yearday = yearday;
 	this.isdst = isdst;
+    }
+
+    public KomTime() {
+	Calendar cal = new GregorianCalendar();
+	this.seconds = cal.get(Calendar.SECOND);
+	this.minutes = cal.get(Calendar.MINUTE);
+	this.hours   = cal.get(Calendar.HOUR_OF_DAY);
+	this.mday    = cal.get(Calendar.DAY_OF_MONTH);
+	this.month   = cal.get(Calendar.MONTH);
+	this.year    = cal.get(Calendar.YEAR)-1900;
+	this.weekday = cal.get(Calendar.DAY_OF_WEEK);
+	this.yearday = cal.get(Calendar.DAY_OF_YEAR);
+	this.isdst   = cal.get(Calendar.DST_OFFSET); // protocol violation if > 1 and < 0, I think	    
     }
 
     public Date getTime() {

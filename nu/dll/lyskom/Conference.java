@@ -19,9 +19,12 @@ public class Conference {
     private int superConf;
     private int msgOfDay;
 
+    int keepCommented;
+
     private int noOfMembers;
     private int firstLocalNo; // oldest existing text
     private int noOfTexts;
+
 
     final static int DEBUG = 2;
     
@@ -42,6 +45,14 @@ public class Conference {
 	return no;
     }
 
+    public AuxItem[] getAuxItems() {
+	return auxItems;
+    }
+
+    public int getPresentation() {
+	return presentation;
+    }
+
     public void setFrom(KomToken[] tokens) {
 	int c = 0;
 	name = tokens[c++].getContents();
@@ -57,15 +68,21 @@ public class Conference {
 	superConf = tokens[c++].toInteger();
 	msgOfDay = tokens[c++].toInteger();
 	nice = tokens[c++].toInteger();
+	keepCommented = tokens[c++].toInteger();
 	noOfMembers = tokens[c++].toInteger();
 	firstLocalNo = tokens[c++].toInteger();
 	noOfTexts = tokens[c++].toInteger();
 	expire = tokens[c++].toInteger(); // expire : Garb-Nice;
-
+	Debug.println("expire: " + expire);
 	int auxItemArrayLength = tokens[c++].toInteger();
+	Debug.println("aux-item list length: " + auxItemArrayLength);
 	auxItems = new AuxItem[auxItemArrayLength];
+	if (auxItemArrayLength == 0) return;
+	
+	KomToken auxObj = tokens[c++];
+	Debug.println("next object is: " + (auxObj != null ? new String(auxObj.getContents()) : "null"));
 	KomToken[] auxItemTokens = 
-	    ((KomTokenArray) tokens[c++]).getTokens();
+	    ((KomTokenArray) auxObj).getTokens();
 
 	int acount = 0, j=0;
 	while (acount < auxItemTokens.length) {

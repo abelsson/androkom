@@ -22,6 +22,7 @@ public class ReadTextsMap {
 	} else {
 	    lastKey = lastKey.nextKey = new Key(no, lastKey);
 	}
+	Debug.println("ReadTextsMap: added " + lastKey);
 	keys++;
     }
 
@@ -36,8 +37,14 @@ public class ReadTextsMap {
 
     public boolean exists(int no) {
 	Key k = firstKey;
-	while (k != null && k.value != no) k = k.nextKey;
-	if (k != null) return true;
+	while (k != null && k.value != no) {
+	    k = k.nextKey;
+	}
+	if (k != null && k.value == no) {
+	    Debug.println("ReadTextsMap.exists(): found " + k + " in list");
+	    return true;
+	}
+	Debug.println("ReadTextsMap.exists(): " + no + " not found in list");
 	return false;
     }
 
@@ -66,6 +73,11 @@ public class ReadTextsMap {
 	public Key(int n, Key prev) {
 	    value = n;
 	    prevKey = prev;
+	}
+	public String toString() {
+	    
+	    return "[ReadTextsMap.Key; value=" + value + ", prev=" + (prevKey != null ? ""+prevKey.value : "null")
+		+ ", next=" + (nextKey != null ? ""+nextKey.value : "null") + "]";
 	}
     }
 }

@@ -327,7 +327,8 @@ public abstract class Rpc {
     public final static int C_set_presentation = 16;
 
     // C_get_conf_stat_old = 13
-    
+    public final static int C_get_marks = 23;
+
     public final static int C_get_text = 25;
 
     public final static int C_mark_as_read = 27;
@@ -351,6 +352,8 @@ public abstract class Rpc {
 
     public final static int C_get_client_name = 70;
     public final static int C_get_client_version = 71;
+    public final static int C_mark_text = 72;
+    public final static int C_unmark_text = 73;
 
     public final static int C_lookup_z_name = 76;
     public final static int C_set_last_read = 77;
@@ -364,6 +367,8 @@ public abstract class Rpc {
 
     public final static int C_get_text_stat = 90;
     public final static int C_get_conf_stat = 91;
+    public final static int C_modify_text_info = 92;
+    public final static int C_modify_conf_info = 93;
 
     public final static int C_query_read_texts = 98;
     public final static int C_get_membership = 99;

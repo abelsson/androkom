@@ -8,6 +8,8 @@ package nu.dll.lyskom;
 //import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.util.List;
+import java.util.LinkedList;
 import java.io.Serializable;
 
 /** NOTE: as of now, only Integer and KomToken objects are handled
@@ -18,7 +20,7 @@ import java.io.Serializable;
  * todo: move the selection stuff in TextStat to a createFrom() method
  *       here. (or constructor)
  */
-public class Selection implements Serializable {
+public class Selection implements Serializable, Tokenizable {
     boolean[] keys; // since a selection item can be empty
     Vector[] values;
 
@@ -40,6 +42,10 @@ public class Selection implements Serializable {
 	values[key].addElement(o);
 	return this;
     }
+    
+    public boolean contains(int key) {
+	return keys[key];
+    }
 
     public Enumeration get(int key)
     throws NoSuchKeyException {
@@ -47,6 +53,24 @@ public class Selection implements Serializable {
 	    throw(new NoSuchKeyException());
 
 	return values[key].elements();
+    }
+
+    public boolean remove(int key, Object value) {
+	if (keys[key]) {
+	    return values[key].remove(value);
+	} else {
+	    return false;
+	}
+    }
+
+    public boolean clear(int key) {
+	if (keys[key]) {
+	    keys[key] = false;
+	    values[key] = new Vector();
+	    return true;
+	} else {
+	    return false;
+	}
     }
 
     public int[] getKeys() {

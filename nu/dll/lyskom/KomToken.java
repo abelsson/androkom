@@ -7,6 +7,7 @@
 
 package nu.dll.lyskom;
 import java.io.Serializable;
+import java.util.Arrays;
 
 public class KomToken implements Serializable {
     public final static int PRIMITIVE = 0;
@@ -25,6 +26,11 @@ public class KomToken implements Serializable {
     // child class constructors. I think.
     public KomToken() {
 	type = COMPL;
+    }
+
+    public boolean equals(Object o) {
+	if (!(o instanceof KomToken)) return false;
+	return Arrays.equals(contents, ((KomToken) o).getContents());
     }
 
     public boolean isEol() {
@@ -46,7 +52,9 @@ public class KomToken implements Serializable {
 	contents = s.getBytes();
     }
     
-    // alias for toInt(). should actually return an Integer object
+    /**
+     * @deprecated use intValue() to get an int, this method will be changed to return Integer
+     */
     public int toInteger() {
 	return toInt();
     }

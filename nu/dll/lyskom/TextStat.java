@@ -6,6 +6,9 @@
 package nu.dll.lyskom;
 import java.util.Enumeration;
 import java.util.Date;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
 
 public class TextStat implements java.io.Serializable {
 
@@ -44,7 +47,8 @@ public class TextStat implements java.io.Serializable {
 
     int no;
 
-    public Selection miscInfo;
+    //public Selection miscInfo;
+    public List miscInfo = new LinkedList();
 
     public TextStat() {
 	this(0);
@@ -53,7 +57,7 @@ public class TextStat implements java.io.Serializable {
     public TextStat(int no) {
 	super();
 	this.no = no;
-	miscInfo = new Selection(MISC_INFO_COUNT);
+	miscInfo = new LinkedList();
     }
 
     public void setNo(int no) {
@@ -95,45 +99,121 @@ public class TextStat implements java.io.Serializable {
 	return c;
     }
 
-    public Selection getMiscInfo() {
+    //    public Selection getMiscInfo() {
+    public List getMiscInfo() {
 	return miscInfo;
+    }
+
+    public void clearMiscInfoEntry(int key) {
+	Iterator i = miscInfo.iterator();
+	int count = 0;
+	while (i.hasNext()) {
+	    Selection selection = (Selection) i.next();
+	    if (selection.contains(key)) {
+		miscInfo.remove(selection);
+		Debug.println("removed misc-info selection " + selection);
+		count++;
+	    }
+	}
+	Debug.println("clearMiscInfoEntry: found " + count + " selections with flag " + key);
+    }
+
+    public void removeMiscInfoEntry(int key, int value) {
+	Iterator i = miscInfo.iterator();
+	int count = 0;
+	while (i.hasNext()) {
+	    Selection selection = (Selection) i.next();
+	    if (selection.contains(key)) {
+		selection.remove(key, new Integer(value));
+		Debug.println("removed key " + key + ", value " + value + " from misc-info " + selection);
+		count++;
+	    }
+	}
+	Debug.println("removeMiscInfoEntry(" + key + ", " + value + "): found " + count + " keys");
+    }
+
+    public void addMiscInfoEntry(int key, Integer value) {
+	addMiscInfoEntry(key, value.intValue());
+    }
+
+    public void addMiscInfoEntry(int key, int value) {
+	Iterator i = miscInfo.iterator();
+	/*
+	while (i.hasNext()) {
+	    Selection selection = (Selection) i.next();
+	    if (selection.contains(key)) {
+		selection.add(key, new Integer(value));
+		Debug.println("adding key " + key + ", value " + value + " to selection " + selection);
+		return;
+	    }
+	    }*/
+	Selection selection = new Selection(TextStat.MISC_INFO_COUNT);
+		Debug.println("adding key " + key + ", value " + value + " to new selection " + selection);
+	selection.add(key, new Integer(value));	
+	miscInfo.add(selection);
+    }
+
+    /**
+     * Returns an int[] for Misc-Info members with integer values
+     *
+     */
+    public int[] getStatInts(int no) {
+	List values = new LinkedList();
+	Iterator i = miscInfo.iterator();
+	while (i.hasNext()) {
+	    Selection selection = (Selection) i.next();
+	    if (selection.contains(no)) {
+		Enumeration e = selection.get(no);
+		while (e.hasMoreElements()) values.add(e.nextElement());
+	    }
+	}
+	int[] stats = new int[values.size()];
+	i = values.iterator();
+	for (int j=0; j < stats.length; j++) {
+	    stats[j] = ((Integer) i.next()).intValue();
+	}
+	return stats;
     }
 
     /* Gah. all createFrom() should be constructors, I guess. */
     public static TextStat createFrom(int no, RpcReply reply) {
 	KomToken[] params = reply.getParameters();
 	TextStat ts = new TextStat(no);
-	Selection miscInfo = ts.getMiscInfo();
+	List miscInfo = ts.getMiscInfo();
 
 	int pcount = 0;
-	ts.creationTime = new KomTime(params[pcount++].toInteger(), // 0
-				      params[pcount++].toInteger(), // 1
-				      params[pcount++].toInteger(), // 2
-				      params[pcount++].toInteger(), // 3
-				      params[pcount++].toInteger(), // 4
-				      params[pcount++].toInteger(), // 5
-				      params[pcount++].toInteger(), // 6
-				      params[pcount++].toInteger(), // 7
-				      params[pcount++].toInteger());
+	ts.creationTime = new KomTime(params[pcount++].intValue(), // 0
+				      params[pcount++].intValue(), // 1
+				      params[pcount++].intValue(), // 2
+				      params[pcount++].intValue(), // 3
+				      params[pcount++].intValue(), // 4
+				      params[pcount++].intValue(), // 5
+				      params[pcount++].intValue(), // 6
+				      params[pcount++].intValue(), // 7
+				      params[pcount++].intValue());
 
-	ts.author = params[pcount++].toInteger();
-	ts.lines  = params[pcount++].toInteger();
-	ts.chars  = params[pcount++].toInteger();
-	ts.marks  = params[pcount++].toInteger();
+	ts.author = params[pcount++].intValue();
+	ts.lines  = params[pcount++].intValue();
+	ts.chars  = params[pcount++].intValue();
+	ts.marks  = params[pcount++].intValue();
 
-	int arrayLength = params[pcount++].toInteger();
+	int arrayLength = params[pcount++].intValue();
 	KomToken[] miscInfoTokens =
 	    ((KomTokenArray) params[pcount++]).getTokens();
 
-	int auxItemArrayLength = params[pcount++].toInteger();
+	int auxItemArrayLength = params[pcount++].intValue();
+	Debug.println("TextStat.createFrom(): aux-item list length: " + auxItemArrayLength);
 	KomToken[] auxItemTokens =
 	    ((KomTokenArray) params[pcount++]).getTokens();
 
 	int mcount = 0;
 
 	// This should probably be in Selection.createFrom(RpcReply)
+	int lastMajorSelectionId = -1;
+	Selection selection = null;
 	for (int i=0;i<arrayLength;i++) {
-	    int selectionId = miscInfoTokens[mcount++].toInteger();
+	    int selectionId = miscInfoTokens[mcount++].intValue();
+
 
 	    switch (selectionId) {
 		/* items to be stored as Integer */
@@ -143,44 +223,41 @@ public class TextStat implements java.io.Serializable {
 	    case 3: // commented-in
 	    case 4: // footnote-to
 	    case 5: // footnote-in
+	    case 15: // bcc-recipient
+		lastMajorSelectionId = selectionId;
+		Debug.println("new misc-info selection group: " + selectionId);
+		selection = new Selection(MISC_INFO_COUNT);
+		miscInfo.add(selection);
+
 	    case 6: // loc-no                  ! Lokalt textnummer
 	    case 8: // sent-by
-		miscInfo.add(selectionId,
-			     (Object) new Integer(miscInfoTokens[mcount++].
-						  toInteger()));
+		int value = miscInfoTokens[mcount++].intValue();
+		Debug.println("adding key " + selectionId + ", value " + value + " to misc-info group " + lastMajorSelectionId);
+		selection.add(selectionId, new Integer(value));
+		//miscInfo.add(selectionId,
+		//     (Object) new Integer(miscInfoTokens[mcount++].
+		//			  toInteger()));
 		break;
 		
 		/* items to be stored as KomTime */
 	    case 7: // rec-time : Time
 	    case 9: // sent-at : Time
-		KomTime stm = new KomTime(miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger(),
-					  miscInfoTokens[mcount++].toInteger()
+		KomTime stm = new KomTime(miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue(),
+					  miscInfoTokens[mcount++].intValue()
 					  );
-		miscInfo.add(selectionId, (Object) stm);
+		selection.add(selectionId, (Object) stm);
 		break;
 	    default:
 		break;
 	    }
 	    
-	    if (false) {
-		    try {
-			Debug.print(", objects: ");
-			for (Enumeration e = miscInfo.get(selectionId);
-			     e.hasMoreElements();)
-			    Debug.print("<"+e.nextElement()+">");
-			if (DEBUG>0) Debug.println(", mcount: "+mcount);
-		    } catch (NoSuchKeyException ex) {
-			Debug.println("Not reached!");
-			System.exit(-10);
-		    }
-		}    
 	}
 
 	int acount = 0;

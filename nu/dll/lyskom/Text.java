@@ -9,6 +9,11 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
 import java.util.Date;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Iterator;
+import java.util.Map;
+import java.util.HashMap;
 
 public class Text extends Hollerith implements java.io.Serializable {
 
@@ -18,6 +23,7 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     int textNo = -1;
     TextStat stat = null;
+    Map localMap = new HashMap();
 
     public Text setCached(boolean b) {
 	cached = b; return this;
@@ -26,6 +32,10 @@ public class Text extends Hollerith implements java.io.Serializable {
     public boolean isCached(boolean n) { return cached; }
 
     /** constructors **/
+    public Text() {
+	setContents(new byte[] {});
+	stat = new TextStat();
+    }
     public Text(int no, byte[] contents) {
 	setContents(contents);
 	textNo = no;
@@ -94,47 +104,139 @@ public class Text extends Hollerith implements java.io.Serializable {
 	return result;
     }
 
+    public Text addRecipients(int[] no) {
+	for (int i=0; i < no.length; i++)
+	    addRecipient(no[i]);
+	return this;
+    }
+
     public Text addRecipient(int no) {
-	stat.getMiscInfo().add(TextStat.miscRecpt,
-			       (Object) new Integer(no));
+	addMiscInfoEntry(TextStat.miscRecpt, no);
 	return this;
     }
 
+    public void clearRecipients() {
+	clearMiscInfoEntry(TextStat.miscRecpt);
+    }
+
+    public void removeRecipient(int conf) {
+	removeMiscInfoEntry(TextStat.miscRecpt, conf);
+    }
+
+    public void removeCcRecipient(int conf) {
+	removeMiscInfoEntry(TextStat.miscCcRecpt, conf);
+    }
+
+    public Text addCcRecipients(int[] no) {
+	for (int i=0; i < no.length; i++) 
+	    addCcRecipient(no[i]);
+	return this;
+    }
     public Text addCcRecipient(int no) {
-	stat.getMiscInfo().add(TextStat.miscCcRecpt,
-			       (Object) new Integer(no));
+	addMiscInfoEntry(TextStat.miscCcRecpt, no);
 	return this;
-
     }
-    
+
+    public Object clone() {
+	Text t = new Text();
+	t.setContents(getContents());
+	t.addRecipients(getRecipients());
+	t.addCcRecipients(getCcRecipients());
+	return t;
+    }
+
+    /**
+     * @deprecated moved to TextStat class
+     */
+    public void clearMiscInfoEntry(int key) {
+	stat.clearMiscInfoEntry(key);
+    }
+
+    /**
+     * @deprecated moved to TextStat class
+     */
+    public void removeMiscInfoEntry(int key, int value) {
+	stat.removeMiscInfoEntry(key, value);
+    }
+
+    /**
+     * @deprecated moved to TextStat class
+     */   
+    public void addMiscInfoEntry(int key, int value) {
+	stat.addMiscInfoEntry(key, value);
+    }
     public Text addCommented(int no) {
-	stat.getMiscInfo().add(TextStat.miscCommTo,
-			       (Object) new Integer(no));
+	addMiscInfoEntry(TextStat.miscCommTo, no);
 	return this;
     }
 
     public Text addFootnoted(int no) {
-	stat.getMiscInfo().add(TextStat.miscFootnTo,
-			       (Object) new Integer(no));
+	addMiscInfoEntry(TextStat.miscFootnTo, no);
 	return this;
     }
 
     // more error handling (as everywhere)
     public int getLocal(int confNo)
     throws RuntimeException { 
-	int[] rcpts = getRecipients();
+	Integer locNo = (Integer) localMap.get(new Integer(confNo));
+	if (locNo != null) return locNo.intValue();
+
+	List miscInfo = stat.getMiscInfo();
+	Iterator i = miscInfo.iterator();
+	while (i.hasNext()) {
+	    Selection selection = (Selection) i.next();
+	    int[] keys = selection.getKeys();
+	    for (int j=0; j < keys.length; j++) {
+		if (keys[j] == TextStat.miscRecpt || keys[j] == TextStat.miscCcRecpt) {
+		    Enumeration e = selection.get(keys[j]);
+		    while (e.hasMoreElements()) {
+			Integer i2 = (Integer) e.nextElement();
+			if (i2.intValue() == confNo) {
+			    Enumeration e2 = selection.get(TextStat.miscLocNo);
+			    if (e2.hasMoreElements()) {
+				locNo = (Integer) e2.nextElement();
+				localMap.put(new Integer(confNo), locNo);
+				Debug.println("Text.getLocal(" + confNo + "): returning " + locNo);
+				return locNo.intValue();
+			    } else {
+				Debug.println("Text.getLocal(" + confNo + "): recipient found but no local");
+			    }
+			}
+		    }
+		}
+	    }
+	}
+	Debug.println("Text.getLocal(" + confNo + "): recipient not found");
+	return -1;
+
+	/*
+	int[] statKeys = stat.getMiscInfo().getKeys();
+	List recipients = new LinkedList();
+	for (int i=0; i < statKeys.length; i++) {
+	    if (statKeys[i] == TextStat.miscRecpt || statKeys[i] == TextStat.miscCcRecpt) {
+		Enumeration e = stat.getMiscInfo().get(statKeys[i]);
+		while (e.hasMoreElements()) {
+		    Integer r = (Integer) e.nextElement();
+		    Debug.println("adding recipient " + r + " pos " + recipients.size());
+		    recipients.add(r);
+		}
+	    }
+	}
+
 	Enumeration locals;
 	try {
 	    locals = stat.getMiscInfo().get(stat.miscLocNo);
 	} catch (NoSuchKeyException ex) {
 	    throw(new RuntimeException("No local numbers in misc-info"));
 	}
-	for (int i=0; i < rcpts.length; i++) {
+	for (int i=0; i < recipients.size(); i++) {
 	    int local = ((Integer) locals.nextElement()).intValue();
-	    if (rcpts[i] == confNo) {
+	    if (((Integer) recipients.get(i)).intValue() == confNo) {
 		return local;
 	    }
 	}
+	*/
+	/*
 	int[] ccs = getCcRecipients();
 	for (int i=0; i < rcpts.length && locals.hasMoreElements(); i++) {
            int local = ((Integer) locals.nextElement()).intValue();
@@ -142,13 +244,16 @@ public class Text extends Hollerith implements java.io.Serializable {
                 return local;
 	   }
 	}
-	    
+	*/	    
+	/*
 	StringBuffer sb = new StringBuffer("miscLocNo items: ");
 	locals = stat.getMiscInfo().get(stat.miscLocNo);
 	while(locals.hasMoreElements()) {
 	    sb.append("<" + (Integer) locals.nextElement() + ">");
 	}
+	Debug.println("text " + getNo() + " locals: " + sb.toString());
 	return 0;
+	*/
 	//throw(new RuntimeException("No local number found for rcpt " + confNo + " in text " + getNo() +
 	//", " + sb.toString()));
 
@@ -167,31 +272,52 @@ public class Text extends Hollerith implements java.io.Serializable {
     public byte[] getBody() {
 	int i=0; byte[] b = getContents();
 	while (i < b.length && b[i] != '\n') { i++; }
-	if (i >= b.length) i = 0;
-	byte[] r = new byte[stat.chars-i-1]; // -1 is \n
+	if (i >= b.length) return new byte[] {};
+	
+	byte[] r = new byte[b.length-i-1]; // -1 is \n
 	i++; // skip '\n'
-	for (int j=0;i<stat.chars;j++, i++) r[j] = b[i];
+	System.arraycopy(b, i, r, 0, r.length);
+
+	Debug.println("Text.getBody(): returning \"" + new String(r) + "\"");
 	return r;
+    }
+
+    public List getBodyList() {
+	byte[] body = getBody();
+	List bodyList = new LinkedList();
+	int i=0;
+	int lastLf = 0;
+	while (i < body.length) {
+	    if (body[i] == '\n') {
+		byte[] thisLine = new byte[i-lastLf];
+		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
+		bodyList.add(new String(thisLine));
+		lastLf = i+1;
+		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
+	    }
+	    i++;
+	}
+	if (lastLf == 0 && body.length > 0) {
+	    bodyList.add(new String(body));
+	    Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
+	} else if (lastLf < i) {
+	    byte[] thisLine = new byte[body.length-lastLf];
+	    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
+	    bodyList.add(new String(thisLine));
+	    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
+
+	}
+	Debug.println("Text.getBodyList(): returning " + bodyList.size() + " rows");
+	return bodyList;
     }
 
     /**
      * Returns an int[] for Misc-Info members with integer values
      *
-     * OBSOLETE: replaced by Selection.getIntArray()
-     */
+     * @deprecated moved to TextStat
+     */    
     public int[] getStatInts(int no) {
-	try {
-	    Vector v = stat.getMiscInfo().getVector(no);
-	    int[] stats = new int[v.size()];
-	    int i=0;
-	    for(Enumeration e = v.elements();
-		e.hasMoreElements(); i++)
-		stats[i]  = ((Integer) e.nextElement()).intValue();
-	    return stats;
-	} catch (NoSuchKeyException e) {
-	    int[] i= {};
-	    return i;
-	}
+	return stat.getStatInts(no);
     }
 
     public Date getCreationTime() {
@@ -251,3 +377,9 @@ public class Text extends Hollerith implements java.io.Serializable {
     }
     
 }
+
+
+
+
+
+

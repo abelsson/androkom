@@ -27,6 +27,10 @@ public class TextStatCache {
 	}
     }
 
+    public synchronized boolean remove(int textNo) {
+	return hash.remove(new Integer(textNo)) != null;
+    }
+
     public TextStat get(int textNo) {
 	TextStat t = (TextStat) hash.get(new Integer(textNo));
 	if (t != null) Debug.println("TextCache: returning "+textNo);

@@ -16,6 +16,10 @@ public class MembershipCache {
 	hash = new Hashtable();
     }
 
+    public boolean contains(int conf) {
+	return hash.contains(new Integer(conf));
+    }
+
     public Membership add(Membership p) {
 	if (p.getNo() == -1)
 	    return null; // throw(new MembershipNumberException("Membership has no number"));
@@ -28,6 +32,10 @@ public class MembershipCache {
 					      p.getNo()+" in cache");
 	}
 	return p;
+    }
+
+    public boolean remove(int membershipNo) {
+	return hash.remove(new Integer(membershipNo)) != null;
     }
 
     public Membership get(int membershipNo) {

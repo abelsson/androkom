@@ -8,15 +8,24 @@ package nu.dll.lyskom;
 
 
 /** Aux-Item, introduced in version 10 */
-public class AuxItem implements java.io.Serializable {
+public class AuxItem implements java.io.Serializable, Tokenizable {
     int no, tag, creator;
     KomTime createdAt;
     Bitstring flags;
     int inheritLimit;
     Hollerith data;
 
+    /** maybe this should be spec'd in a separate file,
+     * as in the aux-items.conf file with lyskomd?
+     * that way we can use the same patterns for validity
+     * matching.
+     */
     public final static int tagContentType  = 1;
-
+    public final static int tagFastReply    = 2;
+    public final static int tagCrossReference   = 3;
+    public final static int tagNoCommens        = 4;
+    public final static int tagPersonalComment  = 5;
+    public final static int tagFaqText          = 14;
     public final static int tagCreatingSoftware = 15;
 
     public final static int tagMxMimeMisc       = 10102;
@@ -77,6 +86,7 @@ public class AuxItem implements java.io.Serializable {
 	this.flags = flags;
 	this.inheritLimit = inheritLimit;
 	this.data = data;
+	this.createdAt = new KomTime();
     }
     public AuxItem(int no, int tag, int creator, KomTime createdAt,
 		   Bitstring flags, int inheritLimit, Hollerith data) {

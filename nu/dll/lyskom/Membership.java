@@ -22,6 +22,8 @@ public class Membership {
 
     final static int DEBUG = 1;
 
+    TextMapping textMap;
+
     public Membership() {
 	super();
     }
@@ -67,6 +69,23 @@ public class Membership {
     public void setLastTextRead(int i) {
         lastTextRead = i;
     }
+
+    public void setTextMapping(TextMapping tm) {
+	this.textMap = tm;
+    }
+
+    public TextMapping getTextMapping() {
+	if (textMap != null) textMap.first();
+	return textMap;
+    }
+
+    /*
+    public boolean equals(Object o) {
+	if (o instanceof Integer) return ((Integer) o).intValue() == conference;
+	if (!(o instanceof Membership)) return false;
+	return ((Membership) o).getNo() == conference;
+    }
+    */
 
     public int getLastTextRead() {
         return lastTextRead;   
@@ -114,15 +133,19 @@ public class Membership {
 		i += 2; // skip
 	    } else {
 		//i += 1;
-		Debug.println("Membership read-texts exp ARRAY got " + memberships[i].getClass().getName() + 
-			      " contents: " + new String(memberships[i].getContents()));
+		Debug.println("Membership read-texts exp ARRAY got " + memberships[i].getClass().getName());
 		readTextsTokens = ((KomTokenArray) memberships[i]).getTokens();
 		readTexts = new int[readTextsTokens.length];
-		for (int k=0;k<readTextsLength;k++) {
-		    Debug.println("Membership read-texts ARRAY index " + k + ": " + readTextsTokens[k].intValue());
-		    readTexts[k] = readTextsTokens[k].intValue();
+		if (readTextsTokens.length == 0) {
+		    Debug.println("Membership read-texts array is actually empty");
+		    i += 2;
+		} else {
+		    for (int k=0;k<readTextsTokens.length;k++) {
+			Debug.println("Membership read-texts ARRAY index " + k + ": " + readTextsTokens[k].intValue());
+			readTexts[k] = readTextsTokens[k].intValue();
+		    }
+		    i += 1;
 		}
-		i += 1;
 	    }
 	    
 

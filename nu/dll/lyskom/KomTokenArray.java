@@ -8,6 +8,7 @@ package nu.dll.lyskom;
 
 import java.io.*;
 import java.util.Enumeration;
+import java.util.List;
 
 public class KomTokenArray extends KomToken {
 
@@ -37,6 +38,24 @@ public class KomTokenArray extends KomToken {
     public KomTokenArray(int length, KomToken[] o) {
 	this.length = length;
 	objects = o;
+	contents = toNetwork();
+    }
+
+    public KomTokenArray(int length, Tokenizable[] o) {
+	this.length = length;
+	objects = new KomToken[o.length];
+	for (int i=0; i < o.length; i++) {
+	    objects[i] = o[i].toToken();
+	}
+	contents = toNetwork();
+    }
+
+    public KomTokenArray(int length, List tokenList) {
+	this.length = length;
+	objects = new KomToken[tokenList.size()];
+	for (int i=0; i < objects.length; i++) {
+	    objects[i] = ((Tokenizable) tokenList.get(i)).toToken();
+	}
 	contents = toNetwork();
     }
 

@@ -14,7 +14,7 @@ public class RpcFailure extends RuntimeException {
 	reply = r;
 	if (!r.getSuccess()) {
 	    errorCode = r.getParameters()[0].toInteger();
-	    errorStatus = r.getParameters()[0].toInteger();
+	    errorStatus = r.getParameters()[1].toInteger();
 	}
     }
 

@@ -28,16 +28,33 @@ import java.util.Enumeration;
                     )
 **/
 
+/**
+ * This class handles storage of global text numbers for one conference.
+ */
 public class TextMapping implements Enumeration {
     public final static int DEBUG = 4;
     Hashtable hash = new Hashtable();
     int enumc = 0;
     int[] list;
+
     public int localToGlobal(int n) {
 	Integer i = (Integer) hash.get((Object) new Integer(n));
 	if (i == null)
 	    return -1;
 	return i.intValue();
+    }
+
+    public int globalToLocal(int n) {
+	Debug.println("TextMapping.globalToLocal(" + n + ")");
+	Enumeration e = hash.keys();
+	while (e.hasMoreElements()) {
+	    Integer localNo = (Integer) e.nextElement();
+	    Integer globalNo = (Integer) hash.get(localNo);
+	    if (localNo.equals(globalNo))
+		return localNo.intValue();
+	}
+	Debug.println("TextMapping.globalToLocal(" + n + "): nothing found");
+	return -1;
     }
     /**
      * Move the "cursor" to the beginning of the list of pairs
@@ -56,9 +73,12 @@ public class TextMapping implements Enumeration {
      * Returns the next Global number
      */
     public Object nextElement() {
-	if (DEBUG > 3) 
-	    Debug.println("returning " + localToGlobal(list[enumc]) + "/" +
-			  list[enumc] + " - " + enumc);
+	if (enumc > list.length) {
+	    Debug.println("no such element, enum=" + enumc);
+	    return null;
+	}
+	Debug.println("returning " + localToGlobal(list[enumc]) + "/" +
+		      list[enumc] + " - " + enumc);
 	return list != null ? (Object) new Integer(localToGlobal(list[enumc++])) : null;
     }
     public int lastLocal() {
