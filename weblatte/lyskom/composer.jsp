@@ -448,7 +448,10 @@
     }
 
     if (conferenceNumber > 0) {
-	recipients.add(lookupName(lyskom, conferenceNumber));
+	String confName = lookupName(lyskom, conferenceNumber);
+	if (!recipients.contains(confName)) {
+	    recipients.add(confName);
+	}
     }
 
     recipients.add("");
@@ -600,7 +603,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.21 2004/06/28 23:04:09 pajp Exp $
+$Id: composer.jsp,v 1.22 2004/07/03 00:25:05 pajp Exp $
 </div>
 </body>
 </html>
