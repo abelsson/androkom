@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.50 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.51 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -821,7 +821,6 @@
 			    headers.addHeader("Content-Transfer-Encoding", "binary");
 			    headers.addHeader("Content-Type", partContentType.toString());
 			    byte[] contents = _contents.getBytes(charset);
-			    headers.addHeader("Content-Length", ""+contents.length);			   
 			    MimeMultipart alternative = new MimeMultipart("alternative");
 			    ContentType altContentType = new ContentType((String) partMap.get("alternative-content-type"));
 			    altContentType.getParameterList().set("charset", charset);
@@ -858,6 +857,7 @@
 	  		    headers.setHeader("Content-Transfer-Encoding", "base64");
 			    File file = new File((String) partMap.get("uploaded"));
 			    partContentType.getParameterList().set("name", (String) partMap.get("filename"));
+			    headers.setHeader("Content-Location", (String) partMap.get("filename"));
 			    ByteArrayOutputStream bos = new ByteArrayOutputStream();
 			    OutputStream os = new Base64.OutputStream(bos);
 			    InputStream is = new FileInputStream(file);
@@ -888,7 +888,6 @@
 				byte[] altContents = ((String) partMap.get("alternative-contents")).getBytes(charset);
 				InternetHeaders altHeaders = new InternetHeaders();
 				altHeaders.addHeader("Content-Type", altContentType.toString());
-				altHeaders.addHeader("Content-Length", ""+altContents.length);
 				altHeaders.addHeader("Content-Transfer-Encoding", "binary");
 
 				alternative.addBodyPart(new MimeBodyPart(altHeaders, altContents));
@@ -1769,7 +1768,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.50 $
+$Revision: 1.51 $
 </p>
 </body>
 </html>
