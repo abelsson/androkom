@@ -100,6 +100,10 @@ public class KomToken implements Serializable {
 	contents = (i+"").getBytes();
     }
 
+    public KomToken(boolean b) {
+	contents = new byte[] { b ? (byte) '1' : (byte) '0' };
+    }
+
     /**
      * Constructs a simple KomToken object containing the supplied bytes.
      */

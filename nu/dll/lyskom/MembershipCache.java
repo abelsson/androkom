@@ -9,7 +9,7 @@ import java.util.Hashtable;
 
 
 class MembershipCache {
-    final static int DEBUG = 0;
+    final static boolean DEBUG = Boolean.getBoolean("lattekom.membership-cache.debug");
     Hashtable hash;
     
     public MembershipCache() {
@@ -21,19 +21,19 @@ class MembershipCache {
     }
 
     public boolean contains(int conf) {
-	return hash.contains(new Integer(conf));
+	return hash.containsKey(new Integer(conf));
     }
 
     public Membership add(Membership p) {
 	if (p.getNo() == -1)
-	    return null; // throw(new MembershipNumberException("Membership has no number"));
+	    throw new IllegalArgumentException("Membership has no number");
 
-	if (DEBUG > 0) Debug.println("MembershipCache: adding "+p.getNo());
+	if (DEBUG) Debug.println("MembershipCache: adding "+p.getNo());
 
-	if (hash.put((Object) new Integer(p.getNo()), (Object) p)!=null) {
-	    if (DEBUG > 0) Debug.println("MembershipCache: " +
-					      "replacing Membership #" +
-					      p.getNo()+" in cache");
+	if (hash.put(new Integer(p.getNo()), p)!=null) {
+	    if (DEBUG) Debug.println("MembershipCache: " +
+				     "replacing Membership #" +
+				     p.getNo()+" in cache");
 	}
 	return p;
     }
@@ -45,7 +45,7 @@ class MembershipCache {
     public Membership get(int membershipNo) {
 	Membership p = (Membership) hash.get(new Integer(membershipNo));
 	if (p != null) {
-	    if (DEBUG > 0) {
+	    if (DEBUG) {
 		Debug.println("MembershipCache: returning "+membershipNo);
 	    }
 	} 

@@ -38,11 +38,20 @@ public class RpcCall implements Rpc {
     public int getOp() {
 	return number;
     }
+
+    protected void setId(int id) {
+	this.id = id;
+    }
+    protected void setOp(int number) {
+	this.number = number;
+    }
+
     public void setReply(RpcReply r) {
 	reply = r;
-	if (!r.getSuccess()) {
-	    Debug.println("RPC call #" + id + " failed with error #" +
-			       r.parameters[0].toInteger());
+	if (r != null && !r.getSuccess()) {
+	    Debug.println("RPC call #" + id + " (" +
+			  number + ") failed with error #" +
+			  r.parameters[0].intValue());
 	}
     }
     public RpcReply getReply() {
@@ -55,6 +64,18 @@ public class RpcCall implements Rpc {
 
     public Enumeration getParameterElements() {
 	return parameters.elements();
+    }
+
+    public void removeParameter(int n) {
+	parameters.remove(n);
+    }
+
+    public void removeLast() {
+	parameters.removeElementAt(parameters.size()-1);
+    }
+
+    public void setParameter(int n, KomToken t) {
+	parameters.set(n, t);
     }
 
     public void addAux(Object o) {

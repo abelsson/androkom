@@ -10,7 +10,7 @@ import java.util.Vector;
 import java.util.Enumeration;
 
 class ConferenceCache {
-    static int DEBUG = 1;
+    final static boolean DEBUG = Boolean.getBoolean("lattekom.caches.debug");
     Hashtable confHash, uConfHash;
     Vector listeners;
 
@@ -64,13 +64,13 @@ class ConferenceCache {
 
     public Conference getConference(int conferenceNo) {
 	Conference t = (Conference) confHash.get(new Integer(conferenceNo));
-        Debug.println("ConferenceCache: returning "+t);
+        if (DEBUG) Debug.println("ConferenceCache: returning "+t);
 	return t;
     }
 
     public UConference getUConference(int conferenceNo) {
 	UConference t = (UConference) uConfHash.get(new Integer(conferenceNo));
-	Debug.println("ConferenceCache: returning "+t);
+	if (DEBUG) Debug.println("ConferenceCache: returning "+t);
 	return t;
     }
     

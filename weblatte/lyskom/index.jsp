@@ -341,7 +341,7 @@
 <%
 	    	}
 	    }
-    if (Debug.ENABLED) Debug.println("unreadconfslist: " + lyskom.getUnreadConfsListCached());
+    if (Debug.ENABLED) Debug.println("unreadconfslist: " + lyskom.getMyUnreadConfsList());
     if (parameter(parameters, "changeName") != null) {
 	String oldName = parameter(parameters, "changeName");
 	String newName = parameter(parameters, "newName");
@@ -511,7 +511,7 @@
     if (!mbInitedObj.booleanValue()) {
 	out.print("<div>Läser in medlemskapsinformation...");
 	out.flush();
-	List unreadConferencesList = lyskom.getUnreadConfsList(me);
+	List unreadConferencesList = lyskom.getMyUnreadConfsList();
 	int unreadConferences = unreadConferencesList.size();
 
 	if (unreadConferences > preferences.getInt("force-many-memberships")
@@ -528,7 +528,7 @@
 	    manyMemberships = true;
 	} else {
 	    if (!manyMemberships) {
-		lyskom.updateUnreads(unreadConferencesList);
+		lyskom.updateUnreads();
 	    } else {
 		out.println("(\"många möten\" aktiverad)...");
 	    }
@@ -808,8 +808,7 @@
 	int nextUnreadText = 0;
 	try {
 	    lyskom.changeConference(conferenceNumber);
-	    Membership ms = lyskom.queryReadTextsCached(conferenceNumber);
-	    if (ms == null) ms = lyskom.queryReadTexts(lyskom.getMyPerson().getNo(), conferenceNumber);
+	    Membership ms = lyskom.queryReadTexts(me, conferenceNumber);
 
 	    UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	    int unreads = 0;
@@ -1061,10 +1060,7 @@
     }
 
     if (parameter(parameters, "listSubjects") != null && conferenceNumber > 0) {
-	Membership membership = lyskom.queryReadTextsCached(conferenceNumber);
-	if (membership == null) {
-	    membership = lyskom.queryReadTexts(me, conferenceNumber);
-	}
+	Membership membership = lyskom.queryReadTexts(me, conferenceNumber);
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = lyskom.localToGlobal(conferenceNumber,
 						   membership.getLastTextRead()+1, 255);
@@ -1163,7 +1159,7 @@
         <div class="news">
 	<ul class="news">
 <%	
-		List unreadConfsList = lyskom.getUnreadConfsListCached();
+		List unreadConfsList = lyskom.getMyUnreadConfsList();
 		Iterator confIter = unreadConfsList.iterator();
 		int sum = 0, confsum = 0;
 		int lastconf = 0;
@@ -1186,17 +1182,18 @@
 			}
 
 			lastconf = conf;
-			Membership membership = lyskom.queryReadTextsCached(conf);
-			if (membership == null) {
-			    try {
-				membership = lyskom.queryReadTexts(me, conf);
-			    } catch (RpcFailure ex1) {
-				if (ex1.getError() == Rpc.E_not_member) {
-				    confIter.remove();
-				    continue;
-				} else {
-				    throw ex1;
-				}
+
+
+			Membership membership;
+			try {
+		  	    membership = lyskom.queryReadTexts(me, conf);
+			} catch (RpcFailure ex1) {
+			    if (ex1.getError() == Rpc.E_not_member) {
+				Debug.println("warning: index.jsp: listnews: removing non-member conf " + conf);
+				confIter.remove();
+				continue;
+			    } else {
+				throw ex1;
 			    }
 			}
 
@@ -1206,7 +1203,9 @@
 			if (highestLocalNo > membership.getLastTextRead()) {
 			    unreads = highestLocalNo - membership.getLastTextRead();
 			}
+			unreads -= readTexts.length;
 			if (unreads == 0) {
+			    Debug.println("index.jsp: listnews: removing conf " + conf + " with no unreads");
 			    lyskom.setLastRead(conf, highestLocalNo);
 			    confIter.remove();
 			    continue;
@@ -1467,7 +1466,7 @@ Du är inte inloggad.
 	boolean unreads = false;
 	synchronized (suspendedSessions) {
 	    for (Iterator i=suspendedSessions.iterator();!unreads && i.hasNext();) {
-		if (((SessionWrapper) i.next()).getSession().getUnreadConfsListCached().size() > 0)
+		if (((SessionWrapper) i.next()).getSession().getMyUnreadConfsList().size() > 0)
 		    unreads = true;
 	    }
 	}
@@ -1477,7 +1476,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.75 $
+$Revision: 1.76 $
 </div>
 </body>
 </html>

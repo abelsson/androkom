@@ -439,8 +439,6 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	byte[] r = new byte[b.length-i-1]; // -1 is \n
 	i++; // skip '\n'
 	System.arraycopy(b, i, r, 0, r.length);
-
-	Debug.println("Text.getBody(): returning " + r.length + " bytes");
 	return r;
     }
 

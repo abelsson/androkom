@@ -15,7 +15,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 class TextCache {
-    static int DEBUG = 1;
+    final static boolean DEBUG = Boolean.getBoolean("lattekom.caches.debug");
 
     int maxAge = 60*60*1000; // one hour
     int maxSize = 100;
@@ -39,11 +39,11 @@ class TextCache {
 	if (t.getNo() == -1)
 	    return; // throw(new TextNumberException("Text has no number"));
 	checkLimits(0);
-	if (DEBUG > 0) Debug.println("TextCache: adding "+t.getNo());
+	if (DEBUG) Debug.println("TextCache: adding "+t.getNo());
 	if (hash.put((Object) new Integer(t.getNo()), (Object) t)!=null) {
-	    if (DEBUG > 0) Debug.println("TextCache: " +
-					      "replacing text #" +
-					      t.getNo()+" in cache");
+	    if (DEBUG) Debug.println("TextCache: " +
+				     "replacing text #" +
+				     t.getNo()+" in cache");
 	}
 
 	ageMap.put(new Integer(t.getNo()), new Long(System.currentTimeMillis()));
@@ -57,7 +57,7 @@ class TextCache {
     public Text get(int textNo) {
 	checkLimits(textNo);
 	Text t = (Text) hash.get(new Integer(textNo));
-	Debug.println("TextCache: returning "+t);
+	if (DEBUG) Debug.println("TextCache: returning "+t);
 	return t;
     }
 
@@ -78,7 +78,7 @@ class TextCache {
 	    if (age > maxAge) {
 		ageMap.remove(iNo);
 		hash.remove(iNo);
-		Debug.println("TextCache: removed " + iNo + " of age " + age);
+		if (DEBUG) Debug.println("TextCache: removed " + iNo + " of age " + age);
 	    }
 	}
 
@@ -115,8 +115,10 @@ class TextCache {
 	    int count = 0;
 	    while (count < (hash.size() - maxSize) && sortedTextsIterator.hasNext()) {
 		Text t = (Text) sortedTextsIterator.next();
-		Debug.println("TextCache: size trim: removed " + t.getNo() + " of age " +
-			      (System.currentTimeMillis()-((Long) ageMap.get(new Integer(t.getNo()))).longValue()));
+		if (DEBUG) {
+		    Debug.println("TextCache: size trim: removed " + t.getNo() + " of age " +
+				  (System.currentTimeMillis()-((Long) ageMap.get(new Integer(t.getNo()))).longValue()));
+		}
 		remove(t.getNo());
 		count++;
 	    }

@@ -1,7 +1,7 @@
 /**! -*- Mode: Java; c-basic-offset: 4 -*-
  *
  * Copyright (c) 1999 by Rasmus Sten <rasmus@sno.pp.se>
- *
+ * $Id: Rpc.java,v 1.16 2004/06/09 13:44:47 pajp Exp $
  */
 package nu.dll.lyskom;
 
@@ -387,13 +387,15 @@ public interface Rpc {
     public final static int C_modify_conf_info = 93;
     public final static int C_get_info = 94;
 
-    public final static int C_query_read_texts = 98;
-    public final static int C_get_membership = 99;
+    public final static int C_query_read_texts_10 = 98;
+    public final static int C_get_membership_10 = 99;
 
     public final static int C_add_member = 100;
 
     public final static int C_local_to_global = 103;
 
+    public final static int C_query_read_texts = 107;
+    public final static int C_get_membership = 108;
 }
 
 

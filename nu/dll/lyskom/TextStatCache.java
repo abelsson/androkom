@@ -8,7 +8,7 @@ package nu.dll.lyskom;
 import java.util.*;
 
 class TextStatCache {
-
+    final static boolean DEBUG = Boolean.getBoolean("lattekom.caches.debug");
     Hashtable hash;
     
     public TextStatCache() {
@@ -19,9 +19,9 @@ class TextStatCache {
 	if (t.getNo() == -1)
 	    return; // throw(new TextNumberException("Text has no number"));
 
-	Debug.println("TextStatCache: adding "+t.getNo());
+	if (DEBUG) Debug.println("TextStatCache: adding "+t.getNo());
 	if (hash.put(new Integer(t.getNo()), t)!=null) {
-	    if (Debug.ENABLED) {
+	    if (DEBUG) {
 		Debug.println("TextStatCache: " +
 			      "replacing text-stat #" +
 			      t.getNo()+" in cache");
@@ -43,7 +43,7 @@ class TextStatCache {
 
     public TextStat get(int textNo) {
 	TextStat t = (TextStat) hash.get(new Integer(textNo));
-	if (t != null) Debug.println("TextStatCache: returning "+t);
+	if (t != null && DEBUG) Debug.println("TextStatCache: returning "+t);
 		
 	return t;
     }

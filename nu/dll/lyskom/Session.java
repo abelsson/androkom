@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.72 2004/06/08 08:51:46 pajp Exp $
+ * @version $Id: Session.java,v 1.73 2004/06/09 13:44:47 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -192,7 +192,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     //int wakeOnReplyFrom = -1;
 
     // Conferences in which we might have unread texts
-    List unreads = new LinkedList();
+    List unreads = null;
     List membership = null;
     
     // Membership for the corresponding conferences
@@ -250,6 +250,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     boolean storeAsynchMessages = false;
     
     Map serverInfo = null;
+
+    boolean proto_10_membership = false;
 
     private void init() {
 	textCache = new TextCache();
@@ -624,6 +626,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * Returns the current cached list of unread conferences.
      * If neither getUnreadConfsList() nor updateUnreads() has
      * been called, this list will be empty. 
+     *
      */
     public List getUnreadConfsListCached() {
 	return unreads;
@@ -636,6 +639,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * before guarantees that Membership has been queried for all
      * conferences in the Unread-Conferences list returned by 
      * getUnreadConfsList[Cached]().
+     *
      */
     public Membership queryReadTextsCached(int confNo) {
 	return membershipCache.get(confNo);
@@ -655,7 +659,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * conferences that may contain unreads.
      * If the given parameter is non-null, it will be used as the
      * starting point for which conferences are queries, and the
-     * same list will be returned by subsequent calles to
+     * same list will be returned by subsequent calls to
      * getUnreadConfsListCached(). If null, getUnreadConfsList()
      * will be called to retrieve that data instead.
      */
@@ -664,7 +668,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (membership == null) getMyMembershipList();
 	int persNo = myPerson.getNo();
 	if (_unreads == null) {
-	    getUnreadConfsList(persNo);
+	    getUnreadConfsList(persNo, true);
 	} else {
 	    unreads = _unreads;
 	}
@@ -679,8 +683,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	synchronized (unreads) {
 	    for (Iterator i = unreads.iterator(); i.hasNext();) {
 		int conf = ((Integer) i.next()).intValue();
-		pendingCalls.add(doGetUConfStat(conf));
-		pendingCalls.add(doQueryReadTexts(persNo, conf));
+		pendingCalls.add(new Integer(doGetUConfStat(conf).getId()));
+		pendingCalls.add(new Integer(doQueryReadTexts(persNo, conf).getId()));
 	    }
 	}
 
@@ -691,14 +695,16 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    if (rc.getOp() == Rpc.C_get_uconf_stat) {
 		conferenceCache.add(new UConference(rc.getParameter(0).intValue(), 
 						    rc.getReply().getParameters()));
-	    } else if (rc.getOp() == Rpc.C_query_read_texts) {
-		membershipCache.add(new Membership(0, rc.getReply().getParameters()));
+	    } else if (rc.getOp() == Rpc.C_query_read_texts ||
+		       rc.getOp() == Rpc.C_query_read_texts_10) {
+		membershipCache.add(Membership.createFrom(0, rc.getReply().getParameters(),
+							  rc.getOp() == Rpc.C_query_read_texts_10));
 	    } else {
 		throw new RuntimeException("Unexpected RPC reply " + 
 					   rc.getOp());
 	    }
 
-	    pendingCalls.remove(rc);
+	    pendingCalls.remove(new Integer(rc.getId()));
 	}
 
 	// by now, we know for sure that the caches are filled with 
@@ -708,7 +714,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	for (int i=0; i < unreads.size(); i++) {
 	    int conf = ((Integer) unreads.get(i)).intValue();
 	    Membership m = queryReadTexts(persNo, conf);
-	    int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.lastTextRead;
+	    int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.getLastTextRead();
 	    possibleUnreads -= m.getReadTexts().length;
 
 	    if (possibleUnreads > 0 ) {
@@ -825,8 +831,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	
 	UConference c = getUConfStat(conference);
 	Membership m = queryReadTexts(myPerson.getNo(), conference, true);
-	if (c.getHighestLocalNo() > m.lastTextRead) {
-	    int localNo = m.lastTextRead + 1;	    
+	if (c.getHighestLocalNo() > m.getLastTextRead()) {
+	    int localNo = m.getLastTextRead() + 1;	    
 	    TextMapping tm = localToGlobal(conference, localNo, maxTexts);
 
 	    if (!tm.hasMoreElements()) {
@@ -914,7 +920,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	while (i.hasNext()){
 	    Membership m = (Membership) i.next();
 	    if (m.getNo() == confNo) {
-		return true;
+		return !m.getType().getBitAt(MembershipType.passive);
 	    }
 	}
 	return false;
@@ -932,8 +938,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	UConference c = getUConfStat(confNo);
 	Membership m = queryReadTexts(myPerson.getNo(), confNo, true);
-	if (c.getHighestLocalNo() > m.lastTextRead) {
-	    return c.getHighestLocalNo() - m.lastTextRead;
+	if (c.getHighestLocalNo() > m.getLastTextRead()) {
+	    return c.getHighestLocalNo() - m.getLastTextRead();
 	} else {
 	    return 0;
 	}
@@ -1482,8 +1488,15 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public  RpcCall doQueryReadTexts(int persNo, int confNo)
     throws IOException {
-	RpcCall req = new RpcCall(count(), Rpc.C_query_read_texts);
-	req.add(new KomToken(persNo)).add(new KomToken(confNo));
+	RpcCall req;
+	if (!proto_10_membership) {
+	    req = new RpcCall(count(), Rpc.C_query_read_texts);
+	    req.add(new KomToken(persNo)).add(new KomToken(confNo));
+	    req.add(new KomToken(true)).add(new KomToken(0));
+	} else {
+	    req = new RpcCall(count(), Rpc.C_query_read_texts_10);
+	    req.add(new KomToken(persNo)).add(new KomToken(confNo));
+	}
 	writeRpcCall(req);
 	return req;
     }
@@ -1519,12 +1532,21 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	Membership m = null;
 	if (!refresh && persNo == myPerson.getNo()) {
 	    m = membershipCache.get(confNo);
-	    if (m != null) return m;
+	    if (m != null && m.hasReadTexts()) {
+		return m;
+	    }
 	}
-	RpcReply reply = waitFor(doQueryReadTexts(persNo, confNo));
+	RpcCall call = waitForCall(doQueryReadTexts(persNo, confNo));
+	RpcReply reply = call.getReply();
 	if (!reply.getSuccess()) throw reply.getException();
-	m = new Membership(0, reply.getParameters());
-	membershipCache.add(m);
+
+	if (call.getOp() == Rpc.C_query_read_texts ||
+	    call.getOp() == Rpc.C_query_read_texts_10) {
+	    m = Membership.createFrom(0, reply.getParameters(),
+				      call.getOp() == Rpc.C_query_read_texts_10);
+	}
+
+	if (persNo == myPerson.getNo()) membershipCache.add(m);
 	return m;
     }
 
@@ -1553,6 +1575,24 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public List getUnreadConfsList(int persNo)
     throws IOException {
+	return getUnreadConfsList(persNo, false);
+    }
+
+    public List getMyUnreadConfsList() 
+    throws IOException {
+	return getMyUnreadConfsList(false);
+    }
+
+    public List getMyUnreadConfsList(boolean askServer) 
+    throws IOException {
+	return getUnreadConfsList(myPersonNo, askServer);
+    }
+
+    public List getUnreadConfsList(int persNo, boolean askServer)
+    throws IOException {
+	if (persNo == myPersonNo && !askServer && unreads != null) {
+	    return unreads;
+	}
 	LinkedList confList = new LinkedList();
 	int[] confs = getUnreadConfs(persNo);
 	for (int i=0; i < confs.length; i++) confList.add(new Integer(confs[i]));
@@ -1585,26 +1625,36 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param persNo The person number for which to query information
      * @param first The first membership position in list to retreive
      * @param no The number of conferences to retreive
-     * @param mask If the first bit is set, the server will not return a read-texts array with the membership information
+     * @param wantReadTexts If true, the server will return a read-texts array with the membership information
      * @return An RpcCall object representing this specific RPC call
      */
     public  RpcCall doGetMembership(int persNo, int first,
-						int no, Bitstring mask)
+				    int no, boolean wantReadTexts)
     throws IOException {
-	RpcCall req = new RpcCall(count(), Rpc.C_get_membership).
-	    add(new KomToken(persNo)).add(new KomToken(first)).
-	    add(new KomToken(no)).
-	    add((KomToken) mask);
+	RpcCall req;
+	if (proto_10_membership) {
+	    req = new RpcCall(count(), Rpc.C_get_membership_10).
+		add(new KomToken(persNo)).add(new KomToken(first)).
+		add(new KomToken(no)).
+		add(new KomToken(wantReadTexts));
+	} else {
+	    req = new RpcCall(count(), Rpc.C_get_membership).
+		add(new KomToken(persNo)).add(new KomToken(first)).
+		add(new KomToken(no)).
+		add(new KomToken(wantReadTexts)).
+		add(new KomToken(0));
+
+	}
 	writeRpcCall(req);
 	return req;
     }
     /**
-     * Equal to <tt>doGetMembership(<i>persNo</i>, 0, 1000, new Bitstring("0"))</tt>.
-     * @see nu.dll.lyskom.Session#doGetMembership(int, int, int, Bitstring)
+     * Equal to <tt>doGetMembership(<i>persNo</i>, 0, 1000, false)</tt>.
+     * @see nu.dll.lyskom.Session#doGetMembership(int, int, int, boolean)
      */
     public RpcCall doGetMembership(int persNo)
     throws IOException {
-	return doGetMembership(persNo, 0, 1000, new Bitstring("0"));
+	return doGetMembership(persNo, 0, 1000, false);
     }
 
     /**
@@ -1613,7 +1663,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public List getMyMembershipList()
     throws IOException {
-	return membership = getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, new Bitstring("0"));
+	return membership = getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, false);
     }
 
     /**
@@ -1622,21 +1672,23 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param persNo The person number for which to query information
      * @param first The first membership position in list to retreive
      * @param no The number of conferences to retreive
-     * @param mask If the first bit is set, the server will not return a read-texts array with the membership information
+     * @param wantReadTexts If true, the server will return a read-texts array with the membership information
      *
      */
-    public List getMembershipList(int persNo, int first, int no, Bitstring mask)
+    public List getMembershipList(int persNo, int first, int no, boolean wantReadTexts)
     throws IOException {
-	Debug.println("getMembershipList(" + persNo + ", " + first + ", " + no + ", " + mask + ")");
-	Membership[] m = getMembership(persNo, first, no, mask);
+	Debug.println("getMembershipList(" + persNo + ", " + first + ", " + no + ", " + wantReadTexts + ")");
+	Membership[] m = getMembership(persNo, first, no, wantReadTexts);
 	LinkedList l = new LinkedList();
 	for (int i=0; i < m.length; i++) {
 	    if (m[i] != null) {
 		l.add(m[i]);
-		membershipCache.add(m[i]);
+		if (persNo == myPerson.getNo())
+		    membershipCache.add(m[i]);
 	    }
 	}
-	Debug.println("getMembershipList(): returning " + l.size() + " confererences");
+	Debug.println("getMembershipList(persNo:" + persNo +
+		      "): returning " + l.size() + " confererences");
 	return l;
     }
     /**
@@ -1646,14 +1698,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param persNo The person number for which to query information
      * @param first The first membership position in list to retreive
      * @param no The number of conferences to retreive
-     * @param mask If the first bit is set, the server will not return a read-texts array with the membership information
+     * @param wantReadTexts If the first bit is set, the server will not return a read-texts array with the membership information
      */    
     public  Membership[] getMembership(int persNo, int first,
-				       int no, Bitstring mask)
+				       int no, boolean wantReadTexts)
     throws IOException {
-	return Membership.createFrom(waitFor(doGetMembership(persNo, first,
-							     no, mask)
-					     .getId()));
+	RpcCall call = waitForCall(doGetMembership(persNo, first,
+						   no, wantReadTexts));
+	if (!call.getReply().getSuccess()) throw call.getReply().getException();
+	KomToken[] parameters = call.getReply().getParameters();
+	return Membership.createFromArray(0, parameters,
+					  call.getOp() == Rpc.C_get_membership_10);
     }
 
     /**
@@ -1742,7 +1797,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public  Membership[] getMembership(int persNo)
     throws IOException {
-	return Membership.createFrom(waitFor(doGetMembership(persNo).getId()));
+	RpcCall call = waitForCall(doGetMembership(persNo));
+	return Membership.createFromArray(0, call.getReply().getParameters(),
+					  call.getOp() == Rpc.C_get_membership_10);
     }
 
     /**
@@ -1904,7 +1961,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	setLastRead(confNo, lastRead);
 	Membership ms = membershipCache.get(confNo);
 	if (ms != null) {
-	    ms.lastTextRead = lastRead;
+	    ms.setLastTextRead(lastRead);
 	}
 	if (unreads != null && !unreads.contains(new Integer(confNo))) {
 	    if (lastRead < highest) unreads.add(new Integer(confNo));
@@ -1940,7 +1997,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	waitFor(doSetLastRead(confNo, textNo).getId());
 	Membership ms = membershipCache.get(confNo);
 	if (ms != null) {
-	    ms.lastTextRead = textNo;
+	    ms.setLastTextRead(textNo);
 	}
     }
 
@@ -2808,6 +2865,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public RpcCall writeRpcCall(RpcCall c, boolean store)
     throws IOException {
 	if (store) rpcHeap.addRpcCall(c);
+	if (Debug.ENABLED) {
+	    Debug.println("writeRpcCall(): id: " + c.getId() + "; op: " +
+			  c.getOp() + "; store: " + store);
+	}
 	connection.queuedWrite(c.toNetwork());
 	//c.writeNetwork(connection.getOutputStream());
 	return c; 
@@ -2876,7 +2937,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     public RpcReply waitFor(int id)
     throws IOException {
-	return waitFor(Collections.singleton(new Integer(id)));
+	return waitFor(singleton(id));
+    }
+
+    public Collection singleton(int i) {
+	HashSet h = new HashSet();
+	h.add(new Integer(i));
+	return h;
     }
 
     public RpcReply waitFor(Collection ids)
@@ -2885,6 +2952,16 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (rc != null) return rc.getReply();
 	return null;
     }
+
+    public RpcCall waitForCall(RpcCall call)
+    throws IOException {
+	return waitForCall(call.getId());
+    }
+    public RpcCall waitForCall(int id)
+    throws IOException {
+	return waitForCall(singleton(id));
+    }
+
 
     public AsynchMessage getAsynchMessage() {
 	storeAsynchMessages = true;
@@ -2920,7 +2997,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException {
 
 	if (Thread.currentThread() == listener.getThread()) {
-	    throw new IOException("waitFor() called from listener thread");
+	    throw new IOException("waitForCall() called from listener thread");
 	}
 
 	RpcCall call = null;
@@ -2930,7 +3007,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	int waitCount = 0;
 	while (call == null) {
 	    if (Debug.ENABLED) {
-		Debug.println("waitFor(" + ids + ")");
+		Debug.println("waitForCall(" + ids + ")");
 	    }
 
 	    try {
@@ -2951,16 +3028,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    }
 		} else {
 		    if (Debug.ENABLED) {
-			Debug.println("waitFor(" + ids + ") returning after " +
+			Debug.println("waitForCall(" + ids + ") returning after " +
 				      (System.currentTimeMillis() - waitStart)
 				      + " milliseconds (wait-count " + waitCount + ")");
 		    }
 		    rpcHeap.purgeRpcCall(call);
-		    return call;
+		    if (fallbackCheck(ids, call)) {
+			return call;
+		    }
 		}
 		
 	    } catch (InterruptedException ex1) {
-		Debug.println("RPC waitFor() interrupted: " + ex1.getMessage());
+		Debug.println("RPC waitForCall() interrupted: " + ex1.getMessage());
 		// ...?
 	    }
 	    call = rpcHeap.getRpcCall(ids, true);
@@ -2980,8 +3059,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		}
 	    } else {
 		rpcHeap.purgeRpcCall(call);
+		if (!fallbackCheck(ids, call)) call = null;
 		if (Debug.ENABLED) {
-		    Debug.println("waitFor(" + ids + ") returning after " +
+		    Debug.println("waitForCall(" + ids + ") returning after " +
 				  (System.currentTimeMillis() - waitStart)
 				  + " milliseconds (wait-count " + waitCount
 				  + ")");
@@ -2989,6 +3069,44 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 	}
 	return call;
+    }
+
+    public boolean fallbackCheck(Collection ids, RpcCall call)
+    throws IOException {
+	RpcReply reply = call.getReply();
+	if (!reply.getSuccess() &&
+	    reply.getException().getError() == Rpc.E_not_implemented) {
+	    if (call.getOp() == Rpc.C_get_membership) {
+		Debug.println("server says get-membership not implemented, " +
+			      "falling back to get-membership-10");
+		proto_10_membership = true;
+		call.removeLast();
+		int oldId = call.getId();
+		call.setId(count());
+		call.setOp(Rpc.C_get_membership_10);
+		call.setReply(null);
+		ids.remove(new Integer(oldId));
+		ids.add(new Integer(call.getId()));
+		writeRpcCall(call);
+		return false;
+	    }
+	    if (call.getOp() == Rpc.C_query_read_texts) {
+		Debug.println("server says query-read-texts not implemented, " +
+			      "falling back to query-read-texts-10");
+		proto_10_membership = true;
+		call.removeLast();
+		call.removeLast();
+		int oldId = call.getId();
+		call.setId(count());
+		call.setOp(Rpc.C_query_read_texts_10);
+		call.setReply(null);
+		ids.remove(new Integer(oldId));
+		ids.add(new Integer(call.getId()));
+		writeRpcCall(call);
+		return false;
+	    }
+	}
+	return true;
     }
 
     /**
@@ -3057,10 +3175,16 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		}
 		Membership cachedMs = membershipCache.get(recipient);
 		if (cachedMs != null) {
-			    
+		    int locNo = misc.getIntValue(TextStat.miscLocNo);
+		    if (readTexts.contains(textStat.getNo()) &&
+			!cachedMs.isRead(locNo)) {
+			cachedMs.markAsRead(locNo);
+		    }
 		}
 		try {
-		    if (!unreads.contains(recipientObj) && isMemberOf(recipient, false)) {
+		    if (!unreads.contains(recipientObj) &&
+			!readTexts.contains(textStat.getNo()) &&
+			isMemberOf(recipient, false)) {
 			unreads.add(recipientObj);
 		    }
 		} catch (IOException ex1) {}
