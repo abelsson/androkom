@@ -21,11 +21,7 @@
 
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
-%>
-	<p class="boxed">
- 	<span class="text">
-	<tt>
-<%
+
 	Text text = null;
 	try {
 	    text = lyskom.getText(textNumber);
@@ -36,6 +32,11 @@
 		return;
 	    }
 	}
+%>
+	<p class="boxed">
+ 	<span class="text">
+	<tt>
+<%
 	List viewedTexts = (List) request.getAttribute("viewedTexts");
 	if (viewedTexts == null) {
 	    viewedTexts = new LinkedList();
