@@ -1,0 +1,299 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Importing and Exporting E-Mail</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Importing and Exporting E-Mail">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Importing and Exporting E-Mail">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC321"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC320"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC322"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 10. Importing and Exporting E-Mail </H1>
+<!--docid::SEC321::-->
+<P>
+
+E-mail importing and exporting is not implemented. This chapter contains 
+suggestions for how to do it. The first person to implement a forwarder
+should rewrite this section based on his or her experiences.
+</P><P>
+
+There are some holes in this description. For example, it was suggested
+at some point that it might be possible to use inheritance for automatic 
+export of messages from conferences, so that people could more or less
+participate in mailing lists but only use the LysKOM interface.
+</P><P>
+
+Importing and exporting will be implemented through a special client and 
+user. The client can log on periodically and check if any new texts have 
+been created. It should store the last text number it examined, and use
+the get-next-text call to find any new texts.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC322"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC323"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 10.1 Exporting E-Mail </H2>
+<!--docid::SEC322::-->
+<P>
+
+For each text the exporter examines, it has to check if the text needs
+to be exported. A text will have to be exported if it has an
+<CODE>mx-to</CODE> aux-item, if the text was not imported or if the item was
+added after the text was imported.
+</P><P>
+
+The exportes is responsible for setting the <CODE>Date</CODE>,
+<CODE>Message-ID</CODE>, <CODE>From</CODE>, <CODE>Reply-To</CODE>, <CODE>To</CODE>, <CODE>CC</CODE>
+and <CODE>In-Reply-To</CODE> fields in the exported message.
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>Date</CODE>
+<DD>The date should be set to the date the text was created, not the date
+the text was exported.
+<P>
+
+<DT><CODE>Message-ID</CODE>
+<DD>The message ID is to have the format
+<CODE>&#60;LysKOM%<VAR>textno</VAR>@<VAR>server</VAR>&#62;</CODE>, where <VAR>textno</VAR> is the text
+number in the server and <VAR>server</VAR> is the name of the LysKOM server. 
+This allows the importer to figure out how to thread e-mail replies to
+exported messages.
+<P>
+
+<DT><CODE>From</CODE>
+<DD>If the message originates with the LysKOM server, the exporter
+constructs a valid <CODE>From</CODE> address, that when replied to will cause
+the importer to give the message the correct recipients. 
+<P>
+
+If the message originates outside of the LysKOM server (it is imported), 
+the exporter uses the <CODE>mx-from</CODE> item to get the <CODE>From</CODE> header.
+</P><P>
+
+<DT><CODE>Reply-To</CODE>
+<DD>If the message originates with the LysKOM server and the author of the
+text has a <CODE>redirect</CODE> aux-item set, the exporter should use it to
+construct a <CODE>Reply-To</CODE> header.
+<P>
+
+If the message is imported to LysKOM, the exporter should use the
+<CODE>mx-reply-to</CODE> item, if there is one, to construct this header.
+</P><P>
+
+<DT><CODE>To</CODE>
+<DD><DT><CODE>CC</CODE>
+<DD>The <CODE>mx-to</CODE> and <CODE>mx-cc</CODE> aux-items contain the values for these 
+headers.
+<P>
+
+<DT><CODE>In-Reply-To</CODE>
+<DD>If the message is a comment to an impored message, the exporter is to
+use the <CODE>mx-message-id</CODE> aux-item of the commented texts for the
+<CODE>In-Reply-To</CODE> header. If the commented text is not imported, the
+exporter is to construct a message ID for the commented text using the
+same method as for the <CODE>Message-ID</CODE> header.
+<P>
+
+</DL>
+<P>
+
+For the mail exporter to work, it will need special privileges.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC323"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC322"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC324"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC325"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC325"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 10.2 Importing </H2>
+<!--docid::SEC323::-->
+<P>
+
+The main job of the mail importer is to figure out where to deliver mail 
+and how to deal with threading. The importer can find the recipients in
+the <CODE>To</CODE> and <CODE>CC</CODE> headers of the message. The current (very
+simple) importer uses addresses like "p<I>person</I>@<I>server</I>´´, where 
+<I>person</I> is the number of the recipient and <I>server</I> is the LysKOM
+server.
+</P><P>
+
+The importer should add recipients in the <CODE>CC</CODE> header as
+carbon-copy-recipients, and recipients in the <CODE>To</CODE> header as
+regular recipients. The importer needs to be careful not to deliver
+messages to conferences that do not allow messages, even though the
+server might not complain.
+</P><P>
+
+For mail delivery to work, the importer has to run as a privileged user, 
+or it would be unable to deliver mail to secret conferences. A potential 
+problem is that this leaks secret information from the server, so it
+should probably be possible to configure on a per-conference basis
+whether it accepts imported e-mail. This is currently not possible, but
+can easily be implemented, should the implementor of the first good
+importer want it.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC324"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC323"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC325"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC325"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC323"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC325"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 10.2.1 Threading </H3>
+<!--docid::SEC324::-->
+<P>
+
+The importer should do its best to thread messages. When the importer
+sees a new message it needs to look at the <CODE>In-Reply-To</CODE> header to
+see what the message is a reply to. If a previously imported message or
+a LysKOM text is in the <CODE>In-Reply-To</CODE> header, the new text should
+be made a comment to the replied-to text.
+</P><P>
+
+This means that the importer will probably have to maintain its own
+database of imported texts that maps the message ID to the text number
+in the LysKOM database. There is no other way to find the text number
+for a particular imported text.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC325"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC324"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 10.3 An Algorithm, Sort Of </H2>
+<!--docid::SEC325::-->
+<P>
+
+Here's an outline for algorithms for import and export of messages.
+They're hardly complete, and may not even quite work, but they should
+give the general idea of how things can work.
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>function import-message (message)
+{
+    recipient_list = To header of message
+    cc_list = CC header of message 
+    
+    
+    delete recipients from recipient_list that do not want imported mail
+    delete recipients from cc_list that do not want imported mail
+
+    for each element el in In-Reply-To header of message
+        if el is a LysKOM message ID
+            text_no = text number of el
+        if el is in the imported database
+            text_no = text number from database
+
+        if text_no is set
+            add text_no to comm_to
+
+    result = create_text with
+            recipients = recipient_list
+            cc-recipients = cc_list
+            comment-to = comm_to
+            aux-items extracted from header
+
+    if result is a failure, construct and send a bounce
+    put Message-ID and result into the imported database
+}
+
+function exporter ()
+{
+    text_no = last_examined_text_no
+    while text_no = get-next-text
+        if (text text_no is not imported or
+            text text_no has an mx-to item created after the text)
+            message = get-text text_no
+            message-ID = &#60;LysKOM%text_no@server&#62;
+            date = creation-date of message
+            to = mx-to item of text text_no
+            cc = mx-cc item of text text_no
+            add e-mail of LysKOM cc-recipients to text text_no to cc
+            if there is an mx-from item of text text_no
+                from = mx-from item of text text_no
+            else
+                mx-from = e-mail of author in LysKOM
+            send the message
+}
+</pre></td></tr></table></P><P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_10.html#SEC321"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

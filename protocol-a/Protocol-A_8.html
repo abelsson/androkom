@@ -1,0 +1,202 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: The User Area</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: The User Area">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: The User Area">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC310"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC309"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_8.html#SEC311"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC312"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC312"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 8. The User Area </H1>
+<!--docid::SEC310::-->
+<P>
+
+The user area is a regular text that is used to store client-specific
+information in the server. Most clients use this to store settings a
+user has made that are specific to a particular server. There are also
+provisions to store settings that are shared between clients.
+</P><P>
+
+The user-area is divided into several sub-blocks. The common block is
+shared by all clients, and its formats and contents dictated by this
+protocol specification. Clients may also create one or more blocks.
+</P><P>
+
+The entire user-area is coded as a <CODE>HOLLERITH</CODE>. This string in turn
+contains a list of pairs of <CODE>HOLLERITH</CODE> strings. Each pair consists
+of one string containing the block name and one containing the data. This
+format ensures that clients can copy or read past other clients' blocks
+without knowing their structure.
+</P><P>
+
+The following block names have been defined:
+<DL COMPACT>
+<DT><CODE>common</CODE>
+<DD>The common block shared by all clients. The format of the common block is
+described below.
+<DT><CODE>elisp</CODE>
+<DD>The block created by the Emacs list client. The format is completely
+undocumented, but you'll need a lisp reader to parse it.
+<DT><CODE>WWW-kom</CODE>
+<DD>The block created by the web gateway WWW-kom.  It has the same syntax as
+the common block, but the keys and values are not documented.
+</DL>
+<P>
+
+If you're writing a client that uses the user-area, please let us know
+what you name your client's block.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC311"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_8.html#SEC310"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC312"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_8.html#SEC310"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_8.html#SEC310"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC312"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 8.1 The Common Block </H2>
+<!--docid::SEC311::-->
+<P>
+
+This defines the theoretical structure of the common block. The real
+world probably does not agree entirely with this, and it is likely to
+change just as soon as I have time to define something better. In the
+mean while you're probably better off ignoring the common block and
+storing all your settings in a client block. The Emacs lisp client uses
+the common block, but I have a feeling that it might store data that
+other clients can't read. 
+</P><P>
+
+The common block contains a list of variable settings. Each variable
+setting consists of a name, some whitespace, and a value. Settings are
+separated by a line feed character. As of protocol version 10, values
+can be integers, strings, booleans or lists. The encoding is such that a
+value is encoded as a single protocol A token. That means that strings
+and lists are both encoded as HOLLERITHs. The reason for this is to
+simplify for clients that need to ignore the value, and so it is
+possible to add new value types without confusing old clients (new types
+will be encoded as HOLLERITHs.)
+</P><P>
+
+The grammar below sort of defines the syntax of the common block.
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>common-block    :   settings
+settings        :   settings setting
+                |   /* empty */
+setting         :   variable ' ' value '\n'
+variable        :   [A-Za-z-_0-9]+
+value           :   boolean
+                |   HOLLERITH
+                |   list
+                |   integer
+boolean         :   1 | 0
+integer         :   -?[0-9]+
+list            :   integer elems       // Encoded in a HOLLERITH
+elems           :   elems value
+                |   empty
+</pre></td></tr></table></P><P>
+
+Currently the following variables are used, but more may be added, and
+as of protocol version 10, clients should be able to cope with variables
+they know nothing of in the common block, as long as they are of one of
+the types above. Pre-protocol version 10 clients can't deal with
+HOLLERITHs in the common block.
+</P><P>
+
+As of protocol 10 the following variables are stored in the common
+block: 
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>created-texts-are-read</CODE>
+<DD>True if the user wants texts s/he creates to be marked as read
+automatically. Boolean.
+<P>
+
+<DT><CODE>dashed-lines</CODE>
+<DD>True if the user wants dashed lines around the text body when it's
+displayed. Boolean.
+<P>
+
+<DT><CODE>presence-messages</CODE>
+<DD>True if the user wants messages about people logging in and logging out
+of LysKOM. Boolean. 
+<P>
+
+<DT><CODE>print-number-of-unread-on-entrance</CODE>
+<DD>True if the user wants to see the number of unread texts when entering a
+conference. Boolean.
+<P>
+
+<DT><CODE>read-depth-first</CODE>
+<DD>True if the user wants to read text in depth-first order. Boolean.
+<P>
+
+<DT><CODE>reading-puts-comments-in-pointers-last</CODE>
+<DD>True if the user wants the client to display comment links after the
+text body. Boolean.
+<P>
+
+<DT><CODE>confirm-multiple-recipients</CODE>
+<DD>True if the user wants the client to ask for confirmation before sending
+a text to many conferences.
+<P>
+
+<DT><CODE>default-mark</CODE>
+<DD>The default mark to set on marked texts.
+</DL>
+<P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_8.html#SEC310"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_9.html#SEC312"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

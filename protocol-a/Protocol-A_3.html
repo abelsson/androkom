@@ -1,0 +1,1991 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Data Types</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Data Types">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Data Types">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC37"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC36"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 3. Data Types </H1>
+<!--docid::SEC37::-->
+<P>
+
+The data types in protocol A come in two flavors. The first (vanilla)
+are the simple data types from which the LysKOM (chocolate) data types
+are built. Simple data types include things like integers and strings
+while complex data types include things such as conferences and people.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_3.html#SEC38">3.1 Simple Data Types</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_3.html#SEC47">3.2 LysKOM Data Types</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_3.html#SEC66">3.3 Name Expansion</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC38"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC39"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.1 Simple Data Types </H2>
+<!--docid::SEC38::-->
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC39"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC40"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.1 Integers </H3>
+<!--docid::SEC39::-->
+<P>
+
+<A NAME="IDX1"></A>
+<A NAME="IDX2"></A>
+<A NAME="IDX3"></A>
+<A NAME="IDX4"></A>
+<EM>INT32</EM>, <EM>INT16</EM>, <EM>INT8</EM> and <EM>BOOL</EM> are non-negative
+integers which must fit in 32, 16, 8 and 1 bits, respectively. They are
+transmitted to the server in ASCII-encoded decimal notation.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC40"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC39"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC41"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC41"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.2 Strings </H3>
+<!--docid::SEC40::-->
+<P>
+
+<A NAME="IDX5"></A>
+<EM>HOLLERITH</EM> denotes character strings of arbitrary length. They are
+transmitted as <CODE><VAR>n</VAR>H<VAR>text</VAR></CODE> where <VAR>text</VAR> is the string and
+<VAR>n</VAR> is the number of characters in <VAR>text</VAR> in decimal
+notation. All byte values are allowed in the string itself, including
+nulls.
+</P><P>
+
+Long live FORTRAN!
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC41"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC40"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC42"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC42"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.3 Bit Strings </H3>
+<!--docid::SEC41::-->
+<P>
+
+<A NAME="IDX6"></A>
+<EM>BITSTRING</EM> is a string of bits, commonly used for a set of
+boolean-valued flags. Bit strings are denoted as
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        BITSTRING ( name-1; name-2; name-3; ... )
+</pre></td></tr></table></P><P>
+
+in this specification. They are transmitted as a sequence of ASCII ones
+and zeroes in the order the fields are listed.
+</P><P>
+
+For instance, given the specification
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        shape-of-world : BITSTRING (
+                is-flat;
+                is-round;
+                is-2d;
+                is-3d;
+        )
+</pre></td></tr></table></P><P>
+
+most peoples idea of <CODE>shape-of-world</CODE> would be sent as <CODE>0101</CODE>
+(round and three-dimensional.)
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC42"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC41"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC43"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC43"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.4 Enumerations </H3>
+<!--docid::SEC42::-->
+<P>
+
+<A NAME="IDX7"></A>
+<EM>ENUMERATION</EM> is an integer constant. It is transmitted as an INT32, 
+but only fixed values are permitted. Clients should be prepared to
+receive numbers outside the enumeration and either handle this
+gracefully as an error or use a reasonable default value in place of an
+invalid enumeration value.
+</P><P>
+
+An enumeration is specified as 
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        ENUMERATION ( 
+                name-1=value-1;
+                name-2=value-2;
+                name-3=value-3;
+                ...
+        )
+</pre></td></tr></table></P><P>
+
+This specification states that name-1 is represented by the integer
+value-1, name-2 is represented by value-2 and name-3 is represented by
+value-3. 
+</P><P>
+
+An enumeration can also be inherited from a SELECTION datatype:
+</P><P>
+
+	Info-type : ENUMERATION_OF(Misc-Info))
+</P><P>
+
+This means that Info-type is an enumeration, that contains the same keys
+and values as the SELECTION Misc-Info.
+</P><P>
+
+For example, in the following specification, the constant guwal will be
+transmitted as the integer 2, ciokwe as the integer 3, and hopi as the
+integer 5.
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        language : ENUMERATION ( hakka      = 1;
+                                 guwal      = 2;
+                                 ciokwe     = 3;
+                                 yoruba     = 4;
+                                 hopi       = 5;
+                )
+</pre></td></tr></table></P><P>
+
+<HR SIZE="6">
+<A NAME="SEC43"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC42"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC44"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC44"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.5 Arrays </H3>
+<!--docid::SEC43::-->
+<P>
+
+<A NAME="IDX8"></A>
+<EM>ARRAY</EM> is a list of a fixed number of elements of a single type.
+The specification for an array is <CODE>ARRAY <VAR>type</VAR></CODE> where
+<VAR>type</VAR> is the type of the array elements.
+</P><P>
+
+Arrays are transmitted as an <CODE><VAR>n</VAR> { <VAR>element</VAR>
+<VAR>element</VAR> ... }</CODE> where <VAR>n</VAR> is the number of elements and
+each <VAR>element</VAR> is an element of the array. A special case is when
+the array is empty, in which case the server transmits it as <CODE>0 *</CODE>. 
+Note that the client must always transmit empty arrays as <CODE>0 {
+}</CODE>.
+</P><P>
+
+In some calls the client can ask the server not to send the array
+contents, only its length. In these cases the array is transmitted as
+<CODE><VAR>n</VAR> *</CODE> where <VAR>n</VAR> is the number of elements in the array.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC44"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC43"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC45"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC45"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.6 Selection </H3>
+<!--docid::SEC44::-->
+<P>
+
+<A NAME="IDX9"></A>
+<EM>SELECTION</EM> is tagged data. It consists of an INT32 selector
+followed by a tail of an arbitrary type and is specified as
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        SELECTION (
+                <VAR>n</VAR>=<VAR>name</VAR>        <VAR>tail</VAR> : <VAR>type</VAR>;
+                <VAR>n</VAR>=<VAR>name</VAR>        <VAR>tail</VAR> : <VAR>type</VAR>;
+                ...
+        )
+</pre></td></tr></table></P><P>
+
+where each <VAR>n</VAR> is the selector value, <VAR>name</VAR> the selector
+name and <VAR>tail</VAR> the name of the selector tail and <VAR>type</VAR>
+its type.
+</P><P>
+
+When transmitted, the selector is transmitted as an INT32 followed by
+the tail belonging to that selector. For instance, given the
+specification
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        phrase : SELECTION (
+               1=hello          name : HOLLERITH;
+               2=howdy          ;
+        )
+</pre></td></tr></table></P><P>
+
+two legal messages of the type <CODE>phrase</CODE> are <SAMP>`1 4HJohn'</SAMP> and
+<SAMP>`2'</SAMP>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC45"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC44"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC46"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC46"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.7 RPC </H3>
+<!--docid::SEC45::-->
+<P>
+
+<A NAME="IDX10"></A>
+<EM>RPC</EM> is a notation used to specify calls to the server. An RPC
+specification has the following form:
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        RPC (
+                <VAR>call</VAR> [<VAR>n</VAR>] ( <VAR>request</VAR> ) -&#62; ( <VAR>reply</VAR> ) ;
+                <VAR>call</VAR> [<VAR>n</VAR>] ( <VAR>request</VAR> ) -&#62; ( <VAR>reply</VAR> ) ;
+        )
+</pre></td></tr></table></P><P>
+
+where each <VAR>call</VAR> is the name of a call, <VAR>n</VAR> is the call
+number, <VAR>request</VAR> is a single data element sent as a request and
+<VAR>reply</VAR> is a single data element sent in reply from the server.
+</P><P>
+
+RPC calls are transmitted as <VAR>n</VAR> <VAR>request</VAR> where <VAR>n</VAR> and
+<VAR>request</VAR> have the same meaning as above. Note that in the
+client-server dialog a reference number must also be supplied with each
+request. This reference number is not part of the RPC itself, but is
+required for communications See section <A HREF="Protocol-A_2.html#SEC35">2.7 Client-Server Dialog</A>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC46"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC45"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC38"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.1.8 Structure </H3>
+<!--docid::SEC46::-->
+<P>
+
+Structures are collections of several data items. In the specification
+they are written as
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        ( <VAR>name</VAR> : <VAR>type</VAR> ;
+          <VAR>name</VAR> : <VAR>type</VAR> ;
+          ...
+        )
+</pre></td></tr></table></P><P>
+
+where each <VAR>name</VAR> is the name of a data field and the
+corresponding <VAR>type</VAR> is its type.
+</P><P>
+
+Structures are transmitted as a sequence of their fields.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC47"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC46"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.2 LysKOM Data Types </H2>
+<!--docid::SEC47::-->
+<P>
+
+In this section the data types specific to LysKOM are defined. Most of
+these will probably make very little sense until you know what calls
+there are. This section does not include the server calls or
+asynchronous messages, even though these are also data types.
+</P><P>
+
+Since the types defined here are all based on the simple types, the
+definitions are more concise in this section.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC48"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC49"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.1 Common Types </H3>
+<!--docid::SEC48::-->
+<P>
+
+The types defined in this section are fairly simple and used in many of
+the more complex data types.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC49"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC50"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H4> 3.2.1.1 Time </H4>
+<!--docid::SEC49::-->
+<P>
+
+<A NAME="IDX11"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Time ::=
+              ( seconds         :       INT32;
+                minutes         :       INT32;
+                hours           :       INT32;
+                day             :       INT32;
+                month           :       INT32;
+                year            :       INT32;
+                day-of-week     :       INT32;
+                day-of-year     :       INT32;
+                is-dst          :       BOOL;
+              )
+</pre></td></tr></table></P><P>
+
+<CODE>Time</CODE> is used to specify times in several data structures. The
+fields <CODE>seconds</CODE>, <CODE>minutes</CODE> and <CODE>hours</CODE> give wall clock
+time. <CODE>day</CODE> is the day of month and <CODE>month</CODE> is the current
+month, starting with zero for January. <CODE>year</CODE> is the number of
+years since 1900. <CODE>day-of-week</CODE> is the current weekday, with zero
+used for Sunday. <CODE>day-of-year</CODE> is how many days of the year have
+passed starting with zero and <CODE>is-dst</CODE> is true when the time
+indicated is daylight savings time.
+</P><P>
+
+When the server receives a <CODE>Time</CODE> structure from a client it
+ignores the <CODE>day-of-week</CODE> and <CODE>day-of-year</CODE> fields.
+</P><P>
+
+All times are expressed in the time zone of the server.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC50"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC49"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC51"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC51"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H4> 3.2.1.2 Conference Numbers </H4>
+<!--docid::SEC50::-->
+<P>
+
+<A NAME="IDX12"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Conf-No         ::=     INT16;
+</pre></td></tr></table></P><P>
+
+This type denotes a conference number.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC51"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC50"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC52"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC52"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H4> 3.2.1.3 Text Numbers </H4>
+<!--docid::SEC51::-->
+<P>
+
+<A NAME="IDX13"></A>
+<A NAME="IDX14"></A>
+<A NAME="IDX15"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Text-No         ::=     INT32;
+        Local-Text-No   ::=     INT32;
+        Text-List       ::=
+              ( first-local-no  :       Local-Text-No;
+                texts           :       ARRAY Text-No;
+              )
+</pre></td></tr></table></P><P>
+
+These three types are used to indicate articles in the LysKOM database.
+<CODE>Text-No</CODE> is a global text number and <CODE>Local-Text-No</CODE> a local
+text number. <CODE>Text-List</CODE> is used when a mapping from local to
+global numbers are required.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC52"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC51"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC48"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H4> 3.2.1.4 Person and Session Numbers </H4>
+<!--docid::SEC52::-->
+<P>
+
+<A NAME="IDX16"></A>
+<A NAME="IDX17"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Pers-No         ::=     Conf-No;
+        Session-No      ::=     INT32;
+</pre></td></tr></table></P><P>
+
+<CODE>Pers-No</CODE> is used to indicate a person.  <CODE>Session-No</CODE> is used
+in a few data structures relating to information about active LysKOM
+sessions.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC53"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC52"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC54"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC54"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.2 Auxiliary Information </H3>
+<!--docid::SEC53::-->
+<P>
+
+<A NAME="IDX18"></A>
+<A NAME="IDX19"></A>
+<A NAME="IDX20"></A>
+<A NAME="IDX21"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Aux-No   ::=    INT32;
+
+        Aux-Item ::=
+              ( aux-no      :       Aux-No;
+                tag         :       INT32;
+                creator     :       Pers-No;
+                created-at  :       Time;
+                flags       :       Aux-Item-Flags;
+                inherit-limit :     INT32;
+                data        :       HOLLERITH;
+              )
+
+        Aux-Item-Input ::=
+              ( tag         :       INT32;
+                flags       :       Aux-Item-Flags;
+                inherit-limit :     INT32;
+                data        :       HOLLERITH;
+              )
+
+        Aux-Item-Flags ::= BITSTRING
+              ( deleted;
+                inherit;
+                secret;
+                hide-creator;
+                dont-garb;
+                reserved2;
+                reserved3;
+                reserved4;
+              )
+</pre></td></tr></table></P><P>
+
+Aux-Item-Input contains a subset of the fields of an Aux-Item.  It is
+used when the client wants to send an Aux-Item to the server, and it
+only contains the elements that the client can affect.  The fields in
+Aux-Item and Aux-Item-Input have the following meaning:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>aux-no</CODE>
+<DD>The number of the item within the list where it is found. This number
+together with a conference or text number uniquely identifies a
+particular aux-item.  (There is also a global list of Aux-Items for the
+server.  That list is manipulated via the modify-system-info
+(see section <A HREF="Protocol-A_4.html#SEC261">4.96 modify-system-info [95] (10) Recommended</A>) request, and when using that request the
+aux-no is enough to uniquely identify the aux-item.)
+<P>
+
+This field is not present in <CODE>Aux-Item-Input</CODE>.  It is assigned by
+the server.
+<DT><CODE>tag</CODE>
+<DD>The item tag. The tag determines what the data means.
+<DT><CODE>creator</CODE>
+<DD>The person who created the item, or zero if the item was created
+anonymously or if the owner is being withheld.
+<P>
+
+This field is not present in <CODE>Aux-Item-Input</CODE>.  It is assigned by
+the server.
+<DT><CODE>created-at</CODE>
+<DD>The time when the item was created.
+<P>
+
+This field is not present in <CODE>Aux-Item-Input</CODE>.  It is assigned by
+the server.
+<DT><CODE>flags</CODE>
+<DD>The item flags (see below).
+<DT><CODE>inherit-limit</CODE>
+<DD>Determines how many times (how deep) an item may be inherited. If zero,
+the item is inherited an unlimited number of times. If nonzero it is
+<B>one more</B> than the number of additional times the item may be
+inherited. Thus, 1 means that inheritance will be blocked and 2 means
+that the item will be inherited only to the next level.
+<DT><CODE>data</CODE>
+<DD>The item data.
+</DL>
+<P>
+
+The flags that can be set on an aux-item have the following meaning:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>deleted</CODE>
+<DD>The item has been deleted, and should not be used for anything.
+<DT><CODE>inherit</CODE>
+<DD>The item will be inherited (if the inherit-limit field allows it.)
+<DT><CODE>secret</CODE>
+<DD>The item will not be revealed to anyone but the item's creator and
+supervisors of the creator.
+<DT><CODE>hide-creator</CODE>
+<DD>The item creator will be withheld from everyone but the item's creator
+and supervisors of the creator.
+<DT><CODE>dont-garb</CODE>
+<DD>The object the item is set on will not be garbage-collected.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC54"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC55"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC55"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.3 Conference Types </H3>
+<!--docid::SEC54::-->
+<P>
+
+<A NAME="IDX22"></A>
+<A NAME="IDX23"></A>
+<A NAME="IDX24"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Conf-Type ::= BITSTRING
+              ( rd_prot;
+                original;
+                secret;
+                letterbox;
+              )
+
+        Extended-Conf-Type ::=  BITSTRING
+              ( rd_prot;
+                original;
+                secret;
+                letterbox;
+                allow-anonymous;
+                forbid-secret;
+                reserved2;
+                reserved3;
+              )
+
+        Any-Conf-Type   ::=     Conf-Type | Extended-Conf-Type;
+</pre></td></tr></table></P><P>
+
+These types are used to specify the type of a conference.
+<CODE>Conf-Type</CODE> is used in data types and calls that were created
+before version 8.0 of the protocol and has been augmented in
+<CODE>Extended-Conf-Type</CODE>. The type <CODE>Any-Conf-Type</CODE> is used when
+either is admissible.
+</P><P>
+
+The bits have the following meaning (see section <A HREF="Protocol-A_2.html#SEC17">2.2 Conferences</A>, for more
+info.)
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>rd_prot</CODE>
+<DD>If unset anyone can add themselves as members to the conference.
+<P>
+
+<DT><CODE>original</CODE>
+<DD>If set, comments are not allowed in the conference.
+<P>
+
+<DT><CODE>secret</CODE>
+<DD>If set the conference is secret. It's existence will only be revealed to
+members and supervisors.
+<P>
+
+<DT><CODE>letterbox</CODE>
+<DD>Set if the conference is a person's mailbox.
+<P>
+
+<DT><CODE>allow-anonymous</CODE>
+<DD>Set if anonymous articles are allowed in the conference.
+<P>
+
+<DT><CODE>forbid-secret</CODE>
+<DD>If set, secret members cannot be added to the conference.
+<P>
+
+<DT><CODE>reserved2</CODE>
+<DD><DT><CODE>reserved3</CODE>
+<DD>Reserved for future use. The values of these bits should be never be
+modified or used by clients who do not know their meaning. When a new
+conference is created these should always be set to zero.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC55"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC54"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC56"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC56"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.4 Conference Search Results </H3>
+<!--docid::SEC55::-->
+<P>
+
+<A NAME="IDX25"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Conf-Z-Info ::= 
+              ( name    :       HOLLERITH;
+                type    :       Conf-Type;
+                conf_no :       Conf-No;
+              )
+</pre></td></tr></table></P><P>
+
+These types are used for the result of some calls that search for
+conferences based on their names.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC56"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC55"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC57"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC57"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.5 Conference Status Types </H3>
+<!--docid::SEC56::-->
+<P>
+
+<A NAME="IDX26"></A>
+<A NAME="IDX27"></A>
+<A NAME="IDX28"></A>
+<A NAME="IDX29"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Garb-Nice ::= INT32;
+
+        Conference-Old ::=   
+                ( name                  :       HOLLERITH;
+                  type                  :       Conf-Type;
+                  creation-time         :       Time;
+                  last-written          :       Time;
+                  creator               :       Pers-No;
+                  presentation          :       Text-No;
+                  supervisor            :       Conf-No;
+                  permitted-submitters  :       Conf-No;
+                  super-conf            :       Conf-No;
+                  msg-of-day            :       Text-No;
+                  nice                  :       Garb-Nice;
+                  no-of-members         :       INT16;
+                  first-local-no        :       Local-Text-No;
+                  no-of-texts           :       INT32;
+                )
+
+        Conference ::=   
+                ( name                  :       HOLLERITH;
+                  type                  :       Extended-Conf-Type;
+                  creation-time         :       Time;
+                  last-written          :       Time;
+                  creator               :       Pers-No;
+                  presentation          :       Text-No;
+                  supervisor            :       Conf-No;
+                  permitted-submitters  :       Conf-No;
+                  super-conf            :       Conf-No;
+                  msg-of-day            :       Text-No;
+                  nice                  :       Garb-Nice;
+                  keep-commented        :       Garb-Nice;
+                  no-of-members         :       INT16;
+                  first-local-no        :       Local-Text-No;
+                  no-of-texts           :       INT32;
+                  expire                :       Garb-Nice;
+                  aux-items             :       ARRAY Aux-Item;
+                )
+
+        UConference ::=
+                ( name                  :       HOLLERITH;
+                  type                  :       Extended-Conf-Type;
+                  highest-local-no      :       Local-Text-No;
+                  nice                  :       Garb-Nice;
+                )
+</pre></td></tr></table></P><P>
+
+These three types are used to specify information about a conference.
+<CODE>Garb-Nice</CODE> is a quantity used to specify how long articled are
+kept in a conference before being removed. <CODE>Conference</CODE> is the full
+information about a conference and <CODE>UConference</CODE> is brief
+information about a conference.
+</P><P>
+
+The fields of <CODE>Conference</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>name</CODE>
+<DD>The name of this conference.
+<DT><CODE>type</CODE>
+<DD>The type of the conference.
+<DT><CODE>creation-time</CODE>
+<DD>The date and time when the conference was created.
+<DT><CODE>last-written</CODE>
+<DD>The date when something was last written in the conference.
+<DT><CODE>creator</CODE>
+<DD>The person who created the conference.
+<DT><CODE>presentation</CODE>
+<DD>The article containing the conference presentation or zero if the
+conference has no presentation.
+<DT><CODE>supervisor</CODE>
+<DD>The conference<A NAME="DOCF4" HREF="Protocol-A_fot.html#FOOT4">(4)</A> who
+supervises this conference.
+<DT><CODE>permitted-submitters</CODE>
+<DD>The conference whose members<A NAME="DOCF5" HREF="Protocol-A_fot.html#FOOT5">(5)</A> may submit
+articles to the conference, or zero if anyone may do so.
+<DT><CODE>super-conf</CODE>
+<DD>The conference that receives comments if this conference does not accept
+them. Zero means the author of the comment in question.
+<DT><CODE>msg-of-day</CODE>
+<DD>The conference notice, if any. 
+<DT><CODE>nice</CODE>
+<DD>The number of days an article should be kept before being removed from
+the conference.
+<DT><CODE>keep-commented</CODE>
+<DD>A text that has comments no older than this number of days will not be
+removed from the conference.
+<DT><CODE>no-of-members</CODE>
+<DD>The number of members of this conference.
+<DT><CODE>first-local-no</CODE>
+<DD>The local number of the oldest existing article in the conference.
+<DT><CODE>no-of-texts</CODE>
+<DD>The number of articles in the conference.
+<DT><CODE>expire</CODE>
+<DD>This field will be used to control when a conference expires. 
+It is not used at the moment, and should be set to zero for future
+compatibility.
+<DT><CODE>aux-items</CODE>
+<DD>The conference's aux item list. 
+</DL>
+<P>
+
+The fields of <CODE>UConference</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>name</CODE>
+<DD>The name of this conference.
+<DT><CODE>type</CODE>
+<DD>The conference type. Note that this is an extended conference type,
+unlike the type field of <CODE>Conference</CODE>.
+<DT><CODE>highest-local-no</CODE>
+<DD>The local number of the newest article in the conference.
+<DT><CODE>nice</CODE>
+<DD>The number of days an article should be kept before being removed from
+the conference.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC57"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC56"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC58"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC58"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.6 Archaic way to list conferences </H3>
+<!--docid::SEC57::-->
+<P>
+
+The result of request number 12, lookup-name, cannot be expressed in the
+grammar used in this document.  This is as close as it gets:
+</P><P>
+
+<A NAME="IDX30"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Conf-List-Archaic ::=
+                ( conf-nos    : ARRAY Conf-No;
+                  conf-types  : ARRAY Conf-Type; ! Sans <VAR>n</VAR>; see below
+                )
+</pre></td></tr></table></P><P>
+
+The two arrays <CODE>conf-nos</CODE> and <CODE>conf-types</CODE> are always the same
+size.  For some obscure reason the size of the second array is not
+actually transmitted.  See also the example in section <A HREF="Protocol-A_4.html#SEC95">4.13 lookup-name [12] (1) Obsolete</A>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC58"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC57"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC59"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC59"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.7 Mapping Local to Global Text Numbers </H3>
+<!--docid::SEC58::-->
+<P>
+
+<A NAME="IDX31"></A>
+<A NAME="IDX32"></A>
+<A NAME="IDX33"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Text-Mapping ::=
+              ( range-begin           :    Local-Text-No;
+                range-end             :    Local-Text-No;
+                later-texts-exists    :    BOOL;
+                block                 :    Local-To-Global-Block;
+              )
+
+        Local-To-Global-Block ::= SELECTION
+              ( 0=sparse sparse-block :   ARRAY Text-Number-Pair;
+                1=dense  dense-block  :   Text-List;
+              )
+
+        Text-Number-Pair ::=
+              ( local-number          :   Local-Text-No;
+                global-number         :   Text-No;
+              )
+</pre></td></tr></table></P><P>
+
+A <CODE>Text-Mapping</CODE> is used when the client needs to look up which
+global <CODE>Text-No</CODE> that corresponds to a <CODE>Local-Text-No</CODE>.  The
+client uses <CODE>local-to-global</CODE> to ask for information about a few
+texts starting a a certain local text number, and the server returns the
+information in a <CODE>Text-Mapping</CODE>.
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>range-begin</CODE>
+<DD>The first local text number that the client asked about.
+<DT><CODE>range-end</CODE>
+<DD>The first local text number that the reply doesn't say anything about.
+This <CODE>Text-Mapping</CODE> tells the client about all existing texts from
+<CODE>range-begin</CODE> to (but not including) <CODE>range-end</CODE>.
+<DT><CODE>later-texts-exists</CODE>
+<DD>This is true if there are more texts in the conference after this
+block.
+<DT><CODE>block</CODE>
+<DD>The block can be sent i two formats.  The server is free to choose which
+format to use as it pleases; clients must be prepared for any of them.
+<UL>
+<LI>
+The <EM>sparse</EM> format is useful when many local text number no longer
+exists.  It starts with a <CODE>0</CODE> that indicates that the sparse format
+is used, and is followed by an array of <CODE>Text-Number-Pair</CODE>.  The
+array will always be sorted so that <CODE>local-number</CODE> always
+increases.
+<LI>
+The <EM>dense</EM> format is good when most of the local text numbers
+exist.  It starts with a <CODE>1</CODE> that indicates that the dense format
+is used, and is followed by a <CODE>Text-List</CODE>.  The <CODE>Text-List</CODE>
+contains <CODE>first-local-no</CODE> and an array of <CODE>Text-No</CODE>.
+The local text number <CODE>first-local-no</CODE> corresponds to the first
+<CODE>Text-No</CODE> in the array, <CODE>first-local-no</CODE> + 1 corresponds to
+the second entry in the array, and so on.  The array contains a zero to
+indicate that a certain local text number doesn't exist.
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC59"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC58"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC60"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC60"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.8 Server Information </H3>
+<!--docid::SEC59::-->
+<P>
+
+<A NAME="IDX34"></A>
+<A NAME="IDX35"></A>
+<A NAME="IDX36"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Info ::=    
+              ( version             :   INT32;
+                conf-pres-conf      :   Conf-No;
+                pers-pres-conf      :   Conf-No;
+                motd-conf           :   Conf-No;
+                kom-news-conf       :   Conf-No;
+                motd-of-lyskom      :   Text-No;
+                aux-item-list       :   ARRAY Aux-Item;
+              )
+
+        Info-Old ::=    
+              ( version             :   INT32;
+                conf-pres-conf      :   Conf-No;
+                pers-pres-conf      :   Conf-No;
+                motd-conf           :   Conf-No;
+                kom-news-conf       :   Conf-No;
+                motd-of-lyskom      :   Text-No;
+              )
+
+        Version-Info ::=
+              ( protocol-version    :   INT32;
+                server-software     :   HOLLERITH;
+                software-version    :   HOLLERITH;
+              )
+</pre></td></tr></table></P><P>
+
+These data types contain information about the LysKOM server. The fields
+of <CODE>Info</CODE> and <CODE>Info-Old</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>version</CODE>
+<DD>The server version encoded as a number <VAR>aa</VAR><VAR>bb</VAR><VAR>cc</VAR> where
+<VAR>aa</VAR> is the major version number, <VAR>bb</VAR> the minor number and
+<VAR>cc</VAR> the secondary minor version. For instance, <CODE>10607</CODE> is
+version 1.6.7 of the server. If greater than 10699 the
+<CODE>get-version-info</CODE> should be used instead.
+<DT><CODE>conf-pres-conf</CODE>
+<DD>The conference that contains conference presentations.
+<DT><CODE>pers-pres-conf</CODE>
+<DD>The conference that contains person presentations.
+<DT><CODE>motd-conf</CODE>
+<DD>The conference that contains conference and person notices.
+<DT><CODE>kom-news-conf</CODE>
+<DD>The conference that contains news about LysKOM.
+<DT><CODE>motd-of-lyskom</CODE>
+<DD>The number of an article to display when LysKOM is entered or zero if
+there is none.
+<DT><CODE>aux-item-list</CODE>
+<DD>(Not present in <CODE>Info-Old</CODE>.)  A list of aux-items that belong to
+the server.
+</DL>
+<P>
+
+The fields of <CODE>Version-Info</CODE> are:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>protocol-version</CODE>
+<DD>The version of protocol A the server is using. This may be used to
+ascertain which calls are available.
+<DT><CODE>server-software</CODE>
+<DD>Human-readable name of the server software.
+<DT><CODE>software-version</CODE>
+<DD>Human-readable name of the server software version.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC60"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC59"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC61"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.9 Person Status Types </H3>
+<!--docid::SEC60::-->
+<P>
+
+<A NAME="IDX37"></A>
+<A NAME="IDX38"></A>
+<A NAME="IDX39"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Person ::=
+              ( username                :       HOLLERITH;
+                privileges              :       Priv-Bits;
+                flags                   :       Personal-Flags;
+                last-login              :       Time;
+                user-area               :       Text-No;
+                total-time-present      :       INT32;
+                sessions                :       INT32;
+                created-lines           :       INT32;
+                created-bytes           :       INT32;
+                read-texts              :       INT32;
+                no-of-text-fetches      :       INT32;
+                created-persons         :       INT16;
+                created-confs           :       INT16;
+                first-created-local-no  :       INT32;
+                no-of-created-texts     :       INT32;
+                no-of-marks             :       INT16;
+                no-of-confs             :       INT16;
+              )
+
+        Personal-Flags ::= BITSTRING 
+              ( unread-is-secret;
+                flg2;
+                flg3;
+                flg4;
+                flg5;
+                flg6;
+                flg7;
+                flg8;
+              )
+
+
+        Priv-Bits ::= BITSTRING 
+              ( wheel;
+                admin;
+                statistic;
+                create_pers;
+                create_conf;
+                change_name;
+                flg7;
+                flg8;
+                flg9;
+                flg10;
+                flg11;
+                flg12;
+                flg13;
+                flg14;
+                flg15;
+                flg16;
+              )
+</pre></td></tr></table></P><P>
+
+These types are used to specify information about persons. <CODE>Person</CODE>
+contains the information about a person, <CODE>Personal-Flags</CODE> contains
+flags set by the user and <CODE>Priv-Bits</CODE> contains the person's
+privileges.
+</P><P>
+
+The fields of <CODE>Person</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>username</CODE>
+<DD>The name of the user.
+<DT><CODE>privileges</CODE>
+<DD>The privileges of the person.
+<DT><CODE>flags</CODE>
+<DD>Flags set by the user.
+<DT><CODE>last-login</CODE>
+<DD>The time when the person last logged on.
+<DT><CODE>user-area</CODE>
+<DD>The text number of the person's user area or zero if the person has no
+user area.
+<DT><CODE>total-time-present</CODE>
+<DD>The number of seconds the person has been using LysKOM. 
+<DT><CODE>sessions</CODE>
+<DD>The number of sessions the person has initiated.
+<DT><CODE>created-lines</CODE>
+<DD>The number of lines of articles the person has written.
+<DT><CODE>created-bytes</CODE>
+<DD>The number of characters the person has written.
+<DT><CODE>read-texts</CODE>
+<DD>The number of articles the person has read.
+<DT><CODE>no-of-text-fetches</CODE>
+<DD>The number of texts the person has retrieved from the server.
+<DT><CODE>created-persons</CODE>
+<DD>The number of other persons this person has created.
+<DT><CODE>created-confs</CODE>
+<DD>This holds the number of conferences created by the person.
+<DT><CODE>first-created-local-no</CODE>
+<DD>The local number of the earliest existing article written by the person.
+The local number applies to a local-to-global mapping containing all
+articles written by the person.
+<DT><CODE>no-of-created-texts</CODE>
+<DD>This holds the number of articles written by the person.
+<DT><CODE>no-of-marks</CODE>
+<DD>The number of marked texts this person has.
+<DT><CODE>no-of-confs</CODE>
+<DD>The number of conferences the person is a member of.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC61"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC60"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC62"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.10 Membership Information </H3>
+<!--docid::SEC61::-->
+<P>
+
+<A NAME="IDX40"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Membership-Type ::=     BITSTRING
+              ( invitation;
+                passive;
+                secret;
+                reserved1;
+                reserved2;
+                reserved3;
+                reserved4;
+                reserved5;
+              )
+</pre></td></tr></table></P><P>
+
+The <CODE>Membership-Type</CODE> type contains flags that modify a membership.
+It is passed as part of both <CODE>Member</CODE> and <CODE>Membership</CODE>. The
+flags are:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>invitation</CODE>
+<DD>The member has been invited, but has not yet accepted membership.
+Clients should set this flag when adding other users as members. The
+server may force this flag to be set when adding another person as a
+member of a conference.
+<DT><CODE>passive</CODE>
+<DD>The member is not actively participating in the conference. Passive
+members do not receive group messages and should not be displayed as
+active members by clients.
+<DT><CODE>secret</CODE>
+<DD>The member does not wish to disclose the membership. Secret memberships
+and members are cleared before being returned to a person who is not a
+supervisor of the member or has sufficient privileges enabled.
+</DL>
+<P>
+
+The remaining flags in the <CODE>Membership-Type</CODE> structure are reserved
+and should be set to false on all new memberships and retained on all
+existing memberships.
+</P><P>
+
+<A NAME="IDX41"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Member          ::=
+              ( member          :       Pers-No;
+                added-by        :       Pers-No;
+                added-at        :       Time;
+                type            :       Membership-Type;
+              )
+</pre></td></tr></table></P><P>
+
+The <CODE>Member</CODE> structure encodes information about a member in a
+conference. It is returned by the section <A HREF="Protocol-A_4.html#SEC273">4.102 get-members [101] (10) Recommended</A> call. The fields of
+a <CODE>Member</CODE> structure are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>member</CODE>
+<DD>The person who is a member of the conference.
+<DT><CODE>added-by</CODE>
+<DD>The person who created the membership. This field is zero only if the
+membership was created before protocol version 10 was introduced.
+<DT><CODE>added-at</CODE>
+<DD>The time when the membership was created. This field is meaningless if
+added-by is zero.
+<DT><CODE>type</CODE>
+<DD>Flags modifying the membership.
+</DL>
+<P>
+
+The contents of a <CODE>Member</CODE> structure can be cleared (all fields set
+to zero) if the person requesting the record has insufficient privileges
+to see the contents of the structure.
+</P><P>
+
+<A NAME="IDX42"></A>
+<A NAME="IDX43"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Membership-Old ::=
+              ( last-time-read  :       Time;
+                conference      :       Conf-No;
+                priority        :       INT8;
+                last-text-read  :       Local-Text-No;
+                read-texts      :       ARRAY Local-Text-No;
+              )
+
+        Membership ::=
+              ( position        :       INT32;
+                last-time-read  :       Time;
+                conference      :       Conf-No;
+                priority        :       INT8;
+                last-text-read  :       Local-Text-No;
+                read-texts      :       ARRAY Local-Text-No;
+                added-by        :       Pers-No;
+                added-at        :       Time;
+                type            :       Membership-Type;
+              )
+</pre></td></tr></table></P><P>
+
+The <CODE>Membership</CODE> structure encodes information about a person's
+membership in a conference. It is returned by the section <A HREF="Protocol-A_4.html#SEC267">4.99 query-read-texts [98] (10) Recommended</A>
+and section <A HREF="Protocol-A_4.html#SEC269">4.100 get-membership [99] (10) Recommended</A> calls.
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>position</CODE>
+<DD>The position of this membership in the membership list.
+<DT><CODE>last-time-read</CODE>
+<DD>The time when the person last read anything from the conference.
+<DT><CODE>conference</CODE>
+<DD>The conference this membership data pertains to.
+<DT><CODE>priority</CODE>
+<DD>The priority the person has assigned to the conference. The higher the
+number, the higher the priority. In the past, priority zero indicated a
+passive membership. This usage is now obsolete.
+<DT><CODE>last-text-read</CODE>
+<DD>The local number of last text read in the conference.
+<DT><CODE>read-texts</CODE>
+<DD>Additional texts beyond <CODE>last-text-read</CODE> that have also been read.
+<DT><CODE>added-by</CODE>
+<DD>The person who created the membership. This field is zero if the
+membership was created before protocol version 10 was introduced.
+<DT><CODE>added-at</CODE>
+<DD>The time when the membership was created. This field is meaningless if
+added-by is zero.
+<DT><CODE>type</CODE>
+<DD>Flags modifying the membership.
+</DL>
+<P>
+
+A membership record may be cleared by the server (all fields set to
+zero) if the person requesting the membership has insufficient
+privileges to see the contents membership, but has sufficient privileges
+to know about the person.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC62"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC61"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC63"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.11 Article Marks </H3>
+<!--docid::SEC62::-->
+<P>
+
+<A NAME="IDX44"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Mark ::= 
+                ( text-no       :       Text-No;
+                  type          :       INT8;
+                )
+</pre></td></tr></table></P><P>
+
+This data type hold information about a person's marks on articles.
+</P><P>
+
+The fields of <CODE>Mark</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>text-no</CODE>
+<DD>The text number marked.
+<DT><CODE>type</CODE>
+<DD>The mark value.
+</DL>
+<P>
+
+Before version eight of protocol A, the meaning of the mark value was
+unspecified. Work is underway to specify the meaning of certain mark
+values.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC63"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC62"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC64"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.12 Article Information </H3>
+<!--docid::SEC63::-->
+<P>
+
+<A NAME="IDX45"></A>
+<A NAME="IDX46"></A>
+<A NAME="IDX47"></A>
+<A NAME="IDX48"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Misc-Info ::= SELECTION
+                ( 0=recpt       recipient       :       Conf-No;
+                  1=cc-recpt    cc-recipient    :       Conf-No;
+                  2=comm-to     comment-to      :       Text-No;
+                  3=comm-in     commented-in    :       Text-No;
+                  4=footn-to    footnote-to     :       Text-No;
+                  5=footn-in    footnoted-in    :       Text-No;
+                  6=loc-no      local-no        :       Local-Text-No
+                  7=rec-time    received-at     :       Time;
+                  8=sent-by     sender          :       Pers-No;
+                  9=sent-at     sent-at         :       Time;
+                 15=bcc-recpt   bcc-recipient   :       Text-No;
+               )
+
+        Info-Type ::= ENUMERATION_OF(Misc-Info)
+
+        Text-Stat-Old ::=
+              ( creation-time   :       Time;
+                author          :       Pers-No;
+                no-of-lines     :       INT32;
+                no-of-chars     :       INT32;
+                no-of-marks     :       INT16;
+                misc-info       :       ARRAY Misc-Info;
+              )
+
+        Text-Stat ::=
+              ( creation-time   :       Time;
+                author          :       Pers-No;
+                no-of-lines     :       INT32;
+                no-of-chars     :       INT32;
+                no-of-marks     :       INT16;
+                misc-info       :       ARRAY Misc-Info;
+                aux-items       :       ARRAY Aux-Item;
+              )
+
+</pre></td></tr></table></P><P>
+
+These two structures contain information about a single article.
+<CODE>Text-Stat</CODE> contains core information about the article and
+<CODE>Misc-Info</CODE> contains miscellaneous information related to the
+article. In the future, <CODE>Misc-Info</CODE> will become obsolete and
+<CODE>Text-Stat</CODE> will be extended with more information.
+</P><P>
+
+A <CODE>Text-Stat</CODE> consists of the following:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>creation-time</CODE>
+<DD>The time when the article was created.
+<DT><CODE>author</CODE>
+<DD>The author of the article.
+<DT><CODE>no-of-lines</CODE>
+<DD>The number of lines in the article.
+<DT><CODE>no-of-chars</CODE>
+<DD>The number of characters in the article.
+<DT><CODE>no-of-marks</CODE>
+<DD>The number of marks added to this article by persons.
+<DT><CODE>misc-info</CODE>
+<DD>The <CODE>Misc-Info</CODE> list for this article.
+<DT><CODE>aux-items</CODE>
+<DD>The list of aux items for this article.
+</DL>
+<P>
+
+<CODE>Misc-Info</CODE>, when sent to the client, is sent in a particular order
+(see section <A HREF="Protocol-A_2.html#SEC19">2.3 The Misc-Info List</A>. The variants <CODE>Misc-Info</CODE> are
+(briefly):
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>recpt</CODE>
+<DD>Used to specify recipients of the article.
+<DT><CODE>cc-recpt</CODE>
+<DD>Specifies recipients who have received a copy of the article but who
+will not receive comments.
+<DT><CODE>comm-to</CODE>
+<DD>Specifies an article this article is a comment to.
+<DT><CODE>comm-in</CODE>
+<DD>Specifies an article in which there are comments to this article.
+<DT><CODE>footn-to</CODE>
+<DD>Specifies an article this article is a footnote to.
+<DT><CODE>footn-in</CODE>
+<DD>Specifies an article to which this article is a footnote.
+<DT><CODE>loc-no</CODE>
+<DD>Specifies the local text number of this article in the conference
+specified by <CODE>recpt</CODE> or <CODE>cc-recpt</CODE>.
+<DT><CODE>rec-time</CODE>
+<DD>Specifies the time when this article was received by the conference
+specified by <CODE>recpt</CODE> or <CODE>cc-recpt</CODE>.
+<DT><CODE>sent-by</CODE>
+<DD>Specifies who sent this article to the conference specified by
+<CODE>recpt</CODE> or <CODE>cc-recpt</CODE>.
+<DT><CODE>sent-at</CODE>
+<DD>Specifies when the article was sent to the conference specified by
+<CODE>recpt</CODE> or <CODE>cc-recpt</CODE>.
+<DT><CODE>bcc-recpt</CODE>
+<DD>Specifies a blind carbon copy recipient. This item is only accepted by
+protocol version 10 servers and is only sent in responses and messages
+introduced in protocol version 10 or later.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC64"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC63"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC65"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.13 Who Information </H3>
+<!--docid::SEC64::-->
+<P>
+
+<A NAME="IDX49"></A>
+<A NAME="IDX50"></A>
+<A NAME="IDX51"></A>
+<TABLE><tr><td>&nbsp;</td><td><pre>        Who-Info-Old ::=
+              ( person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                what-am-i-doing         :       HOLLERITH;
+              )
+
+        Who-Info ::=
+              ( person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                session                 :       Session-No;
+                what-am-i-doing         :       HOLLERITH;
+                username                :       HOLLERITH;
+              )
+
+        Who-Info-Ident ::=
+              ( person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                session                 :       Session-No;
+                what-am-i-doing         :       HOLLERITH;
+                username                :       HOLLERITH;
+                hostname                :       HOLLERITH;
+                ident-user              :       HOLLERITH;
+              )
+</pre></td></tr></table></P><P>
+
+These structures are used to retrieve and set information on who is
+currently using LysKOM. The types marked as "old" are obsolete but are
+included for completeness.  <CODE>Who-Info-Old</CODE> identifies a user who is
+currently using LysKOM. <CODE>Who-Info</CODE> is used to set information
+about a session and is returned by one obsolete
+call. <CODE>Who-Info-Ident</CODE> is the preferred data type to use.
+</P><P>
+
+The fields of <CODE>Who-Info-Old</CODE> are
+<DL COMPACT>
+<DT><CODE>person</CODE>
+<DD>The person the information is about.
+<DT><CODE>working-conference</CODE>
+<DD>The conference the person is currently in.
+<DT><CODE>what-am-i-doing</CODE>
+<DD>A client-supplied string saying what the person is doing.
+</DL>
+<P>
+
+The fields of <CODE>Who-Info</CODE> are
+<DL COMPACT>
+<DT><CODE>person</CODE>
+<DD>The person the information is about.
+<DT><CODE>working-conference</CODE>
+<DD>The conference the person is currently in.
+<DT><CODE>session</CODE>
+<DD>The person's session number.
+<DT><CODE>what-am-i-doing</CODE>
+<DD>A client-supplied string saying what the person is doing.
+<DT><CODE>username</CODE>
+<DD>The name of the "real" user constructed from <CODE>hostname</CODE> and
+<CODE>ident-user</CODE> (see below) and information from the client.
+</DL>
+<P>
+
+The fields of <CODE>Who-Info-Ident</CODE> are
+<DL COMPACT>
+<DT><CODE>person</CODE>
+<DD>The person the information is about.
+<DT><CODE>working-conference</CODE>
+<DD>The conference the person is currently in.
+<DT><CODE>session</CODE>
+<DD>The person's session number.
+<DT><CODE>what-am-i-doing</CODE>
+<DD>A client-supplied string saying what the person is doing.
+<DT><CODE>username</CODE>
+<DD>The name of the "real" user constructed from <CODE>hostname</CODE> and
+<CODE>ident-user</CODE>.
+<DT><CODE>hostname</CODE>
+<DD>The host the connection originated at.
+<DT><CODE>ident-user</CODE>
+<DD>The user name according to the Ident 
+daemon
+ at the user's machine or "unknown" if Ident was not used.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC65"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC64"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC53"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC47"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.2.14 Session Information </H3>
+<!--docid::SEC65::-->
+<TABLE><tr><td>&nbsp;</td><td><pre>        Session-Info ::= 
+              ( person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                session                 :       Session-No;
+                what-am-i-doing         :       HOLLERITH;
+                username                :       HOLLERITH;
+                idle-time               :       INT32;
+                connection-time         :       Time;
+              )
+
+        Session-Info-Ident ::= 
+              ( person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                session                 :       Session-No;
+                what-am-i-doing         :       HOLLERITH;
+                username                :       HOLLERITH;
+                hostname                :       HOLLERITH;
+                ident-user              :       HOLLERITH;
+                idle-time               :       INT32;
+                connection-time         :       Time;
+              )
+
+        Static-Session-Info ::=
+              (
+                username                : HOLLERITH;
+                hostname                : HOLLERITH;
+                ident-user              : HOLLERITH;
+                connection-time         : Time;
+              )
+
+        Session-Flags ::= BITSTRING
+              ( invisible;
+                user_active_used;
+                user_absent;
+                reserved3;
+                reserved4;
+                reserved5;
+                reserved6;
+                reserved7;
+              )
+
+        Dynamic-Session-Info ::=
+              ( session                 :       Session-No;
+                person                  :       Pers-No;
+                working-conference      :       Conf-No;
+                idle-time               :       INT32;
+                flags                   :       Session-Flags;
+                what-am-i-doing         :       HOLLERITH;
+              )
+</pre></td></tr></table><P>
+
+These data types give information about a particular LysKOM session. The
+types <CODE>Session-Info</CODE> and <CODE>Session-Info-Ident</CODE> have been
+superseded by <CODE>Static-Session-Info</CODE> and
+<CODE>Dynamic-Session-Info</CODE>. The static session info represents
+information about a session that does not change during the lifetime of
+the session. Therefore static session infos can be aggressively cached by
+the client.
+</P><P>
+
+The fields of <CODE>Session-Info</CODE> are
+<DL COMPACT>
+<DT><CODE>person</CODE>
+<DD>The person using this session.
+<DT><CODE>working-conference</CODE>
+<DD>The conference the session is currently in.
+<DT><CODE>session</CODE>
+<DD>The number of this session.
+<DT><CODE>what-am-i-doing</CODE>
+<DD>A client-supplied string saying what the person is currently doing.
+<DT><CODE>username</CODE>
+<DD>The name of the "real" user (see <CODE>Who-Info</CODE> above.)
+<DT><CODE>idle-time</CODE>
+<DD>The number of seconds since the last server call.
+<DT><CODE>connection-time</CODE>
+<DD>The time when the connection was initiated. This is not the same as the
+amount of time the person has been on.
+</DL>
+<P>
+
+The fields of <CODE>Session-Info-Ident</CODE> are
+<DL COMPACT>
+<DT><CODE>person</CODE>
+<DD>The person using this session.
+<DT><CODE>working-conference</CODE>
+<DD>The conference the session is currently in.
+<DT><CODE>session</CODE>
+<DD>The number of this session.
+<DT><CODE>what-am-i-doing</CODE>
+<DD>A client-supplied string saying what the person is currently doing.
+<DT><CODE>username</CODE>
+<DD>The name of the "real" user (see <CODE>Who-Info-Ident</CODE> above.)
+<DT><CODE>hostname</CODE>
+<DD>The host the connection originated at.
+<DT><CODE>ident-user</CODE>
+<DD>The user name according to the Ident
+daemon
+at the user's machine or "unknown"
+if Ident was not used.
+<DT><CODE>idle-time</CODE>
+<DD>The number of seconds since the last server call.
+<DT><CODE>connection-time</CODE>
+<DD>The time when the connection was initiated. This is not the same as the
+amount of time the person has been on.
+</DL>
+<P>
+
+The fields of <CODE>Static-Session-Info</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>username</CODE>
+<DD>The name of the "real" user (see <CODE>Who-Info-Ident</CODE> above.)
+<DT><CODE>hostname</CODE>
+<DD>The host the connection originated at.
+<DT><CODE>ident-user</CODE>
+<DD>The user name according to the Ident
+daemon
+at the user's machine or "unknown"
+if Ident was not used.
+<DT><CODE>connection-time</CODE>
+<DD>The time when the connection was initiated. This is not the same as the
+amount of time the person has been on.
+</DL>
+<P>
+
+The bits in <CODE>Session-Flags</CODE> are:
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>invisible</CODE>
+<DD>When true, the user requested an invisible session (see section <A HREF="Protocol-A_4.html#SEC195">4.63 login [62] (4) Recommended</A>).
+Sessions where no-one is logged in also have the <CODE>invisible</CODE> flag
+set.
+<DT><CODE>user_active_used</CODE>
+<DD>When true, the user-active (see section <A HREF="Protocol-A_4.html#SEC235">4.83 user-active [82] (9) Recommended</A>) call has been issued by
+the session, which in turn means that <CODE>idle-time</CODE> field in the
+<CODE>Dynamic-Session-Info</CODE> is valid.
+<DT><CODE>user_absent</CODE>
+<DD>This flag is currently not used.
+</DL>
+<P>
+
+The fields of a <CODE>Dynamic-Session-Info</CODE> are
+</P><P>
+
+<DL COMPACT>
+<DT><CODE>session</CODE>
+<DD>The session number of the session.
+<DT><CODE>person</CODE>
+<DD>The person currently logged on, or zero if the session has not yet
+logged on. 
+<DT><CODE>working-conference</CODE>
+<DD>The conference the session is currently in.
+<DT><CODE>idle-time</CODE>
+<DD>The number of seconds that have passed since the last time user-active
+(see section <A HREF="Protocol-A_4.html#SEC235">4.83 user-active [82] (9) Recommended</A>) was called in the session.
+<DT><CODE>flags</CODE>
+<DD>The dynamic session flags (see above.)
+<DT><CODE>what-am-i-doing</CODE>
+<DD>What the client is doing. This string is set by the client.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC66"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC65"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC67"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 3.3 Name Expansion </H2>
+<!--docid::SEC66::-->
+<P>
+
+Names in LysKOM can be expanded according to two rules, regexp matching
+or KOM conventions.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC67"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC68"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.3.1 Regexp Matching </H3>
+<!--docid::SEC67::-->
+<P>
+
+This type of expansion, used by the see section <A HREF="Protocol-A_4.html#SEC219">4.75 re-z-lookup [74] (7) Recommended</A> call and its
+predecessors simply matches <CODE>ed</CODE>(1) style regular expressions to
+names in the database to find the list of matching names. The matching
+is case sensitive.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC68"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC67"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC69"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC69"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.3.2 KOM Conventions </H3>
+<!--docid::SEC68::-->
+<P>
+
+This type of matching is a little more complicated. Patterns consist of
+words and parenthesized expressions, and contain implicit wildcards. The
+<CODE>lyskomd</CODE> program implements an approximation of theses
+conventions. Since <CODE>lyskomd</CODE> is the trendsetter, these semantics
+are good enough.
+</P><P>
+
+The rules are simple. Any parenthesized expressions are removed from the
+pattern and the names being checked for matches. Then the words of the
+pattern are examined from beginning to end, and if every pattern word
+matches the prefix of the corresponding word in the name, the name
+matches the pattern.
+</P><P>
+
+For example "L D" matches "LysKOM (client, server and protocol)
+Discussion (and) Ideas", but not "LysKOM Protocol Discussion".
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC69"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC68"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC66"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 3.3.3 Case Conversion </H3>
+<!--docid::SEC69::-->
+<P>
+
+Character case is converted according to a collate table in the server.
+The collate table is not really a protocol issue, and in a future
+protocol version there will be a call to retrieve the collate table from
+the server.
+</P><P>
+
+The current collate table simply maps ISO 8859-1 uppercase and lowercase
+letters to equivalents, and also considered braces and suchlike
+equivalent according to swascii rules.
+</P><P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_3.html#SEC37"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_4.html#SEC70"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

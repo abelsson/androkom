@@ -1,0 +1,957 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Table of Contents</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Table of Contents">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Table of Contents">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC_Contents"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1>Table of Contents</H1>
+<UL>
+<A NAME="TOC1" HREF="Protocol-A_1.html#SEC1">1. Overview</A>
+<BR>
+<UL>
+<A NAME="TOC2" HREF="Protocol-A_1.html#SEC2">1.1 Document Revision History</A>
+<BR>
+<A NAME="TOC3" HREF="Protocol-A_1.html#SEC3">1.2 Protocol Version History</A>
+<BR>
+<UL>
+<A NAME="TOC4" HREF="Protocol-A_1.html#SEC4">1.2.1 Protocol version 10 (first implemented in lyskomd 2.0.0)</A>
+<BR>
+<A NAME="TOC5" HREF="Protocol-A_1.html#SEC5">1.2.2 Protocol version 9 (first implemented in lyskomd 1.9.0)</A>
+<BR>
+<A NAME="TOC6" HREF="Protocol-A_1.html#SEC6">1.2.3 Protocol version 8 (first implemented in lyskomd 1.8.0)</A>
+<BR>
+<A NAME="TOC7" HREF="Protocol-A_1.html#SEC7">1.2.4 Protocol version 7 (first implemented in lyskomd 1.7.0)</A>
+<BR>
+<A NAME="TOC8" HREF="Protocol-A_1.html#SEC8">1.2.5 Protocol Version 6 (first implemented in lyskomd 1.4.0)</A>
+<BR>
+<A NAME="TOC9" HREF="Protocol-A_1.html#SEC9">1.2.6 Protocol Version 5 (first implemented in lyskomd 1.3.0)</A>
+<BR>
+<A NAME="TOC10" HREF="Protocol-A_1.html#SEC10">1.2.7 Protocol Version 4 (first implemented in lyskomd 1.1.1)</A>
+<BR>
+<A NAME="TOC11" HREF="Protocol-A_1.html#SEC11">1.2.8 Protocol Version 3 (first implemented in lyskomd 1.1.0)</A>
+<BR>
+<A NAME="TOC12" HREF="Protocol-A_1.html#SEC12">1.2.9 Protocol Version 2 (first implemented in lyskomd 0.30.0)</A>
+<BR>
+<A NAME="TOC13" HREF="Protocol-A_1.html#SEC13">1.2.10 Protocol Version 1 (first implemented in lyskomd 0.29.2)</A>
+<BR>
+</UL>
+<A NAME="TOC14" HREF="Protocol-A_1.html#SEC14">1.3 Notation</A>
+<BR>
+</UL>
+<A NAME="TOC15" HREF="Protocol-A_2.html#SEC15">2. Introduction</A>
+<BR>
+<UL>
+<A NAME="TOC16" HREF="Protocol-A_2.html#SEC16">2.1 Articles</A>
+<BR>
+<A NAME="TOC17" HREF="Protocol-A_2.html#SEC17">2.2 Conferences</A>
+<BR>
+<UL>
+<A NAME="TOC18" HREF="Protocol-A_2.html#SEC18">2.2.1 Persons and Sessions</A>
+<BR>
+</UL>
+<A NAME="TOC19" HREF="Protocol-A_2.html#SEC19">2.3 The Misc-Info List</A>
+<BR>
+<UL>
+<A NAME="TOC20" HREF="Protocol-A_2.html#SEC20">2.3.1 Recipient</A>
+<BR>
+<A NAME="TOC21" HREF="Protocol-A_2.html#SEC21">2.3.2 Carbon Copy (CC) Recipient</A>
+<BR>
+<A NAME="TOC22" HREF="Protocol-A_2.html#SEC22">2.3.3 Blank Carbon Copy (BCC) Recipient</A>
+<BR>
+<A NAME="TOC23" HREF="Protocol-A_2.html#SEC23">2.3.4 Comment To</A>
+<BR>
+<A NAME="TOC24" HREF="Protocol-A_2.html#SEC24">2.3.5 Footnote To</A>
+<BR>
+<A NAME="TOC25" HREF="Protocol-A_2.html#SEC25">2.3.6 Comment in</A>
+<BR>
+<A NAME="TOC26" HREF="Protocol-A_2.html#SEC26">2.3.7 Footnote in</A>
+<BR>
+</UL>
+<A NAME="TOC27" HREF="Protocol-A_2.html#SEC27">2.4 The Aux-Item List</A>
+<BR>
+<UL>
+<A NAME="TOC28" HREF="Protocol-A_2.html#SEC28">2.4.1 About Aux-Items</A>
+<BR>
+<A NAME="TOC29" HREF="Protocol-A_2.html#SEC29">2.4.2 Predefined Aux-Item Types</A>
+<BR>
+<A NAME="TOC30" HREF="Protocol-A_2.html#SEC30">2.4.3 Client-Specific Aux-Item Types</A>
+<BR>
+<A NAME="TOC31" HREF="Protocol-A_2.html#SEC31">2.4.4 Experimental Aux-Item Types</A>
+<BR>
+<A NAME="TOC32" HREF="Protocol-A_2.html#SEC32">2.4.5 Defining New Aux-Item Types</A>
+<BR>
+</UL>
+<A NAME="TOC33" HREF="Protocol-A_2.html#SEC33">2.5 Security</A>
+<BR>
+<A NAME="TOC34" HREF="Protocol-A_2.html#SEC34">2.6 Membership and Reading</A>
+<BR>
+<A NAME="TOC35" HREF="Protocol-A_2.html#SEC35">2.7 Client-Server Dialog</A>
+<BR>
+<UL>
+<A NAME="TOC36" HREF="Protocol-A_2.html#SEC36">2.7.1 Connecting to the Server</A>
+<BR>
+</UL>
+</UL>
+<A NAME="TOC37" HREF="Protocol-A_3.html#SEC37">3. Data Types</A>
+<BR>
+<UL>
+<A NAME="TOC38" HREF="Protocol-A_3.html#SEC38">3.1 Simple Data Types</A>
+<BR>
+<UL>
+<A NAME="TOC39" HREF="Protocol-A_3.html#SEC39">3.1.1 Integers</A>
+<BR>
+<A NAME="TOC40" HREF="Protocol-A_3.html#SEC40">3.1.2 Strings</A>
+<BR>
+<A NAME="TOC41" HREF="Protocol-A_3.html#SEC41">3.1.3 Bit Strings</A>
+<BR>
+<A NAME="TOC42" HREF="Protocol-A_3.html#SEC42">3.1.4 Enumerations</A>
+<BR>
+<A NAME="TOC43" HREF="Protocol-A_3.html#SEC43">3.1.5 Arrays</A>
+<BR>
+<A NAME="TOC44" HREF="Protocol-A_3.html#SEC44">3.1.6 Selection</A>
+<BR>
+<A NAME="TOC45" HREF="Protocol-A_3.html#SEC45">3.1.7 RPC</A>
+<BR>
+<A NAME="TOC46" HREF="Protocol-A_3.html#SEC46">3.1.8 Structure</A>
+<BR>
+</UL>
+<A NAME="TOC47" HREF="Protocol-A_3.html#SEC47">3.2 LysKOM Data Types</A>
+<BR>
+<UL>
+<A NAME="TOC48" HREF="Protocol-A_3.html#SEC48">3.2.1 Common Types</A>
+<BR>
+<UL>
+<A NAME="TOC49" HREF="Protocol-A_3.html#SEC49">3.2.1.1 Time</A>
+<BR>
+<A NAME="TOC50" HREF="Protocol-A_3.html#SEC50">3.2.1.2 Conference Numbers</A>
+<BR>
+<A NAME="TOC51" HREF="Protocol-A_3.html#SEC51">3.2.1.3 Text Numbers</A>
+<BR>
+<A NAME="TOC52" HREF="Protocol-A_3.html#SEC52">3.2.1.4 Person and Session Numbers</A>
+<BR>
+</UL>
+<A NAME="TOC53" HREF="Protocol-A_3.html#SEC53">3.2.2 Auxiliary Information</A>
+<BR>
+<A NAME="TOC54" HREF="Protocol-A_3.html#SEC54">3.2.3 Conference Types</A>
+<BR>
+<A NAME="TOC55" HREF="Protocol-A_3.html#SEC55">3.2.4 Conference Search Results</A>
+<BR>
+<A NAME="TOC56" HREF="Protocol-A_3.html#SEC56">3.2.5 Conference Status Types</A>
+<BR>
+<A NAME="TOC57" HREF="Protocol-A_3.html#SEC57">3.2.6 Archaic way to list conferences</A>
+<BR>
+<A NAME="TOC58" HREF="Protocol-A_3.html#SEC58">3.2.7 Mapping Local to Global Text Numbers</A>
+<BR>
+<A NAME="TOC59" HREF="Protocol-A_3.html#SEC59">3.2.8 Server Information</A>
+<BR>
+<A NAME="TOC60" HREF="Protocol-A_3.html#SEC60">3.2.9 Person Status Types</A>
+<BR>
+<A NAME="TOC61" HREF="Protocol-A_3.html#SEC61">3.2.10 Membership Information</A>
+<BR>
+<A NAME="TOC62" HREF="Protocol-A_3.html#SEC62">3.2.11 Article Marks</A>
+<BR>
+<A NAME="TOC63" HREF="Protocol-A_3.html#SEC63">3.2.12 Article Information</A>
+<BR>
+<A NAME="TOC64" HREF="Protocol-A_3.html#SEC64">3.2.13 Who Information</A>
+<BR>
+<A NAME="TOC65" HREF="Protocol-A_3.html#SEC65">3.2.14 Session Information</A>
+<BR>
+</UL>
+<A NAME="TOC66" HREF="Protocol-A_3.html#SEC66">3.3 Name Expansion</A>
+<BR>
+<UL>
+<A NAME="TOC67" HREF="Protocol-A_3.html#SEC67">3.3.1 Regexp Matching</A>
+<BR>
+<A NAME="TOC68" HREF="Protocol-A_3.html#SEC68">3.3.2 KOM Conventions</A>
+<BR>
+<A NAME="TOC69" HREF="Protocol-A_3.html#SEC69">3.3.3 Case Conversion</A>
+<BR>
+</UL>
+</UL>
+<A NAME="TOC70" HREF="Protocol-A_4.html#SEC70">4. Protocol Requests</A>
+<BR>
+<UL>
+<A NAME="TOC71" HREF="Protocol-A_4.html#SEC71">4.1 login-old [0] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC72" HREF="Protocol-A_4.html#SEC72">Error codes</A>
+<BR>
+</UL>
+<A NAME="TOC73" HREF="Protocol-A_4.html#SEC73">4.2 logout [1] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC74" HREF="Protocol-A_4.html#SEC74">Error codes </A>
+<BR>
+</UL>
+<A NAME="TOC75" HREF="Protocol-A_4.html#SEC75">4.3 change-conference [2] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC76" HREF="Protocol-A_4.html#SEC76">Error codes  </A>
+<BR>
+</UL>
+<A NAME="TOC77" HREF="Protocol-A_4.html#SEC77">4.4 change-name [3] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC78" HREF="Protocol-A_4.html#SEC78">Error codes   </A>
+<BR>
+</UL>
+<A NAME="TOC79" HREF="Protocol-A_4.html#SEC79">4.5 change-what-i-am-doing [4] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC80" HREF="Protocol-A_4.html#SEC80">Error codes    </A>
+<BR>
+</UL>
+<A NAME="TOC81" HREF="Protocol-A_4.html#SEC81">4.6 create-person-old [5] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC82" HREF="Protocol-A_4.html#SEC82">Error codes     </A>
+<BR>
+</UL>
+<A NAME="TOC83" HREF="Protocol-A_4.html#SEC83">4.7 get-person-stat-old [6] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC84" HREF="Protocol-A_4.html#SEC84">Error codes      </A>
+<BR>
+</UL>
+<A NAME="TOC85" HREF="Protocol-A_4.html#SEC85">4.8 set-priv-bits [7] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC86" HREF="Protocol-A_4.html#SEC86">Error codes       </A>
+<BR>
+</UL>
+<A NAME="TOC87" HREF="Protocol-A_4.html#SEC87">4.9 set-passwd [8] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC88" HREF="Protocol-A_4.html#SEC88">Error codes        </A>
+<BR>
+</UL>
+<A NAME="TOC89" HREF="Protocol-A_4.html#SEC89">4.10 query-read-texts-old [9] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC90" HREF="Protocol-A_4.html#SEC90">Error codes         </A>
+<BR>
+</UL>
+<A NAME="TOC91" HREF="Protocol-A_4.html#SEC91">4.11 create-conf-old [10] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC92" HREF="Protocol-A_4.html#SEC92">Error codes          </A>
+<BR>
+</UL>
+<A NAME="TOC93" HREF="Protocol-A_4.html#SEC93">4.12 delete-conf [11] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC94" HREF="Protocol-A_4.html#SEC94">Error codes           </A>
+<BR>
+</UL>
+<A NAME="TOC95" HREF="Protocol-A_4.html#SEC95">4.13 lookup-name [12] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC96" HREF="Protocol-A_4.html#SEC96">Error codes            </A>
+<BR>
+</UL>
+<A NAME="TOC97" HREF="Protocol-A_4.html#SEC97">4.14 get-conf-stat-older [13] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC98" HREF="Protocol-A_4.html#SEC98">Error codes             </A>
+<BR>
+</UL>
+<A NAME="TOC99" HREF="Protocol-A_4.html#SEC99">4.15 add-member-old [14] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC100" HREF="Protocol-A_4.html#SEC100">Error codes              </A>
+<BR>
+</UL>
+<A NAME="TOC101" HREF="Protocol-A_4.html#SEC101">4.16 sub-member [15] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC102" HREF="Protocol-A_4.html#SEC102">Error codes               </A>
+<BR>
+</UL>
+<A NAME="TOC103" HREF="Protocol-A_4.html#SEC103">4.17 set-presentation [16] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC104" HREF="Protocol-A_4.html#SEC104">Error codes                </A>
+<BR>
+</UL>
+<A NAME="TOC105" HREF="Protocol-A_4.html#SEC105">4.18 set-etc-motd [17] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC106" HREF="Protocol-A_4.html#SEC106">Error codes                 </A>
+<BR>
+</UL>
+<A NAME="TOC107" HREF="Protocol-A_4.html#SEC107">4.19 set-supervisor [18] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC108" HREF="Protocol-A_4.html#SEC108">Error codes                  </A>
+<BR>
+</UL>
+<A NAME="TOC109" HREF="Protocol-A_4.html#SEC109">4.20 set-permitted-submitters [19] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC110" HREF="Protocol-A_4.html#SEC110">Error codes                   </A>
+<BR>
+</UL>
+<A NAME="TOC111" HREF="Protocol-A_4.html#SEC111">4.21 set-super-conf [20] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC112" HREF="Protocol-A_4.html#SEC112">Error codes                    </A>
+<BR>
+</UL>
+<A NAME="TOC113" HREF="Protocol-A_4.html#SEC113">4.22 set-conf-type [21] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC114" HREF="Protocol-A_4.html#SEC114">Error codes                     </A>
+<BR>
+</UL>
+<A NAME="TOC115" HREF="Protocol-A_4.html#SEC115">4.23 set-garb-nice [22] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC116" HREF="Protocol-A_4.html#SEC116">Error codes                      </A>
+<BR>
+</UL>
+<A NAME="TOC117" HREF="Protocol-A_4.html#SEC117">4.24 get-marks [23] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC118" HREF="Protocol-A_4.html#SEC118">Error codes                       </A>
+<BR>
+</UL>
+<A NAME="TOC119" HREF="Protocol-A_4.html#SEC119">4.25 mark-text-old [24] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC120" HREF="Protocol-A_4.html#SEC120">Error codes                        </A>
+<BR>
+</UL>
+<A NAME="TOC121" HREF="Protocol-A_4.html#SEC121">4.26 get-text [25] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC122" HREF="Protocol-A_4.html#SEC122">Error codes                         </A>
+<BR>
+</UL>
+<A NAME="TOC123" HREF="Protocol-A_4.html#SEC123">4.27 get-text-stat-old [26] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC124" HREF="Protocol-A_4.html#SEC124">Error codes                          </A>
+<BR>
+</UL>
+<A NAME="TOC125" HREF="Protocol-A_4.html#SEC125">4.28 mark-as-read [27] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC126" HREF="Protocol-A_4.html#SEC126">Error codes                           </A>
+<BR>
+</UL>
+<A NAME="TOC127" HREF="Protocol-A_4.html#SEC127">4.29 create-text-old [28] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC128" HREF="Protocol-A_4.html#SEC128">Error codes                            </A>
+<BR>
+</UL>
+<A NAME="TOC129" HREF="Protocol-A_4.html#SEC129">4.30 delete-text [29] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC130" HREF="Protocol-A_4.html#SEC130">Error codes                             </A>
+<BR>
+</UL>
+<A NAME="TOC131" HREF="Protocol-A_4.html#SEC131">4.31 add-recipient [30] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC132" HREF="Protocol-A_4.html#SEC132">Error codes                              </A>
+<BR>
+</UL>
+<A NAME="TOC133" HREF="Protocol-A_4.html#SEC133">4.32 sub-recipient [31] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC134" HREF="Protocol-A_4.html#SEC134">Error codes                               </A>
+<BR>
+</UL>
+<A NAME="TOC135" HREF="Protocol-A_4.html#SEC135">4.33 add-comment [32] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC136" HREF="Protocol-A_4.html#SEC136">Error codes                                </A>
+<BR>
+</UL>
+<A NAME="TOC137" HREF="Protocol-A_4.html#SEC137">4.34 sub-comment [33] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC138" HREF="Protocol-A_4.html#SEC138">Error codes                                 </A>
+<BR>
+</UL>
+<A NAME="TOC139" HREF="Protocol-A_4.html#SEC139">4.35 get-map [34] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC140" HREF="Protocol-A_4.html#SEC140">Error codes                                  </A>
+<BR>
+</UL>
+<A NAME="TOC141" HREF="Protocol-A_4.html#SEC141">4.36 get-time [35] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC142" HREF="Protocol-A_4.html#SEC142">Error codes                                   </A>
+<BR>
+</UL>
+<A NAME="TOC143" HREF="Protocol-A_4.html#SEC143">4.37 get-info-old [36] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC144" HREF="Protocol-A_4.html#SEC144">Error codes                                    </A>
+<BR>
+</UL>
+<A NAME="TOC145" HREF="Protocol-A_4.html#SEC145">4.38 add-footnote [37] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC146" HREF="Protocol-A_4.html#SEC146">Error codes                                     </A>
+<BR>
+</UL>
+<A NAME="TOC147" HREF="Protocol-A_4.html#SEC147">4.39 sub-footnote [38] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC148" HREF="Protocol-A_4.html#SEC148">Error codes                                      </A>
+<BR>
+</UL>
+<A NAME="TOC149" HREF="Protocol-A_4.html#SEC149">4.40 who-is-on-old [39] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC150" HREF="Protocol-A_4.html#SEC150">Error codes                                       </A>
+<BR>
+</UL>
+<A NAME="TOC151" HREF="Protocol-A_4.html#SEC151">4.41 set-unread [40] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC152" HREF="Protocol-A_4.html#SEC152">Error codes                                        </A>
+<BR>
+</UL>
+<A NAME="TOC153" HREF="Protocol-A_4.html#SEC153">4.42 set-motd-of-lyskom [41] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC154" HREF="Protocol-A_4.html#SEC154">Error codes                                         </A>
+<BR>
+</UL>
+<A NAME="TOC155" HREF="Protocol-A_4.html#SEC155">4.43 enable [42] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC156" HREF="Protocol-A_4.html#SEC156">Error codes                                          </A>
+<BR>
+</UL>
+<A NAME="TOC157" HREF="Protocol-A_4.html#SEC157">4.44 sync-kom [43] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC158" HREF="Protocol-A_4.html#SEC158">Error codes                                           </A>
+<BR>
+</UL>
+<A NAME="TOC159" HREF="Protocol-A_4.html#SEC159">4.45 shutdown-kom [44] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC160" HREF="Protocol-A_4.html#SEC160">Error codes                                            </A>
+<BR>
+</UL>
+<A NAME="TOC161" HREF="Protocol-A_4.html#SEC161">4.46 broadcast [45] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC162" HREF="Protocol-A_4.html#SEC162">Error codes                                             </A>
+<BR>
+</UL>
+<A NAME="TOC163" HREF="Protocol-A_4.html#SEC163">4.47 get-membership-old [46] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC164" HREF="Protocol-A_4.html#SEC164">Error codes                                              </A>
+<BR>
+</UL>
+<A NAME="TOC165" HREF="Protocol-A_4.html#SEC165">4.48 get-created-texts [47] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC166" HREF="Protocol-A_4.html#SEC166">Error codes                                               </A>
+<BR>
+</UL>
+<A NAME="TOC167" HREF="Protocol-A_4.html#SEC167">4.49 get-members-old [48] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC168" HREF="Protocol-A_4.html#SEC168">Error codes                                                </A>
+<BR>
+</UL>
+<A NAME="TOC169" HREF="Protocol-A_4.html#SEC169">4.50 get-person-stat [49] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC170" HREF="Protocol-A_4.html#SEC170">Error codes                                                 </A>
+<BR>
+</UL>
+<A NAME="TOC171" HREF="Protocol-A_4.html#SEC171">4.51 get-conf-stat-old [50] (1) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC172" HREF="Protocol-A_4.html#SEC172">Error codes                                                  </A>
+<BR>
+</UL>
+<A NAME="TOC173" HREF="Protocol-A_4.html#SEC173">4.52 who-is-on [51] (1) Obsolete (9)</A>
+<BR>
+<UL>
+<A NAME="TOC174" HREF="Protocol-A_4.html#SEC174">Error codes                                                   </A>
+<BR>
+</UL>
+<A NAME="TOC175" HREF="Protocol-A_4.html#SEC175">4.53 get-unread-confs [52] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC176" HREF="Protocol-A_4.html#SEC176">Error codes                                                    </A>
+<BR>
+</UL>
+<A NAME="TOC177" HREF="Protocol-A_4.html#SEC177">4.54 send-message [53] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC178" HREF="Protocol-A_4.html#SEC178">Error codes                                                     </A>
+<BR>
+</UL>
+<A NAME="TOC179" HREF="Protocol-A_4.html#SEC179">4.55 get-session-info [54] (1) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC180" HREF="Protocol-A_4.html#SEC180">Error codes                                                      </A>
+<BR>
+</UL>
+<A NAME="TOC181" HREF="Protocol-A_4.html#SEC181">4.56 disconnect [55] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC182" HREF="Protocol-A_4.html#SEC182">Error codes                                                       </A>
+<BR>
+</UL>
+<A NAME="TOC183" HREF="Protocol-A_4.html#SEC183">4.57 who-am-i [56] (1) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC184" HREF="Protocol-A_4.html#SEC184">Error codes                                                        </A>
+<BR>
+</UL>
+<A NAME="TOC185" HREF="Protocol-A_4.html#SEC185">4.58 set-user-area [57] (2) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC186" HREF="Protocol-A_4.html#SEC186">Error codes                                                         </A>
+<BR>
+</UL>
+<A NAME="TOC187" HREF="Protocol-A_4.html#SEC187">4.59 get-last-text [58] (3) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC188" HREF="Protocol-A_4.html#SEC188">Error codes                                                          </A>
+<BR>
+</UL>
+<A NAME="TOC189" HREF="Protocol-A_4.html#SEC189">4.60 create-anonymous-text-old [59] (3) Obsolete (10)</A>
+<BR>
+<UL>
+<A NAME="TOC190" HREF="Protocol-A_4.html#SEC190">Error codes                                                           </A>
+<BR>
+</UL>
+<A NAME="TOC191" HREF="Protocol-A_4.html#SEC191">4.61 find-next-text-no [60] (3) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC192" HREF="Protocol-A_4.html#SEC192">Error codes                                                            </A>
+<BR>
+</UL>
+<A NAME="TOC193" HREF="Protocol-A_4.html#SEC193">4.62 find-previous-text-no [61] (3) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC194" HREF="Protocol-A_4.html#SEC194">Error codes                                                             </A>
+<BR>
+</UL>
+<A NAME="TOC195" HREF="Protocol-A_4.html#SEC195">4.63 login [62] (4) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC196" HREF="Protocol-A_4.html#SEC196">Error codes                                                              </A>
+<BR>
+</UL>
+<A NAME="TOC197" HREF="Protocol-A_4.html#SEC197">4.64 who-is-on-ident [63] (4) Obsolete (9)</A>
+<BR>
+<UL>
+<A NAME="TOC198" HREF="Protocol-A_4.html#SEC198">Error codes                                                               </A>
+<BR>
+</UL>
+<A NAME="TOC199" HREF="Protocol-A_4.html#SEC199">4.65 get-session-info-ident [64] (4) Obsolete (9)</A>
+<BR>
+<UL>
+<A NAME="TOC200" HREF="Protocol-A_4.html#SEC200">Error codes                                                                </A>
+<BR>
+</UL>
+<A NAME="TOC201" HREF="Protocol-A_4.html#SEC201">4.66 re-lookup-person [65] (5) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC202" HREF="Protocol-A_4.html#SEC202">Error codes                                                                 </A>
+<BR>
+</UL>
+<A NAME="TOC203" HREF="Protocol-A_4.html#SEC203">4.67 re-lookup-conf [66] (5) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC204" HREF="Protocol-A_4.html#SEC204">Error codes                                                                  </A>
+<BR>
+</UL>
+<A NAME="TOC205" HREF="Protocol-A_4.html#SEC205">4.68 lookup-person [67] (6) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC206" HREF="Protocol-A_4.html#SEC206">Error codes                                                                   </A>
+<BR>
+</UL>
+<A NAME="TOC207" HREF="Protocol-A_4.html#SEC207">4.69 lookup-conf [68] (6) Obsolete</A>
+<BR>
+<UL>
+<A NAME="TOC208" HREF="Protocol-A_4.html#SEC208">Error codes                                                                    </A>
+<BR>
+</UL>
+<A NAME="TOC209" HREF="Protocol-A_4.html#SEC209">4.70 set-client-version [69] (6) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC210" HREF="Protocol-A_4.html#SEC210">Error codes                                                                     </A>
+<BR>
+</UL>
+<A NAME="TOC211" HREF="Protocol-A_4.html#SEC211">4.71 get-client-name [70] (6) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC212" HREF="Protocol-A_4.html#SEC212">Error codes                                                                      </A>
+<BR>
+</UL>
+<A NAME="TOC213" HREF="Protocol-A_4.html#SEC213">4.72 get-client-version [71] (6) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC214" HREF="Protocol-A_4.html#SEC214">Error codes                                                                       </A>
+<BR>
+</UL>
+<A NAME="TOC215" HREF="Protocol-A_4.html#SEC215">4.73 mark-text [72] (4) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC216" HREF="Protocol-A_4.html#SEC216">Error codes                                                                        </A>
+<BR>
+</UL>
+<A NAME="TOC217" HREF="Protocol-A_4.html#SEC217">4.74 unmark-text [73] (6) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC218" HREF="Protocol-A_4.html#SEC218">Error codes                                                                         </A>
+<BR>
+</UL>
+<A NAME="TOC219" HREF="Protocol-A_4.html#SEC219">4.75 re-z-lookup [74] (7) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC220" HREF="Protocol-A_4.html#SEC220">Error codes                                                                          </A>
+<BR>
+</UL>
+<A NAME="TOC221" HREF="Protocol-A_4.html#SEC221">4.76 get-version-info [75] (7) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC222" HREF="Protocol-A_4.html#SEC222">Error codes                                                                           </A>
+<BR>
+</UL>
+<A NAME="TOC223" HREF="Protocol-A_4.html#SEC223">4.77 lookup-z-name [76] (7) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC224" HREF="Protocol-A_4.html#SEC224">Error codes                                                                            </A>
+<BR>
+</UL>
+<A NAME="TOC225" HREF="Protocol-A_4.html#SEC225">4.78 set-last-read [77] (8) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC226" HREF="Protocol-A_4.html#SEC226">Error codes                                                                             </A>
+<BR>
+</UL>
+<A NAME="TOC227" HREF="Protocol-A_4.html#SEC227">4.79 get-uconf-stat [78] (8) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC228" HREF="Protocol-A_4.html#SEC228">Error codes                                                                              </A>
+<BR>
+</UL>
+<A NAME="TOC229" HREF="Protocol-A_4.html#SEC229">4.80 set-info [79] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC230" HREF="Protocol-A_4.html#SEC230">Error codes                                                                               </A>
+<BR>
+</UL>
+<A NAME="TOC231" HREF="Protocol-A_4.html#SEC231">4.81 accept-async [80] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC232" HREF="Protocol-A_4.html#SEC232">Error codes                                                                                </A>
+<BR>
+</UL>
+<A NAME="TOC233" HREF="Protocol-A_4.html#SEC233">4.82 query-async [81] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC234" HREF="Protocol-A_4.html#SEC234">Error codes                                                                                 </A>
+<BR>
+</UL>
+<A NAME="TOC235" HREF="Protocol-A_4.html#SEC235">4.83 user-active [82] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC236" HREF="Protocol-A_4.html#SEC236">Error codes                                                                                  </A>
+<BR>
+</UL>
+<A NAME="TOC237" HREF="Protocol-A_4.html#SEC237">4.84 who-is-on-dynamic [83] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC238" HREF="Protocol-A_4.html#SEC238">Error codes                                                                                   </A>
+<BR>
+</UL>
+<A NAME="TOC239" HREF="Protocol-A_4.html#SEC239">4.85 get-static-session-info [84] (9) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC240" HREF="Protocol-A_4.html#SEC240">Error codes                                                                                    </A>
+<BR>
+</UL>
+<A NAME="TOC241" HREF="Protocol-A_4.html#SEC241">4.86 get-collate-table [85] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC242" HREF="Protocol-A_4.html#SEC242">Error codes                                                                                     </A>
+<BR>
+</UL>
+<A NAME="TOC243" HREF="Protocol-A_4.html#SEC243">4.87 create-text [86] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC244" HREF="Protocol-A_4.html#SEC244">Error codes                                                                                      </A>
+<BR>
+</UL>
+<A NAME="TOC245" HREF="Protocol-A_4.html#SEC245">4.88 create-anonymous-text [87] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC246" HREF="Protocol-A_4.html#SEC246">Error codes                                                                                       </A>
+<BR>
+</UL>
+<A NAME="TOC247" HREF="Protocol-A_4.html#SEC247">4.89 create-conf [88] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC248" HREF="Protocol-A_4.html#SEC248">Error codes                                                                                        </A>
+<BR>
+</UL>
+<A NAME="TOC249" HREF="Protocol-A_4.html#SEC249">4.90 create-person [89] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC250" HREF="Protocol-A_4.html#SEC250">Error codes                                                                                         </A>
+<BR>
+</UL>
+<A NAME="TOC251" HREF="Protocol-A_4.html#SEC251">4.91 get-text-stat [90] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC252" HREF="Protocol-A_4.html#SEC252">Error codes                                                                                          </A>
+<BR>
+</UL>
+<A NAME="TOC253" HREF="Protocol-A_4.html#SEC253">4.92 get-conf-stat [91] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC254" HREF="Protocol-A_4.html#SEC254">Error codes                                                                                           </A>
+<BR>
+</UL>
+<A NAME="TOC255" HREF="Protocol-A_4.html#SEC255">4.93 modify-text-info [92] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC256" HREF="Protocol-A_4.html#SEC256">Error codes                                                                                            </A>
+<BR>
+</UL>
+<A NAME="TOC257" HREF="Protocol-A_4.html#SEC257">4.94 modify-conf-info [93] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC258" HREF="Protocol-A_4.html#SEC258">Error codes                                                                                             </A>
+<BR>
+</UL>
+<A NAME="TOC259" HREF="Protocol-A_4.html#SEC259">4.95 get-info [94] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC260" HREF="Protocol-A_4.html#SEC260">Error codes                                                                                              </A>
+<BR>
+</UL>
+<A NAME="TOC261" HREF="Protocol-A_4.html#SEC261">4.96 modify-system-info [95] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC262" HREF="Protocol-A_4.html#SEC262">Error codes                                                                                               </A>
+<BR>
+</UL>
+<A NAME="TOC263" HREF="Protocol-A_4.html#SEC263">4.97 query-predefined-aux-items [96] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC264" HREF="Protocol-A_4.html#SEC264">Error codes                                                                                                </A>
+<BR>
+</UL>
+<A NAME="TOC265" HREF="Protocol-A_4.html#SEC265">4.98 set-expire [97] (10) Experimental</A>
+<BR>
+<UL>
+<A NAME="TOC266" HREF="Protocol-A_4.html#SEC266">Error codes                                                                                                 </A>
+<BR>
+</UL>
+<A NAME="TOC267" HREF="Protocol-A_4.html#SEC267">4.99 query-read-texts [98] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC268" HREF="Protocol-A_4.html#SEC268">Error codes                                                                                                  </A>
+<BR>
+</UL>
+<A NAME="TOC269" HREF="Protocol-A_4.html#SEC269">4.100 get-membership [99] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC270" HREF="Protocol-A_4.html#SEC270">Error codes                                                                                                   </A>
+<BR>
+</UL>
+<A NAME="TOC271" HREF="Protocol-A_4.html#SEC271">4.101 add-member [100] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC272" HREF="Protocol-A_4.html#SEC272">Error codes                                                                                                    </A>
+<BR>
+</UL>
+<A NAME="TOC273" HREF="Protocol-A_4.html#SEC273">4.102 get-members [101] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC274" HREF="Protocol-A_4.html#SEC274">Error codes                                                                                                     </A>
+<BR>
+</UL>
+<A NAME="TOC275" HREF="Protocol-A_4.html#SEC275">4.103 set-membership-type [102] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC276" HREF="Protocol-A_4.html#SEC276">Error codes                                                                                                      </A>
+<BR>
+</UL>
+<A NAME="TOC277" HREF="Protocol-A_4.html#SEC277">4.104 local-to-global [103] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC278" HREF="Protocol-A_4.html#SEC278">Error codes                                                                                                       </A>
+<BR>
+</UL>
+<A NAME="TOC279" HREF="Protocol-A_4.html#SEC279">4.105 map-created-texts [104] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC280" HREF="Protocol-A_4.html#SEC280">Error codes                                                                                                        </A>
+<BR>
+</UL>
+<A NAME="TOC281" HREF="Protocol-A_4.html#SEC281">4.106 set-keep-commented [105] (10) Experimental</A>
+<BR>
+<UL>
+<A NAME="TOC282" HREF="Protocol-A_4.html#SEC282">Error codes                                                                                                         </A>
+<BR>
+</UL>
+<A NAME="TOC283" HREF="Protocol-A_4.html#SEC283">4.107 set-pers-flags [106] (10) Recommended</A>
+<BR>
+<UL>
+<A NAME="TOC284" HREF="Protocol-A_4.html#SEC284">Error Codes</A>
+<BR>
+</UL>
+</UL>
+<A NAME="TOC285" HREF="Protocol-A_5.html#SEC285">5. Asynchronous Messages</A>
+<BR>
+<UL>
+<A NAME="TOC286" HREF="Protocol-A_5.html#SEC286">5.1 async-new-text-old (1) Obsolete (10)</A>
+<BR>
+<A NAME="TOC287" HREF="Protocol-A_5.html#SEC287">5.2 async-i-am-off (1) Obsolete</A>
+<BR>
+<A NAME="TOC288" HREF="Protocol-A_5.html#SEC288">5.3 async-i-am-on-obsolete (1) Obsolete</A>
+<BR>
+<A NAME="TOC289" HREF="Protocol-A_5.html#SEC289">5.4 async-new-name (1) Recommended</A>
+<BR>
+<A NAME="TOC290" HREF="Protocol-A_5.html#SEC290">5.5 async-i-am-on (1) Recommended</A>
+<BR>
+<A NAME="TOC291" HREF="Protocol-A_5.html#SEC291">5.6 async-sync-db (1) Recommended</A>
+<BR>
+<A NAME="TOC292" HREF="Protocol-A_5.html#SEC292">5.7 async-leave-conf (1) Recommended</A>
+<BR>
+<A NAME="TOC293" HREF="Protocol-A_5.html#SEC293">5.8 async-login (1) Recommended</A>
+<BR>
+<A NAME="TOC294" HREF="Protocol-A_5.html#SEC294">5.9 async-broadcast (1) Obsolete</A>
+<BR>
+<A NAME="TOC295" HREF="Protocol-A_5.html#SEC295">5.10 async-rejected-connection (1) Recommended</A>
+<BR>
+<A NAME="TOC296" HREF="Protocol-A_5.html#SEC296">5.11 async-send-message (1) Recommended</A>
+<BR>
+<A NAME="TOC297" HREF="Protocol-A_5.html#SEC297">5.12 async-logout (1) Recommended</A>
+<BR>
+<A NAME="TOC298" HREF="Protocol-A_5.html#SEC298">5.13 async-deleted-text (10) Recommended</A>
+<BR>
+<A NAME="TOC299" HREF="Protocol-A_5.html#SEC299">5.14 async-new-text (10) Recommended</A>
+<BR>
+<A NAME="TOC300" HREF="Protocol-A_5.html#SEC300">5.15 async-new-recipient (10) Recommended</A>
+<BR>
+<A NAME="TOC301" HREF="Protocol-A_5.html#SEC301">5.16 async-sub-recipient (10) Recommended</A>
+<BR>
+<A NAME="TOC302" HREF="Protocol-A_5.html#SEC302">5.17 async-new-membership (10) Recommended</A>
+<BR>
+</UL>
+<A NAME="TOC303" HREF="Protocol-A_6.html#SEC303">6. Error Codes</A>
+<BR>
+<UL>
+<A NAME="TOC304" HREF="Protocol-A_6.html#SEC304">6.1 Special Errors</A>
+<BR>
+<A NAME="TOC305" HREF="Protocol-A_6.html#SEC305">6.2 Normal Errors</A>
+<BR>
+</UL>
+<A NAME="TOC306" HREF="Protocol-A_7.html#SEC306">7. LysKOM Content Types</A>
+<BR>
+<UL>
+<A NAME="TOC307" HREF="Protocol-A_7.html#SEC307">7.1 Reformattable Text</A>
+<BR>
+<A NAME="TOC308" HREF="Protocol-A_7.html#SEC308">7.2 The User Area</A>
+<BR>
+<A NAME="TOC309" HREF="Protocol-A_7.html#SEC309">7.3 Conference Lists</A>
+<BR>
+</UL>
+<A NAME="TOC310" HREF="Protocol-A_8.html#SEC310">8. The User Area</A>
+<BR>
+<UL>
+<A NAME="TOC311" HREF="Protocol-A_8.html#SEC311">8.1 The Common Block</A>
+<BR>
+</UL>
+<A NAME="TOC312" HREF="Protocol-A_9.html#SEC312">9. Writing Clients</A>
+<BR>
+<UL>
+<A NAME="TOC313" HREF="Protocol-A_9.html#SEC313">9.1 Common Commands</A>
+<BR>
+<UL>
+<A NAME="TOC314" HREF="Protocol-A_9.html#SEC314">9.1.1 What do I have unread</A>
+<BR>
+<A NAME="TOC315" HREF="Protocol-A_9.html#SEC315">9.1.2 Only read the most recent N texts</A>
+<BR>
+<A NAME="TOC316" HREF="Protocol-A_9.html#SEC316">9.1.3 Review the last N by FOO to BAR</A>
+<BR>
+</UL>
+<A NAME="TOC317" HREF="Protocol-A_9.html#SEC317">9.2 Client Conventions</A>
+<BR>
+<UL>
+<A NAME="TOC318" HREF="Protocol-A_9.html#SEC318">9.2.1 Text formatting</A>
+<BR>
+<A NAME="TOC319" HREF="Protocol-A_9.html#SEC319">9.2.2 Content type specification</A>
+<BR>
+<A NAME="TOC320" HREF="Protocol-A_9.html#SEC320">9.2.3 Remote control</A>
+<BR>
+</UL>
+</UL>
+<A NAME="TOC321" HREF="Protocol-A_10.html#SEC321">10. Importing and Exporting E-Mail</A>
+<BR>
+<UL>
+<A NAME="TOC322" HREF="Protocol-A_10.html#SEC322">10.1 Exporting E-Mail</A>
+<BR>
+<A NAME="TOC323" HREF="Protocol-A_10.html#SEC323">10.2 Importing</A>
+<BR>
+<UL>
+<A NAME="TOC324" HREF="Protocol-A_10.html#SEC324">10.2.1 Threading</A>
+<BR>
+</UL>
+<A NAME="TOC325" HREF="Protocol-A_10.html#SEC325">10.3 An Algorithm, Sort Of</A>
+<BR>
+</UL>
+<A NAME="TOC326" HREF="Protocol-A_11.html#SEC326">11. Type Index</A>
+<BR>
+<A NAME="TOC327" HREF="Protocol-A_12.html#SEC327">12. Request Index</A>
+<BR>
+</UL>
+<HR SIZE=1>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

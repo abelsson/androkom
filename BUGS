@@ -1,0 +1,39 @@
+1979650 [1997-2-19, 19:8] /9 rader/ Ulf Lagerstedt
+Mottagare: Politik i allmänhet <14369>
+Mottagare: (De) bästa inläggen i LysKOM! <478>
+Ärende: Sveriges Riksdag
+------------------------------------------------------------
+
+        Rik segerviss dag!
+        Idag skrivs seger.
+        Seg dags skriveri.
+        Avger diger skiss.
+        Saker drivs. Ge sig.
+        Digra svek ges ris!
+        Ris ges, vik resdag.
+        S ger dig kris, Svea.
+(1979650) /Ulf Lagerstedt/--------------------
+Kommentar i text 1980463 av Lars Aronsson (lars@aronsson.se)
+(De) bästa inläggen i LysKOM!>
+1980463 [1997-2-20, 0:20] /2 rader/ Lars Aronsson (lars@aronsson.se)
+Kommentar till text 1979650 av Ulf Lagerstedt
+Mottagare: Pell Pell Pell (Frånvarande) <16721>
+Mottagare: Politik i allmänhet <14372>
+Ärende: Sveriges Riksdag
+------------------------------------------------------------
+Har du kommit på detta själv?  Du kan skicka det som insändare till
+vilken tidning du vill och få det publicerat!  Mitt tips är SvD.
+(1980463) /Lars Aronsson (lars@aronsson.se)/--------------------
+Kommentar i text 1980903 av Ulf Lagerstedt
+Kommentar i text 1982099 av Ulf Lagerstedt
+java.util.NoSuchElementException: VectorEnumerator
+        at java.util.VectorEnumerator.nextElement(Vector.java)
+        at nu.dll.lyskom.Text.getLocal(Text.java:139)
+        at Test2.<init>(Test2.java:129)
+        at Test2.main(Test2.java:390)
+
+* jkom läser alla kommentarer trots att de inte är till nuvarande möte.
+  klienten försökte troligen hämta lokalt textnummer för mötet "bästa inl...", som
+  inte finns som motagare på text nummer 1980463.
+
+

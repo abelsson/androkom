@@ -1,0 +1,43 @@
+** LatteKOM README
+** -*- Mode: auto-fill -*-
+** $Id: README,v 1.1 2000/08/21 05:55:18 pajp Exp $
+
+* Brief description:
+
+This is a Java-based LysKOM[1] client library. The project focuses on
+creating a useful class library making it easy for developers to
+create new LysKOM clients in Java.
+
+LysKOM is a conference system with ancient roots. LysKOM is a
+relatively new approach to the old-fashioned KOM system, where the
+communication is client-server based rather than terminal-based. The
+most widely used client today[2] is written in Elisp and run inside
+Emacs. LysKOM was created at the Lysator Academic Computer Society[3]
+at Linköpings Universitet[4].
+
+This project aims to implement all features of the latest LysKOM
+protocol A specification[5].
+
+References:
+
+1: http://www.lysator.liu.se/lyskom/
+2: http://www.lysator.liu.se/lyskom/klienter/emacslisp/
+3: http://www.lysator.liu.se/
+4: http://www.liu.se/
+5: ftp://ftp.lysator.liu.se/pub/lyskom/draft/Protocol-A.texi
+
+
+* Authors:
+
+The original author of this code is Rasmus Sten
+<rasmus@halogen.com>. Staffan Malmgren <staffan@ehand.se> was the
+first person to see the code, and has provided bug fixes, features,
+test implementations, documentation and more.
+
+
+* License
+
+The license of this the "MIT License". Put shortly, you acn do
+anything you want with this code, but don't blame its authors. See the
+file "LICENSE".
+

@@ -1,0 +1,487 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Error Codes</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Error Codes">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Error Codes">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC303"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC302"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC304"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 6. Error Codes </H1>
+<!--docid::SEC303::-->
+<P>
+
+If a call cannot complete successfully, LysKOM will respond with an
+error reply, as defined below and earlier (see section <A HREF="Protocol-A_2.html#SEC35">2.7 Client-Server Dialog</A>).
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        error-reply ::= normal-error | special-error
+
+        normal-error ::=
+                ( "%"
+                  ref-no        :       INT32;
+                  error-no      :       Error-No;
+                  error-status  :       INT32;
+                )
+
+        special-error ::=   "%% LysKOM protocol error."
+                        |   "%%Insane token length."
+                        |   "%%Insane array size."
+                        |   "%%No connections left."
+
+        error-no ::= INT32;
+</pre></td></tr></table></P><P>
+
+The server may return two different types of errors. Normal errors are
+replies to syntactically correct calls to the server. Special errors are 
+replies to syntactically incorrect calls and responses to exceptional
+conditions. 
+</P><P>
+
+A client should be prepared for any error code in response to any call,
+no matter if the response makes any sense or not. The value returned in
+<CODE>error-status</CODE> was more or less undefined before protocol version
+10. For protocol version 10, the meaning of <CODE>error-status</CODE> is
+defined below.
+</P><P>
+
+The meaning of <CODE>error-status</CODE> can be modified by any call. In
+particular the calls that deal with Misc-Info lists set
+<CODE>error-status</CODE> to the index of the misc item that caused the error
+(if the error was caused by a misc item.)
+</P><P>
+
+Client should handle the error messages listed with each call in a
+graceful manner. In addition, the following error types should always be
+handled gracefully: <CODE>temporary-failure</CODE>, <CODE>internal-error</CODE>,
+<CODE>feature-disabled</CODE>, <CODE>not-implemented</CODE>, <CODE>obsolete-call</CODE>,
+<CODE>ldb-error</CODE>, <CODE>feature-disabled</CODE>, <CODE>out-of-memory</CODE>. Client
+should also be able to handle any error in any situation without choking
+completely since bugs might cause the wrong error message to be sent or
+new errors might be added later on.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_6.html#SEC304">6.1 Special Errors</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_6.html#SEC305">6.2 Normal Errors</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC304"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC305"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 6.1 Special Errors </H2>
+<!--docid::SEC304::-->
+<P>
+
+Special errors are sent in reply to syntactically incorrect calls to the 
+server. With the exception of the "No connections left" message, these
+should never appear in the client-server dialog. If they do, there is
+probably a bug in the client. 
+</P><P>
+
+<DL COMPACT>
+<DT>"%% LysKOM protocol error."
+<DD>The client has sent a request that does not comply with protocol A. The
+server will attempt to recover from this error, but additional calls may 
+be silently lost, and the server may send replies that the client does
+not expect. This error is also returned when the client sends an array
+that is longer than the maximum allowed by the server.
+<P>
+
+<DT>"%%No connections left."
+<DD>This error is only sent when the client attempts to connect to the
+server. It indicates that the server is not accepting additional
+connections. This error is transient: the client may be able to connect
+later. Clients should not attempt to connect immediately after
+receiving this message.
+<P>
+
+<DT>"%%Insane token length."
+<DD>The client has sent a single token that is insanely long. Typically this 
+means that the client has sent several kilobytes worth of digits, or
+something similar. This is never returned for long strings. The server
+will automatically disconnect a client who sends a token with an insane
+length.
+<P>
+
+<DT>"%%Insane array size."
+<DD>The client has send an array with a negative length. The server is not
+easily fooled. The server will automatically disconnect a client who
+sends an array with an insane length.
+<P>
+
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC305"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC304"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 6.2 Normal Errors </H2>
+<!--docid::SEC305::-->
+<P>
+
+Normal errors are sent in reply to syntactically correct calls to the
+server. The client should accept any error code in response to any call, 
+even if the error code in question is not listed in the description of
+the call, and even if the error code in question is not defined in the
+protocol specification yet.
+</P><P>
+
+<DL COMPACT>
+
+<DT><CODE>no-error (0)</CODE>
+<DD>No error has occurred. <CODE>error-status</CODE> is undefined. This should
+never happen, but it might.
+<P>
+
+<DT><CODE>not-implemented (2)</CODE>
+<DD>The call has not been implemented yet. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>obsolete-call (3)</CODE>
+<DD>The call is obsolete and no longer implemented. <CODE>error-status</CODE> is
+undefined.
+<P>
+
+<DT><CODE>invalid-password (4)</CODE>
+<DD>Attempt to set a password containing illegal characters, or to use an
+incorrect password.
+<P>
+
+<DT><CODE>string-too-long (5)</CODE>
+<DD>A string was too long (see descriptions of each call.)
+<CODE>error-status</CODE> indicates the maximum string length.
+<P>
+
+<DT><CODE>login-first (6)</CODE>
+<DD>Login is required before issuing the call. <CODE>error-status</CODE> is
+undefined. 
+<P>
+
+<DT><CODE>login-disallowed (7)</CODE>
+<DD>The system is in single-user mode. You need to be privileged to log in
+despite this. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>conference-zero (8)</CODE>
+<DD>Attempt to use conference number 0. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>undefined-conference (9)</CODE>
+<DD>Attempt to access a non-existent or secret conference.
+<CODE>error-status</CODE> contains the conference number in question.
+<P>
+
+<DT><CODE>undefined-person (10)</CODE>
+<DD>Attempt to access a non-existent or secret person.
+<CODE>error-status</CODE> contains the person number in question.
+<P>
+
+<DT><CODE>access-denied (11)</CODE>
+<DD>No read/write access to something. This might be returned in response to
+an attempt to create a text, when the recipient conference and its super
+conferences are read-only, or when attempting to add a member to a
+conference without enough permission to do so. <CODE>error-status</CODE>
+indicates the object to which we didn't have enough permissions to.
+<P>
+
+<DT><CODE>permission-denied (12)</CODE>
+<DD>Not enough permissions to do something. The exact meaning of this
+response depends on the call. <CODE>error-status</CODE> indicated the object
+for which permission was lacking, or zero.
+<P>
+
+<DT><CODE>not-member (13)</CODE>
+<DD>The call requires the caller to be a member of some conference that the
+caller is not a member of. <CODE>error-status</CODE> indicates the conference
+in question.
+<P>
+
+<DT><CODE>no-such-text (14)</CODE>
+<DD>Attempt to access a text that either does not exist or is secret in some
+way. <CODE>error-status</CODE> indicates the text number in question.
+<P>
+
+<DT><CODE>text-zero (15)</CODE>
+<DD>Attempt to use text number 0. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>no-such-local-text (16)</CODE>
+<DD>Attempt to access a text using a local text number that does not
+represent an existing text. <CODE>error-status</CODE> indicates the offending
+number.
+<P>
+
+<DT><CODE>local-text-zero (17)</CODE>
+<DD>Attempt to use local text number zero. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>bad-name (18)</CODE>
+<DD>Attempt to use a name that's too long, too short or contains invalid
+characters. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>index-out-of-range (19)</CODE>
+<DD>Attempt to use a number that's out of range. The range and meaning of
+the numbers depends on the call issued. <CODE>error-status</CODE> is
+undefined unless stated otherwise in the call documentation.
+<P>
+
+<DT><CODE>conference-exists (20)</CODE>
+<DD>Attempt to create a conference or person with a name that's already
+occupied. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>person-exists (21)</CODE>
+<DD>Attempt to create a person with a name that's already occupied.
+<CODE>error-status</CODE> is undefined. This error code is probably not used,
+but you never know for sure.
+<P>
+
+<DT><CODE>secret-public (22)</CODE>
+<DD>Attempt to give a conference a type with <CODE>secret</CODE> bit set and the
+<CODE>rd-prot</CODE> bit unset. This is an error since such a conference type
+is inconsistent. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>letterbox (23)</CODE>
+<DD>Attempt to change the <CODE>letterbox</CODE> flag of a conference.
+<CODE>error-status</CODE> indicates the conference number.
+<P>
+
+<DT><CODE>ldb-error (24)</CODE>
+<DD>Database is corrupted. <CODE>error-status</CODE> is an internal code.
+<P>
+
+<DT><CODE>illegal-misc (25)</CODE>
+<DD>Attempt to create an illegal misc item. <CODE>error-status</CODE> contains the
+index of the illegal item.
+<P>
+
+<DT><CODE>illegal-info-type (26)</CODE>
+<DD>Attempt to use a Misc-Info type (or Info-Type value) that the server
+knows nothing about.
+<CODE>error-status</CODE> is the type.
+<P>
+
+<DT><CODE>already-recipient (27)</CODE>
+<DD>Attempt to add a recipient that is already a recipient of the same type.
+<CODE>error-status</CODE> contains the recipient that already is.
+<P>
+
+<DT><CODE>already-comment (28)</CODE>
+<DD>Attempt to add a comment to a text twice over. <CODE>error-status</CODE>
+contains the text number of the text that already is a comment.
+<P>
+
+<DT><CODE>already-footnote (29)</CODE>
+<DD>Attempt to add a footnote to a text twice over. <CODE>error-status</CODE>
+contains the text number of the text that already is a footnote.
+<P>
+
+<DT><CODE>not-recipient (30)</CODE>
+<DD>Attempt to remove a recipient that isn't really a recipient.
+<CODE>error-status</CODE> contains the conference number in question.
+<P>
+
+<DT><CODE>not-comment (31)</CODE>
+<DD>Attempt to remove a comment link that does not exist.
+<CODE>error-status</CODE> contains the text number that isn't a comment. 
+<P>
+
+<DT><CODE>not-footnote (32)</CODE>
+<DD>Attempt to remove a footnote link that does not exist.
+<CODE>error-status</CODE> contains the text number that isn't a footnote. 
+<P>
+
+<DT><CODE>recipient-limit (33)</CODE>
+<DD>Attempt to add a recipient to a text that already has the maximum number
+of recipients. <CODE>error-status</CODE> is the text that has the maximum
+number of recipients.
+<P>
+
+<DT><CODE>comment-limit (34)</CODE>
+<DD>Attempt to add a comment to a text that already has the maximum number
+of comments. <CODE>error-status</CODE> is the text with the maximum number of
+comments. 
+<P>
+
+<DT><CODE>footnote-limit (35)</CODE>
+<DD>Attempt to add a footnote to a text that already has the maximum number
+of footnote. <CODE>error-status</CODE> is the text with the maximum number of
+footnotes. 
+<P>
+
+<DT><CODE>mark-limit (36)</CODE>
+<DD>Attempt to add a mark to a text that already has the maximum number
+of marks. <CODE>error-status</CODE> is the text with the maximum number of
+marks. 
+<P>
+
+<DT><CODE>not-author (37)</CODE>
+<DD>Attempt to manipulate a text in a way that required the user to be the
+author of the text, when not in fact the author. <CODE>error-status</CODE>
+contains the text number in question.
+<P>
+
+<DT><CODE>no-connect (38)</CODE>
+<DD>Currently unused.
+<P>
+
+<DT><CODE>out-of-memory (39)</CODE>
+<DD>The server ran out of memory.
+<P>
+
+<DT><CODE>server-is-crazy (40)</CODE>
+<DD>Currently unused.
+<P>
+
+<DT><CODE>client-is-crazy (41)</CODE>
+<DD>Currently unused.
+<P>
+
+<DT><CODE>undefined-session (42)</CODE>
+<DD>Attempt to access a session that does not exist. <CODE>error-status</CODE>
+contains the offending session number.
+<P>
+
+<DT><CODE>regexp-error (43)</CODE>
+<DD>Error using a regexp. The regexp may be invalid or the server unable to
+compile it for other reasons. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>not-marked (44)</CODE>
+<DD>Attempt to manipulate a text in a way that requires the text to be
+marked, when in fact it is not marked. <CODE>error-status</CODE> indicates the
+text in question.
+<P>
+
+<DT><CODE>temporary-failure (45)</CODE>
+<DD>Temporary failure. Try again later. <CODE>error-code</CODE> is undefined.
+<P>
+
+<DT><CODE>long-array (46)</CODE>
+<DD>An array sent to the server was too long. <CODE>error-status</CODE> is
+undefined.
+<P>
+
+<DT><CODE>anonymous-rejected (47)</CODE>
+<DD>Attempt to send an anonymous text to a conference that does not accept
+anonymous texts. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>illegal-aux-item (48)</CODE>
+<DD>Attempt to create an invalid aux-item. Probably the tag or data are
+invalid. <CODE>error-status</CODE> contains the index in the aux-item list
+where the invalid item appears.
+<P>
+
+<DT><CODE>aux-item-permission (49)</CODE>
+<DD>Attempt to manipulate an aux-item without enough permissions. This
+response is sent when attempting to delete an item set by someone else
+or an item that can't be deleted, and when attempting to create an item
+without permissions to do so. <CODE>error-status</CODE> contains the index at
+which the item appears in the aux-item list sent to the server.
+<P>
+
+<DT><CODE>unknown-async (50)</CODE>
+<DD>Sent in response to a request for an asynchronous message the server
+does not send. The call succeeds, but this is sent as a warning to the
+client. <CODE>error-status</CODE> contains the message type the server did not
+understand.
+<P>
+
+<DT><CODE>internal-error (51)</CODE>
+<DD>The server has encountered a possibly recoverable internal error.
+<CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>feature-disabled (52)</CODE>
+<DD>Attempt to use a feature that has been explicitly disabled in the
+server. <CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>message-not-sent (53)</CODE>
+<DD>Attempt to send an asynchronous message failed for some reason. Perhaps
+the recipient is not accepting messages at the moment or there are no
+viable recipients for a group message.
+<CODE>error-status</CODE> is undefined.
+<P>
+
+<DT><CODE>invalid-membership-type (54)</CODE>
+<DD>A requested membership type was not compatible with restrictions set on
+the server or on a specific conference. <CODE>error-status</CODE> is
+undefined unless specifically mentioned in the documentation for a
+specific call.
+<P>
+
+</DL>
+<P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_7.html#SEC306"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

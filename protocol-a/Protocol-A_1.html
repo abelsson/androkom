@@ -1,0 +1,713 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Overview</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Overview">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Overview">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC1"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC2"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 1. Overview </H1>
+<!--docid::SEC1::-->
+<P>
+
+LysKOM is a conferencing system<A NAME="DOCF1" HREF="Protocol-A_fot.html#FOOT1">(1)</A>. Similar
+systems were QZ-KOM and PortaCOM<A NAME="DOCF2" HREF="Protocol-A_fot.html#FOOT2">(2)</A>. The LysKOM system is copyrighted by Lysator Academic
+Computing Society and distributed under conditions of the GNU Public
+License. LysKOM and its documentation is provided "as is" without
+warranty of any kind.
+</P><P>
+
+This document specifies version 10 of protocol A used between a LysKOM
+client and a LysKOM server. Anything described here as "unspecified"
+is liable to change in future protocol versions.
+</P><P>
+
+This specification is the work of several people. The main contributors have
+been
+Per Cederqvist <A HREF="mailto:ceder@lysator.liu.se">ceder@lysator.liu.se</A>, 
+David Byers <A HREF="mailto:byers@lysator.liu.se">byers@lysator.liu.se</A>,
+Pär
+Emanuelsson <A HREF="mailto:pell@lysator.liu.se">pell@lysator.liu.se</A>,
+Thomas Bellman <A HREF="mailto:bellman@lysator.liu.se">bellman@lysator.liu.se</A>, 
+Lars Aronsson <A HREF="mailto:aronsson@lysator.liu.se">aronsson@lysator.liu.se</A>,
+Linus Tolke <A HREF="mailto:linus@lysator.liu.se">linus@lysator.liu.se</A> and
+Kent Engström
+<A HREF="mailto:kent@lysator.liu.se">kent@lysator.liu.se</A>.
+</P><P>
+
+The LysKOM developers can be reached by email to
+<A HREF="mailto:lyskom@lysator.liu.se">lyskom@lysator.liu.se</A>.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_1.html#SEC2">1.1 Document Revision History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_1.html#SEC3">1.2 Protocol Version History</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_1.html#SEC14">1.3 Notation</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP"></TD></TR>
+</TABLE></BLOCKQUOTE>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC2"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC1"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC1"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 1.1 Document Revision History </H2>
+<!--docid::SEC2::-->
+<P>
+
+<DL COMPACT>
+
+<DT>10.2: 1999-07-23
+<DD>Some typos and other minor errors were fixed.  Distributed with lyskomd
+2.0.2.
+<P>
+
+<DT>10.1: 1999-07-12
+<DD>Call <CODE>sub-comment</CODE> was incorrectly marked obsolete. This has been
+corrected. Regexps are case sensitive.  The Info-Type enumeration was
+introduced in the description of the protocol.  (Previous versions of
+the protocol had broken definitions of add-recipient,
+async-new-recipient and async-sub-recipient.)  Distributed with lyskomd
+2.0.1.
+<P>
+
+<DT>10.0: 1999-06-27
+<DD>The specification was translated to English and converted to Texinfo by
+David Byers.  Protocol version 10.  Distributed with lyskomd 2.0.0.
+Note: this revision incorrectly marked the <CODE>sub-comment</CODE> call as
+obsolete, and stated that regexp lookup was case insensitive.  Both
+statements were wrong, and has since been fixed.
+<P>
+
+<DT>9.0: 1996-08-04
+<DD>Protocol version 9.  Distributed with lyskomd 1.9.0.
+<P>
+
+<DT>8.0: 1995-11-10
+<DD>Protocol version 8.  Distributed with lyskomd 1.8.0.
+<P>
+
+<DT>7.1: 1995-01-08.
+<DD>Protocol and document revision history were added by Per Cederqvist. Outline
+mode was used to make the document more manageable. This version was
+distributed with lyskomd 1.7.1.
+<P>
+
+<DT>7.0: 1994-12-31.
+<DD>The first specification with a version number. All calls that had been added
+since 1991-06-25 were documented. Pell and Per Cederqvist did the deed. This
+version was distributed with lyskomd 1.7.0.
+<P>
+
+<DT>1993-05-19.
+<DD>Linus Tolke wrote comments for some calls that were without comments.
+<P>
+
+<DT>1992-07-06.
+<DD>Linus Tolke converted the document to ISO 8859-1.
+<P>
+
+<DT>1991-08-12.
+<DD>Per Cederqvist started using version control for documentation.
+<P>
+
+<DT>1991-06-25.
+<DD>Lars Aronsson documented the protocol that was in use at the time.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC3"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC2"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC4"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC1"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 1.2 Protocol Version History </H2>
+<!--docid::SEC3::-->
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC4"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC5"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.1 Protocol version 10 (first implemented in lyskomd 2.0.0) </H3>
+<!--docid::SEC4::-->
+<P>
+
+<DL COMPACT>
+
+<DT>Error codes
+<DD><P>
+
+The error codes are now documented.  Several error codes were changed to
+more sane values while documenting the new behaviour.
+</P><P>
+
+<DT>New Server Calls
+<DD><P>
+
+These new calls have status Recommended.
+</P><P>
+
+<UL>
+<LI>85=get-collate-table
+<LI>86=create-text
+<LI>87=create-anonymous-text
+<LI>88=create-conf
+<LI>89=create-person
+<LI>90=get-text-stat
+<LI>91=get-conf-stat
+<LI>92=modify-text-info
+<LI>93=modify-conf-info
+<LI>94=get-info
+<LI>95=modify-system-info
+<LI>96=query-predefined-aux-items
+<LI>98=query-read-texts
+<LI>99=get-membership
+<LI>100=add-member
+<LI>101=get-members
+<LI>102=set-membership-type
+<LI>103=local-to-global
+<LI>104=map-created-texts
+<LI>106=set-pers-flags
+</UL>
+<P>
+
+These new calls have status Experimental.
+</P><P>
+
+<UL>
+<LI>97=set-expire
+<LI>105=set-keep-commented
+</UL>
+<P>
+
+<DT>Name changes
+<DD><P>
+
+<TABLE>
+<TR><TD>Old name                 </TD><TD> New name</TD>
+</TR>
+<TR><TD>5=create-person          </TD><TD> 5=create-person-old</TD>
+</TR>
+<TR><TD>9=query-read-texts       </TD><TD> 9=query-read-texts-old</TD>
+</TR>
+<TR><TD>10=create-conf           </TD><TD> 10=create-conf-old</TD>
+</TR>
+<TR><TD>13=get-conf-stat-old     </TD><TD> 13=get-conf-stat-older</TD>
+</TR>
+<TR><TD>14=add-member            </TD><TD> 14=add-member-old</TD>
+</TR>
+<TR><TD>26=get-text-stat         </TD><TD> 26=get-text-stat-old</TD>
+</TR>
+<TR><TD>28=create-text           </TD><TD> 28=create-text-old</TD>
+</TR>
+<TR><TD>36=get-info              </TD><TD> 36=get-info-old</TD>
+</TR>
+<TR><TD>46=get-membership        </TD><TD> 46=get-membership-old</TD>
+</TR>
+<TR><TD>48=get-members           </TD><TD> 48=get-members-old</TD>
+</TR>
+<TR><TD>50=get-conf-stat         </TD><TD> 50=get-conf-stat-old</TD>
+</TR>
+<TR><TD>59=create-anonymous-text </TD><TD> 59=create-anonymous-text-old</TD>
+</TR></TABLE>
+<P>
+
+<DT>Status change
+<DD><P>
+
+The following calls have change status from Experimental to Recommended.
+</P><P>
+
+<UL>
+<LI>58=get-last-text
+<LI>77=set-last-read
+<LI>78=get-uconf-stat
+</UL>
+<P>
+
+The following calls have changed status from Recommended or
+Experimental to Obsolete.
+</P><P>
+
+<UL>
+<LI>5=create-person-old
+<LI>9=query-read-texts-old
+<LI>10=create-conf-old
+<LI>14=add-member-old
+<LI>26=get-text-stat-old
+<LI>28=create-text-old
+<LI>36=get-info-old
+<LI>46=get-membership-old
+<LI>47=get-created-texts
+<LI>48=get-members-old
+<LI>50=get-conf-stat-old
+<LI>59=create-anonymous-text-old
+</UL>
+<P>
+
+<DT>New and Modified Structures
+<DD><UL>
+<LI>Aux-Item
+<LI>Aux-Item-Input
+<LI>Conference
+<LI>Info
+<LI>Member
+<LI>Membership
+<LI>Membership-Type
+<LI>Misc-Info
+<LI>Text-Stat
+</UL>
+<P>
+
+<DT>Renamed Asynchronous Messages
+<DD>A <SAMP>`async-'</SAMP> prefix has been added to the name of all asynchronous
+messages.  In addition, 0=new-text has been renamed to
+0=async-new-text-old, and it is now considered obsolete.  Clients should
+use 80=accept-async to listen to 15=async-new-text instead.
+<P>
+
+<DT>New Asynchronous Messages
+<DD><UL>
+<LI>14=async-deleted-text
+<LI>15=async-new-text
+<LI>16=async-new-recipient
+<LI>17=async-sub-recipient
+<LI>18=async-new-membership
+</UL>
+<P>
+
+<DT>Notes
+<DD><UL>
+<LI>Since protocol version 9 setting a priority of zero for a
+conference was supposed to indicate passive membership in a conference. 
+It was largely up to the client to implement this. True passive
+memberships have been introduced in this protocol version through the
+Membership-type extension to the Membership type. In order to maintain
+compatibility with clients that interpret priority 0 as passive
+membership, the old calls see section <A HREF="Protocol-A_4.html#SEC99">4.15 add-member-old [14] (1) Obsolete (10)</A> and
+see section <A HREF="Protocol-A_4.html#SEC163">4.47 get-membership-old [46] (1) Obsolete (10)</A> perform magic, translating between priorities 
+and membership types. The magic is documented with each call.
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC5"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC4"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC6"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC6"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.2 Protocol version 9 (first implemented in lyskomd 1.9.0) </H3>
+<!--docid::SEC5::-->
+<P>
+
+<DL COMPACT>
+<DT>New functionality
+<DD><UL>
+<LI>The server shall now reply with error <CODE>not-implemented</CODE> when
+a client attempts to use an unimplemented call.  This feature requires
+that the client uses newline as call terminator.
+</UL>
+<DT>Added Commands
+<DD><UL>
+<LI>79=set-info: Can change server information.
+<LI>80=accept-async: Can select asynchronous messages to receive.
+<LI>81=query-async: Can query which messages are being send.
+<LI>82=user-active
+<LI>83=who-is-on-dynamic
+<LI>84=get-static-session-info
+</UL>
+<DT>Changed names
+<DD><UL>
+<LI><CODE>change-conference</CODE> was previously called <CODE>pepsi</CODE>.  The
+name was changed, but not the functionality.
+</UL>
+<DT>Status change
+<DD><UL>
+<LI>63=<CODE>who-is-on-ident</CODE> is now considered obsolete.
+<LI>64=<CODE>get-session-info-ident</CODE> is now considered obsolete.
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC6"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC5"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC7"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC7"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.3 Protocol version 8 (first implemented in lyskomd 1.8.0) </H3>
+<!--docid::SEC6::-->
+<P>
+
+<DL COMPACT>
+<DT>Added Functionality
+<DD><UL>
+<LI>
+30=add-recipient: Can change recpt to cc_recpt and vice versa.
+<LI>
+21=set-conf-type: Accepts Conf-Type and Extended-Conf-Type.
+<LI>
+10=create-conf: Accepts Conf-Type and Extended-Conf-Type.
+</UL>
+<P>
+
+<DT>New Commands
+<DD><UL>
+<LI>
+77=set-last-read
+<LI>
+78=get-uconf-stat
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC7"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC6"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC8"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC8"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.4 Protocol version 7 (first implemented in lyskomd 1.7.0) </H3>
+<!--docid::SEC7::-->
+<P>
+
+<DL COMPACT>
+<DT>Added Functionality
+<DD><UL>
+<LI>
+53=send-message: Recipient can be a conference or a person.
+</UL>
+<P>
+
+<DT>New Commands
+<DD><UL>
+<LI>
+74=re-z-lookup
+<LI>
+75=get-version-info
+<LI>
+76=lookup-z-name
+</UL>
+<P>
+
+<DT>Other
+<DD><UL>
+<LI>
+The asynchronous message 1=i-am-off has been removed
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC8"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC7"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC9"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC9"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.5 Protocol Version 6 (first implemented in lyskomd 1.4.0) </H3>
+<!--docid::SEC8::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD><UL>
+<LI>
+67=lookup-person
+<LI>
+68=lookup-conf
+<LI>
+69=set-client-version
+<LI>
+70=get-client-name
+<LI>
+71=get-client-version
+<LI>
+72=mark-text
+<LI>
+73=unmark-text
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC9"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC8"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC10"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC10"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.6 Protocol Version 5 (first implemented in lyskomd 1.3.0) </H3>
+<!--docid::SEC9::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD><UL>
+<LI>
+65=re-lookup-person
+<LI>
+66=re-lookup-conf
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC10"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC9"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC11"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC11"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.7 Protocol Version 4 (first implemented in lyskomd 1.1.1) </H3>
+<!--docid::SEC10::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD><UL>
+<LI>
+62=login
+<LI>
+63=who-is-on-ident
+<LI>
+64=get-session-info-ident
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC11"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC10"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC12"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC12"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.8 Protocol Version 3 (first implemented in lyskomd 1.1.0) </H3>
+<!--docid::SEC11::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD><UL>
+<LI>
+61=find-previous-text-no
+<LI>
+60=find-next-text-no
+<LI>
+59=create-anonymous-text
+<LI>
+58=get-last-text
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC12"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC11"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC13"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.9 Protocol Version 2 (first implemented in lyskomd 0.30.0) </H3>
+<!--docid::SEC12::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD><UL>
+<LI>
+57=set-user-area
+</UL>
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC13"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC12"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC5"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC3"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC14"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H3> 1.2.10 Protocol Version 1 (first implemented in lyskomd 0.29.2) </H3>
+<!--docid::SEC13::-->
+<P>
+
+<DL COMPACT>
+<DT>New Calls
+<DD>All calls from 0--56.
+</DL>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC14"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC13"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_1.html#SEC1"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 1.3 Notation </H2>
+<!--docid::SEC14::-->
+<P>
+
+This specification uses a BNF-like grammar to describe the protocol and
+its data elements.
+</P><P>
+
+Data fields have been given names that start with a lower-case letter.
+</P><P>
+
+Fundamental data types have names in all-caps (such as <CODE>INT32</CODE> and
+<CODE>ARRAY</CODE>).
+</P><P>
+
+Derived data types have names that start with an upper-case letter. (If
+the type contains more than one word, all words start with an upper-case
+letter, like this: <CODE>Text-Stat</CODE>.)  The operator <CODE>::=</CODE> defines
+the name to its left.
+</P><P>
+
+Comments start with <CODE>!</CODE> (exclamation mark) and alternatives are
+separated by a <CODE>|</CODE> (vertical bar.) A <CODE>;</CODE> (semicolon)
+terminates statements in the grammar. In some specifications there are
+literal strings. There is to be no whitespace before or after literal
+strings unless there is whitespace in the literal itself.
+</P><P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[ &lt;&lt; ]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_2.html#SEC15"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>

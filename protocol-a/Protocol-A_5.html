@@ -1,0 +1,595 @@
+<!DOCTYPE html PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
+<!-- Created on May, 19  2000 by texi2html 1.62 -->
+<!-- 
+Written by: Lionel Cons <Lionel.Cons@cern.ch> (original author)
+            Karl Berry  <karl@freefriends.org>
+            Olaf Bachmann <obachman@mathematik.uni-kl.de>
+            and many others.
+Maintained by: Olaf Bachmann <obachman@mathematik.uni-kl.de>
+Send bugs and suggestions to <texi2html@mathematik.uni-kl.de>
+ 
+-->
+<HTML>
+<HEAD>
+<TITLE>LysKOM Protocol A: Asynchronous Messages</TITLE>
+
+<META NAME="description" CONTENT="LysKOM Protocol A: Asynchronous Messages">
+<META NAME="keywords" CONTENT="LysKOM Protocol A: Asynchronous Messages">
+<META NAME="resource-type" CONTENT="document">
+<META NAME="distribution" CONTENT="global">
+<META NAME="Generator" CONTENT="texi2html 1.62">
+
+</HEAD>
+
+<BODY LANG="EN" BGCOLOR="#FFFFFF" TEXT="#000000" LINK="#0000FF" VLINK="#800080" ALINK="#FF0000">
+
+<A NAME="SEC285"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC286"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H1> 5. Asynchronous Messages </H1>
+<!--docid::SEC285::-->
+<P>
+
+Asynchronous messages are information messages sent from the server to
+the client. Clients can select which messages to receive by issuing an
+see section <A HREF="Protocol-A_4.html#SEC231">4.81 accept-async [80] (9) Recommended</A> call. They can find out which messages are being
+sent by issuing the see section <A HREF="Protocol-A_4.html#SEC233">4.82 query-async [81] (9) Recommended</A> call. Note that the server can
+send other messages as well. For example, a broadcast message from a
+person with admin bits set may get through even if the client has not
+requests broadcast messages.
+</P><P>
+
+When a connection is opened some messages are selected by default.
+Clients should use the section <A HREF="Protocol-A_4.html#SEC231">4.81 accept-async [80] (9) Recommended</A> call to select which
+messages they want.  Servers are encouraged to preselect the
+<CODE>new-text-old</CODE>, <CODE>new-name</CODE>, <CODE>sync-db</CODE>, <CODE>leave-conf</CODE>,
+<CODE>login</CODE>, <CODE>rejected-connection</CODE>, <CODE>send-message</CODE> and
+<CODE>logout</CODE> messages. These correspond to the useful messages that
+were sent prior to the introduction of <CODE>accept-async</CODE>.
+</P><P>
+
+An asynchronous message is sent as a colon immediately followed by the
+number of message parameters, the message number and the message
+parameters. For example, message number 5 could be sent as
+</P><P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>:3 5 119 11HDavid Byers 13HDavid C Byers
+</pre></td></tr></table></P><P>
+
+The parameters of each message are listed in the same format as server
+calls.
+</P><P>
+
+The messages with status "O" are included here for historical purposes
+only.  Servers are not required to handle them, and are encouraged to
+reject them if a client uses it as an argument to
+section <A HREF="Protocol-A_4.html#SEC231">4.81 accept-async [80] (9) Recommended</A>.
+</P><P>
+
+<BLOCKQUOTE><TABLE BORDER=0 CELLSPACING=0> 
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC286">5.1 async-new-text-old (1) Obsolete (10)</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A text has been created                   (0)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC287">5.2 async-i-am-off (1) Obsolete</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">O Logged off (obsolete)                     (1)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC288">5.3 async-i-am-on-obsolete (1) Obsolete</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">O Client changed i-am-on string (obsolete)  (2)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC289">5.4 async-new-name (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Conference or person changed name         (5)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC290">5.5 async-i-am-on (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Client changed i-am-doing string          (6)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC291">5.6 async-sync-db (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Server is saving the database             (7)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC292">5.7 async-leave-conf (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Person has been removed from a conference (8)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC293">5.8 async-login (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Someone has logged in                     (9)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC294">5.9 async-broadcast (1) Obsolete</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">O Broadcast message (obsolete)             (10)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC295">5.10 async-rejected-connection (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r LysKOM is full. Log out to make room.    (11)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC296">5.11 async-send-message (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r Text message to group or person          (12)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC297">5.12 async-logout (1) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A person has logged out                  (13)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC298">5.13 async-deleted-text (10) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A text was deleted                       (14)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC299">5.14 async-new-text (10) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A text has been created                  (15)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC300">5.15 async-new-recipient (10) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A new recipient has been added to a text (16)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC301">5.16 async-sub-recipient (10) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A recipient has been removed from a text (17)</TD></TR>
+<TR><TD ALIGN="left" VALIGN="TOP"><A HREF="Protocol-A_5.html#SEC302">5.17 async-new-membership (10) Recommended</A></TD><TD>&nbsp;&nbsp;</TD><TD ALIGN="left" VALIGN="TOP">r A user has been added to a conference    (18)</TD></TR>
+</TABLE>
+-------------------------------------------------------------------------------
+<br>
+</BLOCKQUOTE>
+<P>
+
+<HR SIZE="6">
+<A NAME="SEC286"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.1 async-new-text-old (1) Obsolete (10) </H2>
+<!--docid::SEC286::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-new-text-old [0] (( text-no     :   Text-No;
+                                  text-stat   :   Text-Stat-Old; ));
+</pre></td></tr></table></P><P>
+
+This message is sent when a text is created. The text number of the text
+is sent in <CODE>text-no</CODE> and the text stat in <CODE>text-stat</CODE>. This
+message is sent to all logged-in members of any recipient of the text.
+</P><P>
+
+In protocol version 10 this call has been superceded by section <A HREF="Protocol-A_5.html#SEC299">5.14 async-new-text (10) Recommended</A>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC287"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC286"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC288"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC288"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.2 async-i-am-off (1) Obsolete </H2>
+<!--docid::SEC287::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-i-am-off [1] ( person  :   Pers-No );
+</pre></td></tr></table></P><P>
+
+This message was sent when a person logged off. It has been replaced by
+call <CODE>Async logout</CODE>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC288"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC289"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC289"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.3 async-i-am-on-obsolete (1) Obsolete </H2>
+<!--docid::SEC288::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-i-am-on-obsolete [2] (( person          :   Pers-No;
+                                      conference      :   Conf-No;
+                                      what-am-i-doing :   HOLLERITH; ));
+</pre></td></tr></table></P><P>
+
+This message was sent when a user changed his what-i-am-doing string or
+working conference. It has been replaced by call number 6,
+section <A HREF="Protocol-A_5.html#SEC290">5.5 async-i-am-on (1) Recommended</A>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC289"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC288"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC290"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC290"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.4 async-new-name (1) Recommended </H2>
+<!--docid::SEC289::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-new-name [5] (( conf-no     :   Conf-No;
+                              old-name    :   HOLLERITH;
+                              new-name    :   HOLLERITH; ));
+</pre></td></tr></table></P><P>
+
+This message is sent when a person or conference changes names. The
+conference whose name is being changed is sent in <CODE>conf-no</CODE>, the
+old name in <CODE>old-name</CODE> and the new name in <CODE>new-name</CODE>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC290"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC289"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC291"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC291"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.5 async-i-am-on (1) Recommended </H2>
+<!--docid::SEC290::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-i-am-on [6] ( info :   Who-Info );
+</pre></td></tr></table></P><P>
+
+This message is sent when a session's working conference,
+what-i-am-doing string or username changes. The new information is sent
+in <CODE>info</CODE>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC291"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC290"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC292"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC292"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.6 async-sync-db (1) Recommended </H2>
+<!--docid::SEC291::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-sync-db [7] ( );
+</pre></td></tr></table></P><P>
+
+This message is sent once just before the server blocks to save its
+database and once just after it blocks. There is no good way to tell the
+difference between the two cases. 
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC292"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC291"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC293"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC293"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.7 async-leave-conf (1) Recommended </H2>
+<!--docid::SEC292::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-leave-conf [8] ( conf-no    :   Conf-No );
+</pre></td></tr></table></P><P>
+
+This message is sent to a user when the user's membership in the working
+conference is removed for any reason. The conference the user is being
+removed from is sent in <CODE>conf-no</CODE>.
+</P><P>
+
+Earlier versions of the LysKOM Protocol A specifications stated that
+this message was only sent if the membership was "revoked forcefully".
+The exact meaning of that phrasing was never specified.  The lyskomd
+implementation has probably always followed the current version of the
+specification, which means that this message is sent whatever the reason
+for the removal is.
+</P><P>
+
+Possible reasons include:
+<UL>
+<LI>The session issued a section <A HREF="Protocol-A_4.html#SEC101">4.16 sub-member [15] (1) Recommended</A> call.
+<LI>Some other session issued a section <A HREF="Protocol-A_4.html#SEC101">4.16 sub-member [15] (1) Recommended</A> call.
+<LI>The conference was deleted.
+<LI>The person was deleted.
+</UL>
+<P>
+
+This message is not sent if a membership is transformed from an active
+to a passive membership.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC293"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC292"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC294"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC294"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.8 async-login (1) Recommended </H2>
+<!--docid::SEC293::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-login [9] ( pers-no    :   Pers-No;
+                          session-no :   Session-No; );
+</pre></td></tr></table></P><P>
+
+This message is sent when someone logs in. The identity of the person
+logging in is sent in <CODE>pers-no</CODE>.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC294"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC293"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC295"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.9 async-broadcast (1) Obsolete </H2>
+<!--docid::SEC294::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-broadcast [10] (( sender    :   Pers-No;
+                                message   :   HOLLERITH; ));
+</pre></td></tr></table></P><P>
+
+This message has been superceded by <CODE>send-message</CODE> which is more
+flexible. It used to be sent when the administrator broadcast a string
+to all LysKOM users, but is no longer used.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC295"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC294"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC296"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.10 async-rejected-connection (1) Recommended </H2>
+<!--docid::SEC295::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-rejected-connection [11] ( );
+</pre></td></tr></table></P><P>
+
+This message is sent when someone fails to log in because the maximum
+number of allowed connections has been reached. Some clients may take
+this as a signal to log out. Administrators should take it as a signal
+to allow more connections.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC296"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC295"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC297"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.11 async-send-message (1) Recommended </H2>
+<!--docid::SEC296::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-send-message [12] (( recipient  :   Conf-No;
+                                   sender     :   Pers-No;
+                                   message    :   HOLLERITH; ));
+</pre></td></tr></table></P><P>
+
+This message is sent when someone sends a message string. The recipient
+of the message is sent in <CODE>recipient</CODE>. If it is zero, then the
+message was sent to all connections. If it is a conference, then the
+message is being sent to all logged-in members of that conference. If it
+is a mailbox then the message is personal and is only sent to members
+of the mailbox conference.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC297"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC296"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC298"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.12 async-logout (1) Recommended </H2>
+<!--docid::SEC297::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-logout [13] (( pers-no      :   Pers-No;
+                             session-no   :   Session-No; ));
+</pre></td></tr></table></P><P>
+
+This message is sent when someone logs out. <CODE>pers-no</CODE> is the person
+logging out and <CODE>session-no</CODE> is the session in which the person is
+logging out. This message might also be sent when a session disconnects,
+even if there is nobody logged on in the session.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC298"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC297"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC299"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.13 async-deleted-text (10) Recommended </H2>
+<!--docid::SEC298::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-deleted-text [14] (( text-no    :   Text-No;
+                                   text-stat  :   Text-Stat; ));
+</pre></td></tr></table></P><P>
+
+This message is sent when a text is deleted and the currently logged-in
+person is a member of one of the recipients. The text number being
+deleted is sent in <CODE>text-no</CODE> and the text stat in <CODE>text-stat.</CODE>
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC299"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC298"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC300"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.14 async-new-text (10) Recommended </H2>
+<!--docid::SEC299::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-new-text [15] (( text-no    :   Text-No;
+                               text-stat  :   Text-Stat; ));
+</pre></td></tr></table></P><P>
+
+This message indicates that a new text has been created. The text has
+number <CODE>text-no</CODE>, and the text stat is <CODE>text-stat</CODE>. The
+message is sent to all logged-in members of any recipient of the text.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC300"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC299"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC301"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.15 async-new-recipient (10) Recommended </H2>
+<!--docid::SEC300::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-new-recipient [16] (( text-no     :   Text-No;
+                                    conf-no     :   Conf-No;
+                                    type        :   Info-Type; ));
+</pre></td></tr></table></P><P>
+
+This message indicates that a new recipient has been added to text
+<CODE>text-no</CODE>. The recipient added is <CODE>conf-no</CODE> and the type of
+recipient is indicated by <CODE>type</CODE>. This message is sent to all
+recipients of the text that are permitted to know about the new
+recipient.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC301"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC300"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC302"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.16 async-sub-recipient (10) Recommended </H2>
+<!--docid::SEC301::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-sub-recipient [17] (( text-no     :   Text-No;
+                                    conf-no     :   Conf-No;
+                                    type        :   Info-Type; ));
+</pre></td></tr></table></P><P>
+
+This message indicates that a recipient has been removed from text
+<CODE>text-no</CODE>. The recipient removed is <CODE>conf-no</CODE> and the type of
+recipient is indicated by <CODE>type</CODE>. This message is sent to everybody
+that were recipients of the text and that were permitted to know about
+the recipient.
+</P><P>
+
+<HR SIZE="6">
+<A NAME="SEC302"></A>
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC301"> &lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC285"> Up </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<H2> 5.17 async-new-membership (10) Recommended </H2>
+<!--docid::SEC302::-->
+<P>
+
+<TABLE><tr><td>&nbsp;</td><td><pre>        async-new-membership [18] (( pers-no    :   Pers-No;
+                                     conf-no    :   Conf-No; ));
+</pre></td></tr></table></P><P>
+
+This message indicates that the membership for <CODE>pers-no</CODE> in
+conference <CODE>conf-no</CODE> has been added. This message is currently sent
+only to <CODE>pers-no</CODE>, but that may change in the future.
+</P><P>
+
+See also see section <A HREF="Protocol-A_5.html#SEC292">5.7 async-leave-conf (1) Recommended</A>.
+</P><P>
+
+<HR SIZE="6">
+<TABLE CELLPADDING=1 CELLSPACING=1 BORDER=0>
+<TR><TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_5.html#SEC287"> &lt;&lt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_6.html#SEC303"> &gt;&gt; </A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT"> &nbsp; <TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A.html#SEC_Top">Top</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_toc.html#SEC_Contents">Contents</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_11.html#SEC326">Index</A>]</TD>
+<TD VALIGN="MIDDLE" ALIGN="LEFT">[<A HREF="Protocol-A_abt.html#SEC_About"> ? </A>]</TD>
+</TR></TABLE>
+<BR>  
+<FONT SIZE="-1">
+This document was generated
+by <I>Staffan Malmgren</I> on <I>May, 19  2000</I>
+using <A HREF="http://www.mathematik.uni-kl.de/~obachman/Texi2html
+"><I>texi2html</I></A>
+
+</BODY>
+</HTML>
