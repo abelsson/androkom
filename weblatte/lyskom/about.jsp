@@ -3,24 +3,27 @@
 <html>
   <head>
     <title>Weblatte - hjälp och information</title>
-    <link rel="stylesheet" href="lattekom.css">
+    <link rel="stylesheet" href="lattekom.css" />
   </head>
   <body>
-    <h2>Weblatte</h2>
+    <h2>Weblatte - en kort introduktion</h2>
     <p>
       Weblatte är en LysKOM-klient för dig som lätt vill kunna läsa
       och skriva i LysKOM-system via din vanliga webbläsare. LysKOM är
       ett konferenssystem, och mer om detta kan du läsa på <a
       href="http://www.lysator.liu.se/lyskom/">LysKOMs
-      hemsida</a>.<br/> Weblatte är fortfarande i ett tidigt
-      utvecklingsstadium, varför det är sannolikt att buggar kan
-      inträffa. Rapporter om fel som inträffar emottages mycket
-      tacksamt (se nedan). Man bör dock vara medveten om att
-      Weblatte är ett hobbyprojekt, och som sådant ges naturligtvis
-      inga garantier för om och när en eventuell bugg kan fixas.<br/>
+      hemsida</a>.<br/>
+
+      Weblatte är fortfarande i ett tidigt utvecklingsstadium, varför
+      det är sannolikt att buggar kan inträffa. Rapporter om fel som
+      inträffar emottages mycket tacksamt (se nedan). Man bör dock
+      vara medveten om att Weblatte är ett hobbyprojekt, och som
+      sådant ges naturligtvis inga garantier för om och när en
+      eventuell bugg kan fixas.<br/>
+
       Det finns andra webb-baserade LysKOM-klienter, till exempel <a
-	href="http://webkom.lysator.liu.se/">WebKOM</a> och <a
-	href="http://www.lysator.liu.se/jyskom/">JySKOM</a>.
+      href="http://webkom.lysator.liu.se/">WebKOM</a> och <a
+      href="http://www.lysator.liu.se/jyskom/">JySKOM</a>.
     </p>
     <p>
       Den officiella Weblatte-URLen är:
@@ -75,6 +78,94 @@
       inställningar</b>" (i samma ruta). Inställningarna sparas på den
       server du är inloggad på.
     </p>
+    <h2>Avancerade funktioner</h2>
+    <p>
+      Det finns en mer eller mindre <a href="features.jsp">fullständig
+      lista över funktioner i Weblatte</a> tillgänglig. Detta stycker
+      beskriver några av dem.
+    </p>
+    <h3>Att använda flera LysKOM-servrar samtidigt</h3>
+    <p>
+      Weblatte tillhandahåller funktioner för att växla mellan olika
+      LysKOM-servrar utan att behöva logga ut och in varje gång. Detta
+      gör man genom att "pausa" en LysKOM-session. Genom att välja
+      menyvalet "pausa" så läggs sessionen i bakgrunden, så att du kan
+      logga in på en annan LysKOM-server (eller som en annan användare
+      på samma server). Om du har en eller fler pausade
+      LysKOM-sessioner så visas det längst ned på huvudsidan som en
+      länk med texten "<b>OBS! Du har N oläst(a)
+      LysKOM-sessioner</b>". Genom att klicka på denna länk kommer du
+      till en lista över alla sessioner som är igång för
+      tillfället. Om du väljer en av sessionerna i listan så kommer
+      automatiskt den aktiva sessionen att pausas och istället
+      ersättas med den du valt, varpå du återförs till huvudsidan och
+      kan börja arbeta med den valda sessionen. Till höger om
+      sessionslänken på huvudsidan visas även en länk, "<b>>></b>",
+      som tar dig direkt till den senast pausade sessionen. Om du har
+      fler än en pausad session visas även en länk åt andra hållet,
+      "<b>&lt;&lt;</b>", som omvänt tar dig till den tidigast pausade
+      sessionen. På så vis kan du rotera mellan alla sessioner utan
+      att gå via sessions-listan.<br/> Om du har en eller flera
+      pausade sessioner när du loggar ut ur en session, så tas du till
+      listan över sessioner. Där kan du även välja att "<b>terminera
+      alla sessioner</b>", vilket loggar ut alla LysKOM-sessioner du
+      har startat (både pausade och den aktiva).  <br/> En pausad
+      session kommer att spara alla meddelanden du får, vilka visas
+      när du återgår till den sessionen.<br/> Om du glömmer att logga
+      ut så termineras automatiskt alla sessioner efter 30
+      minuter. Vill du förhindra att bli utloggad så räcker det med
+      att låta den aktiva sessionen vara i "<b>lista nyheter</b>"-läge
+      med automatisk uppdatering påslagen.  <br/>
+    </p>
+    <h3>Många olästa möten</h3>
+    <p>
+      Om du är medlem i många möten där du har olästa inlägg (fler än 
+      200), så kommer Weblatte automatiskt aktivera en funktion som
+      heter "många möten". Den innebär i korthet att Weblatte inte
+      frågar LysKOM-servern om information om alla olästa möten vid
+      inloggning, utan istället gör det först när du ska läsa i ett
+      möte, samt att nyhetslistan begränsas till att visa fem möten
+      åt gången. När du har mindre än 200 olästa möten så kan du
+      deaktivera funktionen under "Inställningar". Du kan givetvis
+      aktivera "många möten" även om du inte har fler än 200 olästa
+      möten, om du föredrar den snabbare inloggningen som funktionen
+      ger.
+    </p>
+    <h3>Om internationell teckenkodning</h3>
+    <p>
+      Som standard använder Weblatte alltid "iso-8859-1" som
+      teckenkodning för de inlägg du skapar. Detta är den kodning som
+      alla LysKOM-klienter klaras av, och den kan representera de
+      flesta tecken som behövs till vardags. Om du däremot vill skriva
+      inlägg som innehåller icke-latinska tecken, till exempel
+      hebreiska, så måste du instruera Weblatte att använda en
+      teckenkodning som kan representera denna. Med hjälp av
+      inställningen "<b>Teckenkodning att använda vid skapande av
+      texter</b>" kan du styra hur dina inlägg skall kodas. "utf-8" är
+      en Unicode-teckenkodning som klarar nästan allt. Var dock beredd
+      på att vissa klienter inte kommer att kunna läsa dina inlägg
+      korrekt om du använder något annat än "iso-8859-1".<br/>
+      När det gäller läsning utav inlägg så översätter Weblatte alla
+      inlägg till UTF-8 när de skickas till din webbläsare. Detta gör 
+      att de flesta inlägg kan visas korrekt. Det förutsätter dock att
+      din webbläsare och operativsystem har tillgång till teckensnitt
+      som innehåller de tecken som skall visas.
+    </p>
+    <h3>Om e-post, binärdata och mail-attachments</h3>
+    <p>
+      Flera KOM-system har så kallad "mail-import", vilket är ett sätt
+      för vanlig e-post att leta sig in i en LysKOM-server. Ett e-brev
+      kan som bekant innehålla bilagor, till exempel filer och
+      bilder. En bilaga visas ungefär som en kommentar, men med texten
+      "Bilaga av typen image/jpeg i NNNNNN ("<b>visa</b>"). Bilagor
+      läsmarkeras automatiskt när du läser brevet som de är bilagor
+      till. Om du klickar på "visa" så kommer bilagans innehåll att
+      skickas till din webbläsare i sin helhet. För en bild innebär
+      detta i allmänhet att du får se bilden direkt i din
+      webbläsare och för andra andra sorters bilagor så kommer din
+      webbläsare bete sig precis som om du skulle ha laddat ned ett
+      dokument av samma typ från en vanlig webbplats.
+    </p>
     <h2>Buggrapportering och förslag</h2>
     <p>
       Om man har konkreta felanmälningar eller förbättringsförslag så
@@ -87,7 +178,7 @@
       på funktionalitet, respektive:
       <ul>
         <li><a href="http://sourceforge.net/tracker/?func=add&group_id=10071&atid=110071">Buggrapportering</a></li>
-      <li><a href="http://sourceforge.net/tracker/?func=add&group_id=10071&atid=360071">Förslagsrapportering</a></li>
+        <li><a href="http://sourceforge.net/tracker/?func=add&group_id=10071&atid=360071">Förslagsrapportering</a></li>
       </ul>
       <i>När du lämnar buggrapporter, välj <b>weblatte</b> i menyn
       benämnd "category".</i> Det går bra att skriva på svenska i
@@ -119,7 +210,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.7 $
+      $Revision: 1.8 $
     </p>
   </body>
 </html>

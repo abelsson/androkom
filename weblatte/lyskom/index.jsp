@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.35 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.36 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -876,7 +876,7 @@
 	    <br/>
 	    [ <a href="<%=basePath%>?setPasswordForm">ändra lösenord</a> ]
 	    [ <a href="<%=basePath%>prefs.jsp">inställningar</a> ]
-	    [ <a href="<%=basePath%>?suspend">pausa denna session</a> ]
+	    [ <a href="<%=basePath%>?suspend">pausa</a> ]
    	</p>
 <%
     }
@@ -1167,11 +1167,11 @@
 		    var s = timeLeft / 1000;
 		    var div = document.getElementById("countdown");
 		    if (div != null && timeLeft > 0) {
-			div.innerHTML = "(uppdaterar om " + s + 
-			    (s > 1 ? " sekunder" : " sekund") + ")";
+			div.innerHTML = "<span class=\"countdown\">(uppdaterar om " + s + 
+			    (s > 1 ? " sekunder" : " sekund") + ")</span>";
 		    } else if (div != null) {
 			if (!refreshInProgress) {
-	                    div.innerHTML = "(uppdaterar...)";
+	                    div.innerHTML = "<span class=\"countdown\">(uppdaterar...)</span>";
 	                    refresh();
 	                }
 		    }
@@ -1188,7 +1188,8 @@
 	<p>
 	<ul>
 <%	
-		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
+		List unreadConfsList = lyskom.getUnreadConfsListCached();
+		Iterator confIter = unreadConfsList.iterator();
 		int sum = 0, confsum = 0;
 		int lastconf = 0;
 		int skipTo = 0;
@@ -1197,45 +1198,50 @@
 		    skipTo = Integer.parseInt(parameter(parameters, "skipTo"));
 		    Debug.println("skipTo == " + skipTo);
 		}
-		boolean abort = false;
-		while (confIter.hasNext() && !abort) {
-		    int conf = ((Integer) confIter.next()).intValue();
-		    if (skipTo > 0 && skipTo != conf) {
-			skipped++;
-			Debug.println("skipping " + conf);
-			continue;
-		    } else if (skipTo == conf) {
-			skipped++;
-			Debug.println("skipping " + conf + " (==skipTo)");
-			skipTo = 0;
-			continue;
-		    }
+		synchronized (unreadConfsList) {
+		    boolean abort = false;
+		    while (confIter.hasNext() && !abort) {
+			int conf = ((Integer) confIter.next()).intValue();
+			if (skipTo > 0 && skipTo != conf) {
+			    skipped++;
+			    Debug.println("skipping " + conf);
+			    continue;
+			} else if (skipTo == conf) {
+			    skipped++;
+			    Debug.println("skipping " + conf + " (==skipTo)");
+			    skipTo = 0;
+			    continue;
+			}
 
 
-		    lastconf = conf;
-		    Membership membership = !manyMemberships ?
-			lyskom.queryReadTextsCached(conf) :
-			lyskom.queryReadTexts(me, conf);
+			lastconf = conf;
+			Membership membership = !manyMemberships ?
+			    lyskom.queryReadTextsCached(conf) :
+			    lyskom.queryReadTexts(me, conf);
 
-	            int[] readTexts = membership.getReadTexts();
-		    UConference uconf = lyskom.getUConfStat(conf);
-		    int unreads = 0;
-		    if (uconf.getHighestLocalNo() > membership.getLastTextRead()) {
-			unreads = uconf.getHighestLocalNo() -
+			int[] readTexts = membership.getReadTexts();
+			UConference uconf = lyskom.getUConfStat(conf);
+			int unreads = 0;
+			if (uconf.getHighestLocalNo() > membership.getLastTextRead()) {
+			    unreads = uconf.getHighestLocalNo() -
 				membership.getLastTextRead();
+			}
+			if (unreads == 0) {
+			    confIter.remove();
+			    continue;
+			}
+			sum += unreads;
+			sum -= readTexts.length;
+			confsum++;
+			out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
+				  conf + "\">" + 
+				  lookupName(lyskom, conf, true) + "</a>: " +
+				  unreads + " " + (unreads > 1 ? "olästa" : "oläst"));
+			out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
+				    conf + "&listSubjects\">lista ärenden</a> ]");
+			out.flush();
+			if (manyMemberships && confsum >= 5) abort = true;
 		    }
-		    if (unreads == 0) continue;
-		    sum += unreads;
-	            sum -= readTexts.length;
-		    confsum++;
-		    out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
-				conf + "\">" + 
-				lookupName(lyskom, conf, true) + "</a>: " +
-				unreads + " " + (unreads > 1 ? "olästa" : "oläst"));
-		    out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
-			conf + "&listSubjects\">lista ärenden</a> ]");
-	            out.flush();
-		    if (manyMemberships && confsum >= 5) abort = true;
 		}
 		lyskom.changeWhatIAmDoing("Väntar");
 %>
@@ -1479,7 +1485,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.35 $
+$Revision: 1.36 $
 </p>
 </body>
 </html>

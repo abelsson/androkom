@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.55 2004/05/11 17:27:47 pajp Exp $
+ * @version $Id: Session.java,v 1.56 2004/05/11 19:57:17 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -712,7 +712,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    TextMapping tm = localToGlobal(conference, localNo, 10);
 
 	    if (!tm.hasMoreElements()) {
-		unreads.remove(new Integer(conference));
+		synchronized (unreads) {
+		    unreads.remove(new Integer(conference));
+		}
 		return -1;
 	    }
 	    int txtNo = ((Integer) tm.nextElement()).intValue();
@@ -723,7 +725,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 
 	    if (txtNo == 0 || readTexts.exists(txtNo)) {
-		unreads.remove(new Integer(conference));
+		synchronized (unreads) {
+		    unreads.remove(new Integer(conference));
+		}
 		Debug.println("no unread texts found");
 		return -1;
 	    }
