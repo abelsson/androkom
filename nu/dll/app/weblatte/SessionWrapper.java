@@ -1,7 +1,9 @@
 package nu.dll.app.weblatte;
 
-import javax.servlet.http.*;
+import javax.servlet.http.HttpSessionBindingListener;
+import javax.servlet.http.HttpSessionBindingEvent;
 import nu.dll.lyskom.Session;
+import nu.dll.lyskom.Debug;
 
 public class SessionWrapper implements HttpSessionBindingListener {
     Session lyskom;
@@ -10,7 +12,6 @@ public class SessionWrapper implements HttpSessionBindingListener {
     }
 
     public void valueBound(HttpSessionBindingEvent event) {
-	
     }
 
     public void valueUnbound(HttpSessionBindingEvent event) {
