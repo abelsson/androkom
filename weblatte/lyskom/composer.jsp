@@ -205,8 +205,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.1 2004/04/15 22:13:20 pajp Exp $<br/>
-(<a href="composer.txt">visa källkod</a>)
+$Id: composer.jsp,v 1.2 2004/04/15 22:33:47 pajp Exp $
 </p>
 </body>
 </html>

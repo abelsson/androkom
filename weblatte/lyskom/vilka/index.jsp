@@ -59,8 +59,7 @@
 </table>
 <p>[ <a href="../">logga in här</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.1 2004/04/15 22:13:20 pajp Exp $<br>
-(<a href="index.txt">visa källkod</a>)
+$Id: index.jsp,v 1.2 2004/04/15 22:33:58 pajp Exp $
 </p>
 </body>
 </html>
