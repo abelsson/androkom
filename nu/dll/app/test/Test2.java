@@ -81,6 +81,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     SimpleDateFormat timestampFormat = fullTimeFormat;
     SimpleDateFormat thisYearTimeFormat = new SimpleDateFormat("EEEE d MMMM k:mm", locale);
     SimpleDateFormat yesterdayTimeFormat = new SimpleDateFormat("'igår' HH:mm", locale);
+    SimpleDateFormat withinLastWeekTimeFormat = new SimpleDateFormat("EEEE's' HH:mm", locale);
     SimpleDateFormat todayTimeFormat = new SimpleDateFormat("'idag' HH:mm", locale);
 
 
@@ -209,8 +210,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     public String komTimeFormat(Date d) {
 	Calendar now = new GregorianCalendar(locale);
 	Calendar then = new GregorianCalendar(locale);
-	Debug.println("then YEAR: " + then.get(Calendar.YEAR));
-	Debug.println("then DAY_OF_YEAR: " + then.get(Calendar.DAY_OF_YEAR));
 
 	then.setTime(d);
 	if (now.get(Calendar.YEAR) == then.get(Calendar.YEAR)) {
@@ -219,8 +218,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    }
 	    Calendar yesterday = (Calendar) now.clone();
 	    yesterday.add(Calendar.DAY_OF_YEAR, -1);
-	    if (then.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) { // yesterday, fails day after new year's eve
+	    if (then.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) { 
 		return yesterdayTimeFormat.format(d);
+	    }
+	    Calendar weekago = (Calendar) now.clone();
+	    weekago.add(Calendar.DAY_OF_YEAR, -6);
+	    if (d.after(weekago.getTime())) {
+		return withinLastWeekTimeFormat.format(d);
 	    }
 	    return thisYearTimeFormat.format(d);
 	}
@@ -457,7 +461,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		System.exit(-32);
 	    }
 	    consoleWriteLn("Inloggad. Välkommen till LysKOM! Skriv \"?\" och tryck <Enter> för hjälp.");
-	    consoleWrite("Vänta lite medans jag hämtar information om olästa möten...");
+	    consoleWrite("Vänta lite medan jag hämtar information om olästa möten...");
 	    foo.updateUnreads();
 	    consoleWriteLn("klart.");
 	    if (useGui) {
