@@ -66,6 +66,10 @@
 	response.sendRedirect("/lyskom/");
 	return;
     }
+    int conferenceNumber = 0;
+    if (request.getParameter("conference") != null) {
+	conferenceNumber = Integer.parseInt(request.getParameter("conference"));
+    }
     Map parameters = new HashMap();
     Map fileMap = new HashMap();
     Map typeMap = new HashMap();
@@ -443,6 +447,9 @@
 	}
     }
 
+    if (conferenceNumber > 0) {
+	recipients.add(lookupName(lyskom, conferenceNumber));
+    }
 
     recipients.add("");
     ccRecipients.add("");
@@ -593,7 +600,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.20 2004/06/13 14:36:48 pajp Exp $
+$Id: composer.jsp,v 1.21 2004/06/28 23:04:09 pajp Exp $
 </div>
 </body>
 </html>

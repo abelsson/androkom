@@ -32,6 +32,7 @@
     }
 %>
 <%
+
     Map parameters = parseQueryString(request.getQueryString(), "iso-8859-1");
     Enumeration penum = request.getParameterNames();
     while (penum.hasMoreElements()) {
@@ -1507,7 +1508,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.83 $
+$Revision: 1.84 $
 </div>
 </body>
 </html>
