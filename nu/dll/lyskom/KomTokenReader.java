@@ -25,6 +25,10 @@ class KomTokenReader {
 	input = i;
     }
 
+    public void close() throws IOException {
+	input.close();
+    }
+
     public KomTokenArray readArray()
     throws IOException {
 	if (lastToken == null) {

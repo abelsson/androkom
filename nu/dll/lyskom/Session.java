@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.30 2004/03/23 11:44:39 pajp Exp $
+ * @version $Id: Session.java,v 1.31 2004/03/26 03:21:24 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -359,8 +359,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Adds a listener for asynchronous messages.
      *
-     * At the moment, registered received must return quickly, and
+     * At the moment, registered receivers must return quickly, and
      * specifically, may not call the waitFor() method. 
+     *
+     * Must not be called before connect()
      *
      * @see nu.dll.lyskom.AsynchMessageReceiver
      */

@@ -59,8 +59,9 @@ implements Runnable {
 	return thread;
     }
 
-    public void disconnect() {
+    public void disconnect() throws IOException {
 	disconnect = true;
+	session.getKomTokenReader().close();
     }
 
     // cannot throw exceptions from here, use callback error handling?
