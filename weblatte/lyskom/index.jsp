@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.32 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.33 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -460,13 +460,37 @@
 	}
     }
 
+    int me = lyskom.getMyPerson().getNo();
     Boolean mbInitedObj = (Boolean) lyskom.getAttribute("mbInited");
     if (mbInitedObj == null) mbInitedObj = Boolean.FALSE;
+    boolean manyMemberships = preferences.getBoolean("many-memberships");
     if (!mbInitedObj.booleanValue()) {
 	out.print("<p>Läser in medlemskapsinformation...");
 	out.flush();
-	lyskom.updateUnreads();
-	out.println("klart.</p>");
+	List unreadConferencesList = lyskom.getUnreadConfsList(me);
+	int unreadConferences = unreadConferencesList.size();
+
+	if (unreadConferences > 200 && !manyMemberships) {
+	    preferences.set("many-memberships", "1");
+	    userArea.setBlock("weblatte", preferences.getData());
+	    lyskom.saveUserArea(userArea);
+	    clearPreferenceCache(lyskom);
+	    out.println("<b>OBS</b>: Du verkar ha olästa " +
+		"i många möten (" + unreadConferences + "). " +
+		"Funktionen \"många möten\" har automatiskt aktiverats, vilket " +
+		"innebär att komplett medlemsskap aldrig läses in, samt att " +
+		"nyhetslistan aldrig visar fler än fem möten åt gången.</p>");
+	    out.flush();
+	    manyMemberships = true;
+	} else {
+	    if (!manyMemberships) {
+		lyskom.updateUnreads(unreadConferencesList);
+	    } else {
+		out.println("(\"många möten\" aktiverad)...");
+	    }
+	    out.println("klart.</p>");
+	    out.flush();
+	}
 	mbInitedObj = Boolean.TRUE;
     }    
     lyskom.setAttribute("mbInited", mbInitedObj);
@@ -857,7 +881,7 @@
 	    pyjamas = !pyjamas;
 	    Text t = null;
 	    try {
-		t = lyskom.getText(marks[i].getText());
+		t = lyskom.getText(marks[i].getText(), false, true);
 	    } catch (RpcFailure ex1) {
 		if (ex1.getError() == Rpc.E_no_such_text) continue;
 		throw ex1;
@@ -896,7 +920,7 @@
 	    if (reviewList != null && reviewList.size() > 0) {
 		nextUnreadText = ((Integer) reviewList.remove(0)).intValue();
 	    } else {
-	        nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
+            	nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
 	    }
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_not_member) {
@@ -1156,12 +1180,17 @@
 %>
 	<p>
 	<ul>
-<%
+<%	
 		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
 		int sum = 0, confsum = 0;
-		while (confIter.hasNext()) {
+		boolean abort = false;
+		while (confIter.hasNext() && !abort) {
 		    int conf = ((Integer) confIter.next()).intValue();
-		    Membership membership = lyskom.queryReadTextsCached(conf);
+		    Membership membership = !manyMemberships ?
+			lyskom.queryReadTextsCached(conf) :
+			lyskom.queryReadTexts(me, conf);
+
+	            int[] readTexts = membership.getReadTexts();
 		    UConference uconf = lyskom.getUConfStat(conf);
 		    int unreads = 0;
 		    if (uconf.getHighestLocalNo() > membership.getLastTextRead()) {
@@ -1170,6 +1199,7 @@
 		    }
 		    if (unreads == 0) continue;
 		    sum += unreads;
+	            sum -= readTexts.length;
 		    confsum++;
 		    out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
 				conf + "\">" + 
@@ -1177,11 +1207,20 @@
 				unreads + " " + (unreads > 1 ? "olästa" : "oläst"));
 		    out.println(" [ <a href=\"" + myURI(request) + "?conference=" +
 			conf + "&listSubjects\">lista ärenden</a> ]");
+		    if (manyMemberships && confsum >= 5) abort = true;
 		}
-		lyskom.changeWhatIAmDoing("Väntar på inlägg");
+		lyskom.changeWhatIAmDoing("Väntar");
 %>
 
 	</ul>
+<%
+		if (manyMemberships && confIter.hasNext()) {
+%>
+		<p>(Många möten: det finns troligen fler olästa i möten
+		   som inte visas i denna lista.)</p>
+<%
+		}
+%>
 		<%= confsum == 0 ? "<b>inga olästa i något möte</b>" : sum + " oläst(a) i " + confsum + " möte(n)" %>
 		<div id="countdown"></div>
 <%		if (sum > 0) {
@@ -1409,7 +1448,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.32 $
+$Revision: 1.33 $
 </p>
 </body>
 </html>

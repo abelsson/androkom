@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.53 2004/05/10 22:24:58 pajp Exp $
+ * @version $Id: Session.java,v 1.54 2004/05/11 02:51:09 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -570,15 +570,24 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return membershipCache.get(confNo);
     }
 
+    public void updateUnreads()
+    throws IOException {
+	updateUnreads(null);
+    }
+
     /**
      * Updates the unreadMembership array with Membership objects for
      * conferences that _may_ contain unreads.
      */
-    public void updateUnreads()
+    public void updateUnreads(List _unreads)
     throws IOException {
 	if (membership == null) membership = getMyMembershipList();
 	int persNo = myPerson.getNo();
-	unreads = getUnreadConfsList(persNo);
+	if (_unreads == null) {
+	    getUnreadConfsList(persNo);
+	} else {
+	    unreads = _unreads;
+	}
 	
 	unreadMembership = new LinkedList();
 	unreadTexts = new LinkedList();
@@ -592,22 +601,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    membershipCache.add(m);
 	    int possibleUnreads = getUConfStat(m.conference).getHighestLocalNo() - m.lastTextRead;
 	    if (possibleUnreads > 0 ) {
-		unreadMembership.add(queryReadTexts(persNo, ((Integer) unreads.get(i)).intValue()));
-		TextMapping tm = localToGlobal(((Integer) unreads.get(i)).intValue(), m.lastTextRead+1, possibleUnreads);
-		
-		// ok, this textmapping may contain text numbers that
-		// we've already read, lets purge.
-		if (false) {
-		    for (int j=0; j < m.readTexts.length; j++) {
-			int global = tm.localToGlobal(m.readTexts[j]);
-			if (tm.removePair(m.readTexts[j])) {
-			    Debug.println("Removed already read text " + m.readTexts[j]);
-			    markAsRead(global);
-			}
-		    }
-		    unreadTexts.add(tm);
-		    m.setTextMapping(tm);
-		}
+		unreadMembership.add(m);
 	    }
 	}
     }
@@ -625,7 +619,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	Debug.println("markAsRead(" + textNo + "): text-stat is " + stat);
 	List recipientSelections = new LinkedList();
 	List recipientNumbers = new LinkedList();
-	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt };
+	int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
 	for (int i=0; i < tags.length; i++) {
 	    recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
 	}
@@ -1284,7 +1278,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * @param confNo The conference number in which to map text numbers
      * @param firstLocalNo The first local number to map
-     * @param noOfExistingTexts The maximum number of texts that the returned mappnig should contain
+     * @param noOfExistingTexts The maximum number of texts that the returned mapping should contain
      * @see nu.dll.lyskom.Session#doLocalToGlobal(int, int, int)
      */
     public  TextMapping localToGlobal(int confNo, int firstLocalNo,
@@ -1292,18 +1286,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException, RpcFailure {
 	if (firstLocalNo == 0)
 	    throw new IllegalArgumentException("First local text number cannot be zero.");
-	TextMapping m;
-	if (membershipCache.contains(confNo)) {
-	    Membership membership = membershipCache.get(confNo);
-	    if (membership.getTextMapping() != null) {
-		m = membership.getTextMapping();
-	    } else {
-		m = new TextMapping();
-		membership.setTextMapping(m);
-	    }
-	} else {
-	    m = new TextMapping();
-	}
+	TextMapping m = new TextMapping();
 
 	int offset = 0;
 	int existingTextsLeft;
@@ -1407,6 +1390,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	LinkedList confList = new LinkedList();
 	int[] confs = getUnreadConfs(persNo);
 	for (int i=0; i < confs.length; i++) confList.add(new Integer(confs[i]));
+	if (persNo == myPersonNo) unreads = confList;
 	return confList;
     }
 

@@ -31,7 +31,7 @@ public class Membership {
 
     final static int DEBUG = Integer.getInteger("lattekom.membership-debug", 0).intValue();
 
-    TextMapping textMap;
+    //TextMapping textMap;
 
     Membership() {
 	super();
@@ -79,15 +79,6 @@ public class Membership {
         lastTextRead = i;
     }
 
-    public void setTextMapping(TextMapping tm) {
-	this.textMap = tm;
-    }
-
-    public TextMapping getTextMapping() {
-	if (textMap != null) textMap.first();
-	return textMap;
-    }
-
     /**
      * Return this memberhips position
      */
@@ -130,8 +121,7 @@ public class Membership {
 	return readTexts;
     }
 
-    public void markAsRead(int localNo) {
-	// XXX: not thread safe.
+    public synchronized void markAsRead(int localNo) {
 	if (localNo == lastTextRead+1) {
 	    lastTextRead = localNo;
 	} 
