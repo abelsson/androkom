@@ -72,23 +72,31 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     protected Stack toread = new Stack(); // used to store unread comments
     protected Stack toreview = new Stack(); // återse-stack
 
-    static String encoding = System.getProperty("lattekom.encoding");
-    static String lineSeparator = System.getProperty("line.separator");
 
-    static boolean showAux = Boolean.getBoolean("lattekom.showaux");
-    static boolean showPresenceInfo = Boolean.getBoolean("lattekom.showlogins");
+    /**
+     * CONFIGURATION PROPERTIES
+     */
+
+    /** static (global) properties */
+    static String encoding                = System.getProperty("lattekom.encoding");
+    static String lineSeparator           = System.getProperty("line.separator");
+
+    static boolean showAux                = Boolean.getBoolean("lattekom.showaux");
+    static boolean showPresenceInfo       = Boolean.getBoolean("lattekom.showlogins");
     static boolean dontMarkOwnTextsAsRead = Boolean.getBoolean("lattekom.dont-mark-own-texts-as-read");
-    static boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
-    static boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
-    static boolean useGui = Boolean.getBoolean("lattekom.use-gui");
+    static boolean useAnsiColors          = Boolean.getBoolean("lattekom.use-ansi");
+    static boolean doKeepActive           = Boolean.getBoolean("lattekom.keep-active");
+    static boolean useGui                 = Boolean.getBoolean("lattekom.use-gui");
+    static boolean useLibReadline         = Boolean.getBoolean("lattekom.libreadline");
+    static int consoleWidth               = Integer.getInteger("lattekom.consolewidth", 78).intValue();
+    static String fixedWhatIAmDoing       = System.getProperty("lattekom.whatiamdoing");
 
-    static int consoleWidth = Integer.getInteger("lattekom.consolewidth", 78).intValue();
+    /** session properties */
+    boolean macBreak                      = Boolean.getBoolean("lattekom.usecrlf");
+    int linesPerScreen                    = Integer.getInteger("lattekom.rows", new Integer(24)).intValue();
+    String server                         = System.getProperty("lyskom.server");
 
-    static String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
-
-    boolean macBreak = Boolean.getBoolean("lattekom.usecrlf");
-    int linesPerScreen = Integer.getInteger("lattekom.rows", new Integer(24)).intValue();
-    String server = System.getProperty("lyskom.server");
+    /* END OF CONFIG PROPERTIES */
 
     Locale locale = new Locale("sv", "se");  // language and location
 
@@ -112,6 +120,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     boolean embedded = false;
 
+    /**
+     * In Windows, use CP437 encoding when in console. Can be overridden with
+     * "lattekom.encoding" property. This does not affect the encoding in the
+     * server I/O, which can be controlled by setting "lyskom.encoding".
+     */
     static {
 	if (encoding == null) {
 	    if (System.getProperty("os.name").startsWith("Windows") && !useGui) encoding = "Cp437";
@@ -1043,18 +1056,19 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
 	if (!useGui) {
 	    try {
-		String s = Readline.readline("");
-		return s != null ? s : "";
-		/*
-		int b = System.in.read();
-		ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
-		while (b != -1 && b != '\n') {
-		    inByteStream.write(b);
-		    b = System.in.read();
+		if (useLibReadline) {
+		    String s = Readline.readline("");
+		    return s != null ? s : "";
+		} else {
+		    int b = System.in.read();
+		    ByteArrayOutputStream inByteStream = new ByteArrayOutputStream();
+		    while (b != -1 && b != '\n') {
+			inByteStream.write(b);
+			b = System.in.read();
+		    }
+		    if (b == -1) return null;
+		    return inByteStream.toString(encoding).trim();
 		}
-		if (b == -1) return null;
-		return inByteStream.toString(encoding).trim();
-		*/
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
 	    } catch (IOException ex0) {
@@ -1073,23 +1087,24 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     }
 
     void initCrt() {
-	ReadlineLibrary[] libs = { ReadlineLibrary.Editline,
-				   ReadlineLibrary.GnuReadline };
-	for (int i=0; i < libs.length; i++) {
-	    try {
-		Readline.load(libs[i]);
-	    } catch (UnsatisfiedLinkError ex1) {
-		Debug.println("Failed to load readline library " + libs[i].getName());
+	if (useLibReadline) {
+	    ReadlineLibrary[] libs = { ReadlineLibrary.Editline,
+				       ReadlineLibrary.GnuReadline };
+	    for (int i=0; i < libs.length; i++) {
+		try {
+		    Readline.load(libs[i]);
+		} catch (UnsatisfiedLinkError ex1) {
+		    Debug.println("Failed to load readline library " + libs[i].getName());
+		}
 	    }
-	}
-	Readline.initReadline("lattekom_t2");
-	Readline.setEncoding(encoding);
-	Runtime.getRuntime()                       // if your version supports
-	    .addShutdownHook(new Thread() {          // addShutdownHook (since 1.3)
+	    Readline.initReadline("lattekom_t2");
+	    Readline.setEncoding(encoding);
+	    Runtime.getRuntime().addShutdownHook(new Thread() {
 		    public void run() {
 			Readline.cleanup();
 		    }
 		});
+	}
     }
 
     /**
