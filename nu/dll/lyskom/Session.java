@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.20 2002/04/04 08:31:03 pajp Exp $
+ * @version $Id: Session.java,v 1.21 2002/04/06 00:38:53 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -204,7 +204,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     String clientHost = null;
 
-    String latteVersion = "$Revision: 1.20 $";
+    String latteVersion = "$Version$";
     String latteName = "LatteKOM";
     private void init() {
 	textCache = new TextCache();
@@ -487,8 +487,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 			    unreads.remove(new Integer(currentConference));
 			    return nextUnreadConference(true);
 			}
+			return currentConference = nextConf;			
 		    }
-		    return currentConference = nextConf;			
 		}
 	    }
 	}
@@ -1439,6 +1439,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = waitFor(doChangeConference(confNo).getId());
 	if (reply.getSuccess()) {
 	    currentConference = confNo;
+	    Debug.println("CHANGED CONFERENCE: to " + confNo);
 	} else {
 	    throw reply.getException();
 	}
@@ -1772,10 +1773,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	t.trimContents();
 	t.getStat().addAuxItem(new AuxItem(AuxItem.tagCreatingSoftware,
 					   new Bitstring("00000000"), 0,
-					   new Hollerith("lattekom 0.1")));
+					   new Hollerith(latteName)));
 	t.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
 					   new Bitstring("00000000"), 0,
-					   new Hollerith("x-lattekom/basic")));
+					   new Hollerith("x-kom/text")));
 	return doCreateText(t.getContents(), t.getStat().getMiscInfo(),
 			    t.getStat().getAuxItems());
     }

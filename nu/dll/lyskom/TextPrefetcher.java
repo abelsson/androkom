@@ -19,7 +19,13 @@ class TextPrefetcher implements Runnable {
 		textNo = ((Integer) texts.remove(0)).intValue();
 	    }
 	    try {
-		session.getText(textNo, true);
+		Text text = session.getText(textNo, true);
+		int[] commented = text.getCommented();
+		for (int i=0; i < commented.length; i++) {
+		    Debug.println("prefetching text-stat for " + commented[i]);
+		    session.getTextStat(commented[i], true);
+		}
+
 		Debug.println("Fetched text number " + textNo);
 	    } catch (IOException ex1) {
 		Debug.println("I/O error during pre-fetch: " + ex1.getMessage());
