@@ -18,10 +18,11 @@ public class PreferencesMetaData {
 	list.add(new PreferenceMetaData("dashed-lines",
 					"Visa streck kring inläggskroppen",
 					"common", "boolean", "1"));
-	list.add(new PreferenceMetaData("print-number-of-unread-on-entrance",
-					"Visa antal olästa vid inloggning",
-					"common", "boolean", "1"));
 
+
+	list.add(new PreferenceMetaData("list-news-on-login",
+					"Lista nyheter vid inloggning",
+					"weblatte", "boolean", "1"));
 	list.add(new PreferenceMetaData("hide-standard-boxes",
 					"Dölj standardboxarna för endast, läsa inlägg och sända meddelande",
 					"weblatte", "boolean", "0"));
