@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.44 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.45 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -167,7 +167,7 @@
         }
     } catch (IllegalStateException ex1) {}
     List messages = null;
-    List reviewList = null;
+    LinkedList reviewList = null;
     int interval = 120; // seconds
     if (authenticated.booleanValue()) {
     	if (parameter(parameters, "privateReply") != null) {
@@ -280,10 +280,10 @@
 	    if (redirectHack(response, out, basePath + "frames.jsp?conference=0")) return;
 
 	}
-        reviewList = (List) session.getAttribute("lyskom.review-list");
+        reviewList = (LinkedList) lyskom.getAttribute("lyskom.review-list");
         if (reviewList == null || parameter(parameters, "conference") == null) {
 	    reviewList = new LinkedList();
-	    session.setAttribute("lyskom.review-list", reviewList);
+	    lyskom.setAttribute("lyskom.review-list", reviewList);
     	}
     }
     if (parameter(parameters, "pom") != null) {
@@ -717,18 +717,43 @@
 	    String body = parameter(parameters, "body").replaceAll("\r", "");
 	    String textContents = subject + "\n" + body;   
 	    Charset charset = Charset.forName(charsetName);
+	    Debug.println("using default charset " + charset.displayName());
 	    CharsetEncoder encoder = charset.newEncoder();
-	    encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
-	    if (!encoder.canEncode(textContents)) {
-		errors.append("<p class=\"statusError\">Varning: textens " +
-			"innehåll kunde inte till fullo kodas i angiven " +
-			"teckenkodning (\"" + charsetName + "\"). Texten har " +
-			"skapats, men vissa tecken kan visas inkorrekt eller "+
-			"ha gått förlorade.</p>");
+
+	    Charset utf8Charset = Charset.forName("utf-8");
+	    encoder.onUnmappableCharacter(CodingErrorAction.REPORT);
+	    if (!encoder.canEncode(textContents) && !charset.equals(utf8Charset)) {
+		Debug.println("default encoding failed, attempting utf-8 fallback");
+		CharsetEncoder utf8encoder = utf8Charset.newEncoder();
+		if (!utf8encoder.canEncode(textContents)) {
+		    Debug.println("utf-8 encoding failed also");
+		    errors.append("<p class=\"statusError\">Varning: texten " +
+				" kan inte kodas i vare sig utf-8 eller " + 
+				charset.displayName() + " (använder " + 
+				charset.displayName() + ").</p>");
+		} else {
+		    errors.append("<p class=\"statusError\">OBS: " +
+			"textens innehåll kunde inte kodas i vald " +
+			"teckenkodning (\"" + charset.displayName() +
+			"\"). " + 
+			"Texten har istället kodats till \"" + 
+			utf8Charset.displayName() + "\" för att " +
+			"hela innehållet skall representeras korrekt.</p>");
+
+			encoder = utf8encoder;
+			charsetName = "utf-8";
+		}
 	    }
+	    encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
 	    encoder.reset();
 	    ByteBuffer textBuffer = encoder.encode(CharBuffer.wrap(textContents));
-	    byte[] textContentBytes = textBuffer.array();
+	    if (!textBuffer.hasArray()) {
+		throw new IOException("returned ByteBuffer is not backed " +
+				      "by an array");
+	    }
+	    byte[] _tmp = textBuffer.array();
+	    byte[] textContentBytes = new byte[textBuffer.limit()];
+	    System.arraycopy(_tmp, 0, textContentBytes, 0, textBuffer.limit());
 
   	    Text newText = new Text(textContentBytes, charsetName);
 	    if (parameter(parameters, "contentType") != null) {
@@ -742,8 +767,29 @@
 		for (int i=0; i < cmtToFields.length; i++) {
 		    int textNo = Integer.parseInt(cmtToFields[i]);
 		    newText.addCommented(textNo);
+
+		    TextStat commentedTextStat = lyskom.getTextStat(textNo);
+		    int[] _recipients = commentedTextStat.getRecipients();
+		    for (int j=0; i < _recipients.length; i++) {
+	    		Conference conf = lyskom.getConfStat(_recipients[j]);
+	    	    	if (conf.getType().original()) {
+			    int superconf = conf.getSuperConf();
+			    if (superconf > 0) {
+		    	    	newText.addRecipient(superconf);
+			    } else {
+		   	    	throw new RuntimeException("Du får inte skriva kommentarer i " +
+				 	      conf.getNameString());
+			    }
+	    	    	} else {
+			    if (!newText.getStat().hasRecipient(_recipients[j])) {
+		            	newText.addRecipient(_recipients[j]);
+			    }
+		    	}
+		    }
+
 		    // so we won't keep the old text's comments status
 		    lyskom.purgeTextCache(textNo); 
+
 		}
 	    }
 	    if (request.getParameterValues("footnoteTo") != null) {
@@ -810,6 +856,8 @@
 	
     }
 
+
+    /*
     if (parameter(parameters, "postCommentTo") != null &&
 	parameter(parameters, "inCommentTo") == null) {
 	Text commentedText = lyskom.getText(Integer.parseInt(parameter(parameters, "postCommentTo")));
@@ -852,7 +900,7 @@
 	}
 	
     }
-
+    */
     if (parameters.containsKey("addRecipient")) {
 	int rtype = Integer.parseInt(parameter(parameters, "recipientType"));
 	int _textNo = Integer.parseInt(parameter(parameters, "toText"));
@@ -973,7 +1021,7 @@
 	    lyskom.doChangeWhatIAmDoing("Läser");
 	    lyskom.changeConference(conferenceNumber);
 	    if (reviewList != null && reviewList.size() > 0) {
-		nextUnreadText = ((Integer) reviewList.remove(0)).intValue();
+		nextUnreadText = ((Integer) reviewList.removeLast()).intValue();
 	    } else {
             	nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
 	    }
@@ -1082,7 +1130,6 @@
 		Text text = lyskom.getText(textNumber);
 		request.setAttribute("text", new Integer(textNumber));
 		request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
-		request.setAttribute("reviewList", reviewList);
 		out.flush();
 		RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/text.jsp");
 		d.include(request, response);
@@ -1187,11 +1234,11 @@
 	Text commented = lyskom.getText(textNumber);
 %>
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
-	<input type="hidden" name="postCommentTo" value="<%=textNumber%>">
+	<input type="hidden" name="inCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
 	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject(), commented.getCharset())) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
-	<input type="submit" value="skicka!">
+	<input type="submit" value="skicka!" name="createText">
 	<input type="submit" name="dispatchToComposer" value="ändra mottagarlista">
 	</form>
 <%
@@ -1541,7 +1588,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.44 $
+$Revision: 1.45 $
 </p>
 </body>
 </html>

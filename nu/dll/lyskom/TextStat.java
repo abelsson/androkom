@@ -418,7 +418,8 @@ public class TextStat implements java.io.Serializable {
 	    }
 	    }*/
 	Selection selection = new Selection(TextStat.MISC_INFO_COUNT);
-		Debug.println("adding key " + key + ", value " + value + " to new selection " + selection);
+	Debug.println("adding key " + key + ", value " + value + " to new selection " + selection);
+	new Exception().printStackTrace();
 	selection.add(key, new Integer(value));	
 	miscInfo.add(selection);
     }
@@ -451,8 +452,7 @@ public class TextStat implements java.io.Serializable {
 	while (i.hasNext()) {
 	    Selection selection = (Selection) i.next();
 	    if (selection.contains(no)) {
-		Enumeration e = selection.get(no);
-		while (e.hasMoreElements()) values.add(e.nextElement());
+		values.add(selection.get(no));
 	    }
 	}
 	int[] stats = new int[values.size()];
@@ -492,23 +492,23 @@ public class TextStat implements java.io.Serializable {
 	return getStatInts(miscRecpt);
     }
 
+    public boolean hasRecipient(int no) {
+	int[] r = getStatInts(miscRecpt);
+	for (int i=0; i < r.length; i++) if (r[i] == no) return true;
+
+	int[] c = getStatInts(miscCcRecpt);
+	for (int i=0; i < c.length; i++) if (c[i] == no) return true;
+
+	int[] b = getStatInts(miscBccRecpt);
+	for (int i=0; i < b.length; i++) if (b[i] == no) return true;
+	return false;
+    }
+
     /**
      * Returns an array containing all CC-recipients for this text.
      */
     public int[] getCcRecipients() {
 	return getStatInts(TextStat.miscCcRecpt);
-    }
-
-    public boolean hasRecipient(int confNo) {
-	int[] recipients = getRecipients();
-	int[] ccRecipients = getCcRecipients();
-	for (int i=0; i < recipients.length; i++) 
-	    if (recipients[i] == confNo) return true;
-
-	for (int i=0; i < ccRecipients.length; i++) {
-	    if (ccRecipients[i] == confNo) return true;
-	}
-	return false;
     }
 
     /**

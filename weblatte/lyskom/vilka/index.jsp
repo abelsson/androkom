@@ -100,16 +100,21 @@
 	    <td><%= conf > 0 ? lookupName(lyskom, conf, true) : "&nbsp;" %></td></tr>
 <%
 	        if (request.getParameter("showClientInfo") != null) {
-	            String clientName = lyskom.toString(lyskom.getClientName(who[i].getSession()));
-	            String clientVersion = lyskom.toString(lyskom.getClientVersion(who[i].getSession()));
-	            if (!clientName.equals("")) {
-	                out.print("<tr " + (pyjamas ? "bgcolor=\"#aaeeee\"" : "") + "><td>&nbsp;</td><td colspan=\"3\">Kör ");
-	                out.print(htmlize(clientName));
-	                if (!clientVersion.equals("")) {
-	                    out.print(" version " + htmlize(clientVersion));
-	                }
-	                out.println("</td></tr>");
-	            }
+		    try {
+	            	String clientName = lyskom.toString(lyskom.getClientName(who[i].getSession()));
+	            	String clientVersion = lyskom.toString(lyskom.getClientVersion(who[i].getSession()));
+	            	if (!clientName.equals("")) {
+	                    out.print("<tr " + (pyjamas ? "bgcolor=\"#aaeeee\"" : "") + "><td>&nbsp;</td><td colspan=\"3\">Kör ");
+	                    out.print(htmlize(clientName));
+	                    if (!clientVersion.equals("")) {
+	                    	out.print(" version " + htmlize(clientVersion));
+	                    }
+	             	    out.println("</td></tr>");
+	            	}
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() != Rpc.E_undefined_session) 
+			    throw ex1;
+		    }
 	        }
 	out.flush();
     }
@@ -137,7 +142,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.12 2004/05/12 14:19:43 pajp Exp $
+$Id: index.jsp,v 1.13 2004/05/16 21:15:22 pajp Exp $
 </p>
 </body>
 </html>

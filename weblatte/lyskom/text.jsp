@@ -10,7 +10,9 @@
 	    request.getAttribute("footnote") != null;
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	Debug.println("conferenceNumber: " + conferenceNumber);
-        List reviewList = (List) request.getAttribute("reviewList");
+        LinkedList reviewList = (LinkedList) lyskom.getAttribute("lyskom.review-list");
+	if (reviewList == null) reviewList = new LinkedList();
+
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
 %>
@@ -257,7 +259,7 @@
 			TextStat ts = lyskom.getTextStat(comments[i]);
 			if (ts.hasRecipient(conferenceNumber)) {
 			    if (reviewList.contains(new Integer(comments[i]))) {
-				reviewList.add(0, new Integer(comments[i]));
+				reviewList.add(new Integer(comments[i]));
 			    }
 			    Debug.println("Adding " + comments[i] + " to review-list");
 			} else {
@@ -280,11 +282,11 @@
 	Fotnot i text <%= textLink(request, lyskom, footnotes[i]) %><br/>
 <%
 	}
-%>	<%= footnotes.length > 0 ? "<br/>" : "" %>
+%>
 	</tt>
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
-%>
+%>	<br/>
 	<a href="<%= myURI(request) %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
 	  Läsmarkera denna text (och läs nästa).</a><br/>
 <%
