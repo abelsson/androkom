@@ -460,10 +460,17 @@ public class TextStat implements java.io.Serializable {
     }
 
     /**
+     * Returns an array containing all the texts of which this is a comment to.
+     */
+    public int[] getCommented() {
+	return getStatInts(miscCommTo);
+    }
+
+    /**
      * Returns an array containing all recipients for this text.
      */
     public int[] getRecipients() {
-	return getStatInts(TextStat.miscRecpt);
+	return getStatInts(miscRecpt);
     }
 
     /**
@@ -522,13 +529,16 @@ public class TextStat implements java.io.Serializable {
 	return -1;
     }
 
-
     static TextStat createFrom(int no, RpcReply reply) {
+	return createFrom(no, reply, 0);
+    }
+
+    static TextStat createFrom(int no, RpcReply reply, int offset) {
 	KomToken[] params = reply.getParameters();
 	TextStat ts = new TextStat(no);
 	List miscInfo = ts.getMiscInfo();
 
-	int pcount = 0;
+	int pcount = offset;
 	ts.creationTime = new KomTime(params[pcount++].intValue(), // 0
 				      params[pcount++].intValue(), // 1
 				      params[pcount++].intValue(), // 2

@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.37 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.38 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -573,6 +573,12 @@
 		} else if (m.getNumber() == Asynch.new_text ||
 		    m.getNumber() == Asynch.new_text_old ||
 		    m.getNumber() == Asynch.new_recipient) {
+		    
+ 		    TextStat ts = lyskom.getTextStat(m.getParameters()[0].intValue());
+		    int[] commented = ts.getCommented();
+		    for (int j=0; j < commented.length; j++) {
+			lyskom.purgeTextCache(commented[j]);
+		    }
 	            if (!preferences.getBoolean("many-memberships")) {
 	                lyskom.updateUnreads();
 	            } else {
@@ -1482,7 +1488,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.37 $
+$Revision: 1.38 $
 </p>
 </body>
 </html>

@@ -157,7 +157,7 @@
       för vanlig e-post att leta sig in i en LysKOM-server. Ett e-brev
       kan som bekant innehålla bilagor, till exempel filer och
       bilder. En bilaga visas ungefär som en kommentar, men med texten
-      "Bilaga av typen image/jpeg i NNNNNN ("<b>visa</b>"). Bilagor
+      "Bilaga av typen image/jpeg i NNNNNN (<b>visa</b>). Bilagor
       läsmarkeras automatiskt när du läser brevet som de är bilagor
       till. Om du klickar på "visa" så kommer bilagans innehåll att
       skickas till din webbläsare i sin helhet. För en bild innebär
@@ -210,7 +210,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.10 $
+      $Revision: 1.11 $
     </p>
   </body>
 </html>

@@ -398,7 +398,7 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Returns an array containing all the texts of which this is a comment to.
      */
     public int[] getCommented() {
-	return getStatInts(TextStat.miscCommTo);
+	return stat.getCommented();
     }
 
     /**
