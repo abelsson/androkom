@@ -86,7 +86,9 @@ public class TextCommands extends AbstractCommand {
 	    }
 
 	    if (textNo < 1) {
-		throw new CmdErrException("Du måste ange ett giltigt textnummer eller läsa/skriva en text först");
+		throw new CmdErrException("Du måste ange ett giltigt " +
+					  "textnummer eller läsa/skriva " +
+					  "en text först")´;
 	    }
 
 	    text = session.getText(textNo);
