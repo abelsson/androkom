@@ -40,8 +40,10 @@ public class Test2 implements AsynchMessageReceiver {
     static String encoding = System.getProperty("lattekom.encoding");
     static String lineSeparator = System.getProperty("line.separator");
 
-    boolean showAux = System.getProperty("lattekom.showaux") != null;
-    boolean dontMarkOwnTextsAsRead = System.getProperty("lattekom.dont-mark-own-texts-as-read") != null;
+    boolean showAux = Boolean.getBoolean("lattekom.showaux");
+    boolean dontMarkOwnTextsAsRead = Boolean.getBoolean("lattekom.dont-mark-own-texts-as-read");
+    boolean useAnsiColors = Boolean.getBoolean("lattekom.use-ansi");
+    boolean doKeepActive = Boolean.getBoolean("lattekom.keep-active");
     String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
     static {
 	if (encoding == null) {
@@ -63,7 +65,7 @@ public class Test2 implements AsynchMessageReceiver {
 	try { no = Integer.parseInt(n); }
 	catch (NumberFormatException e) {
 	    throw new RuntimeException(e.getMessage());
-	}
+	} 
 	return confNoToName(no);
     }
 
@@ -76,10 +78,17 @@ public class Test2 implements AsynchMessageReceiver {
     throws IOException {
 	if (foo == null) return null;
 	Debug.println("confNoToName() looking up name for #" + n);
-	byte[] name = foo.getConfName(n);
+	byte[] name = null;
+	try {
+	    name = foo.getConfName(n);
+	} catch (RpcFailure ex1) {
+	    return "Möte " + ex1.getErrorStatus() + " (fel " + ex1.getError() + ")";
+	}
 	if (name == null)
 	    return "Person "+n+" (N/A)";
-	//return "\u001b[01;34m" + new String(name) + "\u001b[0m;";
+	if (useAnsiColors)
+	    return "\u001b[01;34m" + new String(name) + "\u001b[0m";
+
 	return new String(name);
     }
 
@@ -284,6 +293,28 @@ public class Test2 implements AsynchMessageReceiver {
 	    if (fixedWhatIAmDoing != null) {
 		foo.doChangeWhatIAmDoing(fixedWhatIAmDoing);
 	    }
+
+	    if (doKeepActive) {
+		Thread t = new Thread(new Runnable() {
+			public void run() {
+			    Debug.println("Keep-Active thread start");
+			    try {
+				while (true) {
+				    Thread.sleep(10*1000);
+				    Debug.println("sending user-active");
+				    foo.doUserActive();
+				}
+			    } catch (Exception e1) {
+				Debug.println("Exception in keep-active thread");
+			    }
+			    Debug.println("Keep-Active thread ended");
+
+			}
+		    });
+		t.setName("KeepActiveThread");
+		t.start();
+	    }
+
 
 	    //4303588, 100035, 4257987, 4244657
 	    int me = foo.getMyPerson().getNo();
@@ -1051,7 +1082,7 @@ public class Test2 implements AsynchMessageReceiver {
 		StringTokenizer rst = new StringTokenizer(row);
 		String icmd = rst.nextToken();
 		if (icmd.startsWith("!f")) {
-		    String confs = rst.nextToken();
+		    String confs = rst.nextToken("").substring(1);
 		    int newConf = parseNameArgs(confs, true, true);
 		    if (newConf > 0) {
 			consoleWriteLn("** Byter mottagare till " + confNoToName(newConf));
@@ -1060,28 +1091,28 @@ public class Test2 implements AsynchMessageReceiver {
 			t.addRecipient(newConf);
 		    } 
 		} else if (icmd.startsWith("!am")) {
-		    String confs = rst.nextToken();
+		    String confs = rst.nextToken("").substring(1);
 		    int newConf = parseNameArgs(confs, true, true);
 		    if (newConf > 0) {			
 			consoleWriteLn("** Adderar " + confNoToName(newConf) + " som mottagare");
 			t.addRecipient(newConf);
 		    }		    
 		} else if (icmd.startsWith("!sk")) {
-		    String confs = rst.nextToken();
+		    String confs = rst.nextToken("").substring(1);
 		    int newConf = parseNameArgs(confs, true, true);
 		    if (newConf > 0) {
 			consoleWriteLn("** Subtraherar " + confNoToName(newConf) + " från kopiemottagarlista");
 			t.removeCcRecipient(newConf);
 		    }
 		} else if (icmd.startsWith("!sm")) {
-		    String confs = rst.nextToken();
+		    String confs = rst.nextToken("").substring(1);
 		    int newConf = parseNameArgs(confs, true, true);
 		    if (newConf > 0) {
 			consoleWriteLn("** Subtraherar " + confNoToName(newConf) + " från mottagarlista");
 			t.removeRecipient(newConf); 
 		    } 
 		} else if (icmd.startsWith("!ak")) {
-		    String confs = rst.nextToken();
+		    String confs = rst.nextToken("").substring(1);
 		    int newConf = parseNameArgs(confs, true, true);
 		    if (newConf > 0) {
 			consoleWriteLn("** Adderar " + confNoToName(newConf) + " som kopiemottagare");

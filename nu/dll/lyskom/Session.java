@@ -524,12 +524,26 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * network output stream.
      *
      * @param c RpcCall object to be sent to the server
+     * @param store if true, add it to the RPC call storage. This is
+     *              required in order to use waitFor() etc
+     */
+    public RpcCall writeRpcCall(RpcCall c, boolean store)
+    throws IOException {
+	if (store) rpcHeap.addRpcCall(c);
+	c.writeNetwork(connection.getOutputStream());
+	return c; 
+    }
+    
+
+    /**
+     * Writes an RPC call constructed from an RpcCall object to the
+     * network output stream.
+     *
+     * @param c RpcCall object to be sent to the server
      */
     public RpcCall writeRpcCall(RpcCall c)
     throws IOException {
-	rpcHeap.addRpcCall(c);
-	c.writeNetwork(connection.getOutputStream());
-	return c;
+	return writeRpcCall(c, true);
     }
 
     public RpcCall doMarkText(int textNo, int markType)
@@ -1024,6 +1038,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    throw reply.getException();
 	}
 
+    }
+
+    public RpcCall doUserActive()
+    throws IOException {
+	return writeRpcCall(new RpcCall(count(), Rpc.C_user_active), false);
     }
     
     public boolean getLoggedIn() {

@@ -359,6 +359,7 @@ public abstract class Rpc {
     public final static int C_set_last_read = 77;
     public final static int C_get_uconf_stat = 78;
 
+    public final static int C_user_active = 82;
     public final static int C_who_is_on_dynamic = 83;
     public final static int C_create_text = 86;
 
