@@ -459,6 +459,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	RpcReply reply = waitFor(textReq.getId());
 	text.setContents(reply.getParameters()[0].getContents());
+	textCache.add(text);
 	return text;
 
     }
@@ -724,6 +725,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	UConference c = conferenceCache.getUConference(confNo);
 	if (c != null) return c.getName();
 	c = getUConfStat(confNo);
+	
 	return c == null ? null : c.getName();
     }
 
@@ -756,9 +758,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    return text.getStat();
 
 	RpcReply reply = waitFor(doGetTextStat(textNo).getId());
-	if (reply.getSuccess()) 
-	    return TextStat.createFrom(textNo, reply);
-	else {
+	if (reply.getSuccess()) {
+	    ts = TextStat.createFrom(textNo, reply);
+	    textStatCache.add(ts);
+	    return ts;
+	} else {
 	    int error = reply.getException().getError();
 	    if (error == Rpc.E_no_such_text) return null;
 	    throw reply.getException();
