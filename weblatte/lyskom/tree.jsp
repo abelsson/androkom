@@ -21,7 +21,7 @@
 	    buf.append("</i><br/>\n");
 	}
 	String authorName = lookupName(lyskom, node.textStat.getAuthor(), false);
-	String authorNameStripped = authorName.replaceAll("\\(.*?\\)", "").trim();
+	String authorNameStripped = authorName.replaceAll(" *\\(.*?\\) *", "").trim();
 	buf.append("<img src=\"bullet_unsel.gif\" id=\"bullet_" + textNumber + "\" />");
 	buf.append("<tt>");
 	for (int i=0; i < depth; i++) 

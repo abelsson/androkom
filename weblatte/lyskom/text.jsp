@@ -29,6 +29,8 @@
 
 	boolean noComments = text.getAuxItems(AuxItem.tagNoComments).size() > 0;
 	String contentType = text.getContentType();
+	Hollerith[] ctdata = text.getStat().getAuxData(AuxItem.tagContentType);
+	String rawContentType = (ctdata != null && ctdata.length > 0) ? new String(text.getStat().getAuxData(AuxItem.tagContentType)[0].getContents(), "us-ascii") : "text/x-kom-basic";
 	String charset = text.getCharset();
 	if (charset == null) charset = "iso-8859-1";
 	if (charset.equals("us-ascii")) charset = "iso-8859-1"; // some broken elisp clients lie...
@@ -108,9 +110,24 @@
 	<hr noshade width="95%" align="left" />
 <%
 	if (contentType.equals("text/x-kom-basic") || contentType.equals("text/plain")) {
+            try {
+		if (request.getParameter("forceCharset") != null) {
+		    charset = request.getParameter("forceCharset");
+		}
+                String textBody = htmlize(new String(text.getBody(), charset));
 %>
-        <pre class="text"><%= htmlize(new String(text.getBody(), charset)) %></pre>
+		<pre class="text"><%= textBody %></pre>
 <%
+            } catch (UnsupportedEncodingException ex1) {
+%>
+	<p class="statusError">Varning: textens teckenkodning ("<%=ex1.getMessage()%>") kan inte visas ordentligt.<br/>
+	<a href="<%= basePath %>rawtext.jsp?text=<%=text.getNo()%>">Klicka här</a> för att visa rådata
+        eller <a href="<%= basePath %>index.jsp?text=<%=text.getNo()%>&forceCharset=iso-8859-1">här</a> för att
+	tolka innehållet enligt iso-8859-1.<br/>
+	Textens fullständinga datatyp är "<b><%= htmlize(rawContentType) %></b>".
+	</p>
+<%
+            }
 	} else {
 %>
 	<p class="statusError">Varning: textens datatyp ("<%=contentType%>") kan inte visas.<br/>
