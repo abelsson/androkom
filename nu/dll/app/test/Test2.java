@@ -221,7 +221,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		}
 		consoleWriteLn("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		if (params[0].intValue() == foo.getMyPerson().getNo()) {
-		    consoleWriteLn("Personling meddelande från " + sender + 
+		    consoleWriteLn("Personligt meddelande från " + sender + 
 				   " (" + timestampFormat.format(m.getArrivalTime()) + "):");
 		} else if (params[0].intValue() == 0) {
 		    consoleWriteLn("Alarmmeddelande från " + sender + " (" + timestampFormat.format(m.getArrivalTime()) + "):");
@@ -274,7 +274,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	try {
 	    int i=0;
 	    while (i < argv.length) {
-		String arg = argv[i++];
+		String arg = argv[i++];		
 		if (arg.equals("-name")) {
 		    defaultUser = argv[i++];
 		} else
@@ -296,7 +296,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    usage("Kunde ej tolka parameter: " + arg);
 		    return false;
 		}
-		return true;
 		    
 	    }
 	    return true;
@@ -439,7 +438,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		t.start();
 	    }
 
-	    foo.setLatteVersion("T2", "$Revision: 1.14 $");
+	    foo.setLatteVersion("T2", "$Version$");
 	    //4303588, 100035, 4257987, 4244657
 	    int me = foo.getMyPerson().getNo();
 	    int rc = 1;
@@ -487,12 +486,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    if (toreview.empty() && !toread.empty()) {
 			textNo = ((Integer) toread.pop()).intValue();
 		    }
-		    
+
 		    text = foo.getText(textNo);
-		    displayText(text, true); noRead++;
-		    
 		    rc = 1;
+		    
 		    if (text != null) {
+			displayText(text, true); noRead++;
+
 			lastTextNo = textNo;
 			lastText = text;
 		    } else {
@@ -542,6 +542,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    curConf += "(Läsa nästa inlägg) ";
 	    setStatus("Läser inlägg");
 	}
+	Debug.println("toread.size(): " + toread.size() + ", toreview.size(): " + toreview.size());
+	Debug.println("nextUnreadText: " + foo.nextUnreadText(false) +
+		      ", nextUnreadConference: " + foo.nextUnreadConference(false));
 	return curConf + "> ";
     }
 
@@ -921,9 +924,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    consoleWriteLn("Listar " + vilka.length + " aktiva användare:");
 	    consoleWriteLn("----------------------------------------------------------------");
 	    for (int i=0; i < vilka.length; i++) {
-		consoleWrite(vilka[i].getSession() + " " + confNoToName(vilka[i].getPerson()));
+		String personName = confNoToName(vilka[i].getPerson());
+		String conferenceName = confNoToName(vilka[i].getWorkingConference());
+
+		consoleWrite(vilka[i].getSession() + " " + personName);
 		if (vilka[i].getWorkingConference() != 0) {
-		    consoleWrite(" i möte " + confNoToName(vilka[i].getWorkingConference()));
+		    consoleWrite(" i möte " + conferenceName);
 		}
 		consoleWriteLn("\n\t(" + bytesToString(vilka[i].getWhatAmIDoing()) + ")");
 	    }
@@ -1531,14 +1537,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	int[] commented = text.getCommented();
 	int[] footnoted = text.getFootnoted();
 	Enumeration sentAt = null;
-	/*
-	try {
-	    sentAt = text.getStat().getMiscInfo().get(TextStat.miscSentAt);
-	    while (sentAt.hasMoreElements()) {
-		Debug.println("sent-at: " + sentAt.nextElement().toString());
-	    }
-	} catch (NoSuchKeyException ex1) {}
-	*/
+
 	for (int i=0; i < commented.length; i++)
 	    consoleWriteLn("Kommentar till " + textDescription(commented[i]));
 
@@ -1608,9 +1607,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	
     public static void main(String[] argv) {
 	Test2 t2 = new Test2();
-
-	t2.consoleWriteLn("IJKLKOM (c) 1999 Rasmus Sten");
-	if (t2.parseArgs(argv))	t2.run();
+	
+	if (t2.parseArgs(argv))	{
+	    t2.consoleWriteLn("IJKLKOM (c) 1999 Rasmus Sten");
+	    t2.run();
+	}
     }
 
     boolean shutdown = false;
@@ -1632,7 +1633,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return;
 	}
 	guiInput = new GuiInput();
-	System.out.println("Initialiserar GUI-konsoll.");
+	Debug.println("Initialiserar GUI-konsoll.");
 	consoleFrame = createConsoleFrame();
 	console = new Console(80, 25);
 	console.setConsoleThingies("");
