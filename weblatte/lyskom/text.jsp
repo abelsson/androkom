@@ -12,8 +12,12 @@
 	    request.getAttribute("footnote") != null;
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
 	Debug.println("conferenceNumber: " + conferenceNumber);
+
         LinkedList reviewList = (LinkedList) lyskom.getAttribute("lyskom.review-list");
+        LinkedList textNumbers = (LinkedList) request.getAttribute("text-numbers");
+
 	if (reviewList == null) reviewList = new LinkedList();
+	if (textNumbers == null) textNumbers = new LinkedList();
 
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
@@ -291,6 +295,9 @@
 	    		if (commonPreferences.getBoolean("dashed-lines")) {
 	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    		}
+		    } else if (part.isMimeType("image/*") &&
+			       "inline".equals(((MimeBodyPart)part).getHeader("Content-Disposition", null))) {
+			out.println("<img src=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "\" /><br/>");
 		    } else if (showNonDisplayableParts) {
 			out.println("Visar ej: del " + (i+1) + ": <a href=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "\">data av typen " + partContentTypeObj.getBaseType() + "</a><br/>");
 		    }
@@ -380,7 +387,8 @@
 			throw ex1;
 		    }
 		    if (ts.hasRecipient(conferenceNumber)) {
-			if (!reviewList.contains(new Integer(comments[i])) &&
+			if (!textNumbers.contains(new Integer(comments[i])) &&
+			    !reviewList.contains(new Integer(comments[i])) &&
 			    !lyskom.getReadTexts().contains(comments[i])) {
 			    Debug.println("*** Adding " + comments[i] + " to review-list");
 			    reviewList.add(new Integer(comments[i]));

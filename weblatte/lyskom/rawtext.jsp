@@ -3,7 +3,7 @@
 	response.sendRedirect("/lyskom/?error=nosession");
 	return;
     }
-    Debug.println("rawtest.jsp START. Query: " + request.getQueryString());
+    Debug.println("rawtext.jsp START. Query: " + request.getQueryString());
     int textNumber = Integer.parseInt(request.getParameter("text"));
     Text text = lyskom.getText(textNumber);
     if (new ContentType(text.getStat().getContentType()).match("multipart/*") &&

@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.68 2004/06/03 02:27:38 pajp Exp $
+ * @version $Id: Session.java,v 1.69 2004/06/03 18:01:08 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -644,7 +644,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void updateUnreads(List _unreads)
     throws IOException {
-	if (membership == null) membership = getMyMembershipList();
+	if (membership == null) getMyMembershipList();
 	int persNo = myPerson.getNo();
 	if (_unreads == null) {
 	    getUnreadConfsList(persNo);
@@ -785,6 +785,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	}
     }
 
+    public int nextUnreadText(int conference, boolean updateUnread)
+    throws IOException {
+	List list = nextUnreadTexts(conference, updateUnread, 1);
+	if (list.size() == 0) return -1;
+	return ((Integer) list.get(0)).intValue();
+    }
+
     /**
      * Returns the global text number of the next unread text in the
      * current conference. Returns -1 if there are no unread texts.
@@ -795,47 +802,54 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param updateUnread if true, also marks the returned text as read
      * @see nu.dll.lyskom.Session#nextUnreadText(boolean)
      */   
-    public int nextUnreadText(int conference, boolean updateUnread)
+    public List nextUnreadTexts(int conference, boolean updateUnread, int maxTexts)
     throws IOException {
-	if (unreads.size() == 0) return -1;
+	if (unreads.size() == 0) return new LinkedList();
 	
 	UConference c = getUConfStat(conference);
 	Membership m = queryReadTexts(myPerson.getNo(), conference, true);
 	if (c.getHighestLocalNo() > m.lastTextRead) {
 	    int localNo = m.lastTextRead + 1;	    
-	    TextMapping tm = localToGlobal(conference, localNo, 1);
+	    TextMapping tm = localToGlobal(conference, localNo, maxTexts);
 
 	    if (!tm.hasMoreElements()) {
 		synchronized (unreads) {
 		    unreads.remove(new Integer(conference));
 		}
 		setLastRead(conference, c.highestLocalNo);
-		return -1;
+		return new LinkedList();
 	    }
-	    int txtNo = ((Integer) tm.nextElement()).intValue();
-	    while (tm.hasMoreElements() && (txtNo == 0 || readTexts.contains(txtNo))
-		   && m.isRead(tm.local())) {
-		Debug.println("nextUnreadText(): not returning " + txtNo);
-		txtNo = ((Integer) tm.nextElement()).intValue();
+	    List returnList = new LinkedList();
+	    while (tm.hasMoreElements()) {
+		Integer txtNoObj = (Integer) tm.nextElement();
+		int txtNo = txtNoObj.intValue();
+		if (m.isRead(tm.local()) || readTexts.contains(txtNo))
+		    continue;
+
+		returnList.add(txtNoObj);
 	    }
 
-	    if (txtNo == 0 || readTexts.contains(txtNo)) {
+	    if (returnList.size() == 0) {
 		synchronized (unreads) {
 		    unreads.remove(new Integer(conference));
 		}
 		Debug.println("no unread texts found");
-		return -1;
+		return new LinkedList();
 	    }
 	    
 	    if (updateUnread) {
-		int[] ur = { tm.localToGlobal(txtNo) };
-		markAsRead(conference, ur);
-		readTexts.add(txtNo);
+		// XXX: should be optimized for lesser server calls
+		// through mark-as-read grouping
+		for (Iterator i = returnList.iterator();i.hasNext();) {
+		    int[] ur = { tm.localToGlobal(((Integer) i.next()).intValue()) };
+		    markAsRead(conference, ur);
+		}
 	    }
-	    return lastText = txtNo;
+	    lastText = ((Integer) returnList.get(returnList.size()-1)).intValue();
+	    return returnList;
 	} else {
 	    unreads.remove(new Integer(conference));
-	    return -1;
+	    return new LinkedList();
 	}
     }
 
@@ -861,11 +875,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      *
      * @param confNo Conference number
      */
-    public boolean isMemberOf(int confNo) {
+    public boolean isMemberOf(int confNo) throws IOException {
 	if (membership == null) {
-	    throw new IllegalStateException("isMemberOf(" + confNo +
-					    "): Membership hasn't been " +
-					    "queried from the server yet.");
+	    Debug.println("Warning: isMemberOf(" + confNo + ") " +
+			  "called before membership has been queried " +
+			  "from server (querying now)");
+	    getMyMembershipList();
 	}
 	Iterator i = membership.iterator();
 	while (i.hasNext()){
@@ -1790,7 +1805,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws RpcFailure, IOException {
 	Text userDataText = new Text(userArea.toNetwork());
 	userDataText.setCharset(userArea.getCharset());
-	userDataText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType, UserArea.contentType));
+	userDataText.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, UserArea.contentType));
 
 	int textNo = createText(userDataText);
 	setUserArea(persNo, textNo);

@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.58 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.59 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1194,7 +1194,8 @@
 	out.println("</table></p");
 	out.flush();
     }
-    if (conferenceNumber > 0 && parameter(parameters, "listSubjects") == null) {
+    if (conferenceNumber > 0 && !parameters.containsKey("listSubjects") &&
+	!parameters.containsKey("comment")) {
 	int nextUnreadText = 0;
 	try {
 	    lyskom.changeConference(conferenceNumber);
@@ -1212,18 +1213,44 @@
 	    Läser i <%= lookupName(lyskom, conferenceNumber, true) %> - <%= unreads %>
 	    <%= unreads > 1 || unreads == 0 ? "olästa" : "oläst" %>.<br/>
 <%
-	    nextUnreadText = 0;
+	    int maxTextsToShow = preferences.getInt("show-multiple-texts");
+	    nextUnreadText = -1;	    
 
 	    lyskom.doChangeWhatIAmDoing("Läser");
-	    if (reviewList != null) {
-		if (Debug.ENABLED) Debug.println("*** review-list: " + reviewList);
+	    if (Debug.ENABLED) Debug.println("*** review-list: " + reviewList);
+
+	    int textsAdded = 0;
+   	    List unreadTexts = lyskom.nextUnreadTexts(conferenceNumber, false, maxTextsToShow);
+	    boolean exhausted = false;
+	    while (!exhausted && textNumbers.size() < maxTextsToShow &&
+		   (!unreadTexts.isEmpty() ||
+		    !reviewList.isEmpty())) {
+		Integer txtNoObj = null;
+		if (!reviewList.isEmpty()) {
+		    txtNoObj = (Integer) reviewList.removeFirst();
+		} else if (!unreadTexts.isEmpty()) {
+		    txtNoObj = (Integer) unreadTexts.remove(0);
+		    if (nextUnreadText == -1) nextUnreadText = txtNoObj.intValue();
+		} else {
+		    exhausted = true;
+		    continue;
+		}
+
+		TextStat stat = lyskom.getTextStat(txtNoObj.intValue());
+		if (!textNumbers.contains(txtNoObj)) textNumbers.add(txtNoObj);
+		int[] comments = stat.getComments();
+		for (int i=comments.length-1; textNumbers.size() < maxTextsToShow && i >= 0; i--) {
+		    TextStat commentStat = lyskom.getTextStat(comments[i]);
+		    for (Iterator iter = commentStat.getAllRecipients().iterator();
+			 iter.hasNext();) {
+			if (lyskom.isMemberOf(((Integer) iter.next()).intValue())) {
+			    if (!textNumbers.contains(new Integer(comments[i])))
+				textNumbers.add(new Integer(comments[i]));
+			}
+		    }
+		}
 	    }
-	    if (reviewList != null && reviewList.size() > 0) {
-		nextUnreadText = ((Integer) reviewList.removeLast()).intValue();
-		Debug.println("*** using text snatched from review-list: " + nextUnreadText);
-	    } else {
-            	nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
-	    }
+
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_not_member) {
 		out.println("<p class=\"statusError\">Fel: du är inte medlem i " +
@@ -1323,6 +1350,11 @@
     }
 
 
+    List viewedTexts = (List) request.getAttribute("viewedTexts");
+    if (viewedTexts == null) {
+	viewedTexts = new LinkedList();
+	request.setAttribute("viewedTexts", viewedTexts);
+    }
     if (textNumber != 0 || parameters.containsKey("text") ||
 	textNumbers.size() > 0) {
 	// xxx: catch NFE for more graceful error handling
@@ -1335,7 +1367,9 @@
         }
         for (Iterator i = textNumbers.iterator(); i.hasNext();) {
 	    textNumber = ((Integer) i.next()).intValue();
+	    if (viewedTexts.contains(new Integer(textNumber))) continue;
 	    try {
+		request.setAttribute("text-numbers", textNumbers);
 		request.setAttribute("text", new Integer(textNumber));
 		request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
 		out.flush();
@@ -1350,7 +1384,6 @@
 	    }
 	}
     }
-    List viewedTexts = (List) request.getAttribute("viewedTexts");
     if (viewedTexts != null && viewedTexts.size() > 1) {
 	StringBuffer linkText = new StringBuffer();
 	StringBuffer queryStr = new StringBuffer();
@@ -1799,7 +1832,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.58 $
+$Revision: 1.59 $
 </p>
 </body>
 </html>
