@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.66 2004/05/28 01:09:11 pajp Exp $
+ * @version $Id: Session.java,v 1.67 2004/05/28 23:06:18 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -986,6 +986,19 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    add(new KomToken(sessionNo)));
     }
 
+    /**
+     * Returns a Map containing server-information.
+     *
+     * The keys in the returned map corresponds to the fields specified
+     * in the `Info' data type in the LysKOM protocol A specification.
+     *
+     * All values in the map are stores as KomToken object, with the
+     * exception of "aux-item-list", which is a List of AuxItem objects.
+     *
+     * This information is persistently cached for the duration of the
+     * session.
+     *
+     */
     public Map getInfo()
     throws IOException, RpcFailure {
 	if (serverInfo != null) return serverInfo;
@@ -1014,6 +1027,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	return serverInfo = Collections.unmodifiableMap(info);
     }
+
+    
 
     public List getAllowedContentTypes()
     throws IOException, RpcFailure {

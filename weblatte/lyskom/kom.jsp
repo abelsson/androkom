@@ -1,6 +1,7 @@
 <%@ page language='java' import='nu.dll.lyskom.*, java.text.*, java.util.*' %>\
 <%@ page import='java.util.regex.*, java.io.*, nu.dll.app.weblatte.*, java.net.URLDecoder' %>\
 <%!
+    File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
     String basePath = "/lyskom/"; // the absolute path on the webserver
     String appPath = "/lyskom/"; // the weblatte root within the web application
 
@@ -375,7 +376,6 @@
     }
 %>\
 <%
-
 String dir = getServletContext().getRealPath("/lyskom/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;

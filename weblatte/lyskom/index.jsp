@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.52 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.53 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -803,7 +803,10 @@
 		    String _uploaded = (String) partMap.get("uploaded");
 		    String _contents = (String) partMap.get("contents");
 		    if (_uploaded != null && !_uploaded.equals("")) {
-			File file = new File((String) partMap.get("uploaded"));
+			File file = new File(tempDir, (String) partMap.get("uploaded"));
+	  		if (!file.getParentFile().equals(tempDir)) {
+			    throw new IOException("uploaded file is not in temp dir!");
+			}
 		    	partContentType.getParameterList().set("name", (String) partMap.get("filename"));
 			InputStream is = new FileInputStream(file);
 			int read;
@@ -854,7 +857,10 @@
 			String _uploaded = (String) partMap.get("uploaded");
 			if (_uploaded != null && !_uploaded.equals("")) {
 	  		    headers.setHeader("Content-Transfer-Encoding", "base64");
-			    File file = new File((String) partMap.get("uploaded"));
+			    File file = new File(tempDir, (String) partMap.get("uploaded"));
+	  		    if (!file.getParentFile().equals(tempDir)) {
+			    	throw new IOException("uploaded file is not in temp dir!");
+			    }
 			    partContentType.getParameterList().set("name", (String) partMap.get("filename"));
 			    headers.setHeader("Content-Location", (String) partMap.get("filename"));
 			    ByteArrayOutputStream bos = new ByteArrayOutputStream();
@@ -1766,7 +1772,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.52 $
+$Revision: 1.53 $
 </p>
 </body>
 </html>

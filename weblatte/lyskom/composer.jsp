@@ -92,11 +92,11 @@
 	while ((nextPart = multip.readNextPart()) != null) {
 	    if (nextPart.isFile()) {
 		FilePart fpart = (FilePart) nextPart;
-		File tempFile = File.createTempFile("weblatte", ".tmp");
+		File tempFile = File.createTempFile("weblatte", ".tmp", tempDir);
 		tempFile.deleteOnExit();
 		fpart.writeTo(tempFile);
 		Debug.println("____ Saved to " + tempFile.getAbsolutePath());
-		fileMap.put(fpart.getName(), tempFile.getAbsolutePath());
+		fileMap.put(fpart.getName(), tempFile.getName());
 		parameters.put(fpart.getName(), fpart.getFileName());
 		ContentType contentType = new ContentType(fpart.getContentType());
 		if (contentType.match("application/octet-stream")) {
@@ -114,8 +114,8 @@
 		parameterKeys.add(fpart.getName());
 		String upkey = fpart.getName().substring(0, fpart.getName().lastIndexOf("_")) +
 			"_uploaded";
-		Debug.println("____ uploaded-variable: " + upkey);
-		parameters.put(upkey, tempFile.getAbsolutePath());
+		Debug.println("____ uploaded-variable: " + upkey + ", name: " + tempFile.getName());
+		parameters.put(upkey, tempFile.getName());
 	    } else {
 		String value = ((ParamPart) nextPart).getStringValue();
 		value = new String(value.getBytes("iso-8859-1"), "utf-8");
@@ -172,7 +172,7 @@
 	    if (urlResource != null && !"".equals(urlResource)) {
 		URL url = new URL(urlResource);
 		URLConnection con = new URL(urlResource).openConnection();
-		File storeFile = File.createTempFile("weblatte", ".tmp");
+		File storeFile = File.createTempFile("weblatte", ".tmp", tempDir);
 		storeFile.deleteOnExit();
 		OutputStream os = new FileOutputStream(storeFile);
 		part.put("content-type", con.getContentType());
@@ -184,7 +184,7 @@
 		    os.write(buf, 0, read);
 		}
 		os.close();
-		part.put("uploaded", storeFile.getAbsolutePath());
+		part.put("uploaded", storeFile.getName());
 		String fpath = url.getPath();
 		int lastSlash = fpath.lastIndexOf("/");
 		if (lastSlash > -1) {
@@ -222,7 +222,7 @@
 		if (!ct.match("text/html")) continue;
 		String contents = (String) part.get("contents");
 		Debug.println("will search and replace composer.jsp image references.");
-		Matcher m = Pattern.compile("composer.jsp\\?image=([^\">]*)").matcher(contents);
+		Matcher m = Pattern.compile("composer\\.jsp\\?image=([^\">]*)").matcher(contents);
 		StringBuffer buf = new StringBuffer();
 		while (m.find()) {
 		    Debug.println("found composer.jsp match: " + m.group(1));
@@ -473,7 +473,7 @@
 		out.println("Datatyp: " + part.get("content-type") + "<br/>");
 		out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" +
 			part.get("content-type") + "\" />");
-		File f = new File((String) part.get("uploaded"));
+		File f = new File(tempDir, (String) part.get("uploaded"));
 		out.println("Binärdata: <b>uppladdad, " + f.length() + " bytes</b><br/>");
 		session.setAttribute("wl_composer_image_" + part.get("filename"), part);
 		if (part.containsKey("filename")) {
@@ -571,7 +571,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.9 2004/05/28 17:45:44 pajp Exp $
+$Id: composer.jsp,v 1.10 2004/05/28 23:06:20 pajp Exp $
 </p>
 </body>
 </html>

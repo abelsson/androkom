@@ -272,9 +272,9 @@
 	    		}
 
 			if (wantHtml && part.isMimeType("text/html")) {
-			    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"."+subpart+"\" width=\"95%\" type=\"" + partContentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + subpart + "&sanitize\"></object><br/>");
 			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 			    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"."+subpart+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+			    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"."+subpart+"\" width=\"95%\" type=\"" + partContentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&subpart=" + subpart + "&sanitize\"></object><br/>");
 			    out.println("<tt>");
 			    contentDisplayed = true;
 			} else if (part.isMimeType("text/html")) {
@@ -312,9 +312,9 @@
 		BodyPart part = multipart.getBodyPart(i);
 		ContentType pct = new ContentType(part.getContentType());
 		if (wantHtml && pct.match("text/html")) {
-		    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
 		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 		    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+i+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+		    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+i+"\" width=\"95%\" type=\"" + pct.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&part=" + i + "&sanitize\"></object><br/>");
 		    out.println("<tt>");
 		}
 		if (!wantHtml && pct.match("text/plain") || pct.match("text/x-kom-basic")) {
@@ -328,9 +328,9 @@
   	    if (commonPreferences.getBoolean("dashed-lines")) {
 		out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
-	    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
 	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti -= 50; styleobj.height = ti + 'px';\" value=\"-\"/>");
 	    out.println("<input type=\"button\" onClick=\"var styleobj = document.getElementById('obj"+text.getNo()+"').style;var th = styleobj.height; th = th.substring(0, th.length-2); var ti = parseInt(th); ti += 50; styleobj.height = ti + 'px';\" value=\"+\"/>");
+	    out.println("</tt><object style=\"height: 200px;\" id=\"obj"+text.getNo()+"\" width=\"95%\" type=\"" + contentTypeObj.getBaseType() + "\" data=\"rawtext.jsp?text=" + text.getNo() + "&sanitize\"></object><br/>");
 	    out.println("<tt>");
   	    if (commonPreferences.getBoolean("dashed-lines")) {
 		out.println("<hr noshade width=\"95%\" align=\"left\" />");

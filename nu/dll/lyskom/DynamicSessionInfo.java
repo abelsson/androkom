@@ -146,6 +146,8 @@ public class DynamicSessionInfo {
     /**
      * Translated the result from getWhatAmIDoing() into a String according
      * to the current platform's default character encoding.
+     *
+     * @deprecated the string should be decoded using Session.toString()
      */
     public String getWhatAmIDoingString() {
 	return new String(whatAmIDoing);
