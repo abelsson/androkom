@@ -10,7 +10,7 @@ import nu.dll.lyskom.*;
 
 public class TextCommands extends AbstractCommand {
     String[] myCommands = { "återse", "}terse", "fotnotera", "kommentera", "inlägg", "radera text",
-			    "markera text", "lista markerade texter", "återse uringlägg", "}terse urinl{gg" };
+			    "markera text", "lista markerade texter", "återse urinklägg", "}terse urinl{gg" };
     int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7 };
     String[] myDescriptions = {
 	"återse (text) <textnummer>", // 0
