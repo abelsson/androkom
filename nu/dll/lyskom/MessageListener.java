@@ -78,15 +78,18 @@ implements Runnable {
 	    } catch (IOException ex) {
 		Debug.println("IOException: " + ex.getClass().getName() + ": " + ex.getMessage());
 		readError = ex;
+	    } catch (Throwable ex) {
+		readError = ex;
+		disconnect = true;
 	    }
 	    if (readError != null) {
 		if (disconnect) {
 		    System.err.println("Disconnected.");
 		    continue;
 		}
-		throw new RuntimeException("Fatal read error occured, read thread exiting: " + 
-					   readError.getClass().getName() + ": " +
-					   readError.getMessage());
+		throw new RuntimeException("Fatal read error occured, read thread exiting",
+					   readError);
+
 	    }
 	    if (row.length == 0) {
 		Debug.println("Got: Empty row, skipping");

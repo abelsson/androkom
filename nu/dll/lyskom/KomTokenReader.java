@@ -24,6 +24,7 @@ class KomTokenReader {
 
     public KomTokenReader(InputStream i, Session session) {
 	input = i;
+	this.session = session;
     }
 
     public void close() throws IOException {

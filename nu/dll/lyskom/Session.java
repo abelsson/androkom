@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.36 2004/04/06 01:38:00 pajp Exp $
+ * @version $Id: Session.java,v 1.37 2004/04/06 01:55:45 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -366,8 +366,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException, ProtocolException {
 	this.server = server;
 	this.port = port;
+
 	connection = new Connection(this);
 	reader = new KomTokenReader(connection.getInputStream(), this);
+
 	connection.write('A'); // protocol A
 	connection.writeLine(new Hollerith(clientUser +
 					   (clientHost != null ? "%" + clientHost : "")).toNetwork());
