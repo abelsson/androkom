@@ -1,6 +1,6 @@
 ** LatteKOM README
 ** -*- Mode: auto-fill -*-
-** $Id: README,v 1.1 2000/08/21 05:55:18 pajp Exp $
+** $Id: README,v 1.2 2000/08/21 09:49:05 pajp Exp $
 
 * Brief description:
 
@@ -26,6 +26,12 @@ References:
 4: http://www.liu.se/
 5: ftp://ftp.lysator.liu.se/pub/lyskom/draft/Protocol-A.texi
 
+* About the code - the usual disclaimer, but for real
+
+This code _is_ ugly. I'm only releasing it because that makes more
+sense than letting it grow old in my own digital attics. Also, I'm
+hoping to get some of my enthuisasm back if I get help with the bering
+stuff. :-P
 
 * Authors:
 
