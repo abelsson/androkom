@@ -20,16 +20,22 @@ import java.text.MessageFormat;
 import java.util.Calendar;
 import java.util.GregorianCalendar;
 
+import java.awt.event.KeyAdapter;
+import java.awt.event.KeyEvent;
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
+import java.awt.Container;
 import java.awt.Font;
+import java.awt.FlowLayout;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
-
+import javax.swing.JPasswordField;
+import javax.swing.JLabel;
+import javax.swing.JTabbedPane;
 
 
 import nu.dll.lyskom.*;
@@ -39,7 +45,7 @@ import nu.dll.lyskom.*;
  * Takes two optional arguments: the username and the password.
  *
  */
-public class Test2 implements AsynchMessageReceiver, ConsoleListener {
+public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     class GuiInput {
 	String string = "";
@@ -100,6 +106,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     Text lastSavedText = null;
     int linesSinceLastPrompt = 0;
 
+    boolean embedded = false;
+
     static {
 	if (encoding == null) {
 	    if (System.getProperty("os.name").startsWith("Windows") && !useGui) encoding = "Cp437";
@@ -114,11 +122,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    lastWhatIAmDoing = s;
 	}
 	if (useGui) {
-	    if (foo != null && foo.getMyPerson() != null) {
+	    if (!embedded && foo != null && foo.getMyPerson() != null) {
 		consoleFrame.setTitle("LatteKOM/T2 - " + server + " - " + confNoToName(foo.getMyPerson().getNo()) +
 				      (foo.getCurrentConference() > 0 ? " i " + confNoToName(foo.getCurrentConference()) : "") +
 				      " - " + s);
-	    } else {
+	    } else if (!embedded) {
 		consoleFrame.setTitle("LatteKOM/T2 - " + s);
 	    }
 	}
@@ -284,7 +292,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		}
 		if (!useGui) {
 		    consoleWrite("\007\007"); // beep!
-		} else {
+		} else if (!embedded) {
 		    consoleFrame.requestFocus();
 		    consoleFrame.toFront();
 		}
@@ -424,67 +432,71 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    int loginUser = 0;
 	    String loginName = null;
 	    String loginPassword = null;
-	    while (loginUser == 0 && names.length != 1) {
-		String enteredName = defaultUser != null ? defaultUser : crtReadLine("Vad heter du? ");
-		names = foo.lookupName(enteredName,
-				       true, false);
-		setStatus("Loggar in.");
-		if (names.length > 1) {
-		    System.err.println("Flertydigt namn.");
-		    if (defaultUser != null) defaultUser = null;
-		    for (int i=0;i<names.length;i++)
-			consoleWriteLn("\tAlternativ "+i+": " +
+	    while (!foo.getLoggedIn()) {
+		while (loginUser == 0 && names.length != 1) {
+		    String enteredName = defaultUser != null ? defaultUser : crtReadLine("Vad heter du? ");
+		    names = foo.lookupName(enteredName,
+					   true, false);
+		    setStatus("Loggar in.");
+		    if (names.length > 1) {
+			System.err.println("Flertydigt namn.");
+			if (defaultUser != null) defaultUser = null;
+			for (int i=0;i<names.length;i++)
+			    consoleWriteLn("\tAlternativ "+i+": " +
 					   names[i].getNameString());
-		}
-		if (names.length == 0) {
-		    consoleWriteLn("Namnet finns inte.");
-		    if (crtReadLine("Vill du skapa ny person med namnet \"" + enteredName + "\"? (j/N)").equals("j")) {
-			consoleWriteLn("Du kan senare välja att byta namn, om du vill.");
-			consoleWriteLn("");
-			boolean passMatch = false;
-			String newPassword = null;
-			while (!passMatch) {
-			    newPassword = crtReadLine("Ange ett lösenord: ");
+		    }
+		    if (names.length == 0) {
+			consoleWriteLn("Namnet finns inte.");
+			if (crtReadLine("Vill du skapa ny person med namnet \"" + enteredName + "\"? (j/N)").equals("j")) {
+			    consoleWriteLn("Du kan senare välja att byta namn, om du vill.");
+			    consoleWriteLn("");
+			    boolean passMatch = false;
+			    String newPassword = null;
+			    while (!passMatch) {
+				newPassword = crtReadLine("Ange ett lösenord: ");
 			    
-			    passMatch = newPassword.equals(crtReadLine("Upprepa: "));
-			    if (!passMatch) {
-				consoleWriteLn("Du angav inte samma lösenord båda gångerna. Försök igen.");
+				passMatch = newPassword.equals(crtReadLine("Upprepa: "));
+				if (!passMatch) {
+				    consoleWriteLn("Du angav inte samma lösenord båda gångerna. Försök igen.");
+				}
 			    }
-			}
-			try {
-			    int persNo = foo.createPerson(enteredName, newPassword, new Bitstring("0"), new AuxItem[] {});
-			    consoleWriteLn("Du fick nummer " + persNo);
-			    loginPassword = newPassword;
-			    loginName = enteredName;
-			    loginUser = persNo;			    
-			} catch (RpcFailure e1) {
-			    consoleWriteLn("%Fel: det gick inte att skapa någon person. Felkod " + e1.getError());
-			}
+			    try {
+				int persNo = foo.createPerson(enteredName, newPassword, new Bitstring("0"), new AuxItem[] {});
+				consoleWriteLn("Du fick nummer " + persNo);
+				loginPassword = newPassword;
+				loginName = enteredName;
+				loginUser = persNo;			    
+			    } catch (RpcFailure e1) {
+				consoleWriteLn("%Fel: det gick inte att skapa någon person. Felkod " + e1.getError());
+			    }
 
+			}
 		    }
 		}
-	    }
-
-	    if (loginUser == 0) {
-		loginName = names[0].getNameString();
-		consoleWriteLn(loginName);
-		if (defaultPassword != null) loginPassword = defaultPassword;
-		else loginPassword = crtReadLine("Lösenord: ");
-		loginUser = names[0].getNo();
-	    } else {
-		names = foo.lookupName(loginName, true, false);
-		if (loginUser != names[0].getNo()){
-		    throw new RuntimeException("Fel: loginUser " + loginUser + " != " + names[0].getNo());
+		if (loginUser == 0) {
+		    loginName = names[0].getNameString();
+		    consoleWriteLn(loginName);
+		    if (defaultPassword != null) loginPassword = defaultPassword;
+		    else loginPassword = crtReadPassword("Lösenord: ");
+		    loginUser = names[0].getNo();
+		} else {
+		    names = foo.lookupName(loginName, true, false);
+		    if (loginUser != names[0].getNo()){
+			throw new RuntimeException("Fel: loginUser " + loginUser + " != " + names[0].getNo());
+		    }
 		}
-	    }
-
-	    consoleWriteLn("Loggar in som " +
+		
+		consoleWriteLn("Loggar in som " +
 			       bytesToString(names[0].confName) + " (" +
 			       loginUser + ")");
-	    if (!foo.login(names[0].confNo, loginPassword, false)) {
-		System.err.println("Inloggningen misslyckades!");
-		System.exit(-32);
+		if (!foo.login(names[0].confNo, loginPassword, false)) {
+		    consoleWriteLn("Inloggningen misslyckades!");
+		    loginPassword = null;
+		    names = new ConfInfo[0];
+		    loginUser = 0;
+		}		
 	    }
+
 	    consoleWriteLn("Inloggad. Välkommen till LysKOM! Skriv \"?\" och tryck <Enter> för hjälp.");
 	    consoleWrite("Vänta lite medan jag hämtar information om olästa möten...");
 	    foo.updateUnreads();
@@ -855,16 +867,24 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     void consoleWriteLn(String s) {
 	linesSinceLastPrompt++;
 	if (linesSinceLastPrompt > linesPerScreen) {
-	    crtReadLine("(-- tryck Enter för att fortsätta --)");
+	    crtReadLine("(-- tryck Enter för att fortsätta --)", true);
 	}
 	consoleWrite(s + lineSeparator);	
 	if (useGui && macBreak) consoleWrite("\r\n");
     }
-    
+
     void consoleWrite(String s) {
+	consoleWrite(s, false);
+    }
+
+    void consoleWrite(String s, boolean isTransient) {
 	try {
 	    if (useGui) {
-		console.append(s, false);
+		if (isTransient) {
+		    console.appendTransient(s);
+		} else {
+		    console.append(s, false);
+		}
 		console.setCaretPosition(console.getText().length());
 		return;
 	    }
@@ -879,16 +899,67 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
+    class T2KeyAdapter extends KeyAdapter {
+	Object locker = null;
+	public T2KeyAdapter(Object _locker) {
+	    setLocker(_locker);
+	}
+	public void setLocker(Object o) {
+	    locker = o;
+	}
+	public void keyReleased(KeyEvent e) {
+	    if (e.getKeyCode() == KeyEvent.VK_ENTER) {
+		synchronized (locker) {
+		    locker.notifyAll();
+		}
+	    }
+	}
+    }
+
+    /**
+     * Reads one line of input, perhaps without character echo
+     * if the terminal type supports it.
+     */
+    String crtReadPassword(String prompt) {
+	if (!useGui) return crtReadLine(prompt);
+	Object waitLock = new Object();
+
+	JFrame pFrame = new JFrame("Lösenord");
+	Container cPane = pFrame.getContentPane();
+	cPane.setLayout(new FlowLayout());
+	cPane.add(new JLabel("Ange lösenord: "));
+	JPasswordField pField = new JPasswordField(20);
+	cPane.add(pField);
+	pField.addKeyListener(new T2KeyAdapter(waitLock));
+	pFrame.pack();
+	pFrame.setVisible(true);
+	pField.requestFocus();
+	pFrame.toFront();
+	try {
+	    synchronized (waitLock) {
+		waitLock.wait();
+	    }
+	} catch (InterruptedException ex1) {
+	}
+	pFrame.dispose();
+	return new String(pField.getPassword());
+	
+    }
+
     /**
      * Reads one line of input from STDIN.
      * Returns null if EOF is encountered (eg, user presses ^D on an empty line).
      * Otherwise, returns a String with the user input, without trailing '\n'.
      */
     String crtReadLine(String prompt) {
+	return crtReadLine(prompt, false);
+    }
+
+    String crtReadLine(String prompt, boolean isTransient) {
 	linesSinceLastPrompt = 0;
 	lastPromptShown = prompt;
 	if (prompt != null) {
-	    consoleWrite(prompt);
+	    consoleWrite(prompt, isTransient);
 	}
 
 	if (!useGui) {
@@ -917,7 +988,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    }
 	}
     }
-
     /**
      * Read one row from user input, if the resulting row is the
      * empty string, return a default string instead.
@@ -1240,28 +1310,35 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
+    
     boolean guiInited = false;
     void initGui() {
+	initGui(false);
+    }
+    void initGui(boolean embedded) {
 	if (guiInited) {
 	    System.err.println("Konsoll-GUI är redan initialiserat.");
 	    return;
 	}
 	guiInput = new GuiInput();
 	Debug.println("Initialiserar GUI-konsoll.");
-	consoleFrame = createConsoleFrame();
+
+	if (!embedded) consoleFrame = createConsoleFrame();
+
 	console = new Console(25, 80);
 	console.setConsoleThingies("");
-	JScrollPane stdoutScroll = new JScrollPane(console,
-						   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-						   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-	consoleFrame.getContentPane().add(new JScrollPane(console));
-	consoleFrame.setTitle("LatteKOM/T2");
+
+	if (!embedded) {
+	    consoleFrame.getContentPane().add(new JScrollPane(console));
+	    consoleFrame.setTitle("LatteKOM/T2");
+	    consoleFrame.setVisible(true);
+	    consoleFrame.addWindowListener(new GuiFrameActionListener());
+	    consoleFrame.setDefaultCloseOperation(JFrame.DISPOSE_ON_CLOSE);
+	    console.requestFocus();
+	}
+
 	console.setFont(new Font(System.getProperty("lattekom.gui-font", "monospaced"), Font.PLAIN, 14));
 	System.setOut(new PrintStream(new LogOutputStream(console)));
-	consoleFrame.setVisible(true);
-	consoleFrame.addWindowListener(new GuiFrameActionListener());
-	consoleFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	console.requestFocus();
 	console.addConsoleListener(this);
 	console.addComponentListener(new ComponentAdapter() {
 		public void componentResized(ComponentEvent e) {
@@ -1270,22 +1347,40 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    linesPerScreen = rows; // has no effect, never changes 
 		}
 	    });
-	if (!Debug.ENABLED) {
+	if (!embedded && !Debug.ENABLED) {
 	    System.setErr(new PrintStream(new LogOutputStream(console)));
 	}
 	guiInited = false;
     }
 
+    public Console getConsole() {
+	return console;
+    }
+
+    public Test2(boolean embedded, String server) {
+	this.server = server;
+	init(embedded);
+    }
+
+    public Test2(boolean embedded) {
+	init(embedded);
+    }
+
     public Test2() {
+	init(false);
+    }
+
+    private void init(boolean embedded) {
+	this.embedded = embedded;
+	useGui = embedded;
 	if (useGui) {
-	    initGui();
+	    initGui(embedded);
 	}
 	asynchInvoker = new AsynchInvoker();
 	asynchInvoker.setName("T2AsynchHandler-" + (++handlerCount));
 	asynchInvoker.start();
     }
-
-    int handlerCount = 0;
+    static int handlerCount = 0;
 
     /**
      * Changed this to be a little more stable: messages are enqueued

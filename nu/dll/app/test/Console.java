@@ -1,7 +1,7 @@
 /*
  * The orgleenjava license
- * Version $Revision: 1.2 $ 
- * Date $Date: 2002/04/03 19:59:34 $
+ * Version $Revision: 1.3 $ 
+ * Date $Date: 2002/04/17 07:10:56 $
  *
  *
  * Copyright (c) 1996-2001 Thomas Leen.  All rights 
@@ -75,7 +75,7 @@ package nu.dll.app.test;
 * creator: thomas leen
 * created: 2001.03.24
 * purpose: this class takes care of making input and output look like a console
-* version: $Revision: 1.2 $
+* version: $Revision: 1.3 $
 * notes: needs to emulate history
 * in general my implementation of this class sucks. the whole thing is hackey, it needs to be fixed
 * the way in which i detect new code lines is half-ass, i base it on the index of the console_thingies which may be erased, or modified through the set and cause the last event to be fragged. must fix that...
@@ -83,6 +83,10 @@ package nu.dll.app.test;
 * history:
 *
 * $Log: Console.java,v $
+* Revision 1.3  2002/04/17 07:10:56  pajp
+* trying out a new tabbed GIU (TabClient) to allow for multiple connections
+* using the standard T2 Swing console.
+*
 * Revision 1.2  2002/04/03 19:59:34  pajp
 * Test2 can now run on MacOS Classic. lattekom.usecrlf must be set to
 * "true" to enable line feed when running in Classic MRJ with GUI.
@@ -125,8 +129,6 @@ import java.util.Enumeration;
 import javax.swing.JTextArea;
 import javax.swing.JButton;
 import javax.swing.text.Keymap; 
-
-import nu.dll.lyskom.Debug;
 
  public class Console extends JTextArea implements KeyListener
  {
@@ -186,6 +188,17 @@ import nu.dll.lyskom.Debug;
 
      protected void fireConsoleEvent(ConsoleEvent ce)
      {
+	 if (lastWasTransient) {
+	     lastWasTransient = false;
+	     try {
+		 int lineStart = getLineStartOffset(getLineCount()-1);
+		 String text = getText();
+		 Debug.println("Console: last append was transient; erasing " + lineStart + "-" + text.length());
+		 setText(text.substring(0, lineStart));
+	     } catch (javax.swing.text.BadLocationException ex1) {
+		 Debug.println("BadLocationException: " + ex1.getMessage());
+	     }
+	 }
 	 Enumeration elements = consoleListeners.elements();
 
 	 while(elements.hasMoreElements())
@@ -300,6 +313,13 @@ import nu.dll.lyskom.Debug;
      {
 	 super.append(text + "\n" + console_thingies);
 	 reset_new_command_index();
+     }
+
+     boolean lastWasTransient = false;
+     public void appendTransient(String text) {
+	 Debug.println("Console.appendTransient(): " + text);
+	 lastWasTransient = true;
+	 append(text, false);
      }
 
      // added by rasmus@dll.nu -- 2002-03-28

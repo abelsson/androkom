@@ -35,6 +35,9 @@ public class Membership {
     }
 
     Membership(int offset, KomToken[] tk) {
+	//	for (int i=0; i < tk.length; i++) {
+	//	    Debug.println("Membership KomToken[" + i + "]: " + tk[i]);
+	//	}
 	this.position = tk[offset++].toInteger();
 	this.lastTimeRead = KomTime.createFrom(offset, tk);
 	offset += KomTime.ITEM_SIZE;
