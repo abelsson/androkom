@@ -134,7 +134,7 @@
                     justLoggedIn = true;
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
-		    lyskom.setLatteName("Weblatte");
+		    lyskom.setLatteName("Weblatte " + Version.getVersion());
 		    lyskom.setClientVersion("Weblatte", Version.getVersion() +
 					    (Debug.ENABLED ? " (debug)" : ""));
 		    lyskom.changeWhatIAmDoing("kör web-latte");
@@ -1497,7 +1497,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.80 $
+$Revision: 1.81 $
 </div>
 </body>
 </html>
