@@ -322,6 +322,9 @@ public interface Rpc {
     public final static int C_change_conference = 2;
     public final static int C_change_name = 3;
     public final static int C_change_what_i_am_doing = 4;
+
+    public final static int C_set_passwd = 8;
+
     public final static int C_delete_conf = 11;
 
     public final static int C_sub_member = 15;

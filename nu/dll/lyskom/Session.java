@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.40 2004/04/15 15:30:04 pajp Exp $
+ * @version $Id: Session.java,v 1.41 2004/04/15 22:18:21 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -131,7 +131,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     // set property values
     static {
 	defaultServerEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
-	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 30).intValue() * 1000;
+	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 60).intValue() * 1000;
 	rpcSoftTimeout = Integer.getInteger("lyskom.rpc-soft-timeout", 0).intValue() * 1000;
 	defaultBigTextLimit = Integer.getInteger("lyskom.big-text-limit", 20*1024).intValue();
 	defaultBigTextHead = Integer.getInteger("lyskom.big-text-head", 100).intValue();
@@ -286,7 +286,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     /**
-     * Sets the client user name that is reportedduring the intial handshake.
+     * Sets the client user name that is reported during the intial handshake.
      * Must be called before connect().
      */
     public void setClientUser(String s) {
@@ -2280,6 +2280,20 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	whatIAmDoing = s;
     }
 
+    public RpcCall doSetPassword(int person, String userPassword, String newPassword)
+    throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_set_passwd);
+	req.add(new KomToken(person)).add(new Hollerith(userPassword)).
+	    add(new Hollerith(newPassword));
+	writeRpcCall(req);
+	return req;
+    }
+
+    public void setPassword(int person, String userPassword, String newPassword)
+    throws IOException, RpcFailure {
+	RpcReply reply = waitFor(doSetPassword(person, userPassword, newPassword));
+	if (!reply.getSuccess()) throw reply.getException();
+    }
 
     /**
      * Sends the RPC call who-is-on-dynamic to the server.
@@ -2350,6 +2364,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public void deleteText(int textNo)throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doDeleteText(textNo));
 	if (!reply.getSuccess()) throw reply.getException();
+	purgeTextCache(textNo);
     }
 
     /**
@@ -2540,7 +2555,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    if (call == null) {
 		waited = System.currentTimeMillis()-waitStart;
 		if (waited > rpcTimeout) {
-		    IOException e = new IOException("Timeout waiting for RPC reply #"+id);
+		    IOException e = new IOException("Timeout waiting for RPC reply #"+id+" (" + waited + " ms)");
 		    e.printStackTrace();
 		    throw(e);
 		}
