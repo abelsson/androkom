@@ -43,7 +43,12 @@
 	int idle = who[i].getIdleTime()/60;
 	int idleHours = idle/60;
 	int idleMinutes = idle - idleHours*60;
-	SessionInfo _session = lyskom.getLoggedIn() ? lyskom.getStaticSessionInfo(who[i].getSession()): null;
+	SessionInfo _session = null;
+	try {
+	    _session = lyskom.getLoggedIn() ? lyskom.getStaticSessionInfo(who[i].getSession()): null;
+	} catch (RpcFailure ex1) {
+	    if (ex1.getError() != Rpc.E_undefined_session) throw ex1;
+	}
 	Mugshot mug = null;
 	if (lyskom.getServer().equals("sno.pp.se")) {
 	    File mugFile = new File(dir, who[i].getPerson() + ".txt");
@@ -104,7 +109,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.5 2004/04/22 22:16:10 pajp Exp $
+$Id: index.jsp,v 1.6 2004/04/22 22:19:29 pajp Exp $
 </p>
 </body>
 </html>
