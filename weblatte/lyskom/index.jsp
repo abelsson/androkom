@@ -1230,7 +1230,6 @@
 			if (highestLocalNo > membership.getLastTextRead()) {
 			    unreads = highestLocalNo - membership.getLastTextRead();
 			}
-			unreads -= readTexts.length;
 			if (unreads == 0) {
 			    Debug.println("index.jsp: listnews: removing conf " + conf + " with no unreads");
 			    lyskom.setLastRead(conf, highestLocalNo);
@@ -1245,8 +1244,19 @@
 				continue;
 			    }
 			}
+			int readAfterLast = 0;
 			sum += unreads;
-			sum -= readTexts.length;
+		        Debug.println("conf " + conf + ": " + unreads + " unreads.");
+			Debug.println("conf " + conf + ": read-texts length: " + readTexts.length);
+			List readTextsList = new LinkedList();
+			for (int i=0;i < readTexts.length; i++) {
+			    if (readTexts[i] > membership.getLastTextRead()) {
+				readAfterLast++;
+			    }
+			    readTextsList.add(new Integer(readTexts[i]));
+			}
+			Debug.println("conf " + conf + ": read-after-last: " + readAfterLast);
+			Debug.println("conf " + conf + ": read-texts: " + readTextsList);
 			confsum++;
 			out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
 				  conf + "\">" + 
@@ -1511,7 +1521,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.86 $
+$Revision: 1.87 $
 </div>
 </body>
 </html>
