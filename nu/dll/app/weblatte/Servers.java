@@ -16,7 +16,7 @@ public class Servers {
     public static List list  = new LinkedList();
     public static KomServer defaultServer;
     static {
-	if (Debug.ENABLED) list.add(new KomServer("localhost", "RasmusKOM"));
+	if (Boolean.getBoolean("weblatte.debug")) list.add(new KomServer("localhost", "RasmusKOM"));
 	list.add(new KomServer("sno.pp.se", "SnoppKOM"));
 	list.add(new KomServer("kom.lysator.liu.se", "LysLysKOM"));
 	list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
