@@ -1147,12 +1147,16 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 			t.addCcRecipient(newConf);
 		    }
 		} else if (icmd.startsWith("!är")) {
-		    int changeRow = Integer.parseInt(rst.nextToken());
-		    String thisRow = (String) rows.get(changeRow-1);
-		    consoleWriteLn("** Skriv om rad " + changeRow + ":");
-		    consoleWriteLn(changeRow + ": " + thisRow);
-		    rows.set(changeRow-1, crtReadLine(changeRow + ": "));
-		    consoleWriteLn("");
+		    if (rst.hasMoreTokens()) {
+			int changeRow = Integer.parseInt(rst.nextToken());
+			String thisRow = (String) rows.get(changeRow-1);
+			consoleWriteLn("** Skriv om rad " + changeRow + ":");
+			consoleWriteLn(changeRow + ": " + thisRow);
+			rows.set(changeRow-1, crtReadLine(changeRow + ": "));
+			consoleWriteLn("");
+		    } else {
+			consoleWriteLn("** Du måste ange ett radnummer.");
+		    }
 		} else if (icmd.startsWith("!rr")) {
 		    if (rst.hasMoreTokens()) {
 			int delRow = Integer.parseInt(rst.nextToken());
@@ -1163,7 +1167,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 			    rows.remove(delRow-1);
 			}
 		    } else {
-			consoleWriteLn("** Du måste ange ett radnummer.");
+ 			consoleWriteLn("** Du måste ange ett radnummer.");
 		    }
 		    consoleWriteLn("");
 		} else if (icmd.startsWith("!ää")) {

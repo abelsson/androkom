@@ -26,7 +26,6 @@ public class SnarfKom {
     int currentConference = -1;
 
     UConference currentConfStat;
-    Membership 
 
     public SnarfKom(String[] argv)
     throws IOException, ProtocolException {
