@@ -693,12 +693,78 @@
     if (parameter(parameters, "conference") != null) {
 	conferenceNumber = Integer.parseInt(parameter(parameters, "conference"));
     }
+    if (parameters.containsKey("markAsReadHash")) {
+	String checkHashStr = parameter(parameters, "markAsReadHash");
+	//int checkHash = Integer.parseInt(parameter(parameters, "markAsReadHash"), 16);
+	List markAsReadTexts = (List) session.getAttribute("mark-as-read-list");
+	// XXX XXX: very duplicated code from markAsRead below
+	// with the exception that this code breaks up into 
+	// multiple mark-as-read if no of texts to mark for a conf
+	// is > 100
+	int listHash = markAsReadTexts != null ? markAsReadTexts.hashCode() : 0;
+	if (checkHashStr.equals(Integer.toHexString(listHash))) {
+	    Map conferences = new HashMap();
+	    for (Iterator i = markAsReadTexts.iterator(); i.hasNext();) {
+		TextStat readText = lyskom.getTextStat(((Integer) i.next()).intValue());
+		lyskom.getReadTexts().add(readText.getNo());
+		
+		int[] rcpts = readText.getRecipients();
+		int[] ccs = readText.getCcRecipients();
+		int[] tmp = new int[rcpts.length+ccs.length];
+		System.arraycopy(rcpts, 0, tmp, 0, rcpts.length);
+		System.arraycopy(ccs, 0, tmp, rcpts.length, ccs.length);
+		for (int j=0; j < tmp.length; j++) {
+		    try {
+			List locals = (List) conferences.get(new Integer(tmp[j]));
+			if (locals == null) {
+			    locals = new LinkedList();
+			    conferences.put(new Integer(tmp[j]), locals);
+			}
+			locals.add(new Integer(readText.getLocal(tmp[j])));
+			
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() != Rpc.E_not_member)
+			    throw ex1;
+		    }
+		}
+	       
+	    }
+	    for (Iterator i = conferences.entrySet().iterator(); i.hasNext();) {
+		Map.Entry entry = (Map.Entry) i.next();
+		int conf = ((Integer) entry.getKey()).intValue();
+		List _locals = (List) entry.getValue();
+		Iterator _li = _locals.iterator();
+		while (_li.hasNext()) {
+		    List locals = new LinkedList();
+		    for (int j=0; j < 100 && _li.hasNext(); j++) {
+			locals.add(_li.next());
+			_li.remove();
+		    }
+		    int[] localTexts = new int[locals.size()];
+		    int k=0;
+		    for (Iterator j=locals.iterator(); j.hasNext(); k++) {
+			localTexts[k] = ((Integer) j.next()).intValue();
+		    }
+		    try {
+			lyskom.markAsRead(conf, localTexts);
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() != Rpc.E_not_member) throw ex1;
+		    }		    
+		}
+	    }
+	} else {
+	    log("Warning: invalid markAsReadHash: query was " + checkHashStr + " while " +
+		"object hash was " + Integer.toHexString(listHash));
+	}
+    }
+    session.setAttribute("mark-as-read-list", null);
+
     if (parameters.containsKey("markAsRead")) {
 	String[] values = request.getParameterValues("markAsRead");
 	Map conferences = new HashMap();
 	for (int i=0; i < values.length; i++) {
 	    TextStat readText = lyskom.getTextStat(Integer.parseInt(values[i]));
-	    lyskom.getReadTexts().add(readText.getNo());
+ 	    lyskom.getReadTexts().add(readText.getNo());
 
 	    int[] rcpts = readText.getRecipients();
 	    int[] ccs = readText.getCcRecipients();
@@ -811,7 +877,7 @@
               (<a title="Logga ut mina andra sessioner" href="<%=myURI(request)%>?purgeOtherSessions">övriga</a>) |
 	      <a href="<%=basePath%>?listnews">lista nyheter</a> |
 	      <a href="composer.jsp">skriv inlägg</a> |
-              <% if (lyskom.getServer().equals("sno.pp.se") && vemArVem) { %>
+              <% if (vemArVem) { %>
 	      <a href="<%=basePath%>?uploadForm">ladda upp bild</a> | 
               <% } %>
               <a href="<%=basePath%>?reviewMarked">lista markerade</a> ]
@@ -1031,16 +1097,22 @@
 	StringBuffer queryStr = new StringBuffer();
 	linkText.append("Läsmarkera ");
 	linkText.append(viewedTexts.size() == 1 ? "text " : "texterna ");
-	for (Iterator i = viewedTexts.iterator(); i.hasNext();) {
-	    Integer textNo = (Integer) i.next();
-	    linkText.append(textNo.toString());
-	    queryStr.append("markAsRead=").append(textNo.toString());
-	    if (i.hasNext()) {
-		if (viewedTexts.size() == 2)
-	  	    linkText.append(" och ");
-		else 
-		    linkText.append(", ");
-		queryStr.append("&");
+	int listhash = viewedTexts.hashCode();
+	if (viewedTexts.size() > 5) {
+	    queryStr.append("markAsReadHash=" + Integer.toHexString(listhash));
+	    session.setAttribute("mark-as-read-list", viewedTexts);
+	} else {
+	    for (Iterator i = viewedTexts.iterator(); i.hasNext();) {
+		Integer textNo = (Integer) i.next();
+		linkText.append(textNo.toString());
+		queryStr.append("markAsRead=").append(textNo.toString());
+		if (i.hasNext()) {
+		    if (viewedTexts.size() == 2)
+			linkText.append(" och ");
+		    else 
+			linkText.append(", ");
+		    queryStr.append("&");
+		}
 	    }
 	}
 	if (viewedTexts.size() > 4)
@@ -1447,7 +1519,11 @@
 <div class="intro">
 Du är inte inloggad.
 </div>
-
+<div class="news">
+<ul>
+<li><b>2004-11-12: SnoppKOM flyttar</b> till ny server. Använd adressen <tt>kom.sno.pp.se</tt> för att ansluta till SnoppKOM i fortsättningen, eller IP-adressen <tt>212.214.41.199</tt>. Weblatte har uppdaterats med den nya adressen.
+</ul>
+</div>
 <form name="lyskomlogin" method="post" action="<%=myURI(request)%>">
 <%
     String lyskomNamn = "";
@@ -1535,7 +1611,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
 <% if (showPOM) { %>
 [ 
 <%
-        if (vemArVem && (!authenticated.booleanValue() || lyskom.getServer().equals("sno.pp.se"))) {
+        if (vemArVem) {
 %>
 <a href="bilder/">visa bilder</a> |
 <%
@@ -1586,7 +1662,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.93 $
+$Revision: 1.94 $
 </div>
 </body>
 </html>

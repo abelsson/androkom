@@ -48,7 +48,7 @@ class KomTokenReader {
     public KomTokenReader(InputStream i, Session session) {
 	if (DEBUG > 3) {
 	    try {
-		input = new SpyInputStream(i, new FileOutputStream("/lyskom-trace.log"));
+		input = new SpyInputStream(i, new FileOutputStream("/tmp/lyskom-trace.log"));
 	    } catch (IOException ex1) {
 		throw new RuntimeException("I/O error adding snoop stream", ex1);
 	    }

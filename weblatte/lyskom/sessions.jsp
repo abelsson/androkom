@@ -13,7 +13,7 @@
 	buf.append(serverShort(lyskom));
 	buf.append(" (" + sessionId + ")</a>");
         if (experimental) {
-            buf.append(" (<a href=\"http://s-" + sessionId + ".dll.nu/lyskom/?listnews\">URL-session</a>)");
+            buf.append(" (<a href=\"http://s-" + sessionId + "." + baseHost + basePath + "?listnews\">URL-session</a>)");
         }
 	List unreadConfs = lyskom.getUnreadConfsListCached();
 	if (unreadConfs.size() > 0) {
@@ -23,10 +23,6 @@
     }
 %>
 <%
-    if (lyskom == null) {
-        response.sendRedirect(basePath);
-        return;
-    }
     List activeSessions = (List) session.getAttribute("lyskom.active");
     if (activeSessions == null) activeSessions = Collections.EMPTY_LIST;
     List suspendedSessions = (List) session.getAttribute("lyskom.suspended");

@@ -1,12 +1,15 @@
 <%@ page language='java' import='nu.dll.lyskom.*, java.text.*, java.util.*' %>\
 <%@ page import='java.util.regex.*, java.io.*, nu.dll.app.weblatte.*, java.net.URLDecoder' %>\
 <%!
-    boolean experimental = Boolean.getBoolean("weblatte.experimental");
-    boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
-    File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
-    String baseHost = "dll.nu";
-    String basePath = System.getProperty("weblatte.basepath", "/lyskom/"); // the absolute path on the webserver
-    String appPath = System.getProperty("weblatte.webapp-path", "/lyskom/"); // the weblatte root within the web application
+    static boolean experimental = Boolean.getBoolean("weblatte.experimental");
+    static boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
+    static File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
+    static String baseHost = System.getProperty("weblatte.base-host", "dll.nu");
+    static String basePath = System.getProperty("weblatte.basepath", "/lyskom/"); // the absolute path on the webserver
+    static String appPath = System.getProperty("weblatte.webapp-path", "/lyskom/"); // the weblatte root within the web application
+    static {
+        System.out.println("Weblatte configuration: basePath: " + basePath + ", appPath: " + appPath);
+    }
 
     public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {
         if (lyskom == null) return null;
@@ -89,7 +92,7 @@
 	public Mugshot(File _file) throws IOException {
 	    this.file = _file;
 	    this.id = file.getName().substring(0,file.getName().indexOf("."));
-	    LineNumberReader reader = new LineNumberReader(new FileReader(file));
+	    LineNumberReader reader = new LineNumberReader(new InputStreamReader(new FileInputStream(file), "iso-8859-1"));
 	    this.name = reader.readLine();
 	    this.image = reader.readLine();
 	}
@@ -290,7 +293,7 @@
 	StringBuffer sb = new StringBuffer()
 		.append("<a href=\"")
 		/*.append(myURI(request))*/
-		.append("/lyskom/")
+		.append(basePath)
 		.append("?text=")
 		.append(textNo);
 	if (request.getParameter("conference") != null) {
@@ -393,7 +396,7 @@
     }
 %>\
 <%
-String dir = getServletContext().getRealPath("/lyskom/bilder/");
+String dir = getServletContext().getRealPath(appPath + "/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
@@ -439,7 +442,7 @@ if (serverName != null && serverName.startsWith("s-")) {
     }
     if (lyskom == null && requestedId != null) {
 	log("Requested session ID " + requestedId + " not found.");
-	response.sendRedirect("http://dll.nu/lyskom/sessions.jsp");
+	response.sendRedirect("http://" + baseHost + basePath + "sessions.jsp");
 	return;
     }
 }

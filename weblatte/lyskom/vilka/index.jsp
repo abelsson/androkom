@@ -21,7 +21,7 @@
         !"".equals(request.getParameter("activeLast"))) activeLast = Integer.parseInt(request.getParameter("activeLast"));
 %>
 <html><head><title>vilka är inloggade i <%= serverShort(lyskom) %>?</title></head>
-<link rel="stylesheet" href="<%= basePath %>/lattekom.css" />
+<link rel="stylesheet" href="<%= basePath %>lattekom.css" />
 <body>
 <h2>vilka är inloggade i <%= serverShort(lyskom) %>?</h2>
 <%
@@ -142,7 +142,7 @@ Visa sessioner som varit aktiva inom:
 </div>
 <div class="nav">[ <a href="../">till huvudsidan</a> ]</div>
 <div class="footer">
-$Id: index.jsp,v 1.15 2004/06/07 00:53:18 pajp Exp $
+$Id: index.jsp,v 1.16 2004/11/15 03:56:35 pajp Exp $
 </div>
 </body>
 </html>

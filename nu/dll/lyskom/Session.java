@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.90 2004/11/12 04:59:19 pajp Exp $
+ * @version $Id: Session.java,v 1.91 2004/11/15 03:56:34 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -876,7 +876,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	UConference c = getUConfStat(conference);
 	Membership m = queryReadTexts(myPerson.getNo(), conference, true);
 	if (c.getHighestLocalNo() > m.getLastTextRead()) {
-	    int localNo = m.getLastTextRead() + 1;	    
+	    int localNo = m.getLastTextRead() + 1;
 	    TextMapping tm = localToGlobal(conference, localNo, maxTexts);
 
 	    if (!tm.hasMoreElements()) {
@@ -1527,14 +1527,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	// this code could probably be a lot more legible
 	do {
 	    existingTextsLeft = noOfExistingTexts - offset;
-	    RpcReply r = waitFor(doLocalToGlobal(confNo, firstLocalNo+offset,
-						 ((existingTextsLeft > 255) ? 255 : existingTextsLeft)).getId());
+	    int _noOfExistingTexts = existingTextsLeft > 255 ? 255 : existingTextsLeft;
+	    Debug.println("Doing local-to-global " + confNo + ", " +
+			  (firstLocalNo+offset) + 
+		     ", " + _noOfExistingTexts);
+	    RpcReply r = waitFor(doLocalToGlobal(confNo, firstLocalNo+offset, _noOfExistingTexts).getId());
 	    if (!r.getSuccess()) throw new RpcFailure(r, "in localToGloal(" + confNo + 
 						      ", " + firstLocalNo + ", " + noOfExistingTexts + ")");
 
 	    m.update(0, r.getParameters(), false);
 	    offset += 255; 
-	} while ((noOfExistingTexts - offset) > 0);
+	} while (m.laterTextsExists && (noOfExistingTexts - offset) > 0);
 
 	synchronized (ltgCache) {
 	    ltgCache.put(key, new WeakReference(m));

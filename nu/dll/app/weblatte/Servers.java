@@ -17,7 +17,7 @@ public class Servers {
     public static KomServer defaultServer;
     static {
 	if (Boolean.getBoolean("weblatte.debug")) list.add(new KomServer("localhost", "RasmusKOM"));
-	list.add(new KomServer("sno.pp.se", "SnoppKOM"));
+	list.add(new KomServer("kom.sno.pp.se", "SnoppKOM"));
 	list.add(new KomServer("kom.lysator.liu.se", "LysLysKOM"));
 	list.add(new KomServer("myskom.kfib.org", "MysKOM"));
 	list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
