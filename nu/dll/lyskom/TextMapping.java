@@ -7,6 +7,8 @@ package nu.dll.lyskom;
 
 import java.util.Hashtable;
 import java.util.Enumeration;
+import java.util.LinkedList;
+import java.util.List;
 
 /**
 
@@ -35,7 +37,8 @@ public class TextMapping implements Enumeration {
     public final static int DEBUG = 4;
     Hashtable hash = new Hashtable();
     int enumc = 0;
-    int[] list;
+    List list = new LinkedList();
+    //int[] list;
 
     public int localToGlobal(int n) {
 	Integer i = (Integer) hash.get((Object) new Integer(n));
@@ -67,22 +70,24 @@ public class TextMapping implements Enumeration {
 	enumc = 0;
     }
     public boolean hasMoreElements() {
-	return list != null && enumc < list.length;
+	return list != null && enumc < list.size();
     }
     /**
      * Returns the next Global number
      */
     public Object nextElement() {
-	if (enumc > list.length) {
+	if (enumc > list.size()) {
 	    Debug.println("no such element, enum=" + enumc);
 	    return null;
 	}
-	Debug.println("returning " + localToGlobal(list[enumc]) + "/" +
-		      list[enumc] + " - " + enumc);
-	return list != null ? (Object) new Integer(localToGlobal(list[enumc++])) : null;
+	Debug.println("returning " + localToGlobal(((Integer) list.get(enumc)).intValue()) + "/" +
+		      ((Integer) list.get(enumc)).intValue() + " - " + enumc);
+	return list != null ? (Object) new Integer(localToGlobal(((Integer)
+								  list.get(enumc++)).intValue())) : null;
     }
     public int lastLocal() {
-	return list == null ? -1 : list.length > 0 ? list[list.length-1] : -1;
+	return list == null ? -1 : list.size() > 0 ?
+	    ((Integer) list.get(list.size()-1)).intValue() : -1;
     }
     /**
      * Update the TextMapping with results from a localToGlobal call
@@ -103,20 +108,21 @@ public class TextMapping implements Enumeration {
 	case 0: // sparse -- local-global pairs
 	    if (DEBUG > 0) Debug.println("TextMapping.update(): sparse mode");
 	    int textNumberPairArrayLength = tk[offset++].toInteger();
-	    if (textNumberPairArrayLength == 0) { list = new int[0]; break; }
+	    if (textNumberPairArrayLength == 0) { break; }
 	    if (hash == null)
 		hash = new Hashtable(textNumberPairArrayLength);
 	    KomToken[] pairs = ((KomTokenArray) tk[offset++]).getTokens();
 	    {
 		int i=0, j=0;
-		list = new int[pairs.length/2];
+		//list = new int[pairs.length/2];
 		// FIXME: Can a sparse mapping return pairs with
 		// global == 0? If so, this code needs to respect the
 		// keepZeroes parameter
 		while (i<pairs.length) {
-		    hash.put((Object) new Integer(list[j++] =
-						  pairs[i++].toInteger()),
-			     (Object) new Integer(pairs[i++].toInteger()));
+		    int value1 = pairs[i++].intValue();
+		    int value2 = pairs[i++].intValue();
+		    list.add(new Integer(value1));
+		    hash.put(new Integer(value1), new Integer(value2));
 		}
 	    } 
 	    break;
@@ -126,26 +132,23 @@ public class TextMapping implements Enumeration {
 	    int firstLocalNo = tk[offset++].toInteger();
 	    int arraySize = tk[offset++].toInteger();
 	    int[] numbers = ((KomTokenArray) tk[offset++]).intValues();
-	    list = new int[numbers.length];
+	    //list = new int[numbers.length];
 	    for (int i=0; i < numbers.length; i++) {
 		if ((numbers[i] != 0) || keepZeroes) {
 		    if (DEBUG > 3) 
 			Debug.println("TextMapping.update(): " + (firstLocalNo + i) +
 				      "==" + numbers[i]);
-		    list[i] = firstLocalNo + i;
-		    hash.put((Object) new Integer(firstLocalNo + i),
-			     (Object) new Integer(numbers[i]));
+		    list.add(new Integer(firstLocalNo + i));
+		    hash.put(new Integer(firstLocalNo + i), new Integer(numbers[i]));
 		}
 	    }
 	}
 	if (DEBUG > 1)
-	    Debug.println("lastLocal: " + lastLocal() + ", list.length==" + list.length + ", enumc==" + enumc);
+	    Debug.println("lastLocal: " + lastLocal() + ", list.length==" + list.size() + ", enumc==" + enumc);
     }
 
     boolean search(int localNo) {
-	for (int i=0; i < list.length; i++)
-	    if (list[i] == localNo) return true;
-	return false;
+	return list.contains(new Integer(localNo));
     }
     /**
      * Remove a local-global pair from this mapping
@@ -155,20 +158,7 @@ public class TextMapping implements Enumeration {
     public boolean removePair(int localNo) {
 	if (hash.remove(new Integer(localNo)) != null) {
 	    if (!search(localNo)) return true;
-
-	    // we need to remove it from int[] list as well, or the
-	    // Enumeration interface will be seriously broken
-	    
-	    int[] newList = new int[list.length - 1];
-	    int j = 0;
-	    for (int i = 0; i < list.length; i++) {
-		if (list[i] != localNo) {
-		    newList[j] = list[i];
-		    j++;
-		}
-	    }
-	    list = newList;
-	    return true;
+	    return list.remove(new Integer(localNo));
 	} else return false;
 
     }

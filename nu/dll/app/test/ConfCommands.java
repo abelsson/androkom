@@ -8,7 +8,8 @@ import java.text.MessageFormat;
 import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
-    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm", "um" };
+    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm", "um",
+                            "lä"};
 
     // descriptions according to commandIndices
     String[] myDescriptions = {
@@ -19,13 +20,14 @@ public class ConfCommands extends AbstractCommand {
 	"gå (till möte) [möte/brevlåda]",
 	"lista nyheter",
 	"byta namn [möte/person]",
-	"(gå till) nästa m|te",
+	"(gå till) nästa möte",
 	"skapa möte <namn på mötet>",
 	"lista möten [substräng]",
-	"utträda (ur) möte <namn på mötet>"
+	"utträda (ur) möte <namn på mötet>",
+	"lista ärenden (olästa i nuvarande möte)"
     };
 
-    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10 };
+    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
 
     public ConfCommands() {
 	setCommands(myCommands);
@@ -101,7 +103,7 @@ public class ConfCommands extends AbstractCommand {
 	    nextUnreadConference();
 	    break;
 	case 8: // create conference
-	    if (parameters == null) throw new CmdErrException("Du m}ste ange ett m|tesnamn");
+	    if (parameters == null) throw new CmdErrException("Du måste ange ett mötesnamn");
 	    createConference(parameters);
 	    break;
 	case 9: // list conferences
@@ -112,6 +114,11 @@ public class ConfCommands extends AbstractCommand {
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    leaveConference(confNo);
 	    break;
+	case 11:
+	    if (session.getCurrentConference() < 1)
+		throw new CmdErrException("Du måste vara i ett möte för att kunna lista ärenden");
+	    listSubjects();
+	    break;
 	default: 
 	    throw new RuntimeException("Unknown command " + s);
 	}
@@ -119,12 +126,45 @@ public class ConfCommands extends AbstractCommand {
 
     }
 
+    public void listSubjects() throws IOException, CmdErrException {
+	// somewhat crude.
+	UConference uconf = session.getUConfStat(session.getCurrentConference());
+	Membership membership = session.queryReadTexts(session.getMyPerson().getNo(),
+						       session.getCurrentConference(),
+						       true);
+	int localTextNo = membership.getLastTextRead()+1;
+	int count = 0;
+	application.consoleWriteLn("  " + application.pad("nummer", 8) + 
+				   "  " + application.pad("författare", 25) +
+				   "  " + application.pad("ärende", 35));
+	application.consoleWriteLn("----------------------------------------------------------------------");
+	while (uconf.getHighestLocalNo() >= localTextNo) {
+	    TextMapping map = session.localToGlobal(uconf.getNo(), localTextNo, 10);
+	    while (map.hasMoreElements()) {
+		localTextNo++;
+		int globalTextNo = ((Integer) map.nextElement()).intValue();
+		if (globalTextNo == 0) continue;
+		Text text = session.getText(globalTextNo);
+		String author = application.confNoToName(text.getAuthor());
+		String subject = application.bytesToString(text.getSubject());
+		application.consoleWriteLn(" #" + application.pad(""+text.getNo(), 8) +
+					   "  " + application.pad(author, 25) +
+					   "  " + application.pad(subject, 35));
+		count++;
+	    }
+	}
+	application.consoleWriteLn("Listade " + count + " inlägg.");
+	application.consoleWriteLn("----------------------------------------------------------------------");
 
+
+    }
+
+    
     /**
      * note: should clear toread stack too.
      */
     public void leaveConference(int confNo) throws IOException, CmdErrException {
-	if (application.crtReadLine("Vill du verkligen uttr{da ur " +
+	if (application.crtReadLine("Vill du verkligen utträda ur " +
 				    application.confNoToName(confNo) + " (j/N)? ", "n").equals("j")) {
 	    try {
 		session.subMember(confNo, session.getMyPerson().getNo());

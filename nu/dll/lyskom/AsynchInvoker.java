@@ -2,15 +2,15 @@ package nu.dll.lyskom;
 
 import java.util.LinkedList;
 
-class AsynchInvoker extends Thread {
+public class AsynchInvoker extends Thread {
     LinkedList runnables = new LinkedList();
 
     public AsynchInvoker() {
 	setName("AsynchInvokerThread");
     }
 
+    boolean run = true;
     public void run() {
-	boolean run = true;
 	while (run) {
 	    try {
 		while (!runnables.isEmpty()) {
@@ -18,8 +18,12 @@ class AsynchInvoker extends Thread {
 		    synchronized (runnables) {
 			nextRunnable = (Runnable) runnables.removeFirst();			
 		    }
-		    Debug.println("Executing " + nextRunnable.toString());
-		    nextRunnable.run();
+		    if (nextRunnable != null) {
+			Debug.println("Executing " + nextRunnable.toString());
+			nextRunnable.run();
+		    } else {
+			Debug.println("Woke up without events: run=" + run);
+		    }
 		}
 		synchronized (runnables) {
 		    Debug.println("Waiting.");
@@ -29,6 +33,15 @@ class AsynchInvoker extends Thread {
 		Debug.println("Interrupted");
 	    }
 	}
+	Debug.println("Finished.");
+    }
+
+    public void quit() {
+	run = false;
+	synchronized (runnables) {
+	    runnables.notify();
+	}
+
     }
 
     public void enqueue(Runnable r) {

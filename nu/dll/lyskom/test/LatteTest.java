@@ -31,11 +31,23 @@ public class LatteTest extends TestCase {
     }
 
     protected void setUp() {
-	if (session == null) session = new Session();
+	if (session == null) session = startSession(testUser, testPassword);
 	try {
 	    if (!session.getConnected()) session.connect(testServer, 4894);
-	    session.login(testUser, testPassword, false);
+	    if (!session.getLoggedIn()) session.login(testUser, testPassword, false);
 	    text = session.getText(testText);
+	} catch (IOException ex1) {
+	    throw new RuntimeException(ex1.getMessage());
+	}
+    }
+
+    protected Session startSession(int user, String password) {
+	try {
+	    Session s = new Session();
+	    s.connect(testServer);
+	    s.login(user, password, false);
+	    s.changeWhatIAmDoing("TestSession " + s);
+	    return s;
 	} catch (IOException ex1) {
 	    throw new RuntimeException(ex1.getMessage());
 	}
@@ -96,7 +108,7 @@ public class LatteTest extends TestCase {
 	assertTrue(t1.equals(t2));
 	assertTrue(!t1.equals(t3));
 
-	t3 = new KomTime(47, 11, 14, 14, 11, 79, 0, 200, 0);
+	t3 = new KomTime(47, 11, 14, 14, 11, 79, 0, 199, 0);
 
 	Calendar cal = new GregorianCalendar();
 	cal.set(Calendar.DST_OFFSET, 0);
@@ -142,24 +154,59 @@ public class LatteTest extends TestCase {
 	assertEquals(0, map.count());
 	
     }
+    abstract class TestThread extends Thread {
+	Exception exception = null;
+	public Exception getLastException() {
+	    return exception;
+	}
+	public Session[] sessions = null;
+	int sid = 0;
+    }
 
     public void testWaitConcurrency() {
-	int count = 25;
-	Thread[] threads = new Thread[count];
-	for (int i=0; i < count; i++) {
-	    threads[i] = new Thread(new Runnable() {
+	int count = 50;
+	TestThread[] threads = new TestThread[count*2];
+	Session session2 = startSession(testUser, testPassword);
+	Session[] _sessions = new Session[] { session, session2 };
+	for (int i=0; i < count/2; i++) {
+	    threads[i] = new TestThread() {
 		    public void run() {
 			try {
-			    session.changeWhatIAmDoing("Test " + random.nextInt(99999));
-			    session.getText(100, true);
-			    session.getConfStat(19, true);
-			    session.getPersonStat(19, true);
-			    session.getUConfStat(19, true);
+			    sid++;
+			    if (sid > sessions.length) sid = 0;
+			    Session s = sessions[sid];
+			    s.changeWhatIAmDoing("Test [s[" + sid + "] " + s + "] " + random.nextInt(99999));
+			    assertEquals(100, s.getText(100, true).getNo());
+			    s.getConfStat(19, true);
+			    s.getPersonStat(19, true);
+			    s.getUConfStat(19, true);
 			} catch (IOException ex1) {
-			    throw new RuntimeException("I/O exception: " + ex1.getMessage());
+			    exception = ex1;
 			}
 		    }
-		});
+		};
+	    threads[i].sessions = _sessions;
+	    threads[i].setName("TestThread-" + i);
+	}
+
+	for (int i=count/2; i < count; i++) {
+	    threads[i] = new TestThread() {
+		    public void run() {
+			try {
+			    sid++;
+			    if (sid > sessions.length) sid = 0;
+			    Session s = sessions[sid];
+			    s.changeWhatIAmDoing("Test [s[" + sid + "] " + s + "] " + random.nextInt(99999));
+			    s.getPersonStat(19, true);
+			    s.getConfStat(19, true);
+			    s.getUConfStat(19, true);			    
+			    assertEquals(100, s.getText(100, true).getNo());
+			} catch (IOException ex1) {
+			    exception=ex1;
+			}
+		    }
+		};
+	    threads[i].sessions = _sessions;
 	    threads[i].setName("TestThread-" + i);
 	}
 
@@ -171,8 +218,20 @@ public class LatteTest extends TestCase {
 	    try {
 		threads[i].join();
 		Debug.println("joined " + threads[i].getName());
+		if (threads[i].getLastException() != null) 
+		    throw new RuntimeException("Exception in thread " + i + ": " +
+					       threads[i].getLastException().getMessage());
+
 	    } catch (InterruptedException ex1) {
 		throw new RuntimeException("Interrupted during join(): " + ex1.getMessage());
+	    }
+	}
+	for (int i=0; i < _sessions.length; i++) {
+	    try {
+		_sessions[i].logout(true);
+		_sessions[i].disconnect(true);
+	    } catch (IOException ex1) {
+		throw new RuntimeException(ex1.getMessage());
 	    }
 	}
     }
@@ -202,8 +261,8 @@ public class LatteTest extends TestCase {
 
     protected void tearDown() {
 	try {
-	    session.logout(true);
-	    session.disconnect(true);
+	    if (session.getLoggedIn()) session.logout(true);
+	    if (session.getConnected()) session.disconnect(true);
 	    session = null;
 	} catch (IOException ex1) {
 	    throw new RuntimeException(ex1.getMessage());

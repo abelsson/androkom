@@ -89,7 +89,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     SimpleDateFormat withinLastWeekTimeFormat = new SimpleDateFormat("EEEE's' HH:mm", locale);
     SimpleDateFormat todayTimeFormat = new SimpleDateFormat("'idag' HH:mm", locale);
 
-
+    AsynchInvoker asynchInvoker;
 
     GuiInput guiInput = null;
     Console console = null;
@@ -599,8 +599,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     String genericPrompt()
     throws IOException {
 	int conf = foo.getCurrentConference();
-	String curConf = (conf == -1 ? "Ej närvarande i något möte" : "Du är i möte " + confNoToName(conf) + 
-			  " med " + foo.getUnreadCount(conf) + " olästa.") + "\n";
+	String curConf = "";
+	if (Boolean.getBoolean("lattekom.show-conf-prompt")) {
+	    curConf = (conf == -1 ? "Ej närvarande i något möte" : "Du är i möte " + confNoToName(conf) + 
+		       " med " + foo.getUnreadCount(conf) + " olästa.") + "\n";
+	}
 	if (!toreview.empty()) {
 	    curConf += "(Återse nästa text) ";
 	    setStatus("Återser");
@@ -848,13 +851,14 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	throw(new CmdErrException("Förstod inte \"" + cmd + "\""));
 		      
     }
-    
+
     void consoleWriteLn(String s) {
 	linesSinceLastPrompt++;
-	if (linesSinceLastPrompt > linesPerScreen) crtReadLine("(-- tryck Enter för att fortsätta --)");
+	if (linesSinceLastPrompt > linesPerScreen) {
+	    crtReadLine("(-- tryck Enter för att fortsätta --)");
+	}
 	consoleWrite(s + lineSeparator);	
 	if (useGui && macBreak) consoleWrite("\r\n");
-
     }
     
     void consoleWrite(String s) {
@@ -1275,31 +1279,39 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     public Test2() {
 	if (useGui) {
 	    initGui();
-	}	
+	}
+	asynchInvoker = new AsynchInvoker();
+	asynchInvoker.setName("T2AsynchHandler-" + (++handlerCount));
+	asynchInvoker.start();
     }
 
     int handlerCount = 0;
 
     /**
-     * XXX: This is an instable approach. Creating many threads if there
-     * are many asynch messages coming in quickly.
+     * Changed this to be a little more stable: messages are enqueued
+     * into a single thread. It's particularly nifty, especially not
+     * the prompt handling.
      */ 
     public void asynchMessage(AsynchMessage m) {
 	synchronized (messages) {
 	    messages.addLast(m);
 	}
 	if (likesAsynchMessages) {
-	    new Thread(new Runnable() {
+	    asynchInvoker.enqueue(new Runnable() {
 		    public void run() {
 			consoleWriteLn("");
 			handleMessages();
 			try {
 			    consoleWrite(genericPrompt());
+			    linesSinceLastPrompt = 0;
 			} catch (IOException ex1) {
 			    throw new RuntimeException("I/O error: " + ex1.getMessage());
 			}
 		    }
-		}, "AsynchEventHandler-"+handlerCount++).start();
+		});
+	    Debug.println("Enqueued asynch runner for " + m.toString());
+	} else {
+	    Debug.println("Did not enqueue a runner for " + m.toString());
 	}
     }
 

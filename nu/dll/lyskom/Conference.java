@@ -63,6 +63,7 @@ public class Conference {
 
     /**
      * Return this conference's name, translated into a String according to the current platform's default encoding.
+     * @deprecated You should not rely on the platform's default encoding
      */
     public String getNameString() {
 	return new String(name);
