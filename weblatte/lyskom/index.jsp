@@ -798,7 +798,7 @@
               (<a title="Logga ut mina andra sessioner" href="<%=myURI(request)%>?purgeOtherSessions">övriga</a>) |
 	      <a href="<%=basePath%>?listnews">lista nyheter</a> |
 	      <a href="composer.jsp">skriv inlägg</a> |
-              <% if (lyskom.getServer().equals("sno.pp.se")) { %>
+              <% if (lyskom.getServer().equals("sno.pp.se") && vemArVem) { %>
 	      <a href="<%=basePath%>?uploadForm">ladda upp bild</a> | 
               <% } %>
               <a href="<%=basePath%>?reviewMarked">lista markerade</a> ]
@@ -1458,7 +1458,7 @@ Du är inte inloggad.
 <% if (showPOM) { %>
 [ 
 <%
-        if (!authenticated.booleanValue() || lyskom.getServer().equals("sno.pp.se")) {
+        if (vemArVem && (!authenticated.booleanValue() || lyskom.getServer().equals("sno.pp.se"))) {
 %>
 <a href="bilder/">visa bilder</a> |
 <%
@@ -1507,7 +1507,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.82 $
+$Revision: 1.83 $
 </div>
 </body>
 </html>

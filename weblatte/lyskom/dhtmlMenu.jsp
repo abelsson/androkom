@@ -1,5 +1,4 @@
 <% if (lyskom != null && lyskom.getLoggedIn()) { 
-	boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
 %>
 <!-- Context menu Script- © Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
      For full source code and Terms Of Use, visit http://www.dynamicdrive.com -->
