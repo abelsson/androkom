@@ -34,6 +34,9 @@ public class Test2 implements AsynchMessageReceiver {
 
     Object consoleLock = new Object();
 
+    Stack toread = new Stack(); // used to store unread comments
+
+
     public String confNoToName(String n)
 	throws IOException {
 	int no = 0;
@@ -210,10 +213,9 @@ public class Test2 implements AsynchMessageReceiver {
 	    }
 	    System.out.println("Inloggad. Välkommen till LysKOM!");	    
 	    //4303588, 100035, 4257987, 4244657
-	    foo.changeWhatIAmDoing("Petar sig i näsan");
+	    foo.changeWhatIAmDoing("Kör version 0.0.pre-alpha.4 av LatteKOM/Test2-klienten");
 	    int me = foo.getMyPerson().getNo();
 	    boolean go = true;
-	    Stack toread = new Stack(); // used to store unread comments
 	    int rc = 1;
 	    while (go) {
 		int currentConference = foo.getCurrentConference();
@@ -252,22 +254,23 @@ public class Test2 implements AsynchMessageReceiver {
 		    
 		    text = foo.getText(textNo);
 		    displayText(textNo); noRead++;
+		    if (text != null) {
+			// markAsRead() takes an array of texts
+			int ur[] = { text.getLocal(foo.getCurrentConference()) };
+			foo.markAsRead(foo.getCurrentConference(), ur);
 
-		    // markAsRead() takes an array of texts
-		    int ur[] = { text.getLocal(foo.getCurrentConference()) };
-		    foo.markAsRead(foo.getCurrentConference(), ur);
+			// add the text to the ReadTextsMap
+			foo.getReadTexts().add(textNo);
 
-		    // add the text to the ReadTextsMap
-		    foo.getReadTexts().add(textNo);
-
-		    // retreive all comments of the texts, push them onto
-		    // the 'toread' stack for later viewing (in reverse)
-		    int[] comments = text.getComments();
-		    for (int i=comments.length-1; i >= 0; i--)
-			toread.push((Object) new Integer(comments[i]));
-		    rc = 1;
-		    lastTextNo = textNo;
-		    lastText = text;
+			// retreive all comments of the texts, push them onto
+			// the 'toread' stack for later viewing (in reverse)
+			int[] comments = text.getComments();
+			for (int i=comments.length-1; i >= 0; i--)
+			    toread.push((Object) new Integer(comments[i]));
+			rc = 1;
+			lastTextNo = textNo;
+			lastText = text;
+		    }
 		    
 		}
 		if (rc == -1) go = false;
@@ -289,7 +292,14 @@ public class Test2 implements AsynchMessageReceiver {
     String genericPrompt()
     throws IOException {
 	int conf = foo.getCurrentConference();
-	String curConf = conf == -1 ? "Ej närvarande i något möte" : confNoToName(conf);
+	String curConf = (conf == -1 ? "Ej närvarande i något möte" : confNoToName(conf)) + "\n";
+	if (!toread.empty()) {
+	    curConf += "(Läsa nästa kommentar) ";
+	} else if (foo.nextUnreadText(false) == -1) {
+	    curConf += "(Gå till nästa möte) ";
+	} else {
+	    curConf += "(Läsa nästa inlägg) ";
+	}
 	return curConf + "> ";
     }
     

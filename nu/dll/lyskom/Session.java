@@ -418,7 +418,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * LysKOM call: get-text
      */
     public synchronized Text getText(int textNo)
-    throws IOException { // and NoSuchTextException (RpcException?)
+    throws IOException, RpcFailure { // and NoSuchTextException (RpcException?)
 	if (textNo == 0) throw new RuntimeException("attempt to retreive text zero");
 	Text text = textCache.get(textNo);
 
@@ -593,7 +593,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	Bitstring confType = new Bitstring(new boolean[] { readProt, original, secret, false });
 	RpcReply r = waitFor(doCreateConf(name, confType, new AuxItem[] {}).getId());
 	if (r.getSuccess()) {
-	    return r.getParameters()[0].toInt();
+	    return r.getParameters()[0].intValue();
 	}
 	return -1;
     }
@@ -1193,26 +1193,26 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	     * the cached copy of the commented text's text-stat must be
 	     * invalidated or refreshed
 	     */
-	    textNo = parameters[0].toInt();
+	    textNo = parameters[0].intValue();
 	    Debug.println("async-new-text-old for text " + textNo);
 	    break;
 	case Asynch.new_name:
-	    conferenceCache.removeAll(parameters[0].toInt());
+	    conferenceCache.removeAll(parameters[0].intValue());
 	    break;
 	case Asynch.deleted_text:
-	    textNo = parameters[0].toInt();
+	    textNo = parameters[0].intValue();
 	    Debug.println("async-deleted-text for text " + textNo);
 	    textCache.remove(textNo);
 	    break;
 
 	case Asynch.new_recipient:
-	    textNo = parameters[0].toInt();
+	    textNo = parameters[0].intValue();
 	    Debug.println("async-new-recipient for text " + textNo);
 	    textCache.remove(textNo);
 	    break;
 
 	case Asynch.sub_recipient:
-	    textNo = parameters[0].toInt();
+	    textNo = parameters[0].intValue();
 	    Debug.println("async-sub-recipient for text " + textNo);	    
 	    textCache.remove(textNo);
 	    break;	    
