@@ -40,7 +40,15 @@ public class ReadTextsMap {
 	return c;
     }	    
 
+    /**
+     * @deprecated changed name to contains(int)
+     * @see nu.dll.lyskom.ReadTextsMap#contains(int)
+     */
     public boolean exists(int no) {
+	return contains(no);
+    }
+
+    public boolean contains(int no) {
 	Key k = firstKey;
 	while (k != null && k.value != no) {
 	    k = k.nextKey;

@@ -1,7 +1,7 @@
 /*
  * The orgleenjava license
- * Version $Revision: 1.1 $ 
- * Date $Date: 2002/04/01 16:32:24 $
+ * Version $Revision: 1.2 $ 
+ * Date $Date: 2002/04/03 19:59:34 $
  *
  *
  * Copyright (c) 1996-2001 Thomas Leen.  All rights 
@@ -75,7 +75,7 @@ package nu.dll.app.test;
 * creator: thomas leen
 * created: 2001.03.24
 * purpose: this class takes care of making input and output look like a console
-* version: $Revision: 1.1 $
+* version: $Revision: 1.2 $
 * notes: needs to emulate history
 * in general my implementation of this class sucks. the whole thing is hackey, it needs to be fixed
 * the way in which i detect new code lines is half-ass, i base it on the index of the console_thingies which may be erased, or modified through the set and cause the last event to be fragged. must fix that...
@@ -83,6 +83,10 @@ package nu.dll.app.test;
 * history:
 *
 * $Log: Console.java,v $
+* Revision 1.2  2002/04/03 19:59:34  pajp
+* Test2 can now run on MacOS Classic. lattekom.usecrlf must be set to
+* "true" to enable line feed when running in Classic MRJ with GUI.
+*
 * Revision 1.1  2002/04/01 16:32:24  pajp
 * Another major overhaul of both the Test2 client and the class library.
 *
@@ -122,6 +126,7 @@ import javax.swing.JTextArea;
 import javax.swing.JButton;
 import javax.swing.text.Keymap; 
 
+import nu.dll.lyskom.Debug;
 
  public class Console extends JTextArea implements KeyListener
  {
@@ -213,7 +218,7 @@ import javax.swing.text.Keymap;
 
 	 acceptable = (acceptable || (getCaretPosition() >= new_command_index));
 	 acceptable = (acceptable || ( (getCaretPosition() == (new_command_index - 1)) && (ke.getKeyCode() == KeyEvent.VK_LEFT)));
-
+	 //Debug.println("acceptableKeyEvent: " + acceptable);
 	 return acceptable;
 
      }
