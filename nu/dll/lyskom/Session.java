@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.75 2004/06/09 21:37:28 pajp Exp $
+ * @version $Id: Session.java,v 1.76 2004/06/09 23:17:29 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -840,7 +840,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		synchronized (unreads) {
 		    unreads.remove(new Integer(conference));
 		}
-		setLastRead(conference, c.highestLocalNo);
+		setLastRead(conference, c.getHighestLocalNo());
 		return new LinkedList();
 	    }
 	    List returnList = new LinkedList();
@@ -857,6 +857,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		synchronized (unreads) {
 		    unreads.remove(new Integer(conference));
 		}
+		setLastRead(conference, c.getHighestLocalNo());
 		Debug.println("no unread texts found");
 		return new LinkedList();
 	    }
@@ -974,8 +975,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 	    UConference cuconf = conferenceCache.getUConference(confNo);
 	    if (cuconf != null) {
-		if (localTextNo[i] > cuconf.highestLocalNo) {
-		    cuconf.highestLocalNo = localTextNo[i];
+		if (localTextNo[i] > cuconf.getHighestLocalNo()) {
+		    cuconf.setHighestLocalNo(localTextNo[i]);
 		}
 	    }
 	    Debug.println("marked local " + localTextNo[i] + " in conf " + confNo + " as read");
@@ -1953,7 +1954,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public  void endast(int confNo, int no)
     throws IOException, RpcFailure {
 	UConference uconf = getUConfStat(confNo);
-	int highest = uconf.highestLocalNo;
+	int highest = uconf.getHighestLocalNo();
 	int lastRead = highest-no;
 	if (lastRead < 0) lastRead = 0;
 	setLastRead(confNo, lastRead);
@@ -3171,8 +3172,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		UConference cachedUConf = conferenceCache.getUConference(recipient);
 		if (cachedUConf != null) {
 		    int locNo = misc.getIntValue(TextStat.miscLocNo);
-		    if (locNo > cachedUConf.highestLocalNo)
-			cachedUConf.highestLocalNo = locNo;
+		    if (locNo > cachedUConf.getHighestLocalNo())
+			cachedUConf.setHighestLocalNo(locNo);
 		}
 		Membership cachedMs = membershipCache.get(recipient);
 		if (cachedMs != null) {

@@ -30,8 +30,8 @@ public class UConference {
 	int c = 0;
 	name = tokens[c++].getContents();
 	type = new Bitstring(tokens[c++]);
-	highestLocalNo = tokens[c++].toInteger();
-	nice = tokens[c++].toInteger();
+	highestLocalNo = tokens[c++].intValue();
+	nice = tokens[c++].intValue();
     }
 
     /**
@@ -46,6 +46,10 @@ public class UConference {
      */
     public int getHighestLocalNo() {
 	return highestLocalNo;
+    }
+
+    public void setHighestLocalNo(int highestLocalNo) {
+	this.highestLocalNo = highestLocalNo;
     }
 
     /**
