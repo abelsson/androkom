@@ -93,8 +93,7 @@
     if (conferenceNumber > 0) {
 	out.println("<p>Läser inläggsträd (det kan ta ett tag)...</p>");
 	out.flush();
-	Membership membership = lyskom.queryReadTextsCached(conferenceNumber);
-	if (membership == null) lyskom.queryReadTexts(me, conferenceNumber);
+	Membership membership = lyskom.queryReadTexts(me, conferenceNumber);
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = uconf.getHighestLocalNo() > membership.getLastTextRead() ?
 		lyskom.localToGlobal(conferenceNumber, membership.getLastTextRead()+1, 
