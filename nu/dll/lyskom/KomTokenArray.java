@@ -11,7 +11,7 @@ import java.util.Enumeration;
 
 public class KomTokenArray extends KomToken {
 
-    static int DEBUG = 0;
+    static int DEBUG = 10;
     KomToken[] objects;
     int length;
 
@@ -77,7 +77,7 @@ public class KomTokenArray extends KomToken {
 	    for (int j=0;j<sublength;j++)
 		subarray[j] = objects[ocount++];
 
-	    if (DEBUG>0) Debug.println("-"+ (ocount-1));
+	    if (DEBUG>0) Debug.print("-"+ (ocount-1) + "\n");
 	    splitted[i] = subarray;
 	}
 	return splitted;

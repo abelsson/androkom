@@ -256,7 +256,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (loggedIn) {
 	    myPerson = getPersonStat(id);
 	    myPerson.uconf = getUConfStat(id);
-	    membership = getMembership(id, 0, 9999, new Bitstring(new boolean[] { true }));
+	    //membership = getMembership(id, 0, 9999, new Bitstring(new boolean[] { true }));
 	}
 	state = STATE_LOGIN;
 	return loggedIn = reply.getSuccess();

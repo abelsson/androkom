@@ -673,7 +673,7 @@ public class Test2 implements AsynchMessageReceiver {
      * Displays a text in elisp-client-style.
      */
     void displayText(Text text) throws IOException {
-        if (true) {
+        if (false) {
             saveText(text);   
         }
 	System.out.println(text.getNo()+" " + timestampFormat.format(text.getCreationTime()) + " /" + text.getRows() + " " +

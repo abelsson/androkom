@@ -80,53 +80,72 @@ public class Membership {
 	KomToken[] parameters = reply.getParameters();
 	int pcount = 0;
 	int length = parameters[pcount++].toInteger();
+	Debug.println("Reported Membership-List ARRAY length: " + length);
+	KomToken[] memberships = ((KomTokenArray) parameters[pcount++]).getTokens();
+	
+	/*
 	KomToken[][] memberships =
 	    KomTokenArray.split((KomTokenArray) parameters[pcount++]);
+	*/
 	Membership[] ml = new Membership[memberships.length];
 
-	if (DEBUG>0) Debug.println("Membership-List length: "+length+", array length: "+ml.length);
-	for (int i=0;i<memberships.length;i++) {
-	    if (DEBUG>0) Debug.println("membership #"+i+"...");
-	    int j=0;
-	    try {
-		
-		int position = memberships[i][j++].toInteger(); // not used
-		KomTime lastTimeRead = KomTime.createFrom(j, memberships[i]);
-		j = j + KomTime.ITEM_SIZE;
-		int conf = memberships[i][j++].toInteger();
-		int prio = memberships[i][j++].toInteger();
-		int lastTextRead = memberships[i][j++].toInteger(); // !! last -> lastTextRead
-		int readTextsLength = memberships[i][j++].toInteger();
-		KomToken[] readTextsTokens = ((KomTokenArray) memberships[i][j++]).getTokens();
-		int[] readTexts;
-		if (readTextsTokens.length == 0) { // readTextLength can't 
-		    readTexts = new int[0];        // be trusted?
-		} else {
-		    readTexts = new int[readTextsLength];
-		    for (int k=0;k<readTextsLength;k++)
-			readTexts[k] = readTextsTokens[k].toInteger();
+	Debug.println("Membership-List length: "+length+", array length: "+ml.length);
+	Debug.println("From reply: " + reply);
+	int i=0, membershipCount = 0;
+	while (i < memberships.length) {
+
+	    int position = memberships[i++].toInteger();
+	    Debug.println("Membership position: " + position);
+	    KomTime lastTimeRead = KomTime.createFrom(i, memberships);
+	    i +=  KomTime.ITEM_SIZE;
+	    Debug.println("Membership last-time-read: " + lastTimeRead.getTime().toString());
+	    int conf = memberships[i++].toInteger();
+	    Debug.println("Membership conf-no: " + conf);
+	    int prio = memberships[i++].toInteger();
+	    Debug.println("Membership prio: " + prio);
+	    int lastTextRead = memberships[i++].toInteger(); // !! last -> lastTextRead
+	    Debug.println("Membership last-text-read: " + lastTextRead);
+	    int readTextsLength = memberships[i++].toInteger();
+	    Debug.println("Membership read-texts ARRAY length: " + readTextsLength);
+	    KomToken[] readTextsTokens = new KomToken[readTextsLength];
+	    int[] readTexts = new int[readTextsLength];
+
+	    if (readTextsLength == 0) {
+		i += 2; // skip
+	    } else {
+		//i += 1;
+		Debug.println("Membership read-texts exp ARRAY got " + memberships[i].getClass().getName() + 
+			      " contents: " + new String(memberships[i].getContents()));
+		readTextsTokens = ((KomTokenArray) memberships[i]).getTokens();
+		readTexts = new int[readTextsTokens.length];
+		for (int k=0;k<readTextsLength;k++) {
+		    Debug.println("Membership read-texts ARRAY index " + k + ": " + readTextsTokens[k].intValue());
+		    readTexts[k] = readTextsTokens[k].intValue();
 		}
-		int addedBy = memberships[i][j++].toInteger(); // not used
-		KomTime addedAt = KomTime.createFrom(j, memberships[i]); // not used
-		j = j + KomTime.ITEM_SIZE;
-		Bitstring type = Bitstring.createFrom(j, memberships[i]); // not used
-												     
-		ml[i] = new Membership(lastTimeRead, conf, prio, lastTextRead,
-				       readTexts);
-	    } catch (ArrayIndexOutOfBoundsException ex) {
-		Debug.println("Oj-bang: "+ex);
-		Debug.println("i="+i+", j="+j);
-		for (int k=0;k<memberships[i].length;k++) {
-		    Debug.print("["+k+"="+memberships[i][k]+"]");
-		}
-		System.err.println("Aeeeee!");
-		ex.printStackTrace();
-		System.exit(-1);
+		i += 1;
 	    }
-	   
+	    
+
+	    int addedBy = memberships[i++].toInteger(); // not used
+	    Debug.println("Membership added-by: " + new String(memberships[i].getContents()));
+	    KomTime addedAt = KomTime.createFrom(i, memberships); // not used
+	    i += KomTime.ITEM_SIZE;
+	    Debug.println("Membership added-at: " + addedAt.getTime().toString());
+	    Bitstring type = new Bitstring();
+	    type = Bitstring.createFrom(i++, memberships); // not used
+	    Debug.println("Membership type: " + new String(type.getContents()));
+
+	    ml[membershipCount++] = new Membership(lastTimeRead, conf, prio, lastTextRead,
+				     readTexts);
+	    Debug.println("done, parsed membership of conf " + conf + ", " + i + " elements");
+	    //for (int k=0;k<memberships[i].length;k++) {
+	    //Debug.print("["+k+"="+memberships[i][k]+"]");
+	    //}
+	    //Debug.println("...");
+	    
 	}
 	return ml;
-
+	
     }
 
     // reads 14 elements? **BROKEN!**

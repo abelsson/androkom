@@ -46,8 +46,6 @@ public class KomTime implements Serializable {
 
     public static KomTime createFrom(int offset, KomToken[] parray) {
 	int pcount = offset;
-	if (false)
-	    Debug.println("-->KomTime.createFromArray("+offset+", KomToken["+parray.length+"])");
 	return new KomTime(parray[pcount++].toInteger(), // 0
 			   parray[pcount++].toInteger(), // 1
 			   parray[pcount++].toInteger(), // 2

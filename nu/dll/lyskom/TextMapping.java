@@ -121,6 +121,12 @@ public class TextMapping implements Enumeration {
 	if (DEBUG > 1)
 	    Debug.println("lastLocal: " + lastLocal() + ", list.length==" + list.length + ", enumc==" + enumc);
     }
+
+    boolean search(int localNo) {
+	for (int i=0; i < list.length; i++)
+	    if (list[i] == localNo) return true;
+	return false;
+    }
     /**
      * Remove a local-global pair from this mapping
      *
@@ -128,8 +134,11 @@ public class TextMapping implements Enumeration {
      */
     public boolean removePair(int localNo) {
 	if (hash.remove(new Integer(localNo)) != null) {
+	    if (!search(localNo)) return true;
+
 	    // we need to remove it from int[] list as well, or the
 	    // Enumeration interface will be seriously broken
+	    
 	    int[] newList = new int[list.length - 1];
 	    int j = 0;
 	    for (int i = 0; i < list.length; i++) {
