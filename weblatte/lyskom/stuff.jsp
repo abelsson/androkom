@@ -5,7 +5,10 @@ if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.6 2004/05/23 16:21:30 pajp Exp $
+// $Id: stuff.jsp,v 1.7 2004/06/04 19:57:20 pajp Exp $
+
+var nohide = false;
+
 function context_in(no, isLetterBox, isText, name) {
   //alert("no: " + no + ", letterbox: " + isLetterBox + ", isText: " + isText + ", name: \"" + name + "\"");
   document.ctxNo = no;
@@ -103,11 +106,16 @@ function showhidemenu(e) {
 }
 
 
-function showmenuie5(e){
+function showmenuie5(e, vanligklick){
+  if (typeof(vanligklick) == "undefined") vanligklick = false;
+  hidemenuie5(e);
   getMenuObj();
+
   //Find out how close the mouse is to the corner of the window
   var rightedge=ie5? document.body.clientWidth-event.clientX : window.innerWidth-e.clientX;
+
   var bottomedge=ie5? document.body.clientHeight-event.clientY : window.innerHeight-e.clientY;
+
   
   //if the horizontal distance isn't enough to accomodate the width of the context menu
   if (rightedge<menuobj.offsetWidth) {
@@ -125,10 +133,22 @@ function showmenuie5(e){
     menuobj.style.top=ie5? document.body.scrollTop+event.clientY : window.pageYOffset+e.clientY;
 
   menuobj.style.visibility="visible";
-  return false
+
+  if (vanligklick) {
+    nohide = true;
+    nh_interval_ref = window.setInterval(cancelnohide, 500);
+  }
+
+  return false;
+}
+
+function cancelnohide() {
+  nohide = false;
+  window.clearInterval(nh_interval_ref);
 }
 
 function hidemenuie5(e){
+  if (nohide) return;
   document.getElementById("ie5menu").style.visibility="hidden";
   document.getElementById("ctxmenu_conference").style.visibility="hidden";
   document.getElementById("ctxmenu_text").style.visibility="hidden";

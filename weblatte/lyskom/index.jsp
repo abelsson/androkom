@@ -315,7 +315,6 @@
 	    ((Boolean) session.getAttribute("pom")).booleanValue() : showPOM;
     } catch (IllegalStateException ex1) {}
 
-
     if (authenticated.booleanValue()) {
 	if (true) {
 	    if (debug) {
@@ -578,7 +577,6 @@
 	    out.println(ambiguousNameMsg(lyskom, ex1));
 	}
     }
-
 
     messages = (List) lyskom.getAttribute("weblatte.messages");
     if (messages != null && messages.size() > 0) {
@@ -1104,8 +1102,7 @@
 	</form>
 <%
     }
-%>
-<%
+
 	    listNews = listNews || (parameter(parameters, "listnews") != null ||
 	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
 
@@ -1467,7 +1464,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.69 $
+$Revision: 1.70 $
 </p>
 </body>
 </html>

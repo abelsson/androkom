@@ -1,4 +1,4 @@
-/* $Id: lattekom.css,v 1.7 2004/05/11 22:15:43 pajp Exp $ */
+/* $Id: lattekom.css,v 1.8 2004/06/04 19:57:20 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
@@ -67,6 +67,14 @@ p.asynchMessage {
 
 .intro { 
   width: 70%;
+}
+
+.conference-name { 
+  color: #339;
+}
+
+.letterbox-name {
+  color: #399;
 }
 
 .errorData {

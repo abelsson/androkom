@@ -207,7 +207,8 @@
 	    boolean isMe = lyskom.getLoggedIn() && lyskom.getMyPerson().getNo() == number;
 	    KomPreferences prefs = preferences(lyskom, "weblatte");
 	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
-	    return "<span title=\"" + (conf.getType().getBitAt(ConfType.letterbox) ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + conf.getType().getBitAt(ConfType.letterbox) + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
+            boolean letterbox = conf.getType().getBitAt(ConfType.letterbox);
+	    return "<span onClick=\"showmenuie5(event, true);\" class=\"" + (letterbox ? "letterbox-name" : "conference-name") + "\" title=\"" + (letterbox ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + letterbox + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
 	} else {
 	    return htmlize(name);
 	}
