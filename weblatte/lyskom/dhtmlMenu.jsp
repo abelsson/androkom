@@ -18,6 +18,7 @@
 <div class="menuitems" url="<%= basePath %>bilder/">Vem är vem i SnoppKOM?</div>
 <%  } %>
 <hr>
+<div class="menuitems" url="<%= basePath %>?refresh" target="_top">Starta om</div>
 <div class="menuitems" url="<%= basePath %>?suspend" target="_top">Pausa</div>
 <div class="menuitems" url="<%= basePath %>?purgeOtherSessions">Logga ut mina andra sessioner</div>
 <div class="menuitems" url="<%= basePath %>?logout" target="_top"><b>Logga ut</b></div>
@@ -44,6 +45,7 @@
 </div>
 
 <div id="ctxmenu_text" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?delete=%NO%">Radera inlägg</div>
 <div class="menuitems" url="<%= basePath %>?mark=%NO%&text=%NO%">Markera</div>
 <div class="menuitems" url="<%= basePath %>?unmark=%NO%&text=%NO%">Avmarkera</div>
 <div class="menuitems" url="<%= basePath %>?privateReply=%NO%&text=%NO%">Personligt svar</div>

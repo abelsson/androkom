@@ -15,33 +15,6 @@ public class SessionWrapper implements HttpSessionBindingListener {
 
     public void setSuspended(boolean b) {
 	suspended = b;
-	if (suspended) {
-	    amr = new AsynchMessageReceiver() {
-		    public void asynchMessage(AsynchMessage m) {
-			if (m.getNumber() == Asynch.new_text ||
-			    m.getNumber() == Asynch.new_text_old) {
-
-			    lyskom.invokeLater(new Runnable() {
-				    public void run() {
-					try {
-					    lyskom.getUnreadConfsList(lyskom.getMyPerson().
-								      getNo());
-					} catch (IOException ex1) {
-					    Debug.println("I/O error: " + ex1);
-					} catch (RpcFailure ex2) {
-					    Debug.println("RPC failed: " + ex2);
-					}
-				    }
-				});
-
-			}
-		    }
-		};
-	    lyskom.addAsynchMessageReceiver(amr);
-	} else {
-	    if (amr != null) lyskom.removeAsynchMessageReceiver(amr);
-	    amr = null;
-	}
     }
 
     public boolean isSuspended() {

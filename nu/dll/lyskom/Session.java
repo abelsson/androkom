@@ -9,6 +9,7 @@ package nu.dll.lyskom;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.lang.reflect.*;
 /**
  * <p>
  * This is the main interface to the LysKOM server and the LatteKOM library.
@@ -84,7 +85,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.58 2004/05/12 23:20:47 pajp Exp $
+ * @version $Id: Session.java,v 1.59 2004/05/13 23:57:21 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -271,18 +272,23 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return false;
     }
 
+    public void clearCaches() {
+	textCache.clear();
+	textStatCache.clear();
+	membershipCache.clear();
+	unreads.clear();
+	conferenceCache.clear();
+	sessionCache.clear();
+	personCache.clear();
+    }
 
     /**
      * Removes any evidence of the given text in the caches
      * (Text cache and Text-Stat cache)
      */
     public void purgeTextCache(int textNo) {
-	synchronized (textCache) {
-	    textCache.remove(textNo);
-	}
-	synchronized (textStatCache) {
-	    textStatCache.remove(textNo);
-	}
+	textCache.remove(textNo);
+	textStatCache.remove(textNo);
     }
 
     public void invokeLater(Runnable r) {
@@ -540,6 +546,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    myPerson = getPersonStat(id);
 	    myPersonNo = myPerson.getNo();
 	    myPerson.uconf = getUConfStat(id);
+	    acceptAsynchAll();
 	    if (getMembership) {
 		membership = getMyMembershipList();
 	    }
@@ -1097,14 +1104,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    return text;
 	}
 
-	//if (text == null) text = new Text(textNo);
-
-
 	TextStat textStat = getTextStat(textNo, refreshCache);
 	if (textStat == null) return null;
-
-	//-->if (text.getStat() == null) text.setStat(getTextStat(textNo, refreshCache));
-	//if (text.getStat() == null) return null; // no such text
 
 	boolean textIsBig = textStat.getSize() > bigTextLimit;
 	int contentLimit = textStat.getSize();
@@ -1142,18 +1143,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 	}
 	textStatCache.add(text.getStat());
-
-	// if this text is a comment or footnoted,
-	// remove the footnoted or commented texts from
-	// cache.
-	// that was a really stupid idea, wasn't it?
-// 	int[] texts = text.getCommented();
-// 	for (int i=0; i < texts.length; i++)
-// 	    purgeTextCache(texts[i]);
-// 	texts = text.getFootnoted();
-// 	for (int i=0; i < texts.length; i++)
-// 	    purgeTextCache(texts[i]);
-
 	return text;
     }
 
@@ -1750,10 +1739,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public  void endast(int confNo, int no)
     throws IOException, RpcFailure {
-	int highest = getUConfStat(confNo).getHighestLocalNo();
+	UConference uconf = getUConfStat(confNo);
+	int highest = uconf.highestLocalNo;
 	int lastRead = highest-no;
 	if (lastRead < 0) lastRead = 0;
 	setLastRead(confNo, lastRead);
+	Membership ms = membershipCache.get(confNo);
+	if (ms != null) {
+	    ms.lastTextRead = lastRead;
+	}
+	if (unreads != null && !unreads.contains(new Integer(confNo))) {
+	    if (lastRead < highest) unreads.add(new Integer(confNo));
+	}
     }
 
 
@@ -2137,15 +2134,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
         TextStat ts = refreshCache ? null : textStatCache.get(textNo);
         if (ts != null) return ts;
 
-	Text text = textCache.get(textNo);
-	if (text != null && text.getStat() != null)
-	    return text.getStat();
+	Text cachedText = textCache.get(textNo);
+	if (!refreshCache && cachedText != null && cachedText.getStat() != null)
+	    return cachedText.getStat();
 
 	RpcReply reply = waitFor(doGetTextStat(textNo).getId());
 
 	if (!reply.getSuccess()) throw reply.getException();
 
 	ts = TextStat.createFrom(textNo, reply);
+
+	if (cachedText != null) cachedText.setStat(ts);
 	textStatCache.add(ts);
 	return ts;
 
@@ -2850,33 +2849,125 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (originCall != null) {
 	    notifyRpcEventListeners(new RpcEvent(this, originCall));
 	}
-
+	
     }
+    
+    void updateCachesNewText(TextStat textStat) {
+	List miscInfo = textStat.getMiscInfo();
+	for (int i=0; i < miscInfo.size(); i++) {
+	    Selection misc = (Selection) miscInfo.get(i);
+	    int key = misc.getKey();
+	    if (key == TextStat.miscRecpt ||
+		key == TextStat.miscCcRecpt ||
+		key == TextStat.miscBccRecpt) {
+		int recipient = misc.getIntValue();
+		Integer recipientObj = new Integer(recipient);
+		UConference cachedUConf = conferenceCache.getUConference(recipient);
+		if (cachedUConf != null) {
+		    int locNo = misc.getIntValue(TextStat.miscLocNo);
+		    if (locNo > cachedUConf.highestLocalNo)
+			cachedUConf.highestLocalNo = locNo;
+		}
+		Membership cachedMs = membershipCache.get(recipient);
+		if (cachedMs != null) {
+			    
+		}
+		if (!unreads.contains(recipientObj)) {
+		    unreads.add(recipientObj);
+		}
+	    }
+	    if (key == TextStat.miscCommTo) {
+		textStatCache.remove(misc.getIntValue());
+	    }
+	    if (key == TextStat.miscFootnTo) {
+		textStatCache.remove(misc.getIntValue());
+	    }
+	}
+    }
+
+    void updateCachesSubRecipient(int textNo, int confNo, int recipientType) {
+	purgeTextCache(textNo);
+    }
+    
+    void updateCachesNewRecipient(int textNo, int confNo, int recipientType) {
+	purgeTextCache(textNo);
+	Integer textNoObj = new Integer(textNo);
+	if (!readTexts.contains(textNo)) {
+	    if (unreads != null && !unreads.contains(new Integer(confNo))) {
+		unreads.add(new Integer(confNo));
+	    }
+	}
+	if (membershipCache.contains(confNo))
+	    membershipCache.remove(confNo);
+
+	conferenceCache.removeUConference(confNo);
+    }
+
+
+    private void acceptAsynchAll()
+    throws IOException, RpcFailure {
+	acceptAsync(new int[] {
+	    Asynch.new_name,
+	    Asynch.sync_db,
+	    Asynch.leave_conf,
+	    Asynch.login,
+	    Asynch.rejected_connection,
+	    Asynch.send_message,
+	    Asynch.logout,
+	    Asynch.deleted_text,
+	    Asynch.new_text,
+	    Asynch.new_recipient,
+	    Asynch.sub_recipient,
+	    Asynch.new_membership
+	});
+    }
+    
+    public void acceptAsync(int[] requestList)
+    throws IOException, RpcFailure {
+	RpcReply r = waitFor(doAcceptAsync(requestList, false));
+	if (!r.getSuccess()) throw r.getException();
+    }
+
+    public RpcCall doAcceptAsync(int[] requestList, boolean discardReply)
+    throws IOException {
+	RpcCall c = new RpcCall(count(), Rpc.C_accept_async);
+	c.add(new KomTokenArray(requestList.length, requestList));
+	return writeRpcCall(c, !discardReply);
+    }
+
 
     /**
      * Receiver of asynchronous messages.
      * @see nu.dll.lyskom.AsynchMessageReceiver
      */
     public void asynchMessage(AsynchMessage m) {
-	Debug.println("Session.asynchMessage(): "+m.toString());
-
 	KomToken[] parameters = m.getParameters();
 
 	int textNo = 0;
-	
+	TextStat textStat = null;
+
 	switch (m.getNumber()) {
 	case Asynch.login:
-	    Debug.println("asynch-login");
 	    break;
 
-	case Asynch.new_recipient: // TODO: refresh the caches.
-	case Asynch.sub_recipient: // TODO: should also update unread status (where?)
-	    textNo = parameters[0].intValue();
-	    purgeTextCache(textNo);
+	case Asynch.new_recipient:
+ 	    updateCachesNewRecipient(parameters[0].intValue(),
+ 				     parameters[1].intValue(),
+ 				     parameters[2].intValue());
+	    break;
+	case Asynch.sub_recipient:
+ 	    updateCachesSubRecipient(parameters[0].intValue(),
+ 				     parameters[1].intValue(),
+ 				     parameters[2].intValue());
 	    break;
 
 	case Asynch.new_text_old:
+	    textStat = TextStat.createFrom(textNo, parameters, 1, true);
 	case Asynch.new_text:
+	    if (textStat == null)
+		textStat = TextStat.createFrom(textNo, parameters, 1, false);
+
+	    updateCachesNewText(textStat);
 	    if (prefetch) {
 		textNo = parameters[0].intValue();
 		textPrefetchQueue.add(new Integer(textNo));

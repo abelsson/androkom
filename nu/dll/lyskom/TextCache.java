@@ -61,6 +61,11 @@ class TextCache {
 	return t;
     }
 
+    public void clear() {
+	hash.clear();
+	ageMap.clear();
+    }
+
 
     /**
      * Experimental LRU garb for the TextCache. Probably the least efficient

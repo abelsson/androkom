@@ -55,11 +55,11 @@ class ConferenceCache {
     }
 
     public void add(Conference t) {
-	_add((Object) t);
+	_add(t);
     }
 
     public void add(UConference t) {
-	_add((Object) t);
+	_add(t);
     }
 
     public Conference getConference(int conferenceNo) {
@@ -71,13 +71,25 @@ class ConferenceCache {
     public UConference getUConference(int conferenceNo) {
 	UConference t = (UConference) uConfHash.get(new Integer(conferenceNo));
 	Debug.println("ConferenceCache: returning "+t);
-		
 	return t;
     }
+    
+    public boolean containsUConference(int conferenceNo) {
+	return uConfHash.containsKey(new Integer(conferenceNo));
+    }
+
+    public void removeUConference(int conferenceNo) {
+	uConfHash.remove(new Integer(conferenceNo));
+    }
+
 
     public void removeAll(int conferenceNo) {
 	confHash.remove(new Integer(conferenceNo));
 	uConfHash.remove(new Integer(conferenceNo));
     }
 
+    public void clear() {
+	uConfHash.clear();
+	confHash.clear();
+    }
 }

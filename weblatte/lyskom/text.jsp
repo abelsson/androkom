@@ -6,13 +6,17 @@
 <%
         boolean popupComment = request.getParameter("popupComment") != null ||
             request.getAttribute("popupComment") != null;
+	boolean footnoteDisplay = request.getParameter("footnote") != null ||
+	    request.getAttribute("footnote") != null;
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
+	Debug.println("conferenceNumber: " + conferenceNumber);
         List reviewList = (List) request.getAttribute("reviewList");
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
         out.println("<a name=\"text" + textNumber + "\"></a>");
 %>
 	<p class="boxed">
  	<span class="text">
+	<tt>
 <%
 	Text text = null;
 	try {
@@ -52,36 +56,51 @@
 	} catch (UnsupportedEncodingException ex1) {
 	    subject = subject + " [" + charset + "]";
 	}
-%>
-        <%= jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
-		lookupName(lyskom, lyskom.getTextStat(text.getNo()).getAuthor()) +
-		": " + subject) %>
-	<tt>Text nummer <%= textLink(request, lyskom, text.getNo(), false) %> av
-<%
+	int[] commented = text.getCommented();
+	int[] comments = text.getComments();
+	int[] footnoted = text.getFootnoted();
+	int[] footnotes = text.getFootnotes();
 	List auxMxAuthor = Arrays.asList(text.getAuxData(AuxItem.tagMxAuthor));
 	List auxMxFrom = Arrays.asList(text.getAuxData(AuxItem.tagMxFrom));
 	List auxMxTo = Arrays.asList(text.getAuxData(AuxItem.tagMxTo));
 	List auxMxCc = Arrays.asList(text.getAuxData(AuxItem.tagMxCc));
 	List auxMxDate = Arrays.asList(text.getAuxData(AuxItem.tagMxDate));
 	List auxMxMimePartIn = Arrays.asList(text.getAuxData(AuxItem.tagMxMimePartIn));
-	if (auxMxAuthor.size() > 0) {
-	     out.print(htmlize(((Hollerith) auxMxAuthor.get(0)).getContentString()));
+
+
+        out.println(jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
+		lookupName(lyskom, text.getStat().getAuthor()) +
+		": " + subject));
+	boolean printAuthor = false;
+	if (footnoteDisplay) {
+	    for (int i=0; i < footnoted.length; i++)
+	    	if (lyskom.getTextStat(footnoted[i]).getAuthor() != text.getStat().getAuthor())
+		    printAuthor = true;
 	}
-	if (auxMxFrom.size() > 0) {
-	    String email = ((Hollerith) auxMxFrom.get(0)).getContentString();
-	    out.print(" &lt;<a href=\"mailto:");
-	    out.print(htmlize(email));
-	    out.print("\">");
-	    out.print(htmlize(email));
-	    out.println("</a>>");
-	}
-	if (auxMxAuthor.size() == 0 && auxMxFrom.size() == 0) {
-	    out.println(lookupName(lyskom, text.getAuthor(), true));
-	}
+	out.print("Text nummer " + textLink(request, lyskom, text.getNo(), printAuthor));
+	if (footnoteDisplay) {
+	    for (int i=0; i < footnoted.length; i++) {	    
+		out.print(", fotnot till " + textLink(request, lyskom, footnoted[i], printAuthor));
+	    }
+	    out.println(", skapad " + df.format(text.getCreationTime()) + "<br/>");
+	} else {
+	    out.print(" av ");
+	    if (auxMxAuthor.size() > 0) {
+	    	out.print(htmlize(((Hollerith) auxMxAuthor.get(0)).getContentString()));
+	    }
+	    if (auxMxFrom.size() > 0) {
+	    	String email = ((Hollerith) auxMxFrom.get(0)).getContentString();
+	    	out.print(" &lt;<a href=\"mailto:");
+	    	out.print(htmlize(email));
+	    	out.print("\">");
+	    	out.print(htmlize(email));
+	    	out.println("</a>>");
+	    }
+	    if (auxMxAuthor.size() == 0 && auxMxFrom.size() == 0) {
+	    	out.println(lookupName(lyskom, text.getAuthor(), true));
+	    }
 	
-%><br>
-	textkommandon: 
-        <a title="Markera text" href="<%=myURI(request)%>?mark=<%=text.getNo()%>">M</a>
+%>	[ <a title="Markera text" href="<%=myURI(request)%>?mark=<%=text.getNo()%>">M</a>
         <a title="Avmarkera text" href="<%=myURI(request)%>?unmark=<%=text.getNo()%>">A</a>
         <a title="Personligt svar" href="<%=myURI(request)%>?privateReply=<%=text.getNo()%>">p</a>
 	<% if (text.getAuthor() == lyskom.getMyPerson().getNo()) { %>
@@ -90,37 +109,52 @@
 	   if (text.getCommented() != null && text.getCommented().length > 0) { %>
         <a title="Återse urinlägg" href="<%=myURI(request)%>?reviewOriginal=<%=text.getNo()%>">åu</a>
 	<% } %>
-	<br/>
+	]<br/>
 	Skapad <%= df.format(text.getCreationTime()) %><br/>
-<%	if (debug) {
-	Hollerith[] creatingSoftware = text.getStat().getAuxData(AuxItem.tagCreatingSoftware);
-	for (int i=0; i < creatingSoftware.length; i++) {
-	    out.println("Klient: " + lyskom.toString(creatingSoftware[i].getContents()) + "<br/>");
-        }
+<%
+	}
 %>
-	Datatyp: <%= rawContentType %><br/>
+<%	if (debug) {
+	    Hollerith[] creatingSoftware = text.getStat().getAuxData(AuxItem.tagCreatingSoftware);
+	    for (int i=0; i < creatingSoftware.length; i++) {
+	    	out.println("Klient: " + lyskom.toString(creatingSoftware[i].getContents()) + "<br/>");
+            }
+%>
+	    Datatyp: <%= rawContentType %><br/>
 <%	}
-	int[] commented = text.getCommented();
-	int[] comments = text.getComments();
-	int[] footnoted = text.getFootnoted();
-	int[] footnotes = text.getFootnotes();
 	for (int i=0; i < commented.length; i++) {
 %>
 	Kommentar till text <%= textLink(request, lyskom, commented[i]) %><br/>
 <%
 	}
-	for (int i=0; i < footnoted.length; i++) {
+	for (int i=0; !footnoteDisplay && i < footnoted.length; i++) {
 %>
 	Fotnot till text <%= textLink(request, lyskom, footnoted[i]) %><br/>
 <%
 	}
 
 	List miscInfo = text.getStat().getMiscInfo();
-	for (int i=0; i < miscInfo.size(); i++) {
+	boolean conferenceFoundAmongRecipients = false;
+	for (int i=0; conferenceNumber > 0 && i < miscInfo.size(); i++) {
+	    Selection misc = (Selection) miscInfo.get(i);
+	    int key = misc.getKey();
+	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt || key == TextStat.miscBccRecpt) {
+		if (misc.getIntValue() == conferenceNumber)
+		    conferenceFoundAmongRecipients = true;
+	    }
+	}
+
+	if (!conferenceFoundAmongRecipients) { // means text-stat is not up to date.
+	    Debug.println("text.jsp: refreshing text-stat for " + text.getNo());
+	    text.setStat(lyskom.getTextStat(text.getNo(), true));
+	}
+	miscInfo = text.getStat().getMiscInfo();
+	
+	for (int i=0; !footnoteDisplay && i < miscInfo.size(); i++) {
 	    Selection misc = (Selection) miscInfo.get(i);
 	    Debug.println("misc-info key: " + misc.getKey() + ", value: " + misc.getValue());
 	    int key = misc.getKey();
-	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt) {
+	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt || key == TextStat.miscBccRecpt) {
 		    String title = "";
 		    int value = misc.getIntValue();
 		    String type = "Mottagare";
@@ -241,8 +275,6 @@
 <%
 	    }
  	}
-%>	<%= comments.length > 0 ? "<br/>" : "" %>
-<%
 	for (int i=0; i < footnotes.length; i++) {
 %>
 	Fotnot i text <%= textLink(request, lyskom, footnotes[i]) %><br/>
@@ -268,7 +300,7 @@
 	</p>
 <%
     out.flush();
-    RequestDispatcher d = getServletContext().getRequestDispatcher("/lyskom/text.jsp");
+    RequestDispatcher d = getServletContext().getRequestDispatcher("/lyskom/text.jsp?footnote");
     for (int i=0; i < footnotes.length; i++) {
 	request.setAttribute("text", new Integer(footnotes[i]));
 	d.include(request, response);

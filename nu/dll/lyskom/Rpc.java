@@ -370,6 +370,8 @@ public interface Rpc {
     public final static int C_set_last_read = 77;
     public final static int C_get_uconf_stat = 78;
 
+    public final static int C_accept_async = 80;
+
     public final static int C_user_active = 82;
     public final static int C_who_is_on_dynamic = 83;
     public final static int C_get_static_session_info = 84;

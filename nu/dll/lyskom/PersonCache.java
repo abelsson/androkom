@@ -23,6 +23,10 @@ class PersonCache {
 	hash.remove(new Integer(persNo));
     }
 
+    public void clear() {
+	hash.clear();
+    }
+
     public void add(Person p) {
 	if (p.getNo() == -1)
 	    return; // throw(new PersonNumberException("Person has no number"));

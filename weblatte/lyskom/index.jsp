@@ -1,4 +1,4 @@
-<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
+<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*, java.nio.*, java.nio.charset.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.43 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.44 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -355,6 +355,29 @@
 	    out.println(ambiguousNameMsg(lyskom, oldName, ex2));
 	}
     }
+
+    if (parameters.containsKey("delete")) {
+	int textNo = Integer.parseInt(parameter(parameters, "delete"));
+	try {
+	    lyskom.deleteText(textNo);
+	    out.println("<p class=\"statusSuccess\">OK: text " + 
+			textLink(request, lyskom, textNo) + " är borttagen.</p>");
+	} catch (RpcFailure ex1) {
+	    switch (ex1.getError()) {
+	    case Rpc.E_not_author:
+		out.println("<p class=\"statusError\">Fel: du är inte " +
+			    "textens skapare.</p>");
+		break;
+	    case Rpc.E_no_such_text:
+		out.println("<p class=\"statusError\">Fel: det finns ingen " +
+			    "sådan text (" + ex1.getErrorStatus() + ").</p>");
+		break;
+	    default:
+		throw ex1;
+
+	    }
+	}
+    }
     if (parameter(parameters, "mark") != null) {
 	lyskom.markText(Integer.parseInt(parameter(parameters, "mark")), commonPreferences.getInt("default-mark"));
 	out.println("<p class=\"statusSuccess\">Text " +
@@ -379,7 +402,7 @@
 	    	out.flush();
 	    	lyskom.endast(conf.getNo(), textcount);
 	    	out.println(" ok.</p>");
-	    	lyskom.removeAttribute("mbInited");
+		//lyskom.removeAttribute("mbInited");
 	    } else {
 	    	%><p class="statusError">Fel: mötet finns inte.</p><%
 	    }
@@ -456,6 +479,11 @@
     int me = lyskom.getMyPerson().getNo();
     Boolean mbInitedObj = (Boolean) lyskom.getAttribute("mbInited");
     if (mbInitedObj == null) mbInitedObj = Boolean.FALSE;
+
+    if (parameters.containsKey("refresh")) {
+	mbInitedObj = Boolean.FALSE;
+	lyskom.clearCaches();
+    }
     boolean manyMemberships = lyskom.getAttribute("many-memberships") != null &&
 		((Boolean) lyskom.getAttribute("many-memberships")).booleanValue();
 
@@ -565,21 +593,6 @@
     		    if (parameter(parameters, "saveMessages") == null) {
 			i.remove();
 		     }
-		} else if (m.getNumber() == Asynch.new_text ||
-		    m.getNumber() == Asynch.new_text_old ||
-		    m.getNumber() == Asynch.new_recipient) {
-		    
- 		    TextStat ts = lyskom.getTextStat(m.getParameters()[0].intValue());
-		    int[] commented = ts.getCommented();
-		    for (int j=0; j < commented.length; j++) {
-			lyskom.purgeTextCache(commented[j]);
-		    }
-	            if (!manyMemberships) {
-	                lyskom.updateUnreads();
-	            } else {
-			lyskom.getUnreadConfsList(me);
-	  	    }
-		    i.remove();
 		} else {
 		    i.remove();
 		}
@@ -697,9 +710,27 @@
 	    }
     	}
 	if (errors.length() == 0) {
-  	    Text newText = new Text(parameter(parameters, "subject"),
-			parameter(parameters, "body").replaceAll("\r", ""),
-	                preferences.getString("create-text-charset"));
+	    String charsetName = preferences.getString("create-text-charset");
+	    if (parameters.containsKey("charset"))
+		charsetName = parameter(parameters, "charset");
+	    String subject = parameter(parameters, "subject");
+	    String body = parameter(parameters, "body").replaceAll("\r", "");
+	    String textContents = subject + "\n" + body;   
+	    Charset charset = Charset.forName(charsetName);
+	    CharsetEncoder encoder = charset.newEncoder();
+	    encoder.onUnmappableCharacter(CodingErrorAction.REPLACE);
+	    if (!encoder.canEncode(textContents)) {
+		errors.append("<p class=\"statusError\">Varning: textens " +
+			"innehåll kunde inte till fullo kodas i angiven " +
+			"teckenkodning (\"" + charsetName + "\"). Texten har " +
+			"skapats, men vissa tecken kan visas inkorrekt eller "+
+			"ha gått förlorade.</p>");
+	    }
+	    encoder.reset();
+	    ByteBuffer textBuffer = encoder.encode(CharBuffer.wrap(textContents));
+	    byte[] textContentBytes = textBuffer.array();
+
+  	    Text newText = new Text(textContentBytes, charsetName);
 	    if (parameter(parameters, "contentType") != null) {
 		newText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
 					     new Bitstring("00000000"), 0,
@@ -773,9 +804,10 @@
 	    	}
 
 	    }
-	} else {
-	    out.println("<p class=\"statusError\">" + errors + "</p>");
 	}
+	if (errors.length() > 0)
+	    out.println("<p class=\"statusError\">" + errors + "</p>");
+	
     }
 
     if (parameter(parameters, "postCommentTo") != null &&
@@ -1074,10 +1106,11 @@
 	    linkText.append(textNo.toString());
 	    queryStr.append("markAsRead=").append(textNo.toString());
 	    if (i.hasNext()) {
-		linkText.append(", ");
+		if (viewedTexts.size() == 2)
+	  	    linkText.append(" och ");
+		else 
+		    linkText.append(", ");
 		queryStr.append("&");
-	    } else {
-		linkText.append(" ");
 	    }
 	}
 	if (viewedTexts.size() > 4)
@@ -1228,7 +1261,16 @@
 			lastconf = conf;
 			Membership membership = lyskom.queryReadTextsCached(conf);
 			if (membership == null) {
-			    membership = lyskom.queryReadTexts(me, conf);
+			    try {
+				membership = lyskom.queryReadTexts(me, conf);
+			    } catch (RpcFailure ex1) {
+				if (ex1.getError() == Rpc.E_not_member) {
+				    confIter.remove();
+				    continue;
+				} else {
+				    throw ex1;
+				}
+			    }
 			}
 
 			int[] readTexts = membership.getReadTexts();
@@ -1499,7 +1541,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.43 $
+$Revision: 1.44 $
 </p>
 </body>
 </html>

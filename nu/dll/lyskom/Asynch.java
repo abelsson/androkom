@@ -22,6 +22,7 @@ public interface Asynch {
      * @deprecated replaced by "i-am-on"
      */
     public final static int i_am_on_obsolete = 2; // deprecated
+
     /**
      * A conference has changed it's name. The first parameter is the
      * conference's number, the second it's old name and the third
@@ -53,6 +54,7 @@ public interface Asynch {
      * The parameter is the person's number.
      */
     public final static int login = 9;
+
     /**
      * @deprecated replaced by "send-message"
      */

@@ -27,6 +27,10 @@ class TextStatCache {
 	}
     }
 
+    public void clear() {
+	hash.clear();
+    }
+
     public synchronized boolean remove(int textNo) {
 	return hash.remove(new Integer(textNo)) != null;
     }

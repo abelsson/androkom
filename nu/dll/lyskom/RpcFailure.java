@@ -26,11 +26,16 @@ public class RpcFailure extends RuntimeException {
 	}
     }
 
-    RpcFailure(Throwable t) {
+    RpcFailure(String message, Throwable t) {
+	super(message, t);
 	reply = null;
 	errorCode = -1;
 	errorStatus = -1;
 	nested = t;
+    }
+
+    RpcFailure(Throwable t) {
+	this(null, t);
     }
 
     public Throwable getException() {

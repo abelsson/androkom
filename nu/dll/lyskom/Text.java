@@ -96,6 +96,12 @@ public class Text extends Hollerith implements java.io.Serializable {
 	}
     }
 
+    public Text(byte[] contents, String charset) {
+	stat = new TextStat();
+	setCharset(charset);
+	setContents(contents);
+    }
+
     /**
      * Creates a new text with the supplied contents
      */
@@ -316,7 +322,7 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     /**
      * Returns the body of this text as a List of String objects, converted from
-     * bytes using server encoding.
+     * bytes using this text's encoding.
      */ 
     public List getBodyList() {
 	try {

@@ -16,6 +16,10 @@ class MembershipCache {
 	hash = new Hashtable();
     }
 
+    public void clear() {
+	hash.clear();
+    }
+
     public boolean contains(int conf) {
 	return hash.contains(new Integer(conf));
     }

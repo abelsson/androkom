@@ -390,6 +390,10 @@ public class TextStat implements java.io.Serializable {
 	Debug.println("removeMiscInfoEntry(" + key + ", " + value + "): found " + count + " keys");
     }
 
+    public void addMiscInfo(Selection selection) {
+	miscInfo.add(selection);
+    }
+
     /**
      * Adds a new Misc-Info Selection entry with the tag <tt>key</tt>
      * and the value <tt>value</tt>.
@@ -457,6 +461,21 @@ public class TextStat implements java.io.Serializable {
 	    stats[j] = ((Integer) i.next()).intValue();
 	}
 	return stats;
+    }
+
+
+    public List getAllRecipients() {
+	List recipients = new LinkedList();
+	for (int i=0; i < miscInfo.size(); i++) {
+	    Selection misc = (Selection) miscInfo.get(i);
+	    int key = misc.getKey();
+	    if (key == TextStat.miscRecpt ||
+		key == TextStat.miscCcRecpt ||
+		key == TextStat.miscBccRecpt) {
+		recipients.add(new Integer(misc.getIntValue()));
+	    }
+	}
+	return recipients;
     }
 
     /**
@@ -530,11 +549,10 @@ public class TextStat implements java.io.Serializable {
     }
 
     static TextStat createFrom(int no, RpcReply reply) {
-	return createFrom(no, reply, 0);
+	return createFrom(no, reply.getParameters(), 0, false);
     }
 
-    static TextStat createFrom(int no, RpcReply reply, int offset) {
-	KomToken[] params = reply.getParameters();
+    static TextStat createFrom(int no, KomToken[] params, int offset, boolean textStatOld) {
 	TextStat ts = new TextStat(no);
 	List miscInfo = ts.getMiscInfo();
 
@@ -571,7 +589,6 @@ public class TextStat implements java.io.Serializable {
 
 	int mcount = 0;
 
-	// This should probably be in Selection.createFrom(RpcReply)
 	int lastMajorSelectionId = -1;
 	Selection selection = null;
 	for (int i=0;i<arrayLength;i++) {
@@ -623,15 +640,16 @@ public class TextStat implements java.io.Serializable {
 	    
 	}
 
-	int acount = 0;
-	while (acount < auxItemTokens.length) {
-	    KomToken[] ai = new KomToken[AuxItem.ITEM_SIZE];
-	    for (int i=0; i < AuxItem.ITEM_SIZE; i++)
-		ai[i] = auxItemTokens[acount++];
-
-	    ts.addAuxItem(new AuxItem(ai));
+	if (!textStatOld) {
+	    int acount = 0;
+	    while (acount < auxItemTokens.length) {
+		KomToken[] ai = new KomToken[AuxItem.ITEM_SIZE];
+		for (int i=0; i < AuxItem.ITEM_SIZE; i++)
+		    ai[i] = auxItemTokens[acount++];
+		
+		ts.addAuxItem(new AuxItem(ai));
+	    }
 	}
-
 
 	return ts;
 
