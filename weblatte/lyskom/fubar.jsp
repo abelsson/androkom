@@ -37,7 +37,7 @@ Request-parametrar: <%
     while (enum.hasMoreElements()) {
 	String name = (String) enum.nextElement();
 	out.print(name+"=");
-	if (name.equals("lyskomLosen")
+	if (name.equals("lyskomLosen"))
 	    out.println("********");
 	else
 	    out.println(request.getParameter(name));
