@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.86 2004/10/13 18:05:58 pajp Exp $
+ * @version $Id: Session.java,v 1.87 2004/11/12 03:22:26 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1815,6 +1815,19 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return reply.getParameters()[0].intValue();
     }
 
+    public RpcCall doFindPreviousTextNo(int text)
+    throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_find_previous_text_no);
+	req.add(text);
+	writeRpcCall(req);
+	return req;
+    }
+
+    public int findPreviousTextNo(int text) {
+	RpcReply r = waitFor(doFindPreviousTextNo(text));
+	if (!r.getSuccess()) throw r.getException();
+	return r.getParameters()[0].intValue();
+    }
     /**
      * Sends the RPC call create-conf to the server.
      *
@@ -1833,6 +1846,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	writeRpcCall(req);
 	return req;
     }
+
 
     /**
      * Ask the server to create a new conference
