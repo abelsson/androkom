@@ -176,10 +176,15 @@
 		error = "Namnet du angav (\"" + htmlize(parameter(parameters, "lyskomNamn")) + "\") " +
 		    "finns inte. Välj \"Registrera ny användare\" för att skapa en ny KOM-person.";
 	    } else if (names != null && names.length > 1) {
+                request.setAttribute("ambiguous-name", names);
+                /*
 		StringBuffer buf = new StringBuffer("Flertydigt namn, följande matchar:<br/>\n<ul>");
 		for (int i=0; i < names.length; i++) 
 		    buf.append("<li>").append(lookupName(lyskom, names[i].getNo(), true)).append("\n");
 		error = buf.append("</ul>\n").toString();
+                */
+                lyskom.shutdown();
+                lyskom = null;
 	    } else {
 		error = "Ett fel uppstod.";
 	    }
@@ -1442,8 +1447,36 @@ Du är inte inloggad.
     if (parameter(parameters, "lyskomNamn") != null) lyskomNamn = parameter(parameters, "lyskomNamn");
 %>
 <table class="boxed">
+<%
+    ConfInfo[] names = (ConfInfo[]) request.getAttribute("ambiguous-name");
+    if (names == null) {
+%>
 <tr><td>namn eller <span title="Du kan ange t.ex. &quot;#4711&quot; för att logga in som person nummer 4711">#nummer</span>:</td><td><input type="text" name="lyskomNamn" value="<%= lyskomNamn %>" size="30"></td></tr>
-<tr><td>lösenord:</td><td><input type="password" name="lyskomLosen" size="8"></td></tr>
+<%
+    } else {
+%>
+<tr><td colspan="2" class="statusError">Flertydigt namn, välj ett i listan</td></tr>
+<tr><td>välj person:</td><td>
+<select name="lyskomNamn">
+<%
+        Arrays.sort(names, new Comparator() {
+		        public int compare(Object o1, Object o2) {
+		            return ((ConfInfo) o1).getNameString().
+		                   compareTo(((ConfInfo) o2).getNameString());
+		        }
+	});
+        for (int i=0; i < names.length; i++) {
+            ConfInfo conf = names[i];
+            out.println("<option value=\"#" + conf.getNo() + "\">" + htmlize(conf.getNameString()) + " (person " +
+		    conf.getNo() + ")");
+        }
+%>
+</select>
+</td></tr>
+<%
+    }
+%>
+<tr><td>lösenord:</td><td><input type="password" name="lyskomLosen" size="8" value="<%= request.getParameter("lyskomLosen") != null ? dqescHtml(request.getParameter("lyskomLosen")) : "" %>"></td></tr>
 <tr><td>dold session:</td><td><input type="checkbox" name="lyskomDold"></td></tr>
 <tr><td>sparsamt gränssnitt:</td><td><input type="checkbox" name="mini"></td></tr>
 <tr><td>registrera ny användare:</td><td><input type="checkbox" name="createPerson"></td></tr>
@@ -1546,7 +1579,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.89 $
+$Revision: 1.90 $
 </div>
 </body>
 </html>

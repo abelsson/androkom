@@ -140,7 +140,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
      * effectively change the texts content-type into that of the
      * root MHTML body, as specified in the RFC 882 headers
      * in the beginning of the text. This implementation ignores
-     * all RFC 822 headers contains in the root part of the message,
+     * all RFC 822 headers contained in the root part of the message,
      * except for Content-Type.
      *
      * An MHTML text is identified as having a content-type matching
