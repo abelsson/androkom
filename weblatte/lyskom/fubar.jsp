@@ -42,7 +42,6 @@ Stackspårning:
 </pre>
 <%
     out.flush();
-    Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom != null) {
         try {
 	    lyskom.shutdown();

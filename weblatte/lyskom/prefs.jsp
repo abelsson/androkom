@@ -51,7 +51,6 @@
   </head>
   <body>
 <%
-    Session lyskom = (Session) session.getAttribute("lyskom");
     if (lyskom == null) {
 	response.sendRedirect(basePath);
 	return;
