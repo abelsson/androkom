@@ -24,6 +24,7 @@ import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
+import java.io.StringReader;
 
 import javax.activation.DataSource;
 
@@ -450,39 +451,27 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	return r;
     }
 
+    public static List getRows(String s) {
+	try {
+	    BufferedReader rdr = new BufferedReader(new StringReader(s));
+	    List bodyList = new LinkedList();
+	    String row;
+	    while ((row = rdr.readLine()) != null) {
+		bodyList.add(row);
+	    }
+	    return bodyList;
+	} catch (IOException ex1) {
+	    throw new RuntimeException("This shouldn't happen");
+	}
+    }
+
     /**
      * Returns the body of this text as a List of String objects, converted from
      * bytes using this text's encoding.
      */ 
     public List getBodyList() {
 	try {
-	    byte[] body = getBody();
-	    List bodyList = new LinkedList();
-	    int i=0;
-	    int lastLf = 0;
-	    String charset = getCharset();
-	    while (i < body.length) {
-		if (body[i] == '\n') {
-		    byte[] thisLine = new byte[i-lastLf];
-		    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		    bodyList.add(new String(thisLine, charset));
-		    lastLf = i+1;
-		    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
-		}
-		i++;
-	    }
-	    if (lastLf == 0 && body.length > 0) {
-		bodyList.add(new String(body, charset));
-		Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
-	    } else if (lastLf < i) {
-		byte[] thisLine = new byte[body.length-lastLf];
-		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		bodyList.add(new String(thisLine, charset));
-		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
-		
-	    }
-	    Debug.println("Text.getBodyList(): returning " + bodyList.size() + " rows");
-	    return bodyList;
+	    return getRows(new String(getBody(), getCharset()));
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported character encoding: " + ex1.getMessage());
 	}
@@ -603,6 +592,41 @@ public class Text extends Hollerith implements Serializable, DataSource {
      */
     protected void setNo(int n) {
 	textNo = n;
+    }
+
+    public static String wrap(String s, int margin) {
+	List rows = getRows(s);
+	List newRows = new LinkedList();
+	
+	Iterator i = rows.iterator();
+	while (i.hasNext()) {
+	    String row = (String) i.next();
+	    boolean skip = false;
+	    while (!skip && row.length() > margin) {
+		int cutAt = row.lastIndexOf(' ', margin);
+		if (cutAt == -1) { // can't break row
+		    skip = true;
+		    continue;
+		}
+		String wrappedRow = row.substring(0, cutAt);
+		row = row.substring(cutAt+1);
+		newRows.add(wrappedRow);
+	    }
+	    newRows.add(row);
+	}
+
+	i = newRows.iterator();
+	StringBuffer newBody = new StringBuffer();
+	while (i.hasNext()) {
+	    String row = (String) i.next();
+	    newBody.append(row + "\n");
+	}
+	return newBody.toString();
+    }
+
+    int rightMargin = Integer.getInteger("lattekom.linewrap", new Integer(70)).intValue();
+    public String getWrapped() throws UnsupportedEncodingException {
+	return wrap(getBodyString(), rightMargin);
     }
     
 }

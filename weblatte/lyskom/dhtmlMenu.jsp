@@ -23,7 +23,7 @@
 <%  } %>
 <hr>
 <div class="menuitems" url="<%= basePath %>?refresh" target="_top">Starta om</div>
-<div class="menuitems" url="<%= basePath %>?suspend" target="_top">Pausa</div>
+<div class="menuitems" url="<%= basePath %>?suspend" target="_top">Starta ny session</div>
 <div class="menuitems" url="<%= basePath %>?purgeOtherSessions">Logga ut mina andra sessioner</div>
 <div class="menuitems" url="<%= basePath %>?logout" target="_top" style="font-weight: bold">Logga ut</div>
 </div>
@@ -32,6 +32,7 @@
 <div class="menuitems" url="<%= basePath %>?conference=%NO%">Gå till</div>
 <div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
 <div class="menuitems" url="<%= basePath %>?reviewFaq=%NO%">Återse FAQ</div>
+<div class="menuitems" url="<%= basePath %>?conference=%NO%&listSubjects">Lista ärenden</div>
 <div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
 <div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
 <div class="menuitems" url="<%= basePath %>?joinNo=%NO%">Bli medlem</div>

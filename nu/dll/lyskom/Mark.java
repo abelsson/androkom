@@ -1,5 +1,8 @@
 package nu.dll.lyskom;
 
+import java.util.Collection;
+import java.util.Iterator;
+
 /**
  * Represents a marked text and it's mark type.
  *
@@ -26,5 +29,20 @@ public class Mark {
      */
     public int getType() {
 	return type;
+    }
+
+    public static boolean isIn(Collection c, int textNo) {
+	for (Iterator i = c.iterator();i.hasNext();) {
+	    if (((Mark) i.next()).getText() == textNo) return true;
+	}
+	return false;
+    }
+
+    public boolean isIn(Collection c) {
+	return isIn(c, text);
+    }
+    
+    public String toString() {
+	return "<Mark: " + text + "/" + type + ">";
     }
 }

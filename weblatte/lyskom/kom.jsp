@@ -98,36 +98,10 @@
 	}
     }
 
-    int rightMargin = Integer.getInteger("lattekom.linewrap", new Integer(70)).intValue();
+
     void wrapText(Text newText) throws UnsupportedEncodingException {
-	java.util.List rows = newText.getBodyList();
-	java.util.List newRows = new LinkedList();
-
-	Iterator i = rows.iterator();
-	while (i.hasNext()) {
-	    String row = (String) i.next();
-	    boolean skip = false;
-	    while (!skip && row.length() > rightMargin) {
-		int cutAt = row.lastIndexOf(' ', rightMargin);
-		if (cutAt == -1) { // can't break row
-		    skip = true;
-		    continue;
-		}
-		String wrappedRow = row.substring(0, cutAt);
-		row = row.substring(cutAt+1);
-		newRows.add(wrappedRow);
-	    }
-	    newRows.add(row);
-	}
-
-	i = newRows.iterator();
-	StringBuffer newBody = new StringBuffer();
-	while (i.hasNext()) {
-	    String row = (String) i.next();
-	    newBody.append(row + "\n");
-	}
 	newText.setContents((new String(newText.getSubject(), newText.getCharset()) + "\n" +
-			 newBody.toString()).getBytes(newText.getCharset()));	
+			 newText.getWrapped()).getBytes(newText.getCharset()));	
     }
 
     String makeAbsoluteURL(String path) {
@@ -155,8 +129,14 @@
 
     String htmlize(String s, boolean matchLinks) {
 	s = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll("\"", "&quot;");
-	return matchLinks ? weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>") : s;
+	if (matchLinks) {
+	    s = weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
+	}
+	return s;
     }
+
+    // match digits surrounded by whitespace, newlines and/or end of string
+    Pattern textLinkPattern = Pattern.compile("(?:^(\\d+)\\s+.*$|^(\\d+)$|^\\s+(\\d+)$)", Pattern.MULTILINE);
 
     Pattern dqesc = Pattern.compile("\"");
     Pattern sqesc = Pattern.compile("'");

@@ -105,10 +105,18 @@
 
 	List includeTexts = new LinkedList();
 
-        if (!minimalistic) {
+        if (!minimalistic && viewedTexts.size() == 1) {
 	    out.println(jsTitle(serverShort(lyskom) + ": text " + text.getNo() + " av " + 
 		lookupName(lyskom, text.getStat().getAuthor()) +
 		": " + subject));
+	} else if (viewedTexts.size() > 1) {
+	    StringBuffer title = new StringBuffer();
+	    title.append(serverShort(lyskom)).append(": " + viewedTexts.size() + " texter: ");
+	    for (Iterator i = viewedTexts.iterator();i.hasNext();) {
+	        title.append(((Integer) i.next()).toString());
+	        if (i.hasNext()) title.append(", ");
+	    }
+	    out.println(jsTitle(title.toString()));
 	}
 	boolean printAuthor = false;
 	if (footnoteDisplay) {
@@ -138,17 +146,37 @@
 	    if (auxMxAuthor.size() == 0 && auxMxFrom.size() == 0) {
 	    	out.println(lookupName(lyskom, text.getAuthor(), true));
 	    }
+	    List marks = (List) session.getAttribute("weblatte.marks");
+	    if (marks == null) {
+		marks = Arrays.asList(lyskom.getMarks());
+		session.setAttribute("weblatte.marks", marks);
+	    }
+	    int markCount = text.getStat().getMarks();
+	    boolean markedByMe = markCount > 0 && Mark.isIn(marks, text.getNo());
 	
-%>	[ <a title="Markera text" href="<%=myURI(request)%>?mark=<%=text.getNo()%>">M</a>
-        <a title="Avmarkera text" href="<%=myURI(request)%>?unmark=<%=text.getNo()%>">A</a>
-        <a title="Personligt svar" href="<%=myURI(request)%>?privateReply=<%=text.getNo()%>">p</a>
+%>	[ <% if (!markedByMe) { %><a title="Markera text" href="<%= basePath %>?mark=<%=text.getNo()%>">M</a> <% } %>
+        <% if (markedByMe) { %><a title="Avmarkera text" href="<%=basePath%>?unmark=<%=text.getNo()%>">A</a><% } %>
+        <a title="Personligt svar" href="<%=basePath%>?privateReply=<%=text.getNo()%>">p</a>
 	<% if (text.getAuthor() == lyskom.getMyPerson().getNo()) { %>
-        <a title="Fotnotera" href="<%=myURI(request)%>?footnoteTo=<%=text.getNo()%>&dispatchToComposer">F</a>
+        <a title="Fotnotera" href="<%=basePath%>?footnoteTo=<%=text.getNo()%>&dispatchToComposer">F</a>
         <% }
 	   if (text.getCommented() != null && text.getCommented().length > 0) { %>
-        <a title="Återse urinlägg" href="<%=myURI(request)%>?reviewOriginal=<%=text.getNo()%>">åu</a>
+        <a title="Återse urinlägg" href="<%=basePath%>?reviewOriginal=<%=text.getNo()%>">åu</a>
 	<% } %>
-	]<br/>
+	]
+	<%
+
+	    if (markCount > 0) {
+	 	if (!(markedByMe && markCount == 1)) {
+		    out.println("(" + markCount + " " + (markCount > 1 ? "markeringar" : "markering") + ")");
+		}
+	        if (markedByMe) {
+		    out.println(" (markerad av dig)");
+ 	        }
+	    }
+
+	%>
+	<br/>
 	Skapad <%= df.format(text.getCreationTime()) %><br/>
 <%
 	}
@@ -244,12 +272,37 @@
 		if (request.getParameter("forceCharset") != null) {
 		    charset = request.getParameter("forceCharset");
 		}
-                String textBody = htmlize(new String(text.getBody(), charset));
+                String textBody = new String(text.getBody(), charset);
 		if (commonPreferences.getBoolean("dashed-lines")) {
         	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
     		}
 		out.print("<pre class=\"text-body\">");
-		out.print(textBody);
+		boolean wrap = preferences.getBoolean("word-wrap");
+		if (wrap) {
+		    textBody = Text.wrap(textBody, 70);
+		}
+		textBody = htmlize(textBody);
+
+		Matcher m = textLinkPattern.matcher(textBody);
+		StringBuffer sb = new StringBuffer();
+		while (m.find()) {
+		    try {
+			int _textNo = Integer.parseInt(m.group());
+			if (_textNo == 0) {
+                            m.appendReplacement(sb, m.group());
+			    continue;
+			}
+			TextStat ts = lyskom.getTextStat(_textNo);
+			m.appendReplacement(sb, textLink(request, lyskom, ts.getNo(), false));
+		    } catch (RpcFailure ex0) {
+			if (ex0.getError() != Rpc.E_no_such_text) throw ex0;
+			m.appendReplacement(sb, m.group());
+		    } catch (NumberFormatException ex1) {
+			m.appendReplacement(sb, m.group());
+		    }
+		}
+		m.appendTail(sb);
+		out.print(sb.toString());
 		out.println("</pre>");
 		if (commonPreferences.getBoolean("dashed-lines")) {
         	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
@@ -269,7 +322,7 @@
 	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    }
 	    out.print("<pre class=\"text-body\">");
-	    out.print(htmlize(new String(text.getContents(), charset)));
+	    out.print(htmlize(text.getWrapped()));
 	    out.println("</pre>");
 	    if (commonPreferences.getBoolean("dashed-lines")) {
 	        out.println("<hr noshade width=\"95%\" align=\"left\" />");
@@ -495,12 +548,12 @@
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
 %>	
-	<a accesskey="N" href="<%= myURI(request) %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
+	<a accesskey="N" href="<%= basePath %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
 	  Läsmarkera denna text (och läs nästa).</a><br/>
 <%
     }
     if (textNumber > 0) {
-	String href = myURI(request) + "?" + (conferenceNumber > 0 ? "conference="+conferenceNumber : "") + "&markAsRead=" + textNumber + "&text=" + textNumber + "&comment=" + textNumber + "&inCommentTo=" + textNumber;
+	String href = basePath + "?" + (conferenceNumber > 0 ? "conference="+conferenceNumber : "") + "&markAsRead=" + textNumber + "&text=" + textNumber + "&comment=" + textNumber + "&inCommentTo=" + textNumber;
 	if (preferences.getBoolean("comment-in-composer")) {
 	    href += "&dispatchToComposer";
 	}

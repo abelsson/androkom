@@ -409,6 +409,10 @@ public class TextStat implements java.io.Serializable {
 	return miscInfo;
     }
 
+    public int getMarks() {
+	return marks;
+    }
+
     /**
      * Removes all Selections containing the specified key.
      * For example, <tt>clearMiscInfoEntry(miscRecpt)</tt> will

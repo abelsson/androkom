@@ -427,7 +427,7 @@
 	    try {
             	ConfInfo conf = lookupName(lyskom, recptFields[i], true, true);
 		if (conf == null) {
-		    errors.append("Namnet \"" + htmlize(recptFields[i]) + "\" hittas inte.<br>");
+		    errors.append("Namnet \"" + htmlize(recptFields[i], false) + "\" hittas inte.<br>");
   	    	    list.add(recptFields[i]);
 		    continue;
 		}
@@ -457,7 +457,7 @@
 
     if (conferenceNumber > 0) {
 	String confName = lookupName(lyskom, conferenceNumber);
-	if (!recipients.contains(confName)) {
+	if (!recipients.contains(confName) && commentedTextNo == 0) {
 	    recipients.add(confName);
 	}
     }
@@ -493,12 +493,12 @@
 	    else out.print("Kopiemottagare: ");
 	    out.print("</td><td>");
 	    if (names == null) {
- 	        out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + htmlize(recipient) + "\">");
+ 	        out.print("<input name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\" type=\"text\" size=\"40\" value=\"" + htmlize(recipient, false) + "\">");
 	    } else {
 		out.print("<select name=\"" + (rcptType==1?"recipient":"ccRecipient") + "\">");
 		out.print("<option value=\"\">--- Välj mottagare i listan");
 		for (Iterator ai = names.iterator();ai.hasNext();) {
-		    String h = htmlize(lookupNameComplete(lyskom, ((ConfInfo) ai.next()).getNo()));
+		    String h = htmlize(lookupNameComplete(lyskom, ((ConfInfo) ai.next()).getNo()), false);
 		    out.print("<option value=\"" + h + "\">" + h);
 		}
 		out.print("</select>");
@@ -510,7 +510,7 @@
 %>
 <input type="submit" value="lägg till/uppdatera mottagare" name="addNewRecipient"><br/>
 <br/>
-Ämne: <input type="text" size="50" name="subject" value="<%=htmlize(subject)%>"><br/>
+Ämne: <input type="text" size="50" name="subject" value="<%=htmlize(subject, false)%>"><br/>
 <%
     if (!multipart) {
 %><textarea name="body" cols="71" rows="10"><%=body%></textarea><br/><%
@@ -548,7 +548,7 @@
 		    out.println("Ladda upp fil: <input type=\"file\" name=\"part_" + count + "_file\"/>");
 		    out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" + ctype.toString() + "\"/>");
 		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"ladda upp\"/><br/>");
-		    out.println("<i>Eller</i> ange URL: <input type=\"text\" name=\"part_" + count + "_url" + "\" size=\"40\" value=\"" + htmlize(url) + "\">");
+		    out.println("<i>Eller</i> ange URL: <input type=\"text\" name=\"part_" + count + "_url" + "\" size=\"40\" value=\"" + htmlize(url, false) + "\">");
 		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"hämta\"/><br/>");
 		} else {
 		    out.println("Skriv textinnehåll:<br/>");
@@ -632,7 +632,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.27 2005/01/27 19:26:26 pajp Exp $
+$Id: composer.jsp,v 1.28 2005/01/27 22:50:54 pajp Exp $
 </div>
 </body>
 </html>

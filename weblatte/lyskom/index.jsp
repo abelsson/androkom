@@ -1,6 +1,6 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*, java.nio.*, java.nio.charset.*, ii.ImageInfo' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
-<%@ page errorPage='fubar.jsp' %>
+<!-- %@ page errorPage='fubar.jsp' % -->
 <%@ include file='kom.jsp' %>
 <%@ page import='javax.mail.BodyPart, javax.mail.internet.*' %>
 <%!
@@ -173,7 +173,7 @@
 		    lyskom.changeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
-		error = "Namnet du angav (\"" + htmlize(parameter(parameters, "lyskomNamn")) + "\") " +
+		error = "Namnet du angav (\"" + htmlize(parameter(parameters, "lyskomNamn"), false) + "\") " +
 		    "finns inte. Välj \"Registrera ny användare\" för att skapa en ny KOM-person.";
 	    } else if (names != null && names.length > 1) {
                 request.setAttribute("ambiguous-name", names);
@@ -392,11 +392,11 @@
  	    	confNo = ci.getNo();
 	    	lyskom.changeName(confNo, newName);
 	    	out.println("<div class=\"statusSuccess\">OK: \"" +
-		    htmlize(ci.getNameString()) + "\" har bytt namn till " +
+		    htmlize(ci.getNameString(), false) + "\" har bytt namn till " +
 		    lookupName(lyskom, confNo, true) + "</div>");
 	    } else {
 		out.println("<div class=\"statusError\">Fel: namnet \"" + 
-			htmlize(oldName) + "\" finns inte.</div>");
+			htmlize(oldName, false) + "\" finns inte.</div>");
 	    }
 	} catch (RpcFailure ex1) {
 	    switch (ex1.getError()) {
@@ -441,11 +441,13 @@
 		textLink(request, lyskom,
 		Integer.parseInt(parameter(parameters, "mark")))
 		+ " har markerats.</div>");
+	session.setAttribute("weblatte.marks", null);
     }
     if (parameter(parameters, "unmark") != null) {
 	lyskom.unmarkText(Integer.parseInt(parameter(parameters, "unmark")));
 	out.println("<div class=\"statusSuccess\">Text " +
 		parameter(parameters, "unmark") + " har avmarkerats.</div>");
+	session.setAttribute("weblatte.marks", null);
     }
 
     if (parameter(parameters, "endast") != null) {
@@ -609,7 +611,7 @@
 		    lastReceivedOrSent = lookupName(lyskom, recipient.getNo());
 		    %><div class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</div><%
 	    	} else {
-		    %><div class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</div><%
+		    %><div class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn, false)%>".</div><%
 	    	}
 	    }
 	} catch (RpcFailure ex2) {
@@ -906,7 +908,7 @@
 	    else out.print("<tr>");
 	    out.println("<td>" + marks[i].getType() + "</td><td>" + textLink(request, lyskom, t.getNo(), false) +
 		"</td><td>" + lookupName(lyskom, t.getAuthor(), true) + 
-		"</td><td>" + htmlize(new String(t.getSubject())) + "</td></tr>");
+		"</td><td>" + htmlize(t.getSubjectString()) + "</td></tr>");
 	    out.flush();
 	}
 	out.println("</table></p");
@@ -1161,7 +1163,7 @@
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = lyskom.localToGlobal(conferenceNumber,
 						   membership.getLastTextRead()+1, 255);
-	out.println("<div><table><tr><td>Nummer</td><td>författare</td><td>ärende</td><td>tecken</td></tr>");
+	out.println("<div><table><tr><td>Nummer</td><td width=\"200\">författare</td><td width=\"200\">ärende</td><td>tecken</td></tr>");
 	boolean pyjamas = true;
 	while (mapping.hasMoreElements()) {
 	    int textNo = ((Integer) mapping.nextElement()).intValue();
@@ -1175,7 +1177,7 @@
 	    out.print("</td><td>");
 	    out.print(lookupName(lyskom, text.getAuthor(), true));
 	    out.print("</td><td>");
-	    out.print(htmlize(new String(text.getSubject(), charset)));
+	    out.print(htmlize(text.getSubjectString()));
 	    out.print("</td><td>");
 	    out.print(""+ text.getStat().getSize());
 	    out.println("</td></tr>");
@@ -1189,7 +1191,7 @@
 	Text commented = lyskom.getText(textNumber);
 	String ccharset = commented.getCharset();
 	if (ccharset.equals("us-ascii")) ccharset = "iso-8859-1";
-	String subjectString = new String(commented.getSubject());
+	String subjectString = commented.getSubjectString();
 	try {
 	    subjectString = new String(commented.getSubject(), ccharset);
 	} catch (UnsupportedEncodingException ex1) {
@@ -1198,7 +1200,7 @@
 	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="inCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
-	<input size="50" type="text" name="subject" value="<%= dqescHtml(subjectString) %>"><br/>
+	<input size="50" type="text" name="subject" value="<%= htmlize(subjectString, false) %>"><br/>
 	<textarea name="body" cols="71" rows="10"></textarea><br/>
 	<input type="submit" value="skicka!" name="createText">
 	<input type="submit" name="dispatchToComposer" value="avancerat läge">
@@ -1547,7 +1549,7 @@ Du är inte inloggad.
 	});
         for (int i=0; i < names.length; i++) {
             ConfInfo conf = names[i];
-            out.println("<option value=\"#" + conf.getNo() + "\">" + htmlize(conf.getNameString()) + " (person " +
+            out.println("<option value=\"#" + conf.getNo() + "\">" + htmlize(conf.getNameString(), false) + " (person " +
 		    conf.getNo() + ")");
         }
 %>
@@ -1646,20 +1648,24 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
 		suspSessCount + " " + 
 		(suspSessCount > 1 ? "andra LysKOM-sessioner" :
 		 "till LysKOM-session") + "</b></a>");
-	boolean unreads = false;
+	boolean unreads = false, unreadLetters = false;
 	synchronized (suspendedSessions) {
 	    for (Iterator i=suspendedSessions.iterator();!unreads && i.hasNext();) {
-		if (((SessionWrapper) i.next()).getSession().getMyUnreadConfsList().size() > 0)
-		    unreads = true;
+		Session _session = ((SessionWrapper) i.next()).getSession();
+		List unreadConfs = _session.getMyUnreadConfsList();
+		if (unreadConfs.size() > 0) unreads = true;
+		if (unreadConfs.contains(new Integer(_session.getMyPerson().getNo()))) {
+		    unreadLetters = true;
+		}
 	    }
 	}
-	if (unreads) out.print(" (olästa)");
+	if (unreads) out.print(" (olästa" + (unreadLetters ? " brev" : "") + ")");
 	out.print(" <a title=\"nästa session\" href=\"sessions.jsp?next\">>></a>");
 	out.println("<br/>");
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.95 $
+$Revision: 1.96 $
 </div>
 </body>
 </html>

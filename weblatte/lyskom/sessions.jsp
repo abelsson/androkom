@@ -11,18 +11,21 @@
 	buf.append(lookupNamePlain(lyskom, lyskom.getMyPerson().getNo()));
 	buf.append(" @ ");
 	buf.append(serverShort(lyskom));
-	buf.append(" (" + sessionId + ")</a>");
+	//buf.append(" (" + sessionId + ")</a>");
+	buf.append("</a>");
         if (experimental) {
             buf.append(" (<a href=\"http://s-" + sessionId + "." + baseHost + basePath + "?listnews\">URL-session</a>)");
         }
 	List unreadConfs = lyskom.getUnreadConfsListCached();
+	boolean unreadLetters = unreadConfs.contains(new Integer(lyskom.getMyPerson().getNo()));
 	if (unreadConfs.size() > 0) {
-	    buf.append(" (olästa)");
+	    buf.append(" (olästa" + (unreadLetters ? " brev" : "") + ")");
 	}
 	return buf.toString();
     }
 %>
 <%
+    response.setHeader("Refresh", "10; " + myURI(request));
     List activeSessions = (List) session.getAttribute("lyskom.active");
     if (activeSessions == null) activeSessions = Collections.EMPTY_LIST;
     List suspendedSessions = (List) session.getAttribute("lyskom.suspended");
