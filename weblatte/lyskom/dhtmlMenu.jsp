@@ -11,8 +11,8 @@
 <div class="menuitems" url="<%= basePath %>?uploadForm">Ladda upp bild</div>
 <%  } %>
 <div class="menuitems" url="<%= basePath %>?reviewMarked">Lista markerade texter</div>
-<div class="menuitems" script="change_name_interactive(window, '<%= dqescJS(lookupName(lyskom, lyskom.getMyPerson().getNo())) %>');">Byt namn...</div>
-<div class="menuitems" script="search_interactive(window);">Sök möte/person...</div>
+<div class="menuitems" script="change_name_interactive(window, '<%= dqescJS(lookupName(lyskom, lyskom.getMyPerson().getNo())) %>', '<%= basePath %>');">Byt namn...</div>
+<div class="menuitems" script="search_interactive(window, '<%= basePath %>');">Sök möte/person...</div>
 <div class="menuitems" url="<%= basePath %>prefs.jsp">Inställningar</div>
 <hr>
 <div class="menuitems" url="<%= basePath %>vilka/">Vilka är inloggade?</div>
@@ -37,7 +37,7 @@
 <div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
 <div class="menuitems" url="<%= basePath %>?joinNo=%NO%">Bli medlem</div>
 <div class="menuitems" url="<%= basePath %>?leaveNo=%NO%">Utträda</div>
-<div class="menuitems" script="endast_interactive(window, %NO%, '%NAME%');">Endast...</div>
+<div class="menuitems" script="endast_interactive(window, %NO%, '%NAME%', '<%= basePath %>');">Endast...</div>
 	<div class="menuitems" url="<%= basePath %>frames.jsp?conference=%NO%" target="_top">Läs i ramvy</div>
 </div>
 
@@ -54,8 +54,8 @@
 <div class="menuitems" url="<%= basePath %>?mark=%NO%&text=%NO%">Markera</div>
 <div class="menuitems" url="<%= basePath %>?unmark=%NO%&text=%NO%">Avmarkera</div>
 <div class="menuitems" url="<%= basePath %>?privateReply=%NO%&text=%NO%">Personligt svar</div>
-<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscRecpt %>)">Addera mottagare</div>
-<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscCcRecpt %>)">Addera extra kopiemottagare</div>
+<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscRecpt %>, '<%=basePath%>')">Addera mottagare</div>
+<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscCcRecpt %>, '<%=basePath%>')">Addera extra kopiemottagare</div>
 <div class="menuitems" url="<%= basePath %>frames.jsp?reviewTree=%NO%" target="_top">Läs kommentarsträd</div>
 </div>
 <script language="JavaScript1.2">

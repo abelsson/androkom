@@ -56,6 +56,7 @@
 	Debug.println("no query string");
     }
 
+
     String server = parameter(parameters, "server") != null ? 
 	parameter(parameters, "server") : Servers.defaultServer.hostname;
     Boolean authenticated = (Boolean) session.getAttribute("LysKOMauthenticated");
@@ -221,6 +222,51 @@
     LinkedList reviewList = null;
     int interval = 120; // seconds
     if (authenticated.booleanValue()) {
+
+	if (parameters.containsKey("markAsRead")) {
+	    String[] values = request.getParameterValues("markAsRead");
+	    Map conferences = new HashMap();
+	    for (int i=0; i < values.length; i++) {
+		TextStat readText = lyskom.getTextStat(Integer.parseInt(values[i]));
+		lyskom.getReadTexts().add(readText.getNo());
+
+		int[] rcpts = readText.getRecipients();
+		int[] ccs = readText.getCcRecipients();
+		int[] tmp = new int[rcpts.length+ccs.length];
+		System.arraycopy(rcpts, 0, tmp, 0, rcpts.length);
+		System.arraycopy(ccs, 0, tmp, rcpts.length, ccs.length);
+		for (int j=0; j < tmp.length; j++) {
+		    try {
+			List locals = (List) conferences.get(new Integer(tmp[j]));
+			if (locals == null) {
+			    locals = new LinkedList();
+			    conferences.put(new Integer(tmp[j]), locals);
+			}
+			locals.add(new Integer(readText.getLocal(tmp[j])));
+		    
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() != Rpc.E_not_member)
+			    throw ex1;
+		    }
+		}
+	    }
+	    for (Iterator i = conferences.entrySet().iterator(); i.hasNext();) {
+		Map.Entry entry = (Map.Entry) i.next();
+		int conf = ((Integer) entry.getKey()).intValue();
+		List locals = (List) entry.getValue();
+		int[] localTexts = new int[locals.size()];
+		int k=0;
+		for (Iterator j=locals.iterator(); j.hasNext(); k++) {
+		    localTexts[k] = ((Integer) j.next()).intValue();
+		}
+		try {
+		    lyskom.markAsRead(conf, localTexts);
+		} catch (RpcFailure ex1) {
+		    if (ex1.getError() != Rpc.E_not_member) throw ex1;
+		}
+	    }
+	}
+
     	if (parameter(parameters, "privateReply") != null) {
 	    request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
@@ -699,7 +745,7 @@
 	String checkHashStr = parameter(parameters, "markAsReadHash");
 	//int checkHash = Integer.parseInt(parameter(parameters, "markAsReadHash"), 16);
 	List markAsReadTexts = (List) session.getAttribute("mark-as-read-list");
-	// XXX XXX: very duplicated code from markAsRead below
+	// XXX XXX: very duplicated code from markAsRead code above
 	// with the exception that this code breaks up into 
 	// multiple mark-as-read if no of texts to mark for a conf
 	// is > 100
@@ -761,49 +807,7 @@
     }
     session.setAttribute("mark-as-read-list", null);
 
-    if (parameters.containsKey("markAsRead")) {
-	String[] values = request.getParameterValues("markAsRead");
-	Map conferences = new HashMap();
-	for (int i=0; i < values.length; i++) {
-	    TextStat readText = lyskom.getTextStat(Integer.parseInt(values[i]));
- 	    lyskom.getReadTexts().add(readText.getNo());
 
-	    int[] rcpts = readText.getRecipients();
-	    int[] ccs = readText.getCcRecipients();
-	    int[] tmp = new int[rcpts.length+ccs.length];
-	    System.arraycopy(rcpts, 0, tmp, 0, rcpts.length);
-	    System.arraycopy(ccs, 0, tmp, rcpts.length, ccs.length);
-	    for (int j=0; j < tmp.length; j++) {
-		try {
-		    List locals = (List) conferences.get(new Integer(tmp[j]));
-		    if (locals == null) {
-			locals = new LinkedList();
-			conferences.put(new Integer(tmp[j]), locals);
-		    }
-		    locals.add(new Integer(readText.getLocal(tmp[j])));
-		    
-		} catch (RpcFailure ex1) {
-	            if (ex1.getError() != Rpc.E_not_member)
-		    	throw ex1;
-		}
-	    }
-	}
-	for (Iterator i = conferences.entrySet().iterator(); i.hasNext();) {
-	    Map.Entry entry = (Map.Entry) i.next();
-	    int conf = ((Integer) entry.getKey()).intValue();
-	    List locals = (List) entry.getValue();
-	    int[] localTexts = new int[locals.size()];
-	    int k=0;
-	    for (Iterator j=locals.iterator(); j.hasNext(); k++) {
-		localTexts[k] = ((Integer) j.next()).intValue();
-	    }
-	    try {
-		lyskom.markAsRead(conf, localTexts);
-	    } catch (RpcFailure ex1) {
-		if (ex1.getError() != Rpc.E_not_member) throw ex1;
-	    }
-	}
-    }
     if (parameter(parameters, "createText") != null) {
 	out.flush();
 	Debug.println("index.jsp: dispatching to savetext.jsp...");
@@ -977,19 +981,23 @@
 %>
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
 <%
-	    if (textNumber == 0 && !parameters.containsKey("text") &&
-		parameter(parameters, "comment") == null && newTextNo == 0 &&
-	        textNumbers.size() == 0) {
-		listNews = true;
-	    }
-	    if (newTextNo > 0) {
-		listNews = true;
-	    }
 	}
+
+
 %>
 	</div>
 <%
     }
+
+    if (textNumber == 0 && !parameters.containsKey("text") &&
+	parameter(parameters, "comment") == null && newTextNo == 0 &&
+        textNumbers.size() == 0) {
+	listNews = true;
+    }
+    if (newTextNo > 0) {
+	listNews = true;
+    }
+
     if (parameters.containsKey("reviewFaq")) {
 	try {
 	    Conference conf = lyskom.getConfStat(Integer.parseInt(parameter(parameters, "reviewFaq")));
@@ -1665,7 +1673,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.96 $
+$Revision: 1.97 $
 </div>
 </body>
 </html>

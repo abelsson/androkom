@@ -4,11 +4,11 @@
     static boolean experimental = Boolean.getBoolean("weblatte.experimental");
     static boolean vemArVem = Boolean.getBoolean("weblatte.vem-ar-vem");
     static File tempDir = new File(System.getProperty("weblatte.temp-dir", "/tmp"));
-    static String baseHost = System.getProperty("weblatte.base-host", "dll.nu");
+    static String baseHost = System.getProperty("weblatte.base-host", "kom.dll.nu");
     static String basePath = System.getProperty("weblatte.basepath", "/lyskom/"); // the absolute path on the webserver
     static String appPath = System.getProperty("weblatte.webapp-path", "/lyskom/"); // the weblatte root within the web application
     static {
-        System.out.println("Weblatte configuration: basePath: " + basePath + ", appPath: " + appPath);
+        Debug.println("Weblatte configuration: basePath: " + basePath + ", appPath: " + appPath);
     }
 
     public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {

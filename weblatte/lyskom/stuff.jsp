@@ -8,7 +8,7 @@ if (request.getParameter("pleasecache") != null) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.10 2004/10/13 16:28:09 pajp Exp $
+// $Id: stuff.jsp,v 1.11 2005/01/27 22:52:20 pajp Exp $
 
 var nohide = false;
 var ignorevanligklick = false;
@@ -30,7 +30,7 @@ function context_out() {
   getMenuObj();
 }
 
-function add_recipient_interactive(win, textNo, rtype) {
+function add_recipient_interactive(win, textNo, rtype, url) {
     var rname;
     switch (rtype) {
       case 0: 
@@ -45,31 +45,31 @@ function add_recipient_interactive(win, textNo, rtype) {
     }
     var recipientName = win.prompt("Vilket möte vill du addera som " + rname + " till text " + textNo + "?");
     if (recipientName == null) return;
-    document.location.href="/lyskom/?addRecipient=" + escape(recipientName) + 
+    document.location.href=url+"?addRecipient=" + escape(recipientName) + 
       "&toText=" + escape(textNo) + "&recipientType="+escape(rtype);
 }
 
-function endast_interactive(win, confNo, name) {
+function endast_interactive(win, confNo, name, bpath) {
   name = unescape(name);
   var count = win.prompt("Hur många olästa vill du ha i \"" + name + "\"?");
   if (count == null) return;
-  document.location.href="/lyskom/?endast=" + escape(count) + "&endastConferenceName=" +
+  document.location.href=bpath+"?endast=" + escape(count) + "&endastConferenceName=" +
     escape(name);
 }
 
-function search_interactive(win) {
+function search_interactive(win, bpath) {
   var str = win.prompt("Ange sökvillkor (lämna blankt för att lista alla möten och personer):", "");
   if (str == null) return;
-  document.location.href="/lyskom/?lookup=" + escape(str);
+  document.location.href=bpath+"?lookup=" + escape(str);
 }
 
-function review_pres_interactive(win, def) {
+function review_pres_interactive(win, def, bpath) {
   var name = win.prompt("Vilket möte eller vilken person vill du se presentationen för?");
   if (name == null) return;
-  document.location.href="/lyskom/?reviewPresentation=" + escape(name);
+  document.location.href=bpath+"?reviewPresentation=" + escape(name);
 }
 
-function change_name_interactive(win, def) {
+function change_name_interactive(win, def, bpath) {
   var name = win.prompt("Vilket namn vill du byta?", def);
   if (name == null) {
     return;
@@ -79,7 +79,7 @@ function change_name_interactive(win, def) {
     alert("Avbruten.");
     return;
   }
-  document.location.href = "/lyskom/?changeName=" + escape(name) + "&newName=" + 
+  document.location.href = bpath + "?changeName=" + escape(name) + "&newName=" + 
     escape(newName);
 }
 

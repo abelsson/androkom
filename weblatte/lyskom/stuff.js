@@ -1,5 +1,5 @@
 // -*- Mode: c -*-
-// $Id: stuff.js,v 1.3 2004/05/10 00:41:33 pajp Exp $
+// $Id: stuff.js,v 1.4 2005/01/27 22:52:20 pajp Exp $
 alert("hej poop.");
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
@@ -15,27 +15,27 @@ function context_out() {
   getMenuObj();
 }
 
-function endast_interactive(win, confNo, name) {
+function endast_interactive(win, confNo, name, url) {
   name = unescape(name);
   var count = win.prompt("Hur många olästa vill du ha i \"" + name + "\"?");
   if (count == null) return;
-  document.location.href="/lyskom/?endast=" + escape(count) + "&endastConferenceName=" +
+  document.location.href=url+"?endast=" + escape(count) + "&endastConferenceName=" +
     escape(name);
 }
 
-function search_interactive(win) {
+function search_interactive(win, url) {
   var str = win.prompt("Ange sökvillkor (lämna blankt för att lista alla möten och personer):", "");
   if (str == null) return;
-  document.location.href="/lyskom/?lookup=" + escape(str);
+  document.location.href=url+"?lookup=" + escape(str);
 }
 
-function review_pres_interactive(win, def) {
+function review_pres_interactive(win, def, url) {
   var name = win.prompt("Vilket möte eller vilken person vill du se presentationen för?");
   if (name == null) return;
-  document.location.href="/lyskom/?reviewPresentation=" + escape(name);
+  document.location.href=url+"?reviewPresentation=" + escape(name);
 }
 
-function change_name_interactive(win, def) {
+function change_name_interactive(win, def, url) {
   var name = win.prompt("Vilket namn vill du byta?", def);
   if (name == null) {
     return;
@@ -45,7 +45,7 @@ function change_name_interactive(win, def) {
     alert("Avbruten.");
     return;
   }
-  document.location.href = "/lyskom/?changeName=" + escape(name) + "&newName=" + 
+  document.location.href = url + "?changeName=" + escape(name) + "&newName=" + 
     escape(newName);
 }
 
