@@ -101,15 +101,15 @@ public class KomTime implements Serializable {
      */ 
     static KomTime createFrom(int offset, KomToken[] parray) {
 	int pcount = offset;
-	return new KomTime(parray[pcount++].toInteger(), // 0
-			   parray[pcount++].toInteger(), // 1
-			   parray[pcount++].toInteger(), // 2
-			   parray[pcount++].toInteger(), // 3
-			   parray[pcount++].toInteger(), // 4
-			   parray[pcount++].toInteger(), // 5
-			   parray[pcount++].toInteger(), // 6
-			   parray[pcount++].toInteger(), // 7
-			   parray[pcount++].toInteger());
+	return new KomTime(parray[pcount++].intValue(), // 0
+			   parray[pcount++].intValue(), // 1
+			   parray[pcount++].intValue(), // 2
+			   parray[pcount++].intValue(), // 3
+			   parray[pcount++].intValue(), // 4
+			   parray[pcount++].intValue(), // 5
+			   parray[pcount++].intValue(), // 6
+			   parray[pcount++].intValue(), // 7
+			   parray[pcount++].intValue());
     }
 
 }

@@ -82,10 +82,10 @@ public class DynamicSessionInfo {
      * doesn't come alone in the single KomToken[] array, but instead
      * as a part of many DynamicSessionInfo's in a big-ass array */
     protected DynamicSessionInfo(int offset, KomToken[] tk) {
-	this.session = tk[offset++].toInteger();
-	this.person = tk[offset++].toInteger();
-	this.workingConference = tk[offset++].toInteger();
-	this.idleTime = tk[offset++].toInteger();
+	this.session = tk[offset++].intValue();
+	this.person = tk[offset++].intValue();
+	this.workingConference = tk[offset++].intValue();
+	this.idleTime = tk[offset++].intValue();
 	this.flags = new Bitstring(tk[offset++]);
 	this.whatAmIDoing = tk[offset++].getContents();
     }

@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.81 2004/06/10 17:56:18 pajp Exp $
+ * @version $Id: Session.java,v 1.82 2004/06/28 23:49:25 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -2920,8 +2920,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 			  c.getOp() + "; store: " + store + 
 			  " (" + c.getParameterCount() + " parameters)");
 	}
+	if (connection == null) {
+	    throw new IOException("Connection has gone tjockis.");
+	}
 	connection.queuedWrite(c.toNetwork());
-	//c.writeNetwork(connection.getOutputStream());
 	return c; 
     }
     

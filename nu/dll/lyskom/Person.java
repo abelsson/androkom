@@ -180,19 +180,19 @@ public class Person {
 	person.flags = new Bitstring(parameters[pcount++]);
 	person.lastLogin = KomTime.createFrom(pcount, parameters);
 	pcount = pcount + KomTime.ITEM_SIZE;
-	person.userArea = parameters[pcount++].toInteger();
-	person.totalTimePresent = parameters[pcount++].toInteger();
-	person.sessions = parameters[pcount++].toInteger();
-	person.createdLines = parameters[pcount++].toInteger();
+	person.userArea = parameters[pcount++].intValue();
+	person.totalTimePresent = parameters[pcount++].intValue();
+	person.sessions = parameters[pcount++].intValue();
+	person.createdLines = parameters[pcount++].intValue();
 	person.createdBytes = parameters[pcount++].intValue(); // new
-	person.readTexts = parameters[pcount++].toInteger();
-	person.noOfTextFetches = parameters[pcount++].toInteger();
-	person.createdPersons = parameters[pcount++].toInteger();
-	person.createdConfs = parameters[pcount++].toInteger();
-	person.firstCreatedLocalNo = parameters[pcount++].toInteger();
-	person.noOfCreatedTexts = parameters[pcount++].toInteger(); // new
-	person.noOfMarks = parameters[pcount++].toInteger();
-	person.noOfConfs = parameters[pcount++].toInteger();
+	person.readTexts = parameters[pcount++].intValue();
+	person.noOfTextFetches = parameters[pcount++].intValue();
+	person.createdPersons = parameters[pcount++].intValue();
+	person.createdConfs = parameters[pcount++].intValue();
+	person.firstCreatedLocalNo = parameters[pcount++].intValue();
+	person.noOfCreatedTexts = parameters[pcount++].intValue(); // new
+	person.noOfMarks = parameters[pcount++].intValue();
+	person.noOfConfs = parameters[pcount++].intValue();
 	Debug.println("Person " + persNo + " noOfConfs: " + person.noOfConfs);
 	return person;
     }
