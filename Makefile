@@ -1,4 +1,5 @@
-JAVAC	= javac
+JAVAC_ARGS = -classpath ~rasmus/Documents/lattekom/main -encoding iso-8859-1
+JAVAC	= javac $(JAVAC_ARGS)
 JAVADOC	= javadoc
 JAR	= jar
 DOCDIR	= apidocs
@@ -28,7 +29,8 @@ komtest:
 dist:
 	$(JAR) -cf lattekom.jar nu/dll/lyskom/*.class
 
-komtest-dist:
+komtest-dist: dist
+	$(JAR) -cfm t2.jar manifests/t2-manifest nu/dll/app/test/*.class
 	$(JAR) -cfm lattekom-t2.jar manifests/t2-manifest nu/dll/lyskom/*.class nu/dll/app/test/*.class
 
 swingkom-dist:
