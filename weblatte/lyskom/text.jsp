@@ -123,6 +123,9 @@
 		    String type = "Mottagare";
 		    if (key == TextStat.miscCcRecpt)
 			type = "Extra kopiemottagare";
+		    if (key == TextStat.miscBccRecpt)
+			type = "Dold kopiemottagare";
+
 		    if (misc.contains(TextStat.miscSentBy)) {
 			title += "Skickat av " + lookupNamePlain(lyskom, misc.getIntValue(TextStat.miscSentBy));
 		    }

@@ -3,25 +3,40 @@
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
 <%
+    Map parameters = parseQueryString(request.getQueryString(), "iso-8859-1");
+    Enumeration penum = request.getParameterNames();
+    while (penum.hasMoreElements()) {
+	String name = (String) penum.nextElement();
+	String[] values = request.getParameterValues(name);
+	if (values == null || values.length == 0) {
+	    parameters.put(name, "");
+	} else if (values.length == 1) {
+	    parameters.put(name, values[0]);
+	} else {
+	    parameters.put(name, values);
+	}
+    }
     if (request.getQueryString() != null) {
 	Debug.println("query: " + request.getQueryString());
     } else {
 	Debug.println("no query string");
     }
-    String server = request.getParameter("server") != null ? 
-	request.getParameter("server") : Servers.defaultServer.hostname;
+
+    String server = parameter(parameters, "server") != null ? 
+	parameter(parameters, "server") : Servers.defaultServer.hostname;
     Boolean authenticated = (Boolean) session.getAttribute("LysKOMauthenticated");
     if (authenticated == null) authenticated = Boolean.FALSE;
     String error = null;
     boolean justLoggedIn = false;
 
-    if (lyskom != null && request.getParameter("suspend") != null) {
+    if (lyskom != null && parameter(parameters, "suspend") != null) {
 	List suspendedSessions = (List) session.getAttribute("lyskom.suspended");
 	if (suspendedSessions == null) {
 	    suspendedSessions = new SuspendedSessionList();
 	    session.setAttribute("lyskom.suspended", suspendedSessions);
 	}
 	synchronized (suspendedSessions) {
+	    lyskom.doChangeWhatIAmDoing("Pausar Weblatte");
 	    lyskomWrapper.setSuspended(true);
 	    suspendedSessions.add(lyskomWrapper);
 	}
@@ -33,7 +48,7 @@
     }
 
     try {
-	if (request.getParameter("lyskomNamn") != null ||
+	if (parameter(parameters, "lyskomNamn") != null ||
 	    (lyskom == null && session.getAttribute("lyskomPersonNo") != null)) {
 
 	    if (lyskom == null) {
@@ -52,11 +67,11 @@
 	    ConfInfo[] names = null;
 	    int person = 0;
 	    String password = (String) session.getAttribute("lyskomPassword");
-	    if (password == null) password = request.getParameter("lyskomLosen");
+	    if (password == null) password = parameter(parameters, "lyskomLosen");
 
-	    if (request.getParameter("lyskomNamn") != null) {
-		String namnParam = request.getParameter("lyskomNamn");
-		if (request.getParameter("createPerson") != null) {
+	    if (parameter(parameters, "lyskomNamn") != null) {
+		String namnParam = parameter(parameters, "lyskomNamn");
+		if (parameter(parameters, "createPerson") != null) {
 		    try {
 			lyskom.createPerson(namnParam, password, new Bitstring("00000000"),
 					    new AuxItem[0]);
@@ -90,7 +105,7 @@
 		    person = Integer.parseInt(st.nextToken());
 		}
 		if (person == 0) {
-		    names = lyskom.lookupName(request.getParameter("lyskomNamn"), true, false);
+		    names = lyskom.lookupName(parameter(parameters, "lyskomNamn"), true, false);
 		    if (names.length == 1) person = names[0].getNo();
 		}
 	    } else {
@@ -98,7 +113,7 @@
 	    }
 	    if (person > 0) {
 		if (!lyskom.login(person, password,
-				  request.getParameter("lyskomDold") != null, false)) {
+				  parameter(parameters, "lyskomDold") != null, false)) {
 		    error = "Felaktigt lösenord!";
 		    lyskom.shutdown();
 		} else {
@@ -109,12 +124,12 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.27 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.28 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
-		error = "Namnet du angav (\"" + htmlize(request.getParameter("lyskomNamn")) + "\") " +
+		error = "Namnet du angav (\"" + htmlize(parameter(parameters, "lyskomNamn")) + "\") " +
 		    "finns inte. Välj \"Registrera ny användare\" för att skapa en ny KOM-person.";
 	    } else if (names != null && names.length > 1) {
 		StringBuffer buf = new StringBuffer("Flertydigt namn, följande matchar:<br/>\n<ul>");
@@ -184,7 +199,7 @@
 <p class="statusError"><%= error %></p>
 <%
     }
-    if (request.getParameter("debug") != null) {
+    if (parameter(parameters, "debug") != null) {
 	debug = true;
 	out.print("<pre>");
 	Map info = lyskom != null ? lyskom.getInfo() : new HashMap();
@@ -209,8 +224,8 @@
 			block.getContents().length + " bytes");
 		}
 
-		if (request.getParameter("uablock") != null) {
-		    String blockName = request.getParameter("uablock");
+		if (parameter(parameters, "uablock") != null) {
+		    String blockName = parameter(parameters, "uablock");
 		    Hollerith block = userArea.getBlock(blockName);
 		    out.println("------ Block \"" + blockName + "\" contents:");
 		    out.println(block.getContentString());
@@ -221,7 +236,7 @@
 	
 	out.println("</pre>");
     }
-    if (request.getParameter("invalidate") != null) {
+    if (parameter(parameters, "invalidate") != null) {
 	session.invalidate();
 	authenticated = Boolean.FALSE;
 	%>
@@ -231,7 +246,7 @@
 	</p>
 	<%
     }
-    if (request.getParameter("logout") != null) {
+    if (parameter(parameters, "logout") != null) {
 	if (lyskom != null) {
 	    lyskom.shutdown();
 	}
@@ -258,20 +273,20 @@
 	    return;
 	}
         reviewList = (List) session.getAttribute("lyskom.review-list");
-        if (reviewList == null || request.getParameter("conference") == null) {
+        if (reviewList == null || parameter(parameters, "conference") == null) {
 	    reviewList = new LinkedList();
 	    session.setAttribute("lyskom.review-list", reviewList);
     	}
     }
-    if (request.getParameter("pom") != null) {
-	session.setAttribute("pom", new Boolean(request.getParameter("pom").equals("true")));
+    if (parameter(parameters, "pom") != null) {
+	session.setAttribute("pom", new Boolean(parameter(parameters, "pom").equals("true")));
     }
 
     boolean showPOM = preferences != null && preferences.getBoolean("show-plain-old-menu");
-    boolean showWelcome = request.getParameter("hw") == null &&
+    boolean showWelcome = parameter(parameters, "hw") == null &&
 		(preferences != null && preferences.getBoolean("always-show-welcome"));
 
-    boolean showStandardBoxes = request.getParameter("hs") == null
+    boolean showStandardBoxes = parameter(parameters, "hs") == null
 	  && preferences != null && !preferences.getBoolean("hide-standard-boxes"); // "hide standard boxes"
     try {
 	showPOM = session.getAttribute("pom") != null ? 
@@ -297,15 +312,15 @@
 	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
 <%
 	    }
-    if (request.getParameter("dispatchToComposer") != null) {
+    if (parameter(parameters, "dispatchToComposer") != null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
 	d.forward(request, response);
 	return;
     }
-    if (request.getParameter("changeName")!= null) {
-	String oldName = request.getParameter("changeName");
-	String newName = request.getParameter("newName");
+    if (parameter(parameters, "changeName") != null) {
+	String oldName = parameter(parameters, "changeName");
+	String newName = parameter(parameters, "newName");
 	int confNo = 0;
 	ConfInfo ci = null;
 	try {
@@ -334,36 +349,36 @@
 	    out.println(ambiguousNameMsg(lyskom, oldName, ex2));
 	}
     }
-    if (request.getParameter("mark") != null) {
-	lyskom.markText(Integer.parseInt(request.getParameter("mark")), commonPreferences.getInt("default-mark"));
+    if (parameter(parameters, "mark") != null) {
+	lyskom.markText(Integer.parseInt(parameter(parameters, "mark")), commonPreferences.getInt("default-mark"));
 	out.println("<p class=\"statusSuccess\">Text " +
-		request.getParameter("mark") + " har markerats.</p>");
+		parameter(parameters, "mark") + " har markerats.</p>");
     }
-    if (request.getParameter("unmark") != null) {
-	lyskom.unmarkText(Integer.parseInt(request.getParameter("unmark")));
+    if (parameter(parameters, "unmark") != null) {
+	lyskom.unmarkText(Integer.parseInt(parameter(parameters, "unmark")));
 	out.println("<p class=\"statusSuccess\">Text " +
-		request.getParameter("unmark") + " har avmarkerats.</p>");
+		parameter(parameters, "unmark") + " har avmarkerats.</p>");
     }
-    if (request.getParameter("privateReply") != null) {
+    if (parameter(parameters, "privateReply") != null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
 	d.forward(request, response);
 	return;	
 
     }
-    if (request.getParameter("changePresentation") != null &&
-	request.getParameter("createText") == null) {
+    if (parameter(parameters, "changePresentation") != null &&
+	parameter(parameters, "createText") == null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
 	d.forward(request, response);
 	return;		
     }
 
-    if (request.getParameter("endast") != null) {
-	int textcount = Integer.parseInt(request.getParameter("endast"));
+    if (parameter(parameters, "endast") != null) {
+	int textcount = Integer.parseInt(parameter(parameters, "endast"));
 	ConfInfo conf = null;
 	try {
-	    conf = lookupName(lyskom, request.getParameter("endastConferenceName"), true, true);
+	    conf = lookupName(lyskom, parameter(parameters, "endastConferenceName"), true, true);
 	    if (conf != null) {
 	    	out.print("<p>Endast " + textcount + " inlägg i möte " +
 			lookupName(lyskom, conf.getNo(), true) + "...");
@@ -386,14 +401,14 @@
 	}
     }
 
-    if (request.getParameter("join") != null || request.getParameter("joinNo") != null) {
-	int confNo = request.getParameter("joinNo") != null ? 
-		Integer.parseInt(request.getParameter("joinNo")) : 0;
+    if (parameter(parameters, "join") != null || parameter(parameters, "joinNo") != null) {
+	int confNo = parameter(parameters, "joinNo") != null ? 
+		Integer.parseInt(parameter(parameters, "joinNo")) : 0;
 
 	try {
 	    ConfInfo conf = null;
-	    if (request.getParameter("join") != null) {
-		conf = lookupName(lyskom, request.getParameter("join"), false, true);
+	    if (parameter(parameters, "join") != null) {
+		conf = lookupName(lyskom, parameter(parameters, "join"), false, true);
 		if (conf != null) confNo = conf.getNo();
 	    }
 	    if (confNo > 0) {
@@ -418,13 +433,13 @@
 	}
     }
  
-    if (request.getParameter("leave") != null || request.getParameter("leaveNo") != null) {
+    if (parameter(parameters, "leave") != null || parameter(parameters, "leaveNo") != null) {
 	try {
-	    int confNo = request.getParameter("leaveNo") != null ?
-		Integer.parseInt(request.getParameter("leaveNo")) : 0;
+	    int confNo = parameter(parameters, "leaveNo") != null ?
+		Integer.parseInt(parameter(parameters, "leaveNo")) : 0;
 
-	    if (request.getParameter("leave") != null) {
-	        ConfInfo conf = lookupName(lyskom, request.getParameter("leave"), false, true);
+	    if (parameter(parameters, "leave") != null) {
+	        ConfInfo conf = lookupName(lyskom, parameter(parameters, "leave"), false, true);
 		if (conf != null) confNo = conf.getNo();
 	    }
 	    if (confNo > 0) {
@@ -455,16 +470,16 @@
     }    
     lyskom.setAttribute("mbInited", mbInitedObj);
 
-    if (request.getParameter("autoRefresh") == null) {
+    if (parameter(parameters, "autoRefresh") == null) {
 	lyskom.doUserActive();
     }
     String lastReceivedOrSent = null;
 
 
-    if (request.getParameter("sendToName") != null) {
-	String stn = request.getParameter("sendToName");
+    if (parameter(parameters, "sendToName") != null) {
+	String stn = parameter(parameters, "sendToName");
 	try {
-	    if (request.getParameter("chat") != null) {
+	    if (parameter(parameters, "chat") != null) {
 		if (!stn.trim().equals("")) {
 	            ConfInfo conf = lookupName(lyskom, stn, true, true);
 	            response.sendRedirect(basePath + "chat.jsp?default=" + conf.getNo());
@@ -474,7 +489,7 @@
 		    return;
 		}
 	    } 
-	    String _text = request.getParameter("sendText");
+	    String _text = parameter(parameters, "sendText");
 	    if (stn.trim().equals("")) {
 		lyskom.sendMessage(0, _text);
 		%><p class="statusSuccess">Alarmmeddelande skickat.</p><%
@@ -524,7 +539,7 @@
 		</p>
 <%
 		    out.flush();
-    		    if (request.getParameter("saveMessages") == null) {
+    		    if (parameter(parameters, "saveMessages") == null) {
 			i.remove();
 		     }
 		} else if (m.getNumber() == Asynch.new_text ||
@@ -539,18 +554,19 @@
 	}
     }
 
-    if (request.getParameter("stopChat") != null) {
+    if (parameter(parameters, "stopChat") != null) {
         session.setAttribute("lyskom.chat-running", Boolean.FALSE);
     }
 
-    if (request.getParameter("sendTo") != null) {
-	lastReceivedOrSent = lookupName(lyskom, Integer.parseInt(request.getParameter("sendTo")));
+    if (parameter(parameters, "sendTo") != null) {
+	lastReceivedOrSent = lookupName(lyskom, Integer.parseInt(parameter(parameters, "sendTo")));
     }
 
+    List textNumbers = new LinkedList();
     int textNumber = 0;
     int conferenceNumber = 0;
     int newTextNo = 0;
-    if (request.getParameter("purgeOtherSessions") != null) {
+    if (parameter(parameters, "purgeOtherSessions") != null) {
 	out.println("<p><pre>Listar sessioner...");
 	out.flush();
 	int mySession = lyskom.whoAmI();
@@ -571,10 +587,10 @@
 	out.println("</pre></p>");
 	out.flush();
     }
-    if (request.getParameter("conference") != null) {
-	conferenceNumber = Integer.parseInt(request.getParameter("conference"));
+    if (parameter(parameters, "conference") != null) {
+	conferenceNumber = Integer.parseInt(parameter(parameters, "conference"));
     }
-    if (request.getParameter("markAsRead") != null) {
+    if (parameter(parameters, "markAsRead") != null) {
 	String[] values = request.getParameterValues("markAsRead");
 	Map conferences = new HashMap();
 	for (int i=0; i < values.length; i++) {
@@ -615,7 +631,7 @@
 	    }
 	}
     }
-    if (request.getParameter("createText") != null) {
+    if (parameter(parameters, "createText") != null) {
 
 	List recipients = new LinkedList();
     	List ccRecipients = new LinkedList();
@@ -648,13 +664,13 @@
 	    }
     	}
 	if (errors.length() == 0) {
-  	    Text newText = new Text(request.getParameter("subject"),
-			request.getParameter("body").replaceAll("\r", ""),
+  	    Text newText = new Text(parameter(parameters, "subject"),
+			parameter(parameters, "body").replaceAll("\r", ""),
 	                preferences.getString("create-text-charset"));
-	    if (request.getParameter("contentType") != null) {
+	    if (parameter(parameters, "contentType") != null) {
 		newText.getStat().addAuxItem(new AuxItem(AuxItem.tagContentType,
 					     new Bitstring("00000000"), 0,
-					     new Hollerith(request.getParameter("contentType"))));
+					     new Hollerith(parameter(parameters, "contentType"))));
 	    }
 	    wrapText(newText);
 	    if (request.getParameterValues("inCommentTo") != null) {
@@ -704,8 +720,8 @@
 %>
 	        <p class="statusSuccess">Text nummer <%= textLink(request, lyskom, newTextNo, false) %> är skapad.</p>
 <%
-	        if (request.getParameter("changePresentation") != null) {
-		    int confNo = Integer.parseInt(request.getParameter("changePresentation"));
+	        if (parameter(parameters, "changePresentation") != null) {
+		    int confNo = Integer.parseInt(parameter(parameters, "changePresentation"));
 		    try {
 			lyskom.setPresentation(confNo, newTextNo);
 %>
@@ -729,11 +745,11 @@
 	}
     }
 
-    if (request.getParameter("postCommentTo") != null &&
-	request.getParameter("inCommentTo") == null) {
-	Text commentedText = lyskom.getText(Integer.parseInt(request.getParameter("postCommentTo")));
-	Text newText = new Text(request.getParameter("subject"),
-			request.getParameter("body").replaceAll("\r", ""),
+    if (parameter(parameters, "postCommentTo") != null &&
+	parameter(parameters, "inCommentTo") == null) {
+	Text commentedText = lyskom.getText(Integer.parseInt(parameter(parameters, "postCommentTo")));
+	Text newText = new Text(parameter(parameters, "subject"),
+			parameter(parameters, "body").replaceAll("\r", ""),
 			preferences.getString("create-text-charset"));
 	wrapText(newText);
 	newText.addCommented(commentedText.getNo());
@@ -772,10 +788,10 @@
 	
     }
 
-    if (request.getParameter("addRecipient") != null) {
-	int rtype = Integer.parseInt(request.getParameter("recipientType"));
-	int _textNo = Integer.parseInt(request.getParameter("toText"));
-	ConfInfo lbx = lookupName(lyskom, request.getParameter("addRecipient"), true, true);
+    if (parameters.containsKey("addRecipient")) {
+	int rtype = Integer.parseInt(parameter(parameters, "recipientType"));
+	int _textNo = Integer.parseInt(parameter(parameters, "toText"));
+	ConfInfo lbx = lookupName(lyskom, (String) parameters.get("addRecipient"), true, true);
 	if (lbx == null) {
 	    out.println("<p class=\"statusError\">Inget möte matchade det angivna namnet.</p>");
 	} else {
@@ -786,15 +802,15 @@
 	}
     }
 
-    if (request.getParameter("setPassword") != null) {
-	ConfInfo lbx = lookupName(lyskom, request.getParameter("setPasswordPerson"), true, false);
+    if (parameter(parameters, "setPassword") != null) {
+	ConfInfo lbx = lookupName(lyskom, (String) parameters.get("setPasswordPerson"), true, false);
 	if (lbx == null) {
 	    out.println("<p class=\"statusError\">Ingen person har det angivna namnet.</p>");
 	} else {
-	    if (request.getParameter("setPasswordNewPassword").
-		equals(request.getParameter("setPasswordNewPasswordVerify"))) {
-	    	lyskom.setPassword(lbx.getNo(), request.getParameter("setPasswordUserPassword"),
-			           request.getParameter("setPasswordNewPassword"));
+	    if (parameters.get("setPasswordNewPassword").
+		equals(parameters.get("setPasswordNewPasswordVerify"))) {
+	    	lyskom.setPassword(lbx.getNo(), (String) parameters.get("setPasswordUserPassword"),
+			           (String) parameters.get("setPasswordNewPassword"));
 	    	out.println("<p class=\"statusSuccess\">Person " +
 			    lookupName(lyskom, lbx.getNo(), true) + " har bytt lösenord.</p>");
 	    } else {
@@ -832,7 +848,7 @@
    	</p>
 <%
     }
-    if (request.getParameter("reviewMarked") != null) {
+    if (parameter(parameters, "reviewMarked") != null) {
 	out.println("<p><table><tr><td>Typ</td><td>text</td><td>författare</td><td>ärende</td></tr>");
 	Mark[] marks = lyskom.getMarks();
 	boolean pyjamas = false;
@@ -856,21 +872,24 @@
 	out.println("</table></p");
 	out.flush();
     }
-    if (conferenceNumber > 0 && request.getParameter("listSubjects") == null) {
-	Membership ms = lyskom.queryReadTextsCached(conferenceNumber);
-	UConference uconf = lyskom.getUConfStat(conferenceNumber);
-	int unreads = 0;
-	if (uconf.getHighestLocalNo() > ms.getLastTextRead()) {
-	    unreads = uconf.getHighestLocalNo() - ms.getLastTextRead();
-	}
-%>
-	<p>
-	Läser i <%= lookupName(lyskom, conferenceNumber, true) %> - <%= unreads %>
-	<%= unreads > 1 || unreads == 0 ? "olästa" : "oläst" %>.<br/>
-<%
+    if (conferenceNumber > 0 && parameter(parameters, "listSubjects") == null) {
 	int nextUnreadText = 0;
-
 	try {
+	    Membership ms = lyskom.queryReadTextsCached(conferenceNumber);
+	    if (ms == null) ms = lyskom.queryReadTexts(lyskom.getMyPerson().getNo(), conferenceNumber);
+
+	    UConference uconf = lyskom.getUConfStat(conferenceNumber);
+	    int unreads = 0;
+	    if (uconf.getHighestLocalNo() > ms.getLastTextRead()) {
+	    	unreads = uconf.getHighestLocalNo() - ms.getLastTextRead();
+	    }
+%>
+	    <p>
+	    Läser i <%= lookupName(lyskom, conferenceNumber, true) %> - <%= unreads %>
+	    <%= unreads > 1 || unreads == 0 ? "olästa" : "oläst" %>.<br/>
+<%
+	    nextUnreadText = 0;
+
 	    lyskom.doChangeWhatIAmDoing("Läser");
 	    lyskom.changeConference(conferenceNumber);
 	    if (reviewList != null && reviewList.size() > 0) {
@@ -887,13 +906,13 @@
 	    }
 	}
 	if (nextUnreadText > 0) {
-	    if (request.getParameter("text") == null) textNumber = nextUnreadText;
+	    if (parameter(parameters, "text") == null) textNumber = nextUnreadText;
 	} else if (nextUnreadText == -1) {
 %>
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
 <%
-	    if (textNumber == 0 && request.getParameter("text") == null &&
-		request.getParameter("comment") == null && newTextNo == 0 &&
+	    if (textNumber == 0 && parameter(parameters, "text") == null &&
+		parameter(parameters, "comment") == null && newTextNo == 0 &&
 		!response.isCommitted()) {
 		listNews = true;
 	    }
@@ -905,18 +924,41 @@
 	</p>
 <%
     }
-    if (request.getParameter("reviewPresentation") != null) {
+    if (parameters.containsKey("reviewFaq")) {
+	try {
+	    Conference conf = lyskom.getConfStat(Integer.parseInt(parameter(parameters, "reviewFaq")));
+	    AuxItem[] confAuxs = conf.getAuxItems();
+	    boolean foundFaq = false;
+	    for (int i=0; i < confAuxs.length; i++) {
+		if (confAuxs[i].getTag() == AuxItem.tagFaqText) {
+		    textNumbers.add(new Integer(confAuxs[i].getData().intValue()));
+		    foundFaq = true;
+		}
+	    }
+	    if (foundFaq) {
+		out.println("<p>Återser FAQ för " + lookupName(lyskom, conf.getNo(), true) + ".</p>");
+	    } else {
+		out.println("<p class=\"statusError\">Fel: mötet " + lookupName(lyskom, conf.getNo(), true) + 
+			" har ingen FAQ.</p>");
+	    }
+	} catch (RpcFailure ex1) {
+	    out.println("<p class=\"statusError\">Fel: felkod " + ex1.getError() +
+		", status " + ex1.getErrorStatus() + "</p>");
+	}
+    }
+
+    if (parameters.containsKey("reviewPresentation")) {
 	Conference conf = null;
 	int pres = 0;
 	try {
-	    conf = lyskom.getConfStat(Integer.parseInt(request.getParameter("reviewPresentation")));
+	    conf = lyskom.getConfStat(Integer.parseInt(parameter(parameters, "reviewPresentation")));
 	    pres = conf.getPresentation();
 
 	} catch (NumberFormatException ex1) {
-	    ConfInfo[] confs = lyskom.lookupName(request.getParameter("reviewPresentation"), true, true);
+	    ConfInfo[] confs = lyskom.lookupName((String) parameters.get("reviewPresentation"), true, true);
 	    if (confs.length == 0) {
 		out.println("<p class=\"statusError\">Hittade inget möte eller person som matchade " 
-		+ "\"" + htmlize(request.getParameter("reviewPresentation")) + "\"</p>");
+		+ "\"" + htmlize((String) parameters.get("reviewPresentation")) + "\"</p>");
 	    } else if (confs.length > 1) {
 		out.println(ambiguousNameMsg(lyskom, new AmbiguousNameException(confs)));
 	    } else {
@@ -932,8 +974,8 @@
 	    out.println("<p class=\"statusError\">" + lookupName(lyskom, conf.getNo(), true) + " har ingen presentation.</p>");
 	}
     }
-    if (request.getParameter("reviewOriginal") != null) {
-	int startTextNo = Integer.parseInt(request.getParameter("reviewOriginal"));
+    if (parameter(parameters, "reviewOriginal") != null) {
+	int startTextNo = Integer.parseInt(parameter(parameters, "reviewOriginal"));
 	Text t = lyskom.getText(startTextNo);
 	while (t.getCommented() != null &&
 	       t.getCommented().length > 0) {
@@ -943,11 +985,11 @@
 	
     }
 
-    if (textNumber != 0 || request.getParameter("text") != null) {
+    if (textNumber != 0 || parameter(parameters, "text") != null ||
+	textNumbers.size() > 0) {
 	// xxx: catch NFE for more graceful error handling
-        List textNumbers = new LinkedList();
 	if (textNumber > 0) textNumbers.add(new Integer(textNumber));
-	if (request.getParameter("text") != null) {
+	if (parameter(parameters, "text") != null) {
 	    String[] textNumberParams = request.getParameterValues("text");
 	    for (int i=0; i < textNumberParams.length; i++) {
 	        textNumbers.add(new Integer(textNumberParams[i]));
@@ -1002,8 +1044,8 @@
 		linkText.toString() + "</a></p>");
     }
 
-    if (request.getParameter("lookup") != null) {
-	String str = request.getParameter("lookup");
+    if (parameters.containsKey("lookup")) {
+	String str = (String) parameters.get("lookup");
 	StringBuffer buf = new StringBuffer();
 	for (int i=0; i < str.length(); i++) {
 	    char c = str.charAt(i);
@@ -1031,7 +1073,7 @@
 	out.flush();
     }
 
-    if (request.getParameter("listSubjects") != null && conferenceNumber > 0) {
+    if (parameter(parameters, "listSubjects") != null && conferenceNumber > 0) {
 	Membership membership = lyskom.queryReadTextsCached(conferenceNumber);
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = lyskom.localToGlobal(conferenceNumber,
@@ -1059,7 +1101,7 @@
 	}
 	out.println("</table></p>");
     }
-    if (request.getParameter("comment") != null && textNumber > 0) {
+    if (parameter(parameters, "comment") != null && textNumber > 0) {
 	lyskom.doChangeWhatIAmDoing("Skriver en kommentar");
 	Text commented = lyskom.getText(textNumber);
 %>
@@ -1076,7 +1118,7 @@
 %>
 <%
 
-	    listNews = listNews || (request.getParameter("listnews") != null ||
+	    listNews = listNews || (parameter(parameters, "listnews") != null ||
 	        (justLoggedIn && preferences.getBoolean("list-news-on-login")));
 
 	    if (listNews) {
@@ -1151,7 +1193,7 @@
 	    }
 
 	    MultipartParser multip = null;
-	    if (request.getParameter("upload") != null) {
+	    if (parameter(parameters, "upload") != null) {
 		multip = new MultipartParser(request, 1024*1024);
 	    	Part nextPart = null;
 		boolean imageOK = false;
@@ -1198,7 +1240,7 @@
 		    }
 	    	}
 	    }
-	    if (request.getParameter("uploadForm") != null) {
+	    if (parameter(parameters, "uploadForm") != null) {
 %>
 	<form enctype="multipart/form-data" method="post" action="<%=myURI(request)%>?upload" class="boxed">
 	    skriv en bild-URL här: <input type="text" size="50" name="urlsubmitter"> <br/>
@@ -1207,7 +1249,7 @@
 	</form>
 <%
 	    }
-	    if (authenticated.booleanValue() && request.getParameter("setPasswordForm") != null) {
+	    if (authenticated.booleanValue() && parameter(parameters, "setPasswordForm") != null) {
 %>
 	<form method="post" action="<%=basePath%>?setPassword" class="boxed">
 	    <table>
@@ -1233,7 +1275,7 @@
     <input type="text" size="40" name="endastConferenceName">
     <input type="submit" value="ok!">
 <%  if (listNews) { %>
-    <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
+    <input type="hidden" name="listnews" value="<%=parameter(parameters, "listnews")%>">
 <%  } %>
     </form>
 
@@ -1241,7 +1283,7 @@
     <a name="sendMessage"></a>
     Skicka ett meddelande till:<br/>
 <%  if (listNews) { %>
-    <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
+    <input type="hidden" name="listnews" value="<%=parameter(parameters, "listnews")%>">
 <%  } %>
     <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>">
 <br/>
@@ -1266,7 +1308,7 @@ Du är inte inloggad.
 <form name="lyskomlogin" method="post" action="<%=myURI(request)%>">
 <%
     String lyskomNamn = "";
-    if (request.getParameter("lyskomNamn") != null) lyskomNamn = request.getParameter("lyskomNamn");
+    if (parameter(parameters, "lyskomNamn") != null) lyskomNamn = parameter(parameters, "lyskomNamn");
 %>
 <table class="boxed">
 <tr><td>namn:</td><td><input type="text" name="lyskomNamn" value="<%= lyskomNamn %>" size="30"></td></tr>
@@ -1276,7 +1318,7 @@ Du är inte inloggad.
 <tr><td>server:</td><td>
 <select name="server">
 <%
-    String selectedServer = request.getParameter("server");
+    String selectedServer = parameter(parameters, "server");
     if (selectedServer == null) {
 	Cookie[] cookies = request.getCookies();
 	for (int i=0; cookies != null && i < cookies.length; i++) {
@@ -1366,7 +1408,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.27 $
+$Revision: 1.28 $
 </p>
 </body>
 </html>

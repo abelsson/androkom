@@ -26,6 +26,7 @@
 <div id="ctxmenu_conference" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
 <div class="menuitems" url="<%= basePath %>?conference=%NO%">Gå till</div>
 <div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
+<div class="menuitems" url="<%= basePath %>?reviewFaq=%NO%">Återse FAQ</div>
 <div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
 <div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
 <div class="menuitems" url="<%= basePath %>?joinNo=%NO%">Bli medlem</div>
@@ -36,6 +37,7 @@
 
 <div id="ctxmenu_letterbox" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
 <div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
+<div class="menuitems" url="<%= basePath %>?reviewFaq=%NO%">Återse FAQ</div>
 <div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
 <div class="menuitems" url="<%= basePath %>composer.jsp?recipientNo=%NO%&recipientNo=<%=lyskom.getMyPerson().getNo()%>">Skicka brev</div>
 <div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
@@ -45,8 +47,8 @@
 <div class="menuitems" url="<%= basePath %>?mark=%NO%&text=%NO%">Markera</div>
 <div class="menuitems" url="<%= basePath %>?unmark=%NO%&text=%NO%">Avmarkera</div>
 <div class="menuitems" url="<%= basePath %>?privateReply=%NO%&text=%NO%">Personligt svar</div>
-<!-- div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscRecpt %>)">Addera mottagare</div -->
-<!-- div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscCcRecpt %>)">Addera extra kopiemottagare</div -->
+<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscRecpt %>)">Addera mottagare</div>
+<div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscCcRecpt %>)">Addera extra kopiemottagare</div>
 </div>
 <script language="JavaScript1.2">
 //set this variable to 1 if you wish the URLs of the highlighted menu to be displayed in the status bar

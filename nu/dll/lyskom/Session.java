@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.52 2004/05/10 19:24:29 pajp Exp $
+ * @version $Id: Session.java,v 1.53 2004/05/10 22:24:58 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1372,9 +1372,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    m = membershipCache.get(confNo);
 	    if (m != null) return m;
 	}
-	m = new Membership(0, 
-			   waitFor(doQueryReadTexts(persNo, confNo).getId()).
-			   getParameters());
+	RpcReply reply = waitFor(doQueryReadTexts(persNo, confNo));
+	if (!reply.getSuccess()) throw reply.getException();
+	m = new Membership(0, reply.getParameters());
 	membershipCache.add(m);
 	return m;
     }
@@ -2429,9 +2429,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     public RpcCall doAddRecipient(int textNo, int confNo, int type) 
     throws IOException {
-	RpcCall req = new RpcCall(count(), Rpc.C_add_recipient).add(new KomToken(textNo));
-	Selection info = new Selection(1);
-	info.add(type, confNo);
+	RpcCall req = new RpcCall(count(), Rpc.C_add_recipient).add(new KomToken(textNo)).add(new KomToken(confNo));
+	Selection info = new Selection(TextStat.MISC_INFO_COUNT);
+	info.add(type, null);
 	req.add(info.toToken());
 	writeRpcCall(req);
 	return req;
@@ -2441,6 +2441,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doAddRecipient(textNo, confNo, type));
 	if (!reply.getSuccess()) throw reply.getException();
+	purgeTextCache(textNo);
     }
 
     /**
@@ -2792,6 +2793,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public void rpcEvent(RpcEvent e) {
 	switch(e.getOp()) {
 	case Rpc.C_query_read_texts:
+	    if (!e.getReply().getSuccess()) return;
 	    int conf = e.getCall().getParameter(1).toInteger();
 	    Membership m = membershipCache.get(conf);
 	    if (m == null) {

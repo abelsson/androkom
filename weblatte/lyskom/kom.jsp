@@ -1,5 +1,5 @@
 <%@ page language='java' import='nu.dll.lyskom.*, java.text.*, java.util.*' %>\
-<%@ page import='java.util.regex.*, java.io.*, nu.dll.app.weblatte.*' %>\
+<%@ page import='java.util.regex.*, java.io.*, nu.dll.app.weblatte.*, java.net.URLDecoder' %>\
 <%!
     String basePath = "/lyskom/"; // the absolute path on the webserver
     String appPath = "/lyskom/"; // the weblatte root within the web application
@@ -25,6 +25,27 @@
 
     public void clearPreferenceCache(Session lyskom) {
 	lyskom.removeAttributes("weblatte\\.preferences\\..*");
+    }
+
+    public Map parseQueryString(String query, String charset)
+    throws UnsupportedEncodingException {
+	if (query == null) return new HashMap();
+	StringTokenizer st = new StringTokenizer(query, "&");
+	Map result = new HashMap();
+	while (st.hasMoreTokens()) {
+	    String keyvalue = st.nextToken();
+	    StringTokenizer kvt = new StringTokenizer(keyvalue, "=");
+	    String key = URLDecoder.decode(kvt.nextToken(), charset);
+	    String value = "";
+	    if (kvt.hasMoreTokens()) 
+		value = URLDecoder.decode(kvt.nextToken(), charset);
+	    result.put(key, value);
+	}
+	return result;
+    }
+
+    public String parameter(Map map, String key) {
+	return (String) map.get(key);
     }
 
     final static int SORT_FILEID = 1, SORT_MODIFIED = 2, SORT_MUGNAME = 3;

@@ -46,6 +46,7 @@
 	String newSessionId = selected;
 	if (lyskomWrapper != null) {
 	    synchronized (suspendedSessions) {
+		lyskom.doChangeWhatIAmDoing("Pausar och hoppar till ett annat LysKOM");
 		suspendedSessions.add(lyskomWrapper);
 		lyskomWrapper.setSuspended(true);
 		session.removeAttribute("lyskom");
