@@ -3,8 +3,8 @@
     import='java.net.URL, java.io.*, java.text.*'
     import='java.nio.charset.Charset, javax.mail.internet.ContentType'
     pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
-    
-%><!-- errorPage='fubar.jsp' --><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
+    errorPage='fubar.jsp'
+%><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
     if (request.getParameter("image") != null) {
 	String name = request.getParameter("image");
 	Map part = (Map) session.getAttribute("wl_composer_image_" + name);
@@ -510,7 +510,7 @@
 %>
 <input type="submit" value="lägg till/uppdatera mottagare" name="addNewRecipient"><br/>
 <br/>
-Ämne: <input type="text" size="50" name="subject" value="<%=subject%>"><br/>
+Ämne: <input type="text" size="50" name="subject" value="<%=htmlize(subject)%>"><br/>
 <%
     if (!multipart) {
 %><textarea name="body" cols="71" rows="10"><%=body%></textarea><br/><%
@@ -548,7 +548,7 @@
 		    out.println("Ladda upp fil: <input type=\"file\" name=\"part_" + count + "_file\"/>");
 		    out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" + ctype.toString() + "\"/>");
 		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"ladda upp\"/><br/>");
-		    out.println("<i>Eller</i> ange URL: <input type=\"text\" name=\"part_" + count + "_url" + "\" size=\"40\" value=\"" + url + "\">");
+		    out.println("<i>Eller</i> ange URL: <input type=\"text\" name=\"part_" + count + "_url" + "\" size=\"40\" value=\"" + htmlize(url) + "\">");
 		    out.println("<input type=\"submit\" name=\"doUpload\" value=\"hämta\"/><br/>");
 		} else {
 		    out.println("Skriv textinnehåll:<br/>");
@@ -632,7 +632,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.25 2005/01/27 19:02:02 pajp Exp $
+$Id: composer.jsp,v 1.27 2005/01/27 19:26:26 pajp Exp $
 </div>
 </body>
 </html>
