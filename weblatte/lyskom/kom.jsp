@@ -171,7 +171,8 @@
     String lookupNamePlain(Session lyskom, int number)
     throws RpcFailure, IOException {
 	String name = "[" + number + "]";
-	if (number == 0) return name;
+	if (number == 0) return "[Anonym]";
+
 	UConference uconf = null;
 	try {
 	    uconf = lyskom.getUConfStat(number);
@@ -207,18 +208,19 @@
 	Conference conf = null;
 	try {
 	    conf = number != 0 ? lyskom.getConfStat(number) : null;
-	    name = lyskom.toString(conf.getName());
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() != Rpc.E_undefined_conference)
 		throw ex1;
 	}
 	if (conf != null) {
+	    name = lyskom.toString(conf.getName());
 	    boolean isMe = lyskom.getLoggedIn() && lyskom.getMyPerson().getNo() == number;
 	    KomPreferences prefs = preferences(lyskom, "weblatte");
 	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
             boolean letterbox = conf.getType().getBitAt(ConfType.letterbox);
 	    return "<span " + (disablePopup ? "" : "onClick=\"showmenuie5(event, true);\"") + " class=\"" + (letterbox ? "letterbox-name" : "conference-name") + "\" title=\"" + (letterbox ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + letterbox + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";
 	} else {
+	    if (number == 0) return "<span class=\"letterbox-name\">[Anonym]</span>";
 	    return htmlize(name);
 	}
     }
