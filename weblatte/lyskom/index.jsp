@@ -82,7 +82,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.19 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.20 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1150,7 +1150,6 @@
     <input type="hidden" name="listnews" value="<%=request.getParameter("listnews")%>">
 <%  } %>
     <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>">
-    <input type="submit" name="chat" value="starta chat" />
 <br/>
     Text:<br/>
     <input type="text" name="sendText" size="60"><input type="submit" value="ok">
@@ -1232,7 +1231,7 @@ Du är inte inloggad.
 </p>
 <p class="footer">
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.19 $
+$Revision: 1.20 $
 </p>
 </body>
 </html>
