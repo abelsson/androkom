@@ -23,6 +23,7 @@ public class Servers {
 	list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
 	list.add(new KomServer("kom.stacken.kth.se", "TokKOM"));
 	list.add(new KomServer("kom.update.uu.se", "UppKOM"));
+	list.add(new KomServer("kom.ludd.luth.se", "LuddKOM"));
 	defaultServer = (KomServer) list.get(0);
 	list = Collections.unmodifiableList(list);
     }

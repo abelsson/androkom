@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.84 2004/10/13 17:47:18 pajp Exp $
+ * @version $Id: Session.java,v 1.85 2004/10/13 17:51:16 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -409,12 +409,16 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (!connected) return;
 	// remove listeners/recievers
 	removeRpcEventListener(this);
-	listener.setAsynch(false);
-	listener.removeAsynchMessageReceiver(this);
-	listener.removeRpcReplyReceiver(this);
-	listener.disconnect();
+	if (listener != null) {
+	    listener.setAsynch(false);
+	    listener.removeAsynchMessageReceiver(this);
+	    listener.removeRpcReplyReceiver(this);
+	    listener.disconnect();
+	}
 	invoker.quit();
-	connection.close();
+	if (connection != null) {
+	    connection.close();
+	}
 	connection = null;
 	connected = false;
 	state = STATE_DISCONNECTED;

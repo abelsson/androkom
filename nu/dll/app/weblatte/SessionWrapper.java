@@ -26,6 +26,8 @@ public class SessionWrapper implements HttpSessionBindingListener {
 
     public void valueUnbound(HttpSessionBindingEvent event) {
 	if (event.getName().equals("lyskom") && !suspended) {
+	    System.out.println("SessionWrapper.valueUnbound(): terminating session " + lyskom);
+	    new Exception().printStackTrace();
 	    lyskom.shutdown();
 	}
     }
