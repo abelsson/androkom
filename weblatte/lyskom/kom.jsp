@@ -120,7 +120,7 @@
     Pattern weblinkPat = Pattern.compile("(http://[^ \t\r\n\\\\\\[><,!]{3,}[^ ?.,)>])");
     String htmlize(String s) {
 	s = s.replaceAll("&", "&amp;").replaceAll("<", "&lt;");
-	return weblinkPat.matcher(s).replaceAll("<a href=\"$1\">$1</a>");
+	return weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
     }
 
     Pattern dqesc = Pattern.compile("\"");
