@@ -9,11 +9,13 @@ import java.text.MessageFormat;
 import nu.dll.lyskom.*;
 
 public class TextCommands extends AbstractCommand {
-    String[] myCommands = { "återse", "}terse", "fotnotera", "kommentera", "inlägg", "radera text",
+
+    // "återse" renamed to "återse text" due to a conflict
+    String[] myCommands = { "återse text", "}terse text", "fotnotera", "kommentera", "inlägg", "radera text",
 			    "markera text", "lista markerade texter", "återse urinklägg", "}terse urinl{gg" };
     int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7 };
     String[] myDescriptions = {
-	"återse (text) <textnummer>", // 0
+	"återse text <textnummer>", // 0
 	"fotnotera (text) [textnummer]", // 1
 	"kommentera (text)", // 2
 	"(skriv) inlägg", // 3
