@@ -161,15 +161,11 @@
 	    printNode(treeHtml, lyskom, nodes, texts, ((Integer) texts.remove(0)).intValue(), textsToView, 0);
 	}
 
-	StringBuffer linkBuf = new StringBuffer();
-	linkBuf.append(basePath);
-	linkBuf.append("?popupComment&hw&hs&conference=").append(conferenceNumber).append("&");
-	for (Iterator i=textsToView.iterator(); i.hasNext();) {
-	    linkBuf.append("text=" + i.next());
-	    if (i.hasNext()) linkBuf.append("&");
-	}
+        String treeId = Integer.toHexString(rnd.nextInt());
+	session.setAttribute("weblatte.tree." + treeId, textsToView);
+
 	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
-	String link = linkBuf.toString();
+	String link = "?popupComment&hw&hs&treeId=" + treeId;
 	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
@@ -272,15 +268,10 @@
 	while (texts.size() > 0) {
 	    printNode(treeHtml, lyskom, nodes, texts, ((Integer) texts.remove(0)).intValue(), textsToView, 0);
 	}
-	StringBuffer linkBuf = new StringBuffer();
-	linkBuf.append(basePath).
-		append("?popupComment&hw&hs&");
-	for (Iterator i = textsToView.iterator(); i.hasNext();) {
-	    linkBuf.append("text="+i.next());
-	    if (i.hasNext()) linkBuf.append("&");
-	}
 	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
-	String link = linkBuf.toString();
+        String treeId = Integer.toHexString(rnd.nextInt());
+	session.setAttribute("weblatte.tree." + treeId, textsToView);
+	String link = "?popupComment&hw&hs&treeId=" + treeId;
 	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
