@@ -380,7 +380,7 @@ String dir = getServletContext().getRealPath("/lyskom/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
-boolean debug = Debug.ENABLED || request.getParameter("debug") != null;
+boolean debug = (Debug.ENABLED && Boolean.getBoolean("weblatte.debug")) || request.getParameter("debug") != null;
 SessionWrapper lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
 Session lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
 boolean minimalistic = lyskom != null && lyskom.getAttribute("weblatte.minimalistic") != null;

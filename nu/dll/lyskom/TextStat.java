@@ -16,6 +16,7 @@ import java.util.Map;
 import java.util.HashMap;
 
 import javax.mail.internet.ContentType;
+import javax.mail.internet.MimeUtility;
 
 /**
  * <p>
@@ -210,7 +211,24 @@ public class TextStat implements java.io.Serializable {
 	}
     }
 
+    /**
+     * @deprecated
+     * @see #setAuxItem(AuxItem)
+     */
     public void replaceOrAddAuxItem(AuxItem a) {
+	setAuxItem(a);
+    }
+
+
+    /**
+     * Sets the specified aux-item.
+     *
+     * If the aux-item already exists, it is 
+     * replaces with the supplied parameter.
+     * Otherwise, the aux-item is added to the
+     * list of aux-items in this text-stat.
+     */
+    public void setAuxItem(AuxItem a) {
 	for (int i=0; i < auxItems.length; i++) {
 	    if (a.getTag() == auxItems[i].getTag()) {
 		auxItems[i] = a;
@@ -284,23 +302,32 @@ public class TextStat implements java.io.Serializable {
     }
 
     /**
-     * Returns the charset for this text.
+     * Returns the Java charset for this text.
      */
     public String getCharset() {
-	return ((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1");
+	return MimeUtility.javaCharset(((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1"));
     }
 
     public void setCharset(String charset) {
 	Object[] ct = parseContentTypeAuxItem();
 	String contentType = (String) ct[0];
 	Properties props = (Properties) ct[1];
-	props.setProperty("charset", charset);
-	replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
-					createContentTypeString(contentType, props)));
+	props.setProperty("charset", MimeUtility.mimeCharset(charset));
+	setAuxItem(new AuxItem(AuxItem.tagContentType,
+			       createContentTypeString(contentType, props)));
     }
 
     private String createContentTypeString(String contentType, Properties p) {
-	return contentType + ";" + concatenateProperties(p);
+	try {
+	    ContentType ct = new ContentType(contentType);
+	    for (Iterator i = p.entrySet().iterator(); i.hasNext();) {
+		Map.Entry entry = (Map.Entry) i.next();
+		ct.getParameterList().set((String) entry.getKey(), (String) entry.getValue());
+	    }
+	    return ct.toString();
+	} catch (javax.mail.internet.ParseException ex) {
+	    throw new IllegalArgumentException("Unable to parse content-type " + contentType);
+	}
     }
 
     private static String concatenateProperties(Properties p) {

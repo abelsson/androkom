@@ -405,6 +405,10 @@
 		String contentType = multipart ? "multipart/mixed" : "text/plain";
 		if (multipart && parts.size() == 1) {
 		    contentType = (String) ((Map) parts.get(0)).get("content-type");
+		} else {
+		    if (parameters.containsKey("content-type")) {
+			contentType = (String) parameters.get("content-type");
+		    }
 		}
 		if (!conference.allowsMimeType(lyskom.getAllowedContentTypes(), contentType)) {
 		    errors.append("Varning: mötet \"" + lookupName(lyskom, conf.getNo(), true) +
@@ -557,6 +561,10 @@
 	out.println("Datatyp: <input type=\"text\" size=\"50\" name=\"content-type\" value=\"" + contentType + "\" /><br/>");
     } 
     */
+    if (parameters.containsKey("content-type")) {
+	out.println("<input type=\"hidden\" name=\"content-type\" value=\"" + 
+		parameters.get("content-type") + "\"/>");
+    }
 %>
 <input type="submit" value="skicka!" name="createText">
 <%  
@@ -571,7 +579,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.10 2004/05/28 23:06:20 pajp Exp $
+$Id: composer.jsp,v 1.11 2004/05/29 20:02:00 pajp Exp $
 </p>
 </body>
 </html>

@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.53 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.54 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -786,10 +786,8 @@
 		newText = new Text(textContentBytes, charsetName);
 		wrapText(newText);
 
-		if (parameters.containsKey( "content-type") && !"".equals(parameters.get("content-type"))) {
-		    newText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
-						 	  new Bitstring("00000000"), 0,
-						 	  new Hollerith(parameter(parameters, "content-type"))));
+		if (parameters.containsKey("content-type") && !"".equals(parameters.get("content-type"))) {
+		    newText.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, parameter(parameters, "content-type")));
 		}
 
 	    } else {
@@ -938,11 +936,13 @@
 
 		    TextStat commentedTextStat = lyskom.getTextStat(textNo);
 		    int[] _recipients = commentedTextStat.getRecipients();
-		    for (int j=0; !explicitRecipients && i < _recipients.length; i++) {
+		    for (int j=0; !explicitRecipients && j < _recipients.length; j++) {
 	    		Conference conf = lyskom.getConfStat(_recipients[j]);
 	    	    	if (conf.getType().original()) {
 			    int superconf = conf.getSuperConf();
 			    if (superconf > 0) {
+	  			Debug.println("added superconf as comment-to recipient: " + _recipients[j] +
+					" -> " + superconf);
 		    	    	newText.addRecipient(superconf);
 			    } else {
 		   	    	throw new RuntimeException("Du får inte skriva kommentarer i " +
@@ -950,7 +950,10 @@
 			    }
 	    	    	} else {
 			    if (!newText.getStat().hasRecipient(_recipients[j])) {
+	  			Debug.println("added implicit comment-to recipient: " + _recipients[j]);
 		            	newText.addRecipient(_recipients[j]);
+			    } else {
+	  			Debug.println("avoiding duplicate recipient: " + _recipients[j]);
 			    }
 		    	}
 		    }
@@ -1301,7 +1304,7 @@
 	if (parameters.containsKey("text")) {
 	    String[] textNumberParams = request.getParameterValues("text");
 	    for (int i=0; i < textNumberParams.length; i++) {
-	        textNumbers.add(new Integer(textNumberParams[i]));
+	        textNumbers.add(new Integer(textNumberParams[i].trim()));
 	    }
         }
         for (Iterator i = textNumbers.iterator(); i.hasNext();) {
@@ -1772,7 +1775,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.53 $
+$Revision: 1.54 $
 </p>
 </body>
 </html>
