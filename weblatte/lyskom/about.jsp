@@ -71,7 +71,7 @@
       därför kan du även få de flesta menyalternativ som
       textlänkar. För att aktivera textmenyer temporärt (under den
       innevarande inloggningen), klicka på "<b>visa menyer</b>" längst
-      ned på sidan.  Om du alltid vill ha synliga textmenyer går så
+      ned på sidan.  Om du alltid vill ha synliga textmenyer så
       väljer du "<b>inställningar</b>" och ställer alternativet
       "<b>visa menyer</b>" till "På" och klickar sedan på "<b>spara
       inställningar</b>" (i samma ruta). Inställningarna sparas på den
@@ -119,6 +119,9 @@
       i enlighet med <a
       href="http://opensource.org/licenses/mit-license.php">MIT-licensen</a>
       som den distribueras under. Tack för visat intresse!
+    </p>
+    <p class="footer">
+      $Revision: 1.4 $
     </p>
   </body>
 </html>
