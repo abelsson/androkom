@@ -3,8 +3,8 @@
     import='java.net.URL, java.io.*, java.text.*'
     import='java.nio.charset.Charset, javax.mail.internet.ContentType'
     pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
-    errorPage='fubar.jsp'
-%><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
+    
+%><!-- errorPage='fubar.jsp' --><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
     if (request.getParameter("image") != null) {
 	String name = request.getParameter("image");
 	Map part = (Map) session.getAttribute("wl_composer_image_" + name);
@@ -632,7 +632,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.26 2005/01/27 19:05:51 pajp Exp $
+$Id: composer.jsp,v 1.25 2005/01/27 19:02:02 pajp Exp $
 </div>
 </body>
 </html>
