@@ -121,7 +121,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 		return;
 	    }
 	    
-	    Map attributes = new HashMap();
+	    java.util.Map attributes = new HashMap();
 	    Enumeration e = attrs.getAttributeNames();
 	    while (e.hasMoreElements()) {
 		Object o = e.nextElement();
@@ -204,7 +204,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	    }
 	    out.write("<" + tag.toString());
 	    for (Iterator i = attributes.entrySet().iterator();i.hasNext();) {
-		Map.Entry entry = (Map.Entry) i.next();
+		java.util.Map.Entry entry = (java.util.Map.Entry) i.next();
 		out.write(" ");
 		out.write(entry.getKey().toString());
 		out.write("=\"");
@@ -218,7 +218,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	}
     }
 
-    private void rewriteRef(String value, int textNo, Map attributes,
+    private void rewriteRef(String value, int textNo, java.util.Map attributes,
 			    HTML.Attribute attribute, String append)
     throws UnsupportedEncodingException {
 	attributes.put(attribute, 

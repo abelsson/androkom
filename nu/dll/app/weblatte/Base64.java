@@ -90,7 +90,7 @@ public class Base64
     
     
     /** The 64 valid Base64 values. */
-    private final static byte[] ALPHABET;
+    private static byte[] ALPHABET = { }; // XXX: compiler on kharma barks about blank final -rasmus
     private final static byte[] _NATIVE_ALPHABET = /* May be something funny like EBCDIC */
     {
         (byte)'A', (byte)'B', (byte)'C', (byte)'D', (byte)'E', (byte)'F', (byte)'G',

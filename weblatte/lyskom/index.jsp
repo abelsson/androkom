@@ -1,4 +1,4 @@
-<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*, java.nio.*, java.nio.charset.*' %>
+<%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*, nu.dll.app.weblatte.*, java.net.*, java.io.*, java.text.*,java.util.regex.*, java.nio.*, java.nio.charset.*, ii.ImageInfo' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
@@ -1301,6 +1301,7 @@
 	    	Part nextPart = null;
 		boolean imageOK = false;
 		String imageFileName = null;
+		File target = null;
 	    	while (!imageOK && null != (nextPart = multip.readNextPart())) {
 		    if (nextPart.isFile()) {
 			FilePart fpart = (FilePart) nextPart;
@@ -1309,8 +1310,10 @@
 								lastIndexOf(".")).toLowerCase();
 			File imagef = new File(dir, lyskom.getMyPerson().getNo() + fileExt);
 			fpart.writeTo(imagef);
+			
 			imageFileName = imagef.getName();
 			imageOK = true;
+			target = imagef;
 		    } else {
 			ParamPart ppart = (ParamPart) nextPart;
 			String url = ppart.getStringValue();
@@ -1319,7 +1322,7 @@
 			URLConnection con = new URL(url).openConnection();
 			String fileExt = url.substring(url.lastIndexOf(".")).toLowerCase();
 			imageFileName = lyskom.getMyPerson().getNo() + fileExt;
-			File target = new File(dir, imageFileName);
+			target = new File(dir, imageFileName);
 			FileOutputStream targetStream = new FileOutputStream(target);
 			InputStream input = (InputStream) con.getInputStream();
 			byte[] loadBuf = new byte[2048];
@@ -1328,6 +1331,18 @@
 			    targetStream.write(loadBuf, 0, read);
 			}
 			imageOK = true;
+		    }
+
+		    if (imageOK) {
+			ImageInfo ii = new ImageInfo();
+			FileInputStream is = new FileInputStream(target);
+			ii.setInput(is);
+			if (!ii.check()) {
+			    out.println("<p class=\"statusError\">Felaktigt filformat!</p>");
+			    imageOK = false;
+			}
+			is.close();
+			if (!imageOK) target.delete();
 		    }
 
 		    if (imageOK) {
@@ -1457,6 +1472,10 @@ Du är inte inloggad.
 <tr><td>&nbsp;</td><td><input type="submit" value="logga in"></td></tr>
 </table>
 </form>
+<p class="banner">
+Nyfiken på hur Weblatte kommer att se ut i framtiden?
+Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">http://lala.gnapp.org:8080/lyskom/</a></b> och hjälp oss att göra den bättre!
+</p>
 <%
     } else {
 	try {
@@ -1521,7 +1540,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.87 $
+$Revision: 1.88 $
 </div>
 </body>
 </html>
