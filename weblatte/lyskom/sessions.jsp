@@ -3,9 +3,6 @@
 <%@ include file='kom.jsp' %>
 <%@ include file='prefs_inc.jsp' %>
 <%!
-    String getSessionId(SessionWrapper wrapper) {
-	return Integer.toHexString(System.identityHashCode(wrapper));
-    }
     String sessionInfo(SessionWrapper wrapper) throws IOException, RpcFailure {
 	StringBuffer buf = new StringBuffer();
 	Session lyskom = (Session) wrapper.getSession();
@@ -15,6 +12,7 @@
 	buf.append(" @ ");
 	buf.append(serverShort(lyskom));
 	buf.append("</a>");
+        buf.append(" (<a href=\"http://s-" + sessionId + ".dll.nu/lyskom/\">*</a>)");
 	List unreadConfs = lyskom.getUnreadConfsListCached();
 	if (unreadConfs.size() > 0) {
 	    buf.append(" (olästa)");
@@ -29,12 +27,11 @@
 	session.setAttribute("lyskom.suspended", suspendedSessions);
     }
     String selected = request.getParameter("select");
-
     if (request.getParameter("next") != null) {
 	synchronized (suspendedSessions) {
 	    selected = getSessionId((SessionWrapper) suspendedSessions.get(0));
 	}
-    }
+    }   
     if (request.getParameter("previous") != null) {
 	synchronized (suspendedSessions) {
 	    selected = getSessionId((SessionWrapper) suspendedSessions.get(suspendedSessions.size()-1));
@@ -44,7 +41,9 @@
 	String newSessionId = selected;
 	if (lyskomWrapper != null) {
 	    synchronized (suspendedSessions) {
-		lyskom.changeWhatIAmDoing("Pausar och hoppar till ett annat LysKOM");
+                if (request.getParameter("announce-pause") != null)
+                    lyskom.changeWhatIAmDoing("Pausar och hoppar till ett annat LysKOM");
+
 		suspendedSessions.add(lyskomWrapper);
 		lyskomWrapper.setSuspended(true);
 		session.removeAttribute("lyskom");

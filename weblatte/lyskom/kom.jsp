@@ -363,6 +363,9 @@
 	return "<formatted-time>" + df.format(date) + "</formatted-time>";
     }
 
+    String getSessionId(SessionWrapper wrapper) {
+	return Integer.toHexString(System.identityHashCode(wrapper));
+    }
 
     class AmbiguousNameException extends RuntimeException {
 	ConfInfo[] possibleNames;
@@ -393,8 +396,31 @@ UserArea userArea = null;
 KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
 boolean debug = (Debug.ENABLED && Boolean.getBoolean("weblatte.debug")) || request.getParameter("debug") != null;
-SessionWrapper lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
-Session lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
+String serverName = request.getServerName();
+SessionWrapper lyskomWrapper = null;
+Session lyskom = null;
+if (serverName != null && serverName.startsWith("s-")) {
+    List sessions = new LinkedList();
+    List _sessions = (List) session.getAttribute("lyskom.suspended");
+    if (_sessions != null) sessions.addAll(_sessions);
+    _sessions = (List) session.getAttribute("lyskom.active");
+    if (_sessions != null) sessions.addAll(_sessions);
+    String requestedId = serverName.replaceAll("s-([0-9A-F]+)\\..*", "$1");
+    Debug.println("requested LysKOM session ID: " + requestedId);
+    for (Iterator i = sessions.iterator();i.hasNext();) {
+        SessionWrapper w = (SessionWrapper) i.next();
+        String id = getSessionId(w);
+        if (requestedId != null && requestedId.equals(id)) {
+            lyskomWrapper = w;
+            lyskom = lyskomWrapper.getSession();
+        }
+    }
+}
+
+if (lyskomWrapper == null || lyskom == null) {
+    lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
+    lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
+}
 boolean minimalistic = lyskom != null && Boolean.TRUE.equals(lyskom.getAttribute("weblatte.minimalistic"));
 if (Debug.ENABLED) {
     Debug.println("wrapper: " + Integer.toHexString(System.identityHashCode(lyskomWrapper)));
