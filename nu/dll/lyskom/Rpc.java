@@ -5,7 +5,7 @@
  */
 package nu.dll.lyskom;
 
-public abstract class Rpc {
+public interface Rpc {
     // errors
     /**
      * No error has occurred. error-status is undefined. This should
@@ -350,6 +350,7 @@ public abstract class Rpc {
 
     public final static int C_login = 62;
 
+    public final static int C_set_client_version = 69;
     public final static int C_get_client_name = 70;
     public final static int C_get_client_version = 71;
     public final static int C_mark_text = 72;
@@ -361,6 +362,8 @@ public abstract class Rpc {
 
     public final static int C_user_active = 82;
     public final static int C_who_is_on_dynamic = 83;
+    public final static int C_get_static_session_info = 84;
+
     public final static int C_create_text = 86;
 
     public final static int C_create_conf = 88;

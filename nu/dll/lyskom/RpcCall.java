@@ -16,7 +16,7 @@ import java.io.OutputStream;
  * at the fields in the RPC class to find out what calls are
  * available, and in the Protocol A documentation to see what they do
  */
-public class RpcCall extends Rpc {
+public class RpcCall implements Rpc {
 
     public static Vector rpcCallStack;
 

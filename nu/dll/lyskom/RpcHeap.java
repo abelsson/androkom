@@ -9,7 +9,7 @@ import java.util.*;
 /**
  * (not really a _Heap_, but a just bunch of RpcCall objects)
  */
-public class RpcHeap {
+class RpcHeap {
     static int DEBUG = 1;
     public static List rpcCallStack;
 

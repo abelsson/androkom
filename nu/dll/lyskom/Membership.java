@@ -5,18 +5,24 @@
  */
 package nu.dll.lyskom;
 
-// warning, this is a mishmash of pre-v10 and post-v10 stuff, a lot
-// of old junk needs to be cleaned up.
+/**
+ * Represents a person's membership status of a given conference.
+ * <br>
+ *
+ * @see nu.dll.lyskom.Session#getUnreadMembership()
+ * @see nu.dll.lyskom.Session#getMembership(int)
+ * @see nu.dll.lyskom.Session#getMembership(int, int, int, Bitstring)
+ */
 public class Membership {
     int position;
-    public KomTime lastTimeRead;
-    public int conference;
-    public int priority; // is INT8, use byte?
-    public int lastTextRead; // local!
-    public int[] readTexts; // local!
-    public int addedBy;
-    public KomTime addedAt;
-    public Bitstring type; // Membership-Type
+    protected KomTime lastTimeRead;
+    protected int conference;
+    protected int priority; // is INT8, use byte?
+    protected int lastTextRead; // local!
+    protected int[] readTexts; // local!
+    protected int addedBy;
+    protected KomTime addedAt;
+    protected MembershipType type; // Membership-Type
 
     public static int ITEM_SIZE = 8 + KomTime.ITEM_SIZE*2;
 
@@ -24,11 +30,11 @@ public class Membership {
 
     TextMapping textMap;
 
-    public Membership() {
+    Membership() {
 	super();
     }
 
-    public Membership(int offset, KomToken[] tk) {
+    Membership(int offset, KomToken[] tk) {
 	this.position = tk[offset++].toInteger();
 	this.lastTimeRead = KomTime.createFrom(offset, tk);
 	offset += KomTime.ITEM_SIZE;
@@ -40,12 +46,12 @@ public class Membership {
 	this.addedBy = tk[offset++].toInteger();
         this.addedAt = KomTime.createFrom(offset, tk);
 	offset += KomTime.ITEM_SIZE;
-	this.type = new Bitstring(tk[offset++]);
+	this.type = new MembershipType(tk[offset++]);
     }
 
-    public Membership(int position, KomTime lastTimeRead, int conference,
-		      int priority, int lastTextRead, int[] readTexts,
-		      int addedBy, KomTime addedAt, Bitstring type) {
+    Membership(int position, KomTime lastTimeRead, int conference,
+	       int priority, int lastTextRead, int[] readTexts,
+	       int addedBy, KomTime addedAt, MembershipType type) {
 	this.position = position;
 	this.lastTimeRead = lastTimeRead;
 	this.conference = conference;
@@ -57,8 +63,8 @@ public class Membership {
 	this.type = type;
     }
 
-    public Membership(KomTime lastTimeRead, int conference,
-		      int priority, int lastTextRead, int[] readTexts) {
+    Membership(KomTime lastTimeRead, int conference,
+	       int priority, int lastTextRead, int[] readTexts) {
 	this.lastTimeRead = lastTimeRead;
 	this.conference = conference;
 	this.priority = priority;
@@ -79,6 +85,69 @@ public class Membership {
 	return textMap;
     }
 
+    /**
+     * Return this memberhips position
+     */
+    public int getPosition() {
+	return position;
+    }
+
+    /**
+     * Returns the time when this memberships conference was last read
+     */
+    public KomTime getLastTimeRead() {
+	return lastTimeRead;
+    }
+
+    /**
+     * Returns the conference this membership represents
+     */
+    public int getConference() {
+	return conference;
+    }
+
+    /**
+     * Returns the priority (0-255) of this membership
+     */
+    public int getPriority() {
+	return priority;
+    }
+
+    /**
+     * Returns the local text number of the text last read in the conference
+     */
+    public int getLastTextRead() {
+	return lastTextRead;
+    }
+
+    /**
+     * Returns an array of local text number that have been read after last-text-read
+     */
+    public int[] getReadTexts() {
+	return readTexts;
+    }
+
+    /**
+     * Returns the number of the person who added this memberhip
+     */
+    public int getAddedBy() {
+	return addedBy;
+    }
+
+    /**
+     * Returns the time at which this membership was added
+     */
+    public KomTime getAddedAt() {
+	return addedAt;
+    }
+
+    /**
+     * Returns the type of this membership. TODO: document the Membership types.
+     */ 
+    public Bitstring getType() {
+	return type;
+    }
+
     /*
     public boolean equals(Object o) {
 	if (o instanceof Integer) return ((Integer) o).intValue() == conference;
@@ -87,14 +156,18 @@ public class Membership {
     }
     */
 
-    public int getLastTextRead() {
-        return lastTextRead;   
-    }
-
+    /**
+     * Equal to getConference()
+     *
+     * @see nu.dll.lyskom.Membership#getConference()
+     */ 
     public int getNo() {
 	return conference;
     }
 
+    /**
+     * Constructs a Membership array out of the supplied RpcReply object
+     */
     public static Membership[] createFrom(RpcReply reply) {
 	KomToken[] parameters = reply.getParameters();
 	int pcount = 0;
@@ -172,7 +245,7 @@ public class Membership {
     }
 
     // reads 14 elements? **BROKEN!**
-    public static Membership createFrom(int offset, KomToken[] tokens) {
+    static Membership createFrom(int offset, KomToken[] tokens) {
 	if (DEBUG>0) Debug.println("-->Membership.createFrom("+offset+", KomToken["+tokens.length+"])");
 	Membership m = new Membership();
 	m.lastTimeRead = KomTime.createFrom(offset, tokens);

@@ -8,48 +8,88 @@
 package nu.dll.lyskom;
 import java.io.Serializable;
 import java.util.Arrays;
+import java.io.UnsupportedEncodingException;
 
+/**
+ * A KomToken represents an object to be sent to or has been received from the server.
+ * It is generally a serie of bytes.
+ */
 public class KomToken implements Serializable {
+    /**
+     * A "primitive" LysKOM token, such as INT32
+     */
     public final static int PRIMITIVE = 0;
+    /**
+     * A "complex" LysKOM token.
+     */
     public final static int COMPL     = 1;
+    /**
+     * An array of KomToken objects
+     */
     public final static int ARRAY     = 2;
+    /**
+     * A Hollerith
+     */
     public final static int HOLLERITH = 3;
 
-    public int type = PRIMITIVE; // obsolete?
+    int type = PRIMITIVE; // obsolete?
     byte[] contents = null;
 
     private static final int DEBUG = 0;
 
     boolean eol = false; // indicates last token on line
 
-    // This is the superconstructor that implicitly gets called from
-    // child class constructors. I think.
+    /**
+     * Creates an empty KomToken object.
+     */
     public KomToken() {
 	type = COMPL;
     }
 
+    /**
+     * Returns <tt>true</tt> if the supplied object is of type
+     * KomToken, and it's contents are equal to this.
+     */
     public boolean equals(Object o) {
 	if (!(o instanceof KomToken)) return false;
 	return Arrays.equals(contents, ((KomToken) o).getContents());
     }
 
+    /**
+     * Returns <tt>true</tt> if this KomToken is the last token in a command received from the server.
+     */
     public boolean isEol() {
 	return eol;
     }
-    public void setEol(boolean b) {
+
+    void setEol(boolean b) {
 	eol = b;
     }
 
+    /**
+     * Constructs a simple KomToken object representing the supplied integer value.
+     */
     public KomToken(int i) {
 	contents = (i+"").getBytes();
     }
 
+    /**
+     * Constructs a simple KomToken object containing the supplied bytes.
+     */
     public KomToken(byte[] b) {
 	contents = b;
     }
 
+    /**
+     * Converts the supplied string into bytes according to iso-8859-1,
+     * using the result as the contents for this KomToken
+     */
     public KomToken(String s) {
-	contents = s.getBytes();
+	try {
+	    contents = s.getBytes(Session.serverEncoding);
+	} catch (UnsupportedEncodingException ex1) {
+	    throw new RuntimeException("Unsupported encoding: " + ex1.getMessage());
+	}
     }
     
     /**
@@ -59,6 +99,9 @@ public class KomToken implements Serializable {
 	return toInt();
     }
 
+    /**
+     * Attempts to parse the contents of this KomToken into an integer value using a radix of 10.
+     */
     public int intValue() {
 	if (contents == null || contents.length == 0)
 	    return -1;
@@ -88,7 +131,10 @@ public class KomToken implements Serializable {
 	return ktype + ":\"" + new String(getContents()) + "\"";
     }
 
-    public byte[] toNetwork() {
+    /**
+     * Constructs a byte-array suitable for sending to the LysKOM server.
+     */
+    byte[] toNetwork() {
 
 	// uuh.. but this can't happen...?
 	if (this instanceof Hollerith)
@@ -100,14 +146,23 @@ public class KomToken implements Serializable {
 	return getContents();
     }
 
+    /**
+     * Returns the contents of this KomToken
+     */
     public byte[] getContents() {
 	return contents;
     }
 
+    /**
+     * Sets the contents of this KomToken
+     */
     public void setContents(byte[] c) {
 	contents = c;
     }
 
+    /**
+     * Returns the type of this KomToken
+     */
     public int getType() {
 	return type;
     }

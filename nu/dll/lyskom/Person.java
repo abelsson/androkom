@@ -6,40 +6,171 @@
 package nu.dll.lyskom;
 
 public class Person {
-    public byte[] username;
-    public Bitstring privileges;
-    public Bitstring flags;
-    public KomTime lastLogin;
-    public int userArea;
-    public int totalTimePresent;
-    public int sessions;
-    public int createdLines;
-    public int createdBytes;
-    public int readTexts;
-    public int noOfTextFetches;
-    public int createdPersons;
-    public int createdConfs;
-    public int firstCreatedLocalNo;
-    public int noOfCreatedTexts;
-    public int noOfMarks;
-    public int noOfConfs;
+    protected byte[] username;
+    protected Bitstring privileges;
+    protected Bitstring flags;
+    protected KomTime lastLogin;
+    protected int userArea;
+    protected int totalTimePresent;
+    protected int sessions;
+    protected int createdLines;
+    protected int createdBytes;
+    protected int readTexts;
+    protected int noOfTextFetches;
+    protected int createdPersons;
+    protected int createdConfs;
+    protected int firstCreatedLocalNo;
+    protected int noOfCreatedTexts;
+    protected int noOfMarks;
+    protected int noOfConfs;
 
     int number;
 
-    public UConference uconf;
+    protected UConference uconf;
 
-    public Person(int number) {
+    Person(int number) {
 	this.number = number;
     }
 
+    /**
+     * Returns the number of this person.
+     */ 
     public int getNo() {
 	return number;
     }
     
+    /**
+     * Returns the UConference object representing this person's letterbox.
+     */
     public UConference getUConference() {
     	return uconf;	
     }
 
+    /**
+     * Returns the username of this person.
+     */ 
+    public byte[] getUsername() {
+	return username;
+    }
+
+    /**
+     * Returns this person's previlege flags.
+     */
+    public Bitstring getPrivileges() {
+	return privileges;
+    }
+
+    /**
+     * Returns this person's flags.
+     */
+    public Bitstring getFlags() {
+	return flags;
+    }
+
+    /**
+     * Returns a KomTime object representing when this person last logged onto the LysKOM server.
+     */
+    public KomTime getLastLogin() {
+	return lastLogin;
+    }
+
+    /**
+     * Returns the text number containing this person's user area.
+     * Currently, LatteKOM contains no code to deal with the user area.
+     */
+    public int getUserArea() {
+	return userArea;
+    }
+
+    /**
+     * Returns the total number of seconds this person has been logged onto the LysKOM server.
+     */
+    public int getTotalTimePresent() {
+	return totalTimePresent;
+    }
+    /**
+     * Returns the total number of sessions this person has initiated.
+     */
+    public int getSessions() {
+	return sessions;
+    }
+
+    /**
+     * Returns the total number of text lines this person has produced.
+     */
+    public int getCreatedLines() {
+	return createdLines;
+    }
+
+    /**
+     * Returns the total number of text bytes this person has produced.
+     */
+    public int getCreatedBytes() {
+	return createdBytes;
+    }
+
+    /**
+     * Returns the total number of texts read by this person.
+     */
+    public int getReadTexts() {
+	return readTexts;
+    }
+
+    /**
+     * Returns the total number of text fetches this person has done.
+     */
+    public int getNoOfTextFetches() {
+	return noOfTextFetches;
+    }
+    
+    /**
+     * Returns the number of persons this person has created.
+     */
+    public int getCreatedPersons() {
+	return createdPersons;
+    }
+
+    /**
+     * Returns the number of conferences created by this person.
+     */
+    public int getCreatedConferences() {
+	return createdConfs;
+    }
+
+    /**
+     * From the spec: "The local number of the earliest article written by the
+     * person. The local number applies to a local-to-global mapping
+     * containing all articles written by the person."
+     */
+    public int getFirstCreatedLocalNo() {
+	return firstCreatedLocalNo;
+    }
+
+    /**
+     * Returns the number of texts created by this person.
+     */
+    public int getNoOfCreatedTexts() {
+	return noOfCreatedTexts;
+    }
+
+    /**
+     * Returns the number of text-marks this person holds.
+     */
+    public int getNoOfMarks() {
+	return noOfMarks;
+    }
+
+    /**
+     * Returns the number of conferences this person is a member of.
+     */
+    public int getNoOfConfs() {
+	return noOfConfs;
+    }
+
+    /**
+     * Creates a person object out of an RpcReply containing the 
+     * reply to a get-person-stat call.
+     */
     public static Person createFrom(int persNo, RpcReply reply) {
 	Person person = new Person(persNo);
 	int pcount = 0;

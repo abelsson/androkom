@@ -8,9 +8,14 @@ package nu.dll.lyskom;
 import java.util.*;
 import java.io.Serializable;
 
-// simple LysKOM Time implementation
+/**
+ * Represents the LysKOM data type "Time".
+ */
 public class KomTime implements Serializable {
     final static int DEBUG = 1;
+    /**
+     * The number of KomToken items that this data type is made of.
+     */
     public static int ITEM_SIZE = 9;
 
     int seconds, minutes, hours, mday, month, year, weekday, yearday, isdst;
@@ -19,11 +24,28 @@ public class KomTime implements Serializable {
 	return "["+(year+1900)+"-"+(month+1)+"-"+mday+", "+hours+":"+minutes+"]";
     }
 
+    /**
+     * Returns <tt>true</tt> if the supplied object is of type KomTime and represents
+     * the same time as this object.
+     */
     public boolean equals(Object o) {
 	if (!(o instanceof KomTime)) return false;
 	return toString().equals(o.toString());
     }
 
+    /**
+     * Constructs a KomTime object representing the specified time.
+     *
+     * @param sec Wall clock seconds
+     * @param min Wall clock minutes
+     * @param hours Wall clock hours (24hr format)
+     * @param mday Day within month, starting with 1
+     * @param month Month of year, with January being zero
+     * @param year Years since 1900
+     * @param weekday Day of week, Sunday being zero
+     * @param yearday Day of year, starting with zero
+     * @param isdst '1' if the time is daylight savings time
+     */
     public KomTime(int sec, int min, int hours, int mday, int month,
 		    int year, int weekday, int yearday, int isdst) {
 	this.seconds = sec;
@@ -37,6 +59,9 @@ public class KomTime implements Serializable {
 	this.isdst = isdst;
     }
 
+    /**
+     * Constructs a KomTime object representing the current system time.
+     */
     public KomTime() {
 	Calendar cal = new GregorianCalendar();
 	this.seconds = cal.get(Calendar.SECOND);
@@ -50,6 +75,10 @@ public class KomTime implements Serializable {
 	this.isdst   = cal.get(Calendar.DST_OFFSET); // protocol violation if > 1 and < 0, I think	    
     }
 
+    /**
+     * Returns a java.util.Date object representing this object's
+     * time, according to the Gregorian calendar.
+     */
     public Date getTime() {
 	Calendar cal = new GregorianCalendar();
 	cal.set(Calendar.DST_OFFSET, isdst*60*1000);
@@ -62,7 +91,14 @@ public class KomTime implements Serializable {
 	return cal.getTime();
     }
 
-    public static KomTime createFrom(int offset, KomToken[] parray) {
+    /**
+     * Constructs a KomTime object from the supplied KomToken
+     * array.
+     *
+     * @param offset first element in the array to use
+     * @param parray array of KomToken to use
+     */ 
+    static KomTime createFrom(int offset, KomToken[] parray) {
 	int pcount = offset;
 	return new KomTime(parray[pcount++].toInteger(), // 0
 			   parray[pcount++].toInteger(), // 1

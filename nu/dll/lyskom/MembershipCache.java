@@ -8,7 +8,7 @@ package nu.dll.lyskom;
 import java.util.Hashtable;
 
 
-public class MembershipCache {
+class MembershipCache {
     final static int DEBUG = 0;
     Hashtable hash;
     

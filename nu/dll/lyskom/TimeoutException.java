@@ -5,5 +5,5 @@
  */
 package nu.dll.lyskom;
 
-public class TimeoutException extends Exception {
+class TimeoutException extends Exception {
 }	

@@ -8,6 +8,11 @@
 
 package nu.dll.lyskom;
 
+/**
+ * Class that can be used to check if a text has been read.
+ *
+ * This implementation is really slow when it comes to a couple of thousand texts.
+ */
 public class ReadTextsMap {
 
     Key firstKey = null;
@@ -55,6 +60,7 @@ public class ReadTextsMap {
     }
 
     private void remove(Key k) {
+
 	if (k.prevKey != null) {
 	    k.prevKey.nextKey = k.nextKey;
 	} else {
@@ -63,7 +69,7 @@ public class ReadTextsMap {
 		firstKey.prevKey = null;
 	    } else firstKey = null;
 	}
-	
+
 	keys--;
     }
 

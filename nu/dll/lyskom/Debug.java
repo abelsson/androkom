@@ -5,12 +5,20 @@
  */
 package nu.dll.lyskom;
 
+
+/**
+ * Helper class to aid debug tracing. The println() and print() methods has
+ * no effect unless the system property "lattekom.debug" is set to "true".
+ */
 public class Debug {
+    /**
+     * <tt>true</tt> iff the "lattekom.debug" system property is non-null and equal to "true".
+     */
     public static boolean ENABLED = false;
 
     static {
         try {
-            ENABLED = System.getProperty("LATTEKOM_DEBUG").equals("1");
+            ENABLED = Boolean.getBoolean("lattekom.debug");
         } catch (SecurityException ex1) {
             
         } catch (NullPointerException ex2) {
@@ -22,11 +30,17 @@ public class Debug {
     }
 
     
-    //public static boolean ENABLED = false;
-
+    /**
+     * Prints a message to stderr if <tt>ENABLED</tt> is <tt>true</tt>,
+     * terminating with a linefeed.
+     */
     public static void println(String msg) {
 	if (ENABLED) System.err.println(Thread.currentThread().getName() + ": " + msg);
     }
+
+    /**
+     * Prints a message to stderr if <tt>ENABLED</tt> is <tt>true</tt>.
+     */
     public static void print(String msg) {
 	if (ENABLED) System.err.print(msg);
     }

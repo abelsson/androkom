@@ -7,7 +7,7 @@ package nu.dll.lyskom;
 
 import java.util.*;
 
-public class TextStatCache {
+class TextStatCache {
 
     Hashtable hash;
     

@@ -5,11 +5,15 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * Represents the LysKOM data type Conf-Stat, containing all information about a conference.
+ *
+ */
 public class Conference {
     int no;
     private byte[] name;
     private int nice;
-    private Bitstring type;
+    private ConfType type;
     private KomTime creationTime;
     private KomTime lastWritten;
     private int creator;
@@ -32,31 +36,74 @@ public class Conference {
     AuxItem[] auxItems;
 
 
-    public Conference(int no) {
+    Conference(int no) {
 	this.no = no;
     }
 
-    public Conference(int no, KomToken[] tokens) {
+    Conference(int no, KomToken[] tokens) {
 	this.no = no;
 	setFrom(tokens);
     }
 
+    /**
+     * Returns this conference's number.
+     */
     public int getNo() {
 	return no;
     }
 
+
+    /**
+     * Return this conference's name.
+     */
+    public byte[] getName() {
+	return name;
+    }
+
+
+    /**
+     * Return this conference's name, translated into a String according to the current platform's default encoding.
+     */
+    public String getNameString() {
+	return new String(name);
+    }
+
+    /**
+     * Returns an array containing the AuxItem objects associated with this Conference.
+     */
     public AuxItem[] getAuxItems() {
 	return auxItems;
     }
 
+    /**
+     * Returns the number of the text containing this conference's presentation (or zero if there is none).
+     */
     public int getPresentation() {
 	return presentation;
     }
 
-    public void setFrom(KomToken[] tokens) {
+    /**
+     * Returns this conference's super-conference. This conference should be used for replies in cases
+     * where a conference forbids comments.
+     */
+    public int getSuperConf() {
+	return superConf;
+    }
+
+    /**
+     * Returns this conference's type.
+     */
+    public ConfType getType() {
+	return type;
+    }
+
+    /**
+     * Constructs this Conference from the supplied KomToken array.
+     */
+    void setFrom(KomToken[] tokens) {
 	int c = 0;
 	name = tokens[c++].getContents();
-	type = new Bitstring(tokens[c++]);
+	type = new ConfType(tokens[c++]);
 	creationTime = KomTime.createFrom(c, tokens);
 	c += KomTime.ITEM_SIZE;
 	lastWritten = KomTime.createFrom(c, tokens);

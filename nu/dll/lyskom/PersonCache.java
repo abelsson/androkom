@@ -11,7 +11,7 @@ import java.util.Hashtable;
 // their common code (like, everything except the casting) should be
 // joined, somehow.
 
-public class PersonCache {
+class PersonCache {
     static int DEBUG = 0;
     Hashtable hash;
     

@@ -5,6 +5,9 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * This is a relic actually belonging to the nu.dll.app.test package.
+ */
 public class CmdErrException extends Exception {
     public CmdErrException(String s) {
 	super(s);

@@ -5,6 +5,14 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * Exception that will be thrown by LatteKOM methods that do server I/O
+ * and encounters data that it can't understand, or it seems that the
+ * server can't understand what we're telling it. Might contain a nested
+ * exception.
+ *
+ * @see nu.dll.lyskom.KomProtocolException#getException()
+ */
 public class KomProtocolException extends RuntimeException {
 
     Exception nestedException = null;

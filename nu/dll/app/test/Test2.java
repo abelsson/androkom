@@ -12,14 +12,19 @@ import java.util.Iterator;
 import java.util.NoSuchElementException;
 import java.util.Locale;
 import java.util.Date;
+import java.util.Random;
 
 import java.text.SimpleDateFormat;
 import java.text.MessageFormat;
 
-import org.leen.java.awt.console.*;
-
+import java.awt.event.WindowAdapter;
+import java.awt.event.WindowEvent;
+import java.awt.event.WindowListener;
+import java.awt.Font;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
+
+
 
 import nu.dll.lyskom.*;
 
@@ -65,7 +70,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
     static String fixedWhatIAmDoing = System.getProperty("lattekom.whatiamdoing");
 
+    String server = System.getProperty("lyskom.server");
+
     GuiInput guiInput = null;
+    Console console = null;
+    JFrame consoleFrame = null;
 
     static {
 	if (encoding == null) {
@@ -74,9 +83,22 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
+    String lastWhatIAmDoing = "";
     public void setStatus(String s) 
     throws IOException {
-	if (fixedWhatIAmDoing == null) foo.changeWhatIAmDoing(s);
+	if (fixedWhatIAmDoing == null && !lastWhatIAmDoing.equals(s)) {
+	    foo.changeWhatIAmDoing(s);
+	    lastWhatIAmDoing = s;
+	}
+	if (useGui) {
+	    if (foo != null && foo.getMyPerson() != null) {
+		consoleFrame.setTitle("LatteKOM/T2 - " + server + " - " + confNoToName(foo.getMyPerson().getNo()) +
+				      (foo.getCurrentConference() > 0 ? " i " + confNoToName(foo.getCurrentConference()) : "") +
+				      " - " + s);
+	    } else {
+		consoleFrame.setTitle("LatteKOM/T2 - " + s);
+	    }
+	}
 	    
     }
 
@@ -181,7 +203,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    } catch (IOException ex) {
 			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
 		    }
-		    consoleWrite("\007\007"); // beep!
+		    if (!useGui) {
+			consoleWrite("\007\007"); // beep!
+		    } else {
+			consoleFrame.requestFocus();
+			consoleFrame.toFront();
+		    }
 		    consoleWriteLn("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		    if (params[0].intValue() == foo.getMyPerson().getNo()) {
 			consoleWriteLn("Personling meddelande från " + sender + 
@@ -202,7 +229,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
  					   timestampFormat.format(m.getArrivalTime()) + ")");
 
 		    } catch (IOException ex) {
-			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());			
+			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
 		    }
 		    break;
 		case Asynch.logout:
@@ -211,7 +238,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
  					   timestampFormat.format(m.getArrivalTime()) + ")");
 
 		    } catch (IOException ex) {
-			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());			
+			System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
 		    }
 		    break;
 		case Asynch.sync_db:
@@ -231,12 +258,68 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
-    public void run(String[] argv) {
+    String defaultUser = null;
+    String defaultPassword = null;
+    boolean parseArgs(String[] argv) {
 	try {
+	    int i=0;
+	    while (i < argv.length) {
+		String arg = argv[i++];
+		if (arg.equals("-name")) {
+		    defaultUser = argv[i++];
+		}
+		if (arg.equals("-password")) {
+		    defaultPassword = argv[i++];
+		}
+		if (arg.equals("-gui")) {
+		    useGui = true;
+		    initGui();
+		}
+		if (arg.equals("-server")) {
+		    server = argv[i++];
+		}
+		if (arg.equals("-?") || arg.equals("-help") ||
+		    arg.equals("--help") || arg.equals("-h")) {
+		    usage(null);
+		    return false;
+		}
+		    
+	    }
+	    return true;
+	} catch (ArrayIndexOutOfBoundsException ex1) {
+	    usage("Felaktigt antal parametrar");
+	    return false;
+	}
+    }
 
-	    String server = System.getProperty("lyskom.server") == null ? "sno.pp.se" :
-		System.getProperty("lyskom.server");
+    void usage(String message) {
+	if (message != null)
+	    consoleWriteLn("Fel: " + message);
 
+	consoleWriteLn(" Parametrar:");
+	consoleWriteLn("   -name <namn>           Logga in som <namn>");
+	consoleWriteLn("   -password <lösenord>   Logga in med <lösenord>");
+	consoleWriteLn("   -server <server>       Anslut till <server>");
+	consoleWriteLn("   -gui                   Aktivera GUI-konsoll");
+    }
+
+    public void run() {
+	try {
+	    while (server == null) {
+		server = crtReadLine("Vilken server vill du ansluta till? ");
+		if (server == null) { // user might have pressed ^D, or we're lacking a stdin stream
+		    consoleWriteLn("\nDet verkar vara problem med att läsa från stdin. Det kan hända att\n" +
+				   "Javamiljön för denna applikation inte har någon inmatningsterminal.\n" +
+				   "Om så är fallet, så bör en ny konsoll nu öppnas utav applikationen.\n" +
+				   "Om detta inte sker, starta om programmet med parametern \"-gui\", eller\n" +
+				   "sätt Javasystem-propertyn \"lattekom.use-gui\" till värdet \"true\".\n");
+		    String test = crtReadLine("\nOm denna applikation har en inmatningsterminal, tryck <Enter>.\n");
+		    if (test == null) { // assume we must use a GUI console
+			useGui = true;
+			initGui();
+		    }
+		}
+	    }
 	    foo = new Session();
 	    foo.connect(server, 4894);
 	    consoleWriteLn("Ansluten till " + server);
@@ -248,13 +331,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    String loginName = null;
 	    String loginPassword = null;
 	    while (loginUser == 0 && names.length != 1) {
-		String enteredName = argv.length > 0 ? argv[0] : crtReadLine("Vad heter du? ");
+		String enteredName = defaultUser != null ? defaultUser : crtReadLine("Vad heter du? ");
 		names = foo.lookupName(enteredName,
 				       true, false);
 		setStatus("Loggar in.");
 		if (names.length > 1) {
 		    System.err.println("Flertydigt namn.");
-		    if (argv.length > 0) System.exit(-42);
+		    if (defaultUser != null) defaultUser = null;
 		    for (int i=0;i<names.length;i++)
 			consoleWriteLn("\tAlternativ "+i+": " +
 					   names[i].getNameString());
@@ -290,7 +373,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
 	    if (loginUser == 0) {
 		loginName = names[0].getNameString();
-		if (argv.length > 1) loginPassword = argv[1];
+		consoleWriteLn(loginName);
+		if (defaultPassword != null) loginPassword = defaultPassword;
 		else loginPassword = crtReadLine("Lösenord: ");
 		loginUser = names[0].getNo();
 	    } else {
@@ -307,11 +391,14 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		System.err.println("Inloggningen misslyckades!");
 		System.exit(-32);
 	    }
-	    consoleWriteLn("Inloggad. Välkommen till LysKOM!");
+	    consoleWriteLn("Inloggad. Välkommen till LysKOM! Skriv \"?\" och tryck <Enter> för hjälp.");
 	    consoleWrite("Vänta lite medans jag hämtar information om olästa möten...");
 	    foo.updateUnreads();
 	    consoleWriteLn("klart.");
-
+	    if (useGui) {
+		
+		
+	    }
 	    if (fixedWhatIAmDoing != null) {
 		foo.doChangeWhatIAmDoing(fixedWhatIAmDoing);
 	    }
@@ -337,19 +424,20 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		t.start();
 	    }
 
-
+	    foo.setLatteVersion("T2", "0.9");
 	    //4303588, 100035, 4257987, 4244657
 	    int me = foo.getMyPerson().getNo();
-	    boolean go = true;
 	    int rc = 1;
-	    while (go) {
+	    while (!shutdown) {
 		int currentConference = foo.getCurrentConference();
 		if (lastTextNo != 0) {
 		    while (rc == 1) {
 			handleMessages();
 			try {
 			    likesAsynchMessages = true;
-			    rc = doCommand(lastText, crtReadLine(genericPrompt()));
+			    String myCmd = crtReadLine(genericPrompt());
+			    likesAsynchMessages = false;
+			    rc = doCommand(lastText, myCmd);
 			} catch (CmdErrException ex) {
 			    consoleWriteLn("%Fel: " + ex.getMessage());
 			    rc = 1;
@@ -400,7 +488,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    }
 		    
 		}
-		if (rc == -1) go = false;
+		if (rc == -1) shutdown = true;
 	    }
 	    
 	    consoleWrite("\n\n-- Read " + noRead + " texts.\n");
@@ -409,11 +497,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    consoleWriteLn("Logged out");
 	    System.exit(0);
 	} catch (ProtocolException ex) {
-	    consoleWriteLn("Test: "+ex);
+	    System.err.println("Protokollfel: "+ex);
 	} catch (IOException ex) {
-	    consoleWriteLn("Test:  "+ex);
+	    System.err.println("I/O-fel: "+ex);
 	}
-	System.exit(0);
     }
 
     String genericPrompt()
@@ -423,25 +510,57 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 			  " med " + foo.getUnreadCount(conf) + " olästa.") + "\n";
 	if (!toreview.empty()) {
 	    curConf += "(Återse nästa text) ";
-	    setStatus("Återser.");
+	    setStatus("Återser");
 	} else if (!toread.empty()) {
 	    curConf += "(Läsa nästa kommentar) ";
-	    setStatus("Läser kommentarer.");
+	    setStatus("Läser kommentarer");
 	} else if (foo.nextUnreadText(false) == -1) {
 	    if (foo.nextUnreadConference(false) == -1) {
 		curConf += "(Slut på inlägg) ";
-		setStatus("Väntar på inlägg.");
+		setStatus("Väntar på inlägg");
 	    } else {
 		curConf += "(Gå till nästa möte) ";
-		setStatus("Har just läst ut ett möte");
+		if (conf > 0)
+		    setStatus("Har just läst ut ett möte");
+		else
+		    setStatus(randomStatus());
 	    }
 	} else {
 	    curConf += "(Läsa nästa inlägg) ";
-	    setStatus("Läser inlägg.");
+	    setStatus("Läser inlägg");
 	}
 	return curConf + "> ";
     }
-    
+
+
+    Random random = new Random();
+    public int nextRandInt(int n) {
+	if (n<=0)
+	    throw new IllegalArgumentException("n must be positive");
+	
+	if ((n & -n) == n)  // i.e., n is a power of 2
+	    return (int)((n * (long) random.nextInt()) >> 32);
+	
+	int bits, val;
+	do {
+	    bits = random.nextInt();
+	    val = bits % n;
+	} while(bits - val + (n-1) < 0);
+	return val;
+    }
+
+
+    String[] randomStatus = {
+	"Kliar sig i huvudet.",
+	"Väntar på att himlen ska falla ner.",
+	"Leker pixelleken.",
+	"Funderar.",
+	"Är.",
+	"Äter banan." };
+    String randomStatus() {
+	return randomStatus[nextRandInt(randomStatus.length)];
+    }
+
     /**
      * Returns:
      * -1 if user wants to quit
@@ -457,7 +576,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     throws CmdErrException, IOException {
 	if (s == null) return -1;
 	if (s.equals("")) return 0;
-	likesAsynchMessages = false;
 	StringTokenizer st = new StringTokenizer(s);
 	String cmd = st.nextToken();
 	if (cmd.equals("?")) {
@@ -470,21 +588,25 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 			   "\tlm [substräng]    -- lista möten\n" +
 			   "\tlmt               -- lista markerade texter\n" +
 			   "\tln                -- lista nyheter\n" +
-			   "\tmt                -- markera senast lästa text\n" +
-			   //"\tp [mötesnamn]     -- skriv presentation (*)\n" + 
+			   "\tmt [text]         -- markera text\n" + 
+			   "\tnm                -- nästa möte med olästa\n" +
 			   "\tq                 -- avsluta TestKOM\n" +
 			   //"\trm <mötesnamn>    -- radera möte\n" +
 			   "\trt <text>         -- radera text\n" +
 			   "\ts [mötesnamn]     -- skicka meddelande\n" + 
 			   "\tsm <mötesnamn>    -- skapa (publikt) möte\n" +
+			   "\tss <sessionsnr.>  -- visa sessions- och klientinformation\n" + 
 			   "\tuo                -- uppdatera olästa (typ omstart)\n" + 
-			   "\tv                 -- lista inloggade användare\n" + 
+			   "\tv                 -- lista inloggade aktiva användare\n" + 
 			   "\tå <inläggsnummer> -- återse text\n" +
+			   "\tåf <mötesnamn>    -- återse FAQ\n" + 
 			   "\tåk                -- återse (första) kommentaren\n" +
+			   "\tåp <mötesnamn>    -- återse presentation för person eller möte\n" +
 			   "\tåu                -- återse (första) urinlägget\n" +
 			   "\täf <mötesnamn>    -- ändra FAQ\n" +
-			   "\trpc <#> [data]    -- skicka RPC-kommando (svaret ignoreras)\n" + 
-			   "\n  Mötesnamn kan för det mesta bytas ut mot \"m <nummber>\"\n");
+			   "\täp [mötesnamn]    -- ändra/skriv presentation\n" + 
+			   "\trpc <#> [data]    -- skicka RPC-kommando (svaret ignoreras) (farligt)\n" + 
+			   "\n  Mötesnamn kan för det mesta bytas ut mot \"m <nummer>\"\n");
 	    return 1;
 	}
 	if (cmd.equals("uo")) {
@@ -501,15 +623,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		if (rno == 0) throw new CmdErrException("parameter saknas");
 	    }
 	    foo.writeRaw(rno, params);
-	    /*
-	    RpcReply reply = foo.writeRaw(rno, params);
-	    consoleWriteLn("Fick svar: " + reply);
-	    KomToken[] reqparams = reply.getParameters();
-	    for (int i=0; i < reqparams.length; i++) {
-		consoleWriteLn("\t--> Parameter " + i + ": " +
-				   reqparams[i]);
-	    }
-	    */
 	    return 1;
 	    
 	}
@@ -629,6 +742,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    if (textNo == 0) throw new CmdErrException("du kan inte ta bort text 0");
 	    try {
 		foo.deleteText(textNo);
+		consoleWriteLn("OK: text " + textNo + " raderad.");
 		return 1;
 	    } catch (RpcFailure ex1) {
 		switch (ex1.getError()) {
@@ -654,7 +768,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    throw new CmdErrException("trasigt inläggsnummer: " + opt);
 		}
 	    }
-	    if (t == null) consoleWriteLn("Hittar inget inlägg att kommentera");
+	    if (t == null) {
+	      consoleWriteLn("Hittar inget inlägg att fotnotera");
+	      return 1;
+	    }
+
 	    setStatus("Skriver en fotnot.");
 	    consoleWriteLn("-- Fotnot till text " + t.getNo() + ".");
 	    consoleWriteLn("-- Skriv din fotnot, avsluta med \".\" på tom rad.");
@@ -694,8 +812,25 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    consoleWriteLn("-- Kommentar till text " + t.getNo() + ".");
 	    consoleWriteLn("-- Skriv din kommentar, avsluta med \".\" på tom rad.");
 	    Text nText = new Text(new String(t.getSubject()), "");
+
 	    nText.addCommented(t.getNo());
-	    nText.addRecipients(t.getRecipients());
+
+	    int[] recipients = t.getRecipients();
+	    for (int i=0; i < recipients.length; i++) {
+		Conference conf = foo.getConfStat(recipients[i]);
+		if (conf.getType().original()) {
+		    int superconf = conf.getSuperConf();
+		    if (superconf > 0) {
+			nText.addRecipient(superconf);
+		    } else {
+			consoleWriteLn("Du får inte skriva kommentarer i " +
+				       conf.getNameString());
+		    }
+		} else {
+		    nText.addRecipient(recipients[i]);
+		}
+	    }
+
 	    nText = editText(nText);
 	    if (nText == null) {
 		consoleWrite("Avbruten.");
@@ -731,7 +866,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    consoleWriteLn("Markerade inlägg:");
 	    Mark[] marks = foo.getMarks();
 	    for (int i=0; i < marks.length; i++) {
-		consoleWriteLn("Markering " + (i+1) + ": " + marks[i].getText() + " (" + marks[i].getType() + ")");
+		consoleWrite("Markering " + (i+1) + ": " + marks[i].getText() + " (" + marks[i].getType() + ")");
+		TextStat ts = foo.getTextStat(marks[i].getText());
+		if (ts != null) {
+		    consoleWriteLn(" av " + confNoToName(ts.getAuthor()));
+		} else {
+		    consoleWriteLn("");
+		}
 	    }
 	    consoleWriteLn("");
 	    return 1;
@@ -777,10 +918,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return 1;
 
 	}
-	if (cmd.equals("p")) { // skriv presentation
-	    consoleWriteLn("-- Den här funktionen är inte implementerad ännu.");
-	    return 1;
-	}
 	if (cmd.equals("i")) { // skriv inlägg i nuvarande möte
 	    if (foo.getCurrentConference() == -1) {
 		throw new CmdErrException("Du måste vara i ett möte för att kunna skriva ett inlägg.");
@@ -800,13 +937,28 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    } else consoleWriteLn("misslyckades att skapa inlägg.");
 	    return 1;
 	}		 
+	if (cmd.equals("åp")) {
+	    if (!st.hasMoreElements()) throw new CmdErrException("Du måste ange ett möte eller en person");
+	    int confNo = parseNameArgs(st.nextToken(), true, true);
+	    if (confNo < 1) return 1;
+	    int presNo = foo.getConfStat(confNo).getPresentation();
+	    if (presNo < 1) {
+		throw new CmdErrException("Hittade ingen presentation för " + confNoToName(confNo));
+	    }
+	    
+	    Text presText = foo.getText(presNo);
+	    if (presText == null) throw new CmdErrException("Kunde inte hämta text " + presNo);
+	    displayText(presText);
+
+	    return 1;
+	}
 	if (cmd.equals("äp")) {
 	    int confNo = foo.getMyPerson().getNo();
 	    if (st.hasMoreTokens()) {
 		confNo = parseNameArgs(st.nextToken(), true, true);
 	    }
 	    if (confNo < 1) return 1;
-
+	    consoleWriteLn("Ändrar presentation för " + confNoToName(confNo));
 	    Conference myConf = foo.getConfStat(confNo);
 	    int myPresentationNo = myConf.getPresentation();
 	    Text myPresentation = null;
@@ -827,13 +979,41 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		consoleWriteLn("text nummer " + newText + " skapad.");
 		markAsRead(newText);
 		try {
-		    foo.setPresentation(foo.getMyPerson().getNo(), newText);
+		    foo.setPresentation(confNo, newText);
 		    consoleWriteLn("OK, text " + newText + " är ny presentation för " + 
 				   confNoToName(confNo));
 		} catch (RpcFailure ex1) {
 		    consoleWriteLn("%Fel: kunde inte sätta presentation för " + 
 				   confNoToName(confNo) + ": " + ex1.getMessage());
 		}
+	    }
+	    return 1;
+	}
+	if (cmd.equals("ss")) { // status (för) session
+	    try {
+		int sessionNo = Integer.parseInt(st.nextToken());
+		SessionInfo si = foo.getStaticSessionInfo(sessionNo);
+		consoleWriteLn("Status för session " + sessionNo + ":");
+		consoleWriteLn(" Användarnamn : " + new String(si.getUsername()));
+		consoleWriteLn(" Värddator    : " + new String(si.getHostname()));
+		String ident = new String(si.getIdentUser());
+		if (!ident.equals("unknown")) {
+		    consoleWriteLn(" Ident        : " + ident);
+		}
+		consoleWriteLn(" Starttid     : " + timestampFormat.format(si.getConnectionTime().getTime()));
+		String clientName = new String(foo.getClientName(sessionNo));
+		String clientVersion = new String(foo.getClientVersion(sessionNo));
+		if (!clientName.equals(""))
+		    consoleWriteLn(" Klientnamn   : " + clientName);
+		if (!clientVersion.equals(""))
+		    consoleWriteLn(" Klientversion: " + clientVersion);
+		
+	    } catch (RpcFailure ex0) {
+		throw new CmdErrException(ex0.getMessage());
+	    } catch (NoSuchElementException ex1) {
+		throw new CmdErrException("Du måste ange ett sessionsnummer");
+	    } catch (NumberFormatException ex2) {
+		throw new CmdErrException("Kunde inte tolka sessionsnummer " + ex2.getMessage());
 	    }
 	    return 1;
 	}
@@ -942,6 +1122,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    try {
 		foo.changeConference(confNo);
 		foo.updateUnreads();
+
+		// töm att-läsa-listan
+		while (!toread.isEmpty()) toread.pop();
 		return 1;
 	    } catch (RpcFailure failed) {
 		consoleWrite("-- mötesbytet misslyckades: ");
@@ -977,10 +1160,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
 	if (cmd.equals("nm")) { // nästa möte
 	    int nextConf = foo.nextUnreadConference(true);
-	    if (nextConf != -1)
+	    if (nextConf != -1) {
+		while (!toread.isEmpty()) toread.pop(); // töm att-läsa-listan här också
 		consoleWriteLn("nästa möte - " + confNoToName(nextConf));
-	    else
+	    } else {
 		consoleWriteLn("Det finns inga fler olästa möten.");
+	    }
 	    return 1;
 	}
 	if (cmd.equals("sm")) { // skapa möte
@@ -1024,17 +1209,21 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		      
     }
     
-    static void consoleWriteLn(String s) {
+    void consoleWriteLn(String s) {
 	consoleWrite(s + lineSeparator);
     }
-
-    static void consoleWrite(String s) {
+    
+    void consoleWrite(String s) {
 	try {
+	    if (useGui) {
+		console.append(s, false);
+		console.setCaretPosition(console.getText().length());
+		return;
+	    }
 	    ByteArrayOutputStream consByteStream = new ByteArrayOutputStream();
 	    byte[] sBytes = s.getBytes(encoding);
 	    consByteStream.write(sBytes, 0, sBytes.length);
 	    consByteStream.writeTo(System.out);
-	    if (useGui) stdoutScroll.getVerticalScrollBar().setValue(stdoutScroll.getVerticalScrollBar().getMaximum());
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported console encoding: " + ex1.getMessage());
 	} catch (IOException ex2) {
@@ -1072,7 +1261,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		try {
 		    guiInput.wait();
 		} catch (InterruptedException ex1) {
-		    System.err.println("Interrupted while waiting for user input");
+		    throw new IOException("Interrupted while waiting for user input");
 		}
 		return guiInput.getString();
 	    }
@@ -1173,8 +1362,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    }
 		    consoleWriteLn("");
 		} else if (icmd.startsWith("!ää")) {
-		    consoleWriteLn("** Ändra ärende:");
-		    subject = crtReadLine("Ärende: ");
+		    if (rst.hasMoreElements()) {
+			subject = rst.nextToken("").substring(1);
+			consoleWriteLn("** Ändrade ärende till: " + subject);
+		    } else {
+			consoleWriteLn("** Ändra ärende:");
+			subject = crtReadLine("Ärende: ");
+		    }
 		} else if (icmd.startsWith("!v")) {
 		    consoleWriteLn("** Hela texten:");
 		    for (int i=0; i < rows.size(); i++) {
@@ -1200,6 +1394,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    consoleWriteLn("** Okänt editorkommando");
 		}
 	    } else {
+		if (row.length() > 73) {
+		    consoleWriteLn("** Varning: rad " + (rows.size()+1) + " är över 73 tecken lång.");
+		}
 		rows.add(row);
 		rowCount++;
 	    }
@@ -1212,7 +1409,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    textb.append(i.next().toString() + "\n");
 	}
 	
-	t.setContents((subject + "\n" + textb.toString()).getBytes());
+	t.setContents((subject + "\n" + textb.toString().trim()).getBytes());
 	return t;
     }
     void displayText(int tn) throws IOException {
@@ -1379,7 +1576,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     }
 
     public void consoleAction(ConsoleEvent event) {
-	Debug.println("consoleAction(" + event + ")");
+	Debug.println("consoleAction(): " + event.getCommunique());
 	if (event.getType() == ConsoleEvent.COMMAND_ENTERED) {
 	    synchronized (guiInput) {
 	        guiInput.setString((String) event.getCommunique());
@@ -1392,42 +1589,59 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     public static void main(String[] argv) {
 	Test2 t2 = new Test2();
 
-	consoleWriteLn("IJKLKOM (c) 1999 Rasmus Sten");
-	t2.run(argv);
+	t2.consoleWriteLn("IJKLKOM (c) 1999 Rasmus Sten");
+	if (t2.parseArgs(argv))	t2.run();
     }
 
-    static JScrollPane stdoutScroll;
+    boolean shutdown = false;
+    class GuiFrameActionListener extends WindowAdapter {
+	public void windowClosing(WindowEvent e) {
+	    synchronized (guiInput) {
+		shutdown = true;
+		useGui = false;
+		guiInput.setString("q"); // cphack. :-)
+		guiInput.notify();
+	    }
+	}
+    }
+
+    boolean guiInited = false;
+    void initGui() {
+	if (guiInited) {
+	    System.err.println("Konsoll-GUI är redan initialiserat.");
+	    return;
+	}
+	guiInput = new GuiInput();
+	System.out.println("Initialiserar GUI-konsoll.");
+	consoleFrame = createConsoleFrame();
+	console = new Console(80, 25);
+	console.setConsoleThingies("");
+	JScrollPane stdoutScroll = new JScrollPane(console,
+						   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
+						   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
+	consoleFrame.getContentPane().add(new JScrollPane(console));
+	consoleFrame.setTitle("LatteKOM/T2");
+	console.setFont(new Font("monospaced", Font.PLAIN, 14));
+	System.setOut(new PrintStream(new LogOutputStream(console)));
+	consoleFrame.setVisible(true);
+	consoleFrame.addWindowListener(new GuiFrameActionListener());
+	consoleFrame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+	console.requestFocus();
+	console.addConsoleListener(this);
+	
+	if (!Debug.ENABLED) {
+	    System.setErr(new PrintStream(new LogOutputStream(console)));
+	}
+	guiInited = false;
+    }
+
     public Test2() {
 	if (useGui) {
-	    guiInput = new GuiInput();
-
-	    System.out.println("Enabling console GUI");
-	    JFrame stdout = createConsoleFrame();
-	    Console stdoutConsole = new Console(80, 25);
-	    stdoutScroll = new JScrollPane(stdoutConsole,
-					   JScrollPane.VERTICAL_SCROLLBAR_ALWAYS,
-					   JScrollPane.HORIZONTAL_SCROLLBAR_AS_NEEDED);
-	    stdout.getContentPane().add(new JScrollPane(stdoutConsole));
-	    stdout.repaint();
-	    stdout.setTitle("LatteKOM console");
-
-	    System.setOut(new PrintStream(new LogOutputStream(stdoutConsole)));
-
-	    stdoutConsole.addConsoleListener(this);
-	    if (Debug.ENABLED) {
-		Console stdErrConsole = new Console(80,25);
-		JFrame stderr = createConsoleFrame();
-		stderr.getContentPane().add(new JScrollPane(stdErrConsole));
-		stderr.setVisible(true);
-		stderr.setTitle("LatteKOM stderr console");
-		stderr.repaint();
-		System.setErr(new PrintStream(new LogOutputStream(stdErrConsole)));
-	    } else {
-		System.setErr(new PrintStream(new LogOutputStream(stdoutConsole)));
-	    }
+	    initGui();
 	}	
     }
 
+    int handlerCount = 0;
     public void asynchMessage(AsynchMessage m) {
 	synchronized (messages) {
 	    messages.addLast(m);
@@ -1443,7 +1657,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 			    throw new RuntimeException("I/O error: " + ex1.getMessage());
 			}
 		    }
-		}, "AsynchMessageHandler").start();
+		}, "AsynchEventHandler-"+handlerCount++).start();
 	}
     }
 

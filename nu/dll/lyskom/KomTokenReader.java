@@ -11,7 +11,7 @@ import java.net.ProtocolException;
 import java.util.Vector;
 import java.util.Enumeration;
 
-public class KomTokenReader {
+class KomTokenReader {
 
     final static int DEBUG = 0;
 

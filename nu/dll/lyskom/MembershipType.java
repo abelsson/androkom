@@ -5,6 +5,9 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * Represents a Membership-Type. TODO: document the flags.
+ */ 
 public class MembershipType extends Bitstring {
     public static final int bitcount   = 8;
     public static final int invitation = 0;
@@ -24,5 +27,9 @@ public class MembershipType extends Bitstring {
 	}
 	setContents(contents);
     }   
+
+    public MembershipType(KomToken token) {
+	super(token);
+    }
 
 }

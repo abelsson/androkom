@@ -26,15 +26,18 @@ public class MembershipList implements ListModel, Runnable {
 
     public void run() {
 	updatingNames = true;
+	Debug.println("--> MembershipList.run()");
 	try {
 	    for (int i=0;i<names.length;i++) {
-	        if (i < list.length) names[i] = new String(session.getConfName(list[i].conference));
+	        if (i < list.length) names[i] = new String(session.getConfName(list[i].getConference()));
 	    }
 	    notifyListeners();
 	} catch (java.io.IOException ex) {
 	    System.err.println("MembershipList.run(): "+ex);
 	}
 	updatingNames = false;
+	Debug.println("<-- MembershipList.run()");
+
     }
     public Membership[] getList() {
 	return list;
@@ -61,7 +64,7 @@ public class MembershipList implements ListModel, Runnable {
     public Object getElementAt(int index) {
 	String confRep = null;
 	if (names[index] == null) {
-	    confRep = "Conference "+list[index].conference;
+	    confRep = "Conference "+list[index].getConference();
 	    if (!updatingNames) {
 		new Thread(this).start();
 	    }

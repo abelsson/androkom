@@ -9,7 +9,7 @@ import java.util.Hashtable;
 import java.util.Vector;
 import java.util.Enumeration;
 
-public class ConferenceCache {
+class ConferenceCache {
     static int DEBUG = 1;
     Hashtable confHash, uConfHash;
     Vector listeners;

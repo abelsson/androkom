@@ -5,5 +5,8 @@
  */
 package nu.dll.lyskom;
 
-public class LoginFailedException extends Exception {
+/**
+ * @deprecated Applications should catch the RpcFailure instead. This exception is never thrown by LatteKOM.
+ */
+class LoginFailedException extends Exception {
 }	

@@ -12,7 +12,7 @@ import java.io.*;
 import java.util.LinkedList;
 
 
-public class Connection {
+class Connection {
     private LinkedList writeQueue = new LinkedList();
     private Socket sock;
     private InputStream input;
@@ -60,6 +60,7 @@ public class Connection {
 		}
 	    });
 	queuedWriter.setName("QueuedWriter");
+	queuedWriter.setDaemon(true);
 	queuedWriter.start();
 
     }

@@ -15,13 +15,13 @@ import java.io.*;
  *
  * NOTE: might be an idea to create a dispatcher worker thread that
  * executes all calls to listener objects. Now, this thread
- * executed the listener callbacks, with the side-effect that they
+ * executes the listener callbacks, with the side-effect that they
  * won't be able to call synchronous methods in the Session class
  * (since they rely on this thread to be different from the
  * executing).
  *
  */
-public class MessageListener
+class MessageListener
 implements Runnable {
 
     private final static int DEBUG = 0;
@@ -41,7 +41,8 @@ implements Runnable {
 	if (wantAsynch) {
 	    if (!asynch) {
 		asynch = true;
-		thread = new Thread(this, "LyskomAsynchReadThread");
+		thread = new Thread(this, "MessageListener");
+		thread.setDaemon(true);
 		thread.start();
 	    }
 	} else {

@@ -11,27 +11,118 @@ import java.util.LinkedList;
 import java.util.Iterator;
 import java.util.Stack;
 
+/**
+ * <p>
+ * The Text-Stat LysKOM data type (and this class) contains status information
+ * about a text, such as its author, creation time, etc.
+ * The most notable part of a Text-Stat is the Misc-Info selection, which
+ * is a list of Selection objects containing information about recipient,
+ * comments, footnotes, and so on. The Misc-Info list is likely to change
+ * over time, while the rest of the Text-Stat is not.
+ * </p><p>
+ * Another important part is the AuxItem list. Aux-Items are arbitrary data
+ * that can be attached to texts and conferences to specify things not
+ * covered in the base protocol, such as Content-Type of a text, FAQ number of
+ * conferences, and so on.
+ * </p><p>
+ * For many needs, the Misc-Info helper methods in the Text objects will
+ * be quite sufficient, such as <tt>getRecipients()</tt>, <tt>addRecipient(int)</tt>,
+ * and so on. However, for more complex tasks, such as finding out when a specific
+ * recipient was added to a text and by whom, you will need to look into the Misc-Info
+ * list of Selection objects. Each Selection in the Misc-Info list represents a group
+ * of data received by the server.
+ * </p><p>
+ * All Misc-Info selectors specified in Protocol A are available as constants in this
+ * class. To manually find all (normal) recipients to a text, and their corresponding
+ * local text number, you will have to use <tt>getMiscInfo()</tt> to retreive a List
+ * of Selection objects, examine each object to see if they contain the selector
+ * <tt>TextStat.miscRecpt</tt>, and if they do, you will find the local text number
+ * in the same Selection object with the selector tag <tt>TextStat.miscLocNo</tt>.
+ * The method <tt>getMiscInfoSelections(int)</tt> in this class makes such operations
+ * easier by returning all Selections containing a given type of data, such as 
+ * recipient information. The above procedure can thus be simplified by doing a
+ * <tt>getMiscInfoSelections(miscRecpt)</tt>, which then gives you a List containing
+ * the Selection objects you are interested in.
+ * </p><p>
+ * For more detailed information, please consult the LysKOM Protocol A specification,
+ * node "<b>The Misc-Info List</b>". And better yet, help us improve this documentation
+ * and implementation.
+ * </p>
+ *
+ * @see nu.dll.lyskom.TextStat#getMiscInfoSelections(int)
+ * @see nu.dll.lyskom.Text
+ * @see nu.dll.lyskom.Selection
+ */
 public class TextStat implements java.io.Serializable {
 
     // Misc-Info selection values
+    /**
+     * Misc-Info Selection selector for tagging recipient data.
+     */ 
     public final static int miscRecpt    =  0;
+    /**
+     * Misc-Info Selection selector for tagging CC-recipient data.
+     */ 
     public final static int miscCcRecpt  =  1;
+    /**
+     * Misc-Info Selection selector for tagging "comment-to" data
+     */ 
     public final static int miscCommTo   =  2;
+    /**
+     * Misc-Info Selection selector for tagging "comment-in" data
+     */ 
     public final static int miscCommIn   =  3;
+    /**
+     * Misc-Info Selection selector for tagging "footnote-to" data
+     */ 
     public final static int miscFootnTo  =  4;
+    /**
+     * Misc-Info Selection selector for tagging "footnote-in" data
+     */ 
     public final static int miscFootnIn  =  5;
+    /**
+     * Misc-Info Selection selector for tagging a local text number
+     */ 
     public final static int miscLocNo    =  6;
+    /**
+     * Misc-Info Selection selector for tagging a receiving time
+     */ 
     public final static int miscRecTime  =  7;
+    /**
+     * Misc-Info Selection selector for tagging person-no of the person who added a recipient
+     */ 
     public final static int miscSentBy   =  8;
+    /**
+     * Misc-Info Selection selector for tagging the time at which a recipient was added
+     */ 
     public final static int miscSentAt   =  9;
+    /**
+     * ?
+     */ 
     public final static int miscXAuthor  = 10;
+    /**
+     * ?
+     */ 
     public final static int miscXPerson  = 11;
+    /**
+     * ?
+     */ 
     public final static int miscXRecpt   = 12;
+    /**
+     * ?
+     */ 
     public final static int miscXText    = 13;
+    /**
+     * ?
+     */ 
     public final static int miscXSystem  = 14;
+    /**
+     * Misc-Info Selection selector for tagging "BCC" recipient data.
+     * Added in LysKOM Protocal A version 10, I think.
+     */
     public final static int miscBccRecpt = 15; // prot. 10
 
-    public final static int MISC_INFO_COUNT = 15;
+    public final static int MISC_INFO_COUNT = 16;
 
     final static int INITIAL_AUX_LENGTH = 0;
 
@@ -40,47 +131,65 @@ public class TextStat implements java.io.Serializable {
     AuxItem[] auxItems = new AuxItem[INITIAL_AUX_LENGTH];
     int auxItemCount = 0;
 
-    public KomTime creationTime;
-    public int author;
-    public int lines;
-    public int chars;
-    public int marks;
+    KomTime creationTime;
+    int author;
+    int lines;
+    int chars;
+    int marks;
 
     int no;
 
     //public Selection miscInfo;
-    public List miscInfo = new LinkedList();
+    List miscInfo = new LinkedList();
 
+    /**
+     * Creates an empty TextStat object
+     */
     public TextStat() {
 	this(0);
     }
 
-    public TextStat(int no) {
+    protected TextStat(int no) {
 	super();
 	this.no = no;
 	miscInfo = new LinkedList();
     }
 
-    public void setNo(int no) {
+    protected void setNo(int no) {
 	this.no = no;
     }
 
+    /**
+     * Returns the text number this TextStat information belongs to.
+     */
     public int getNo() {
 	return no;
     }
 
+    /**
+     * Returns the author of the text.
+     */
     public int getAuthor() {
 	return author;
     }
 
+    /**
+     * Returns an array of AuxItem object representing the AuxItem list attached to this text.
+     */
     public AuxItem[] getAuxItems() {
 	return auxItems;
     }
 
+    /**
+     * Returns the time at which this text was created.
+     */
     public KomTime getCreationTime() {
 	return creationTime;
     }
 
+    /**
+     * Adds an AuxItem object to this text.
+     */
     public void addAuxItem(AuxItem a) {
 	if (auxItemCount == auxItems.length) {
 	    AuxItem[] newArray = new AuxItem[++auxItemCount];
@@ -93,6 +202,9 @@ public class TextStat implements java.io.Serializable {
 	}
     }
 
+    /**
+     * Returns the number of AuxItem objects attached to this text.
+     */
     public int countAuxItems() {
 	int c=0;
 	for (int i=0;i<auxItems.length;i++)
@@ -100,11 +212,19 @@ public class TextStat implements java.io.Serializable {
 	return c;
     }
 
-    //    public Selection getMiscInfo() {
+    /**
+     * Returns a List containing Selection objects, which in turn
+     * makes up the Misc-Info data for this text.
+     */
     public List getMiscInfo() {
 	return miscInfo;
     }
 
+    /**
+     * Removes all Selections containing the specified key.
+     * For example, <tt>clearMiscInfoEntry(miscRecpt)</tt> will
+     * remove all (normal) recipients from this text.
+     */
     public void clearMiscInfoEntry(int key) {
 	Iterator i = miscInfo.iterator();
 	Stack toRemove = new Stack();
@@ -122,6 +242,11 @@ public class TextStat implements java.io.Serializable {
 	Debug.println("clearMiscInfoEntry: found " + count + " selections with flag " + key);
     }
 
+    /**
+     * Removes tag <tt>key</tt> if it contains <tt>value</tt> in this texts Misc-Info list.
+     * For example, a convenient way of subtracting the recipient no. 4711 may be:
+     * <tt>removeMiscInfo(miscRecpt, 4711</tt>.
+     */
     public void removeMiscInfoEntry(int key, int value) {
 	Iterator i = miscInfo.iterator();
 	int count = 0;
@@ -136,10 +261,18 @@ public class TextStat implements java.io.Serializable {
 	Debug.println("removeMiscInfoEntry(" + key + ", " + value + "): found " + count + " keys");
     }
 
+    /**
+     * Adds a new Misc-Info Selection entry with the tag <tt>key</tt>
+     * and the value <tt>value</tt>.
+     */
     public void addMiscInfoEntry(int key, Integer value) {
 	addMiscInfoEntry(key, value.intValue());
     }
 
+    /**
+     * Adds a new Misc-Info Selection entry with the tag <tt>key</tt>
+     * and the value <tt>value</tt>.
+     */
     public void addMiscInfoEntry(int key, int value) {
 	Iterator i = miscInfo.iterator();
 	/*
@@ -158,8 +291,26 @@ public class TextStat implements java.io.Serializable {
     }
 
     /**
-     * Returns an int[] for Misc-Info members with integer values
-     *
+     * Returns a List of all Selections containing the tag <tt>key</tt>.
+     * To retreive a list of all Selections containing recipient information,
+     * do <tt>getMiscInfoSelections(miscRecpt)</tt>. To retreive all
+     * selections containing a local text number, i.e. all types of recipients,
+     * you can search for that selector tag as well (<tt>getMiscInfoSelections(miscLocNo)</tt>).
+     */
+    public List getMiscInfoSelections(int key) {
+	List l = new LinkedList();
+	Iterator i = miscInfo.iterator();
+	while (i.hasNext()) {
+	    Selection s = (Selection) i.next();
+	    if (s.contains(key)) l.add(s);
+	}
+	return l;
+    }
+
+    /**
+     * Returns an array containing all values tagged by the specified key <tt>no</tt>
+     * in this texts Misc-Info list. For example, <tt>getStatInts(miscRecpt)</tt>
+     * will return an integer array containing all recipients to this text.
      */
     public int[] getStatInts(int no) {
 	List values = new LinkedList();
@@ -180,7 +331,7 @@ public class TextStat implements java.io.Serializable {
     }
 
     /* Gah. all createFrom() should be constructors, I guess. */
-    public static TextStat createFrom(int no, RpcReply reply) {
+    static TextStat createFrom(int no, RpcReply reply) {
 	KomToken[] params = reply.getParameters();
 	TextStat ts = new TextStat(no);
 	List miscInfo = ts.getMiscInfo();

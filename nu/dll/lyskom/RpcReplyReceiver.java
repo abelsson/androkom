@@ -6,6 +6,6 @@
 // -*- Mode: Java; c-basic-offset: 4 -*-
 package nu.dll.lyskom;
 
-public interface RpcReplyReceiver {
-    public void rpcReply(RpcReply r);
+interface RpcReplyReceiver {
+    void rpcReply(RpcReply r);
 }

@@ -65,9 +65,9 @@ import java.util.Vector;
 */  
 
 /**
- * This handles the datatype Dynamic-Session-Info
+ * This handles the LysKOM datatype Dynamic-Session-Info, which contains information about sessions
+ * that might be changed over time (such as current conference and what-am-i-doing).
  */
-
 public class DynamicSessionInfo {
     public int session;
     public int person;
@@ -79,7 +79,7 @@ public class DynamicSessionInfo {
      * This constructor will probably not be used, as the information
      * doesn't come alone in the single KomToken[] array, but instead
      * as a part of many DynamicSessionInfo's in a big-ass array */
-    public DynamicSessionInfo(int offset, KomToken[] tk) {
+    protected DynamicSessionInfo(int offset, KomToken[] tk) {
 	this.session = tk[offset++].toInteger();
 	this.person = tk[offset++].toInteger();
 	this.workingConference = tk[offset++].toInteger();
@@ -90,7 +90,7 @@ public class DynamicSessionInfo {
     /**
      * This is the one to use
      */
-    public DynamicSessionInfo (int session, int person, int workingConference, int idleTime, Bitstring flags, byte[] whatAmIDoing) {
+    protected DynamicSessionInfo (int session, int person, int workingConference, int idleTime, Bitstring flags, byte[] whatAmIDoing) {
 	this.session = session;
 	this.person = person;
 	this.workingConference = workingConference;
@@ -99,37 +99,55 @@ public class DynamicSessionInfo {
 	this.whatAmIDoing = whatAmIDoing;
     }
 
+    /**
+     * Returns the session number for this session
+     */
     public int getSession() {
 	return session;
     }
     
+    /**
+     * Returns the person number logged in into this session
+     */
     public int getPerson() {
 	return person;
     }
 
+    /**
+     * Returns the current working conference for this session
+     */
     public int getWorkingConference() {
 	return workingConference;
     }
 
+    /**
+     * Returns the number of seconds this session has been idle
+     */
     public int getIdleTime() {
 	return idleTime;
     }
 
+    /**
+     * Returns the session flags (see spec elsewhere)
+     */
     public Bitstring getFlags() {
 	return flags;
     }
 
+    /**
+     * Returns what the session's client has reported as what-i-am-doing.
+     */
     public byte[] getWhatAmIDoing() {
 	return whatAmIDoing;
     }
 
+    /**
+     * Translated the result from getWhatAmIDoing() into a String according
+     * to the current platform's default character encoding.
+     */
     public String getWhatAmIDoingString() {
 	return new String(whatAmIDoing);
     }
-
-
-
-
 
 }
 

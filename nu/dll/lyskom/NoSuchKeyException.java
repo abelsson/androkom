@@ -5,6 +5,15 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * Thrown by the Selection class when an application tries
+ * to access a non-existant key.
+ */
 public class NoSuchKeyException extends RuntimeException {
-
+    public NoSuchKeyException() {
+	super();
+    }
+    public NoSuchKeyException(String s) {
+	super(s);
+    }
 }

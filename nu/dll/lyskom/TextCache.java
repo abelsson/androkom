@@ -7,7 +7,7 @@ package nu.dll.lyskom;
 
 import java.util.Hashtable;
 
-public class TextCache {
+class TextCache {
     static int DEBUG = 1;
     Hashtable hash;
     

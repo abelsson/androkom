@@ -5,23 +5,28 @@
  */
 package nu.dll.lyskom;
 
+/**
+ * An UConference is a minimalistic set of status information about a conference,
+ * such as it's name and type. Usually used for situations where you don't 
+ * need the full status of a conference for a task.
+ */
 public class UConference {
-    private byte[] name;
-    private Bitstring type;
-    private int highestLocalNo;
-    private int nice;
+    protected byte[] name;
+    protected Bitstring type;
+    protected int highestLocalNo;
+    protected int nice;
 
     int no;
     
-    public UConference(int no) {
+    UConference(int no) {
 	this.no = no;
     }
-    public UConference(int no, KomToken[] tokens) {
+    UConference(int no, KomToken[] tokens) {
 	this.no = no;
 	setFrom(tokens);
     }
 
-    public void setFrom(KomToken[] tokens) {
+    void setFrom(KomToken[] tokens) {
 	int c = 0;
 	name = tokens[c++].getContents();
 	type = new Bitstring(tokens[c++]);
@@ -29,16 +34,37 @@ public class UConference {
 	nice = tokens[c++].toInteger();
     }
 
+    /**
+     * Returns the conference number this UConference represents.
+     */
     public int getNo() {
 	return no;
     }
 
+    /**
+     * Returns the highest local text number in this conference.
+     */
     public int getHighestLocalNo() {
 	return highestLocalNo;
     }
 
+    /**
+     * Returns the name of this conference.
+     */
     public byte[] getName() {
 	return name;
+    }
+
+    /**
+     * Returns the "garb-nice" time for this conference - ie. how long unmarked texts are kept
+     * before being garbage collected by the server.
+     */ 
+    public int getNice() {
+	return nice;
+    }
+
+    public String toString() {
+	return "UConference[conf-no: " + no + "]";
     }
 
 }

@@ -15,6 +15,21 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.HashMap;
 
+import java.io.UnsupportedEncodingException;
+
+/**
+ * Represents a LysKOM text. An application can construct Text objects and
+ * use the Session.createText(Text) call to create them on the server. The
+ * call Session.getText(int) also returns Text objects.
+ * <br>
+ * Most information about the text's status can be found in its TextStat
+ * object and the corresponding MiscInfo list.
+ *
+ * @see nu.dll.lyskom.Text#getStat()
+ * @see nu.dll.lyskom.TextStat
+ * @see nu.dll.lyskom.Session#getText(int)
+ * @see nu.dll.lyskom.Session#createText(Text)
+ */
 public class Text extends Hollerith implements java.io.Serializable {
 
     public final static int DEBUG = 1;
@@ -25,42 +40,63 @@ public class Text extends Hollerith implements java.io.Serializable {
     TextStat stat = null;
     Map localMap = new HashMap();
 
-    public Text setCached(boolean b) {
+    Text setCached(boolean b) {
 	cached = b; return this;
     }
 
+    /**
+     * Returns <tt>true</tt> if this text was retreived from text cache rather than
+     * directly from the server
+     */
     public boolean isCached(boolean n) { return cached; }
 
-    /** constructors **/
+    /* constructors */
+    /**
+     * Creates an empty text.
+     */
     public Text() {
 	setContents(new byte[] {});
 	stat = new TextStat();
     }
-    public Text(int no, byte[] contents) {
+    
+    protected Text(int no, byte[] contents) {
 	setContents(contents);
 	textNo = no;
     }
 
-    public Text(int textNo) {	
+    protected Text(int textNo) {	
 	this.textNo = textNo;
     }
 
-    public Text(int textNo, TextStat stat) {
+    protected Text(int textNo, TextStat stat) {
 	this.textNo = textNo;
 	this.stat = stat;
     }
 
+    /**
+     * Creates a new text with the supplied subject and body, converted into bytes using iso-8559-1.
+     */
     public Text(String subject, String body) {
 	stat = new TextStat();
-	setContents((subject+"\n"+body).getBytes());
+	try {
+	    setContents((subject+"\n"+body).getBytes(Session.serverEncoding));
+	} catch (UnsupportedEncodingException ex1) {
+	    throw new RuntimeException("Unsupported character encoding: " + ex1.getMessage());
+	}
     }
 
+    /**
+     * Creates a new text with the supplied contents
+     */
     public Text(byte[] contents) {
 	setContents(contents);
     }
 
     /** end of constructors **/
 
+    /**
+     * Trims the contents on this text - removes trailing whitespace to follow LysKOM conventions.
+     */
     public void trimContents() {
 	byte[] contents = getContents();
 
@@ -80,6 +116,9 @@ public class Text extends Hollerith implements java.io.Serializable {
 	    
     }
 
+    /**
+     * Count the number of rows this text contains.
+     */
     public int getRows() {
 	int count = 0;
 	for (int i=0; i < contents.length; i++)
@@ -87,10 +126,18 @@ public class Text extends Hollerith implements java.io.Serializable {
 	return count;
     }
 
+    /**
+     * Return the author of this text.
+     */
     public int getAuthor() {
 	return stat.author;
     }
 
+    /**
+     * Returns the AuxItem data for a given AuxItem tag.
+     *
+     * @see nu.dll.lyskom.AuxItem
+     */
     public Hollerith[] getAuxData(int tag) {
 	AuxItem[] items = stat.getAuxItems();
 	int c=0;
@@ -104,39 +151,65 @@ public class Text extends Hollerith implements java.io.Serializable {
 	return result;
     }
 
+    /**
+     * Adds an array of recipients to this text.
+     */
     public Text addRecipients(int[] no) {
 	for (int i=0; i < no.length; i++)
 	    addRecipient(no[i]);
 	return this;
     }
 
+    /**
+     * Adds a recipient to this text.
+     */
     public Text addRecipient(int no) {
 	addMiscInfoEntry(TextStat.miscRecpt, no);
 	return this;
     }
 
+    /**
+     * Removes all standard recipients in this text.
+     */
     public void clearRecipients() {
 	clearMiscInfoEntry(TextStat.miscRecpt);
     }
 
+    /**
+     * Removes a recipient from this text.
+     */
     public void removeRecipient(int conf) {
 	removeMiscInfoEntry(TextStat.miscRecpt, conf);
     }
 
+    /**
+     * Removes a CC-recipient from this text.
+     */
     public void removeCcRecipient(int conf) {
 	removeMiscInfoEntry(TextStat.miscCcRecpt, conf);
     }
 
+    /**
+     * Adds an array of recipients as CC-recipients to this text.
+     */
     public Text addCcRecipients(int[] no) {
 	for (int i=0; i < no.length; i++) 
 	    addCcRecipient(no[i]);
 	return this;
     }
+
+    /**
+     * Adds one CC-recipient to this text.
+     */
     public Text addCcRecipient(int no) {
 	addMiscInfoEntry(TextStat.miscCcRecpt, no);
 	return this;
     }
 
+    /**
+     * Clones a text by copying its contents and recipient
+     * lists into a new Text object, which is then returnesd.
+     */
     public Object clone() {
 	Text t = new Text();
 	t.setContents(getContents());
@@ -165,100 +238,63 @@ public class Text extends Hollerith implements java.io.Serializable {
     public void addMiscInfoEntry(int key, int value) {
 	stat.addMiscInfoEntry(key, value);
     }
+
+    /**
+     * Adds a text-number to which this is a comment.
+     */
     public Text addCommented(int no) {
 	addMiscInfoEntry(TextStat.miscCommTo, no);
 	return this;
     }
 
+    /**
+     * Adds a text number to which this is a footnore.
+     */
     public Text addFootnoted(int no) {
 	addMiscInfoEntry(TextStat.miscFootnTo, no);
 	return this;
     }
 
+    /**
+     * Walks through the recipient list of this text and return
+     * this texts local text number for that recipient, or -1
+     * if the recipient is not found in this texts recipient list.
+     *
+     * @param confNo The recipient to search for
+     * @see nu.dll.lyskom.Session#localToGlobal(int, int, int)
+     * @see nu.dll.lyskom.TextMapping
+     */
     // more error handling (as everywhere)
     public int getLocal(int confNo)
     throws RuntimeException { 
 	Integer locNo = (Integer) localMap.get(new Integer(confNo));
 	if (locNo != null) return locNo.intValue();
 
-	List miscInfo = stat.getMiscInfo();
+	List miscInfo = stat.getMiscInfoSelections(TextStat.miscLocNo);
 	Iterator i = miscInfo.iterator();
-	while (i.hasNext()) {
+	while (i.hasNext()) {	    
 	    Selection selection = (Selection) i.next();
-	    int[] keys = selection.getKeys();
-	    for (int j=0; j < keys.length; j++) {
-		if (keys[j] == TextStat.miscRecpt || keys[j] == TextStat.miscCcRecpt) {
-		    Enumeration e = selection.get(keys[j]);
-		    while (e.hasMoreElements()) {
-			Integer i2 = (Integer) e.nextElement();
-			if (i2.intValue() == confNo) {
-			    Enumeration e2 = selection.get(TextStat.miscLocNo);
-			    if (e2.hasMoreElements()) {
-				locNo = (Integer) e2.nextElement();
-				localMap.put(new Integer(confNo), locNo);
-				Debug.println("Text.getLocal(" + confNo + "): returning " + locNo);
-				return locNo.intValue();
-			    } else {
-				Debug.println("Text.getLocal(" + confNo + "): recipient found but no local");
-			    }
-			}
-		    }
-		}
+
+	    int rcpt = 0;
+	    if (selection.contains(TextStat.miscRecpt))
+		rcpt = selection.getIntValue(TextStat.miscRecpt);
+	    if (selection.contains(TextStat.miscCcRecpt))
+		rcpt = selection.getIntValue(TextStat.miscCcRecpt);
+
+	    if (rcpt == confNo) {
+		int no = selection.getIntValue(TextStat.miscLocNo);
+		localMap.put(new Integer(confNo), new Integer(no));
+		return no;
 	    }
+
 	}
 	Debug.println("Text.getLocal(" + confNo + "): recipient not found");
 	return -1;
-
-	/*
-	int[] statKeys = stat.getMiscInfo().getKeys();
-	List recipients = new LinkedList();
-	for (int i=0; i < statKeys.length; i++) {
-	    if (statKeys[i] == TextStat.miscRecpt || statKeys[i] == TextStat.miscCcRecpt) {
-		Enumeration e = stat.getMiscInfo().get(statKeys[i]);
-		while (e.hasMoreElements()) {
-		    Integer r = (Integer) e.nextElement();
-		    Debug.println("adding recipient " + r + " pos " + recipients.size());
-		    recipients.add(r);
-		}
-	    }
-	}
-
-	Enumeration locals;
-	try {
-	    locals = stat.getMiscInfo().get(stat.miscLocNo);
-	} catch (NoSuchKeyException ex) {
-	    throw(new RuntimeException("No local numbers in misc-info"));
-	}
-	for (int i=0; i < recipients.size(); i++) {
-	    int local = ((Integer) locals.nextElement()).intValue();
-	    if (((Integer) recipients.get(i)).intValue() == confNo) {
-		return local;
-	    }
-	}
-	*/
-	/*
-	int[] ccs = getCcRecipients();
-	for (int i=0; i < rcpts.length && locals.hasMoreElements(); i++) {
-           int local = ((Integer) locals.nextElement()).intValue();
-	   if (ccs[i] == confNo) {
-                return local;
-	   }
-	}
-	*/	    
-	/*
-	StringBuffer sb = new StringBuffer("miscLocNo items: ");
-	locals = stat.getMiscInfo().get(stat.miscLocNo);
-	while(locals.hasMoreElements()) {
-	    sb.append("<" + (Integer) locals.nextElement() + ">");
-	}
-	Debug.println("text " + getNo() + " locals: " + sb.toString());
-	return 0;
-	*/
-	//throw(new RuntimeException("No local number found for rcpt " + confNo + " in text " + getNo() +
-	//", " + sb.toString()));
-
     }
 
+    /**
+     * Returns the subject (first row) of this text.
+     */ 
     public byte[] getSubject() {
 	int i=0; byte[] b = getContents();
 	while (i < b.length && b[i] != '\n') i++;
@@ -269,6 +305,9 @@ public class Text extends Hollerith implements java.io.Serializable {
 	return r;
     }
     
+    /**
+     * Returns the body (everything but the first row) of this text.
+     */
     public byte[] getBody() {
 	int i=0; byte[] b = getContents();
 	while (i < b.length && b[i] != '\n') { i++; }
@@ -282,97 +321,153 @@ public class Text extends Hollerith implements java.io.Serializable {
 	return r;
     }
 
+    /**
+     * Returns the body of this text as a List of String objects, converted from
+     * bytes using iso-8859-1.
+     */ 
     public List getBodyList() {
-	byte[] body = getBody();
-	List bodyList = new LinkedList();
-	int i=0;
-	int lastLf = 0;
-	while (i < body.length) {
-	    if (body[i] == '\n') {
-		byte[] thisLine = new byte[i-lastLf];
-		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		bodyList.add(new String(thisLine));
-		lastLf = i+1;
-		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
+	try {
+	    byte[] body = getBody();
+	    List bodyList = new LinkedList();
+	    int i=0;
+	    int lastLf = 0;
+	    while (i < body.length) {
+		if (body[i] == '\n') {
+		    byte[] thisLine = new byte[i-lastLf];
+		    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
+		    bodyList.add(new String(thisLine, Session.serverEncoding));
+		    lastLf = i+1;
+		    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
+		}
+		i++;
 	    }
-	    i++;
+	    if (lastLf == 0 && body.length > 0) {
+		bodyList.add(new String(body, Session.serverEncoding));
+		Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
+	    } else if (lastLf < i) {
+		byte[] thisLine = new byte[body.length-lastLf];
+		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
+		bodyList.add(new String(thisLine, Session.serverEncoding));
+		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
+		
+	    }
+	    Debug.println("Text.getBodyList(): returning " + bodyList.size() + " rows");
+	    return bodyList;
+	} catch (UnsupportedEncodingException ex1) {
+	    throw new RuntimeException("Unsupported character encoding: " + ex1.getMessage());
 	}
-	if (lastLf == 0 && body.length > 0) {
-	    bodyList.add(new String(body));
-	    Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
-	} else if (lastLf < i) {
-	    byte[] thisLine = new byte[body.length-lastLf];
-	    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-	    bodyList.add(new String(thisLine));
-	    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
-
-	}
-	Debug.println("Text.getBodyList(): returning " + bodyList.size() + " rows");
-	return bodyList;
     }
 
     /**
      * Returns an int[] for Misc-Info members with integer values
      *
      * @deprecated moved to TextStat
+     * @see nu.dll.lyskom.TextStat#getStatInts(int)
      */    
     public int[] getStatInts(int no) {
 	return stat.getStatInts(no);
     }
 
+    /**
+     * Returns the time at which this text was created.
+     */
     public Date getCreationTime() {
 	return getStat().getCreationTime().getTime();
     }
 
+    /**
+     * Returns a string represantation of the time at which this text was created.
+     */
     public String getCreationTimeString() {
 	return getStat().getCreationTime().toString();
     }
 
+    /**
+     * Returns an array containing all recipients for this text.
+     */
     public int[] getRecipients() {
 	return getStatInts(TextStat.miscRecpt);
     }
 
+    /**
+     * Returns an array containing all CC-recipients for this text.
+     */
     public int[] getCcRecipients() {
 	return getStatInts(TextStat.miscCcRecpt);
     }
 
+    /**
+     * Returns an array containing all the texts of which this is a comment to.
+     */
     public int[] getCommented() {
 	return getStatInts(TextStat.miscCommTo);
     }
 
+    /**
+     * Returns an array containing all comments to this text.
+     */
     public int[] getComments() {
 	return getStatInts(TextStat.miscCommIn);
     }
 
+    /**
+     * Returns an array of all texts to which this text is a footnote to.
+     */
     public int[] getFootnoted() {
 	return getStatInts(TextStat.miscFootnTo);
     }
 
+    /**
+     * Returns an array of all footnotes to this text.
+     */
     public int[] getFootnotes() {
 	return getStatInts(TextStat.miscFootnIn);
     }
 
+    /**
+     * Returns an array of all that has sent this text to new recipient.
+     * Note that this list is NOT consistent with getRecipients()!
+     */
     public int[] getSenders() {
 	return getStatInts(TextStat.miscSentBy);
     }
 
+    /**
+     * Returns an array of the times when people has added new recipients
+     * to this text. Note that this list is NOT consistent with getRecipients()!
+     */
     public int[] getSendTimes() {
 	return getStatInts(TextStat.miscSentAt);
     }
 
+    /**
+     * Sets the TextStat object for this text.
+     */
     public void setStat(TextStat stat) {
 	this.stat = stat;
     }
+
+    /**
+     * Returns the TextStat object containing information about this text's status
+     * (such as recipients, footnotes, et.c.). It is the TextStat object you should
+     * use to get detailed recipient and sender information.
+     */
 
     public TextStat getStat() {
 	return stat;
     }
 
+    /**
+     * Returns the number of this text.
+     */
     public int getNo() {
 	return textNo;
     }
 
-    public void setNo(int n) {
+    /**
+     * Sets the number of this text.
+     */
+    protected void setNo(int n) {
 	textNo = n;
     }
     

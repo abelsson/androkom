@@ -165,9 +165,7 @@ implements Runnable, RpcEventListener {
                } 
             });
             
-            kom.updateUnreads();
-            
-            mlist.setList(kom.getUnreadMembership());
+	    mlist.setList(kom.getUnreadMembership());
             Membership m = null;
             if (list.getSelectedIndex() != -1) m = mlist.getList()[list.getSelectedIndex()];
             updateInfoLabel(m);
@@ -202,12 +200,10 @@ implements Runnable, RpcEventListener {
                 setLayout(new FlowLayout(FlowLayout.LEFT));
                 int confNo = membership.getNo();
                 add(new JLabel(new String(kom.getConfName(confNo)) + ": "));
-                int lastTextRead = membership.getLastTextRead();
-                UConference uconf = kom.getUConfStat(confNo);
-                TextMapping unreadMap = kom.localToGlobal(confNo, lastTextRead + 1, 5);
-                if (unreadMap.hasMoreElements()) {
-		    nextUnread = ((Integer) unreadMap.nextElement()).intValue();
-                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", nextUnread,
+		int nextUnreadText = kom.nextUnreadText(confNo, false);
+
+                if (nextUnreadText > 0) {
+                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", nextUnreadText,
                                           kom, null, SwingConstants.LEFT);
 		    defaultCommandButton .setEnabled(true);
 		    kom.changeConference(confNo);
@@ -217,7 +213,6 @@ implements Runnable, RpcEventListener {
                 } else {
 		    JLabel t = new JLabel("inga olästa inlägg");
 		    defaultCommandButton.setEnabled(false);
-		    nextUnread = 0;
 		    add(t);
 		    repaint();
 		}
@@ -349,7 +344,7 @@ implements Runnable, RpcEventListener {
 	    public void valueChanged(ListSelectionEvent e) {
 		Membership m = (Membership)
 		    membershipList.getList()[e.getFirstIndex()];
-		if (m.conference != currentConference) {
+		if (m.getConference() != currentConference) {
 		    changeConference(m);
 		}
 	    }
@@ -362,7 +357,7 @@ implements Runnable, RpcEventListener {
     /* used for conferences the user already is a member of */
     public void changeConference(Membership m) {
 	try {
-	    kom.doChangeConference(m.conference).addAux((Object) m);
+	    kom.doChangeConference(m.getConference()).addAux((Object) m);
 	} catch (IOException ex) {
 	    networkError(ex.getMessage());
 	}
@@ -406,7 +401,7 @@ implements Runnable, RpcEventListener {
             	}
             	    
                 }
-                currentConference = m.conference;
+                currentConference = m.getConference();
                 log("Changed conference to " + m);
 
 	    }
@@ -493,18 +488,22 @@ implements Runnable, RpcEventListener {
 	    break;
 	case STATE_GET_MEMBERSHIP:
 
-            System.err.println("STATE_GET_MEMBERSHIP");	    
-            //kom.doGetMembership(kom.getMyPerson().getNo());
-            //kom.updateUnreads();
-            setCursor(null);
-	
-            threadState = STATE_ONLINE;
-
-            new Thread(this).start();
-
-	    setStatus(kom.getMyPerson().getNo() +
-		      "@"+server+":"+port);
-	    setCursor(null);
+            Debug.println("STATE_GET_MEMBERSHIP");
+	    try {
+		kom.doGetMembership(kom.getMyPerson().getNo());
+		kom.updateUnreads();
+		setCursor(null);
+		
+		threadState = STATE_ONLINE;
+		
+		new Thread(this).start();
+		
+		setStatus(kom.getMyPerson().getNo() +
+			  "@"+server+":"+port);
+		setCursor(null);
+	    } catch (IOException ex1) {
+		Debug.println("I/O exception: " + ex1.getMessage());
+	    }
  	    
             
 	    break;
@@ -588,15 +587,15 @@ implements Runnable, RpcEventListener {
 	    if (e.getSource() == connectButton) {
 		connect();
 	    } else if (e.getSource() == abortButton) {
-		System.err.println("abort-button");
+		Debug.println("abort-button");
 		try {
 		    if (kom.getConnected())
 			kom.disconnect(true);
 		} catch (IOException ex) {
-		    System.err.println(ex.toString());
+		    Debug.println(ex.toString());
 		}
 	    }
-	    if (DEBUG>0) System.err.println("<-- actionPerformed()");
+	    Debug.println("<-- actionPerformed()");
 	}
     }
 

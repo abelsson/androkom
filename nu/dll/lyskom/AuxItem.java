@@ -7,7 +7,11 @@
 package nu.dll.lyskom;
 
 
-/** Aux-Item, introduced in version 10 */
+/**
+ * Aux-Item, a LysKOM data type introduced in version 10.
+ * An Aux-Item can be attached to a conference or a text, tagging it with information otherwise not
+ * covered by the protocol. LatteKOM has limited, but existing, support for Aux-Items.
+ */
 public class AuxItem implements java.io.Serializable, Tokenizable {
     int no, tag, creator;
     KomTime createdAt;
@@ -15,7 +19,7 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
     int inheritLimit;
     Hollerith data;
 
-    /** maybe this should be spec'd in a separate file,
+    /* maybe this should be spec'd in a separate file,
      * as in the aux-items.conf file with lyskomd?
      * that way we can use the same patterns for validity
      * matching.
@@ -51,35 +55,64 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	     new String(data.getContents()).substring(0, 19) + "..." :
 	     new String(data.getContents()))+"]";
     }
-	    
+
+    /**
+     * Returns this specific Aux-Item's number. An Aux-Item's number, in combination with
+     * a text och conference number, is what uniquely identifies that particular Aux-Item.
+     * Thus, the Aux-Item numbers for a given text is ever incrementing has the Aux-Items
+     * are updated/changed.
+     */ 	    
     public int getNo() {
 	return no;
     }
 
+    /**
+     * Returns this Aux-Item's tag.
+     */
     public int getTag() {
 	return tag;
     }
     
+    /**
+     * Returns this Aux-Item's creator.
+     */
     public int getCreator() {
 	return creator;
     }
 
+    /**
+     * Returns the time at which this Aux-Item was created.
+     */
     public KomTime getCreatedAt() {
 	return createdAt;
     }
 
+    /**
+     * Returns the inheritance limit for this Aux-Item.
+     */
     public int getInheritLimit() {
 	return inheritLimit;
     }
 
+    /**
+     * Returns the data contained in this Aux-Item
+     */
     public Hollerith getData() {
 	return data;
     }
     
+    /**
+     * Returns the data as a String, translated according to Hollerith.getContentString()
+     *
+     * @see nu.dll.lyskom.Hollerith#getContentString()
+     */
     public String getDataString() {
 	return data.getContentString();
     }
 
+    /**
+     * Constructor used to create new AuxItem objects for RPC calls.
+     */
     public AuxItem(int tag, Bitstring flags, int inheritLimit,
 		   Hollerith data) {
 	this.tag = tag;
@@ -88,6 +121,10 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	this.data = data;
 	this.createdAt = new KomTime();
     }
+
+    /**
+     * Constructor used to create new AuxItem objects for RPC calls.
+     */
     public AuxItem(int no, int tag, int creator, KomTime createdAt,
 		   Bitstring flags, int inheritLimit, Hollerith data) {
 	this.no = no;
@@ -99,13 +136,15 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	this.data = data;
     }
 
-    public AuxItem(KomToken[] tokens) {
+    /**
+     * Constructor used internally by LatteKOM to parse incoming
+     * Aux-Items into Java objects.
+     */
+    AuxItem(KomToken[] tokens) {
 	int pcount = 0;
 
 	this.no        = tokens[pcount++].toInteger();
-	//Debug.println("No ("+pcount+"): "+no);
 	this.tag       = tokens[pcount++].toInteger();
-	//Debug.println("Tag ("+pcount+"): " +tag);
 	this.creator   = tokens[pcount++].toInteger();
 	this.createdAt = new KomTime(tokens[pcount++].toInteger(), // 0
 				     tokens[pcount++].toInteger(), // 1
@@ -119,7 +158,6 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 
 	this.flags    = new Bitstring(tokens[pcount++]);
 	this.inheritLimit = tokens[pcount++].toInteger();
-	//Debug.println("Flags ("+pcount+"): " +flags);
 	try {
 	    this.data     = (Hollerith) tokens[pcount++];
 	} catch (ClassCastException ex) {
@@ -138,7 +176,10 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 
     }
 
-    /* creates an Aux-Item-Input token */
+    /**
+     * Uses the data in this AuxItem object to construct an Aux-Item-Input
+     * token that can be used in RPC calls to the servern.
+     */
     public KomToken toToken() {
 	StringBuffer foo = new StringBuffer();
 	foo.append(tag + " ");
@@ -148,6 +189,9 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	return new KomToken(foo.toString());
     }
 
+    /**
+     * Counts the number of AuxItems in an array, skipping <tt>null</tt> entries.
+     */
     public static int countAuxItems(AuxItem[] auxItems) {
 	int c=0;
 	for (int i=0;i<auxItems.length;i++) if (auxItems[i] != null) c++;
