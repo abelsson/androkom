@@ -5,7 +5,7 @@ if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.4 2004/05/10 19:24:31 pajp Exp $
+// $Id: stuff.jsp,v 1.5 2004/05/13 02:42:27 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;
@@ -128,13 +128,10 @@ function showmenuie5(e){
 }
 
 function hidemenuie5(e){
-  /*
-  var menus = [ "ie5menu", "ctxmenu_conference", "ctxmenu_text", "ctxmenu_letterbox" ];
-  for (var menu in menus) {
-    document.getElementById(menu).style.visibility="hidden";
-  }
-  */
-  menuobj.style.visibility="hidden";
+  document.getElementById("ie5menu").style.visibility="hidden";
+  document.getElementById("ctxmenu_conference").style.visibility="hidden";
+  document.getElementById("ctxmenu_text").style.visibility="hidden";
+  document.getElementById("ctxmenu_letterbox").style.visibility="hidden";
 }
 
 function highlightie5(e){
