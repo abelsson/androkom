@@ -315,5 +315,5 @@ KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
 boolean debug = Debug.ENABLED || request.getParameter("debug") != null;
 SessionWrapper lyskomWrapper = (SessionWrapper) session.getAttribute("lyskom");
-Session lyskom = lyskomWrapper.getSession();
+Session lyskom = lyskomWrapper != null ? lyskomWrapper.getSession() : null;
 %>\

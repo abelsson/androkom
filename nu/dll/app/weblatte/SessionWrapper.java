@@ -1,3 +1,5 @@
+package nu.dll.app.weblatte;
+
 import javax.servlet.http.*;
 import nu.dll.lyskom.Session;
 

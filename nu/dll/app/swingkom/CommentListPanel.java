@@ -159,7 +159,7 @@ class TextInfoLabel extends JLabel {
                         String s = null; 
                         if (stat != null) {
                             s = prefix + getNo() + " av " +
-                                    new String(getKomSession().getConfName(stat.getAuthor()), Session.serverEncoding);
+                                    new String(getKomSession().getConfName(stat.getAuthor()), getKomSession().getServerEncoding());
                             setText(s);
                         }
                         Debug.println("*** " + s);
