@@ -99,6 +99,10 @@
     }
   %>
    </table>
-
+   <br><br>
+    <form method="get" class="boxed">
+       Sammanställ de senaste <input type="text" size="8" name="base" value="<%= base %>"> inläggen.
+       <input type="submit" value="OK">
+    </form>
   </body>
 </html>
