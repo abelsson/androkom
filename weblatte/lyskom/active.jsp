@@ -87,7 +87,9 @@
     for (Iterator i = allConferences.iterator();i.hasNext();) {
 	Integer conf = (Integer) i.next();
 	List texts = (List) conferences.get(conf);
-	UConference uc = lyskom.getUConfStat(conf.intValue());
+	Conference c = lyskom.getConfStat(conf.intValue());
+	if (c.getType().letterbox()) continue;
+	
 	out.print("<tr " + (pyjamas ? "class=\"pyjamas\"" : "") + "><td><b>" + lookupName(lyskom, conf.intValue(), true));
 	out.print("</b> (" + texts.size() + (texts.size() == 1 ? " text" : " texter") + ")<br>");
 	Text text = lyskom.getText(((Integer) texts.get(0)).intValue(), false, true);
