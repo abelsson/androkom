@@ -288,7 +288,9 @@ public class Membership {
 	    int lastTextRead = tokens[i++].intValue();
 	    int readTextsLength = tokens[i++].intValue();
 
-	    ranges.add(new Range(1, lastTextRead));
+	    if (lastTextRead > 0) {
+		ranges.add(new Range(1, lastTextRead));
+	    }
 
 	    KomToken[] readTextsTokens = ((KomTokenArray) tokens[i++]).getTokens();
 	    int[] readTexts = new int[readTextsTokens.length];
@@ -296,7 +298,6 @@ public class Membership {
 	    
 	    for (int rtIdx=0; rtIdx < readTextsTokens.length; rtIdx++) {
 		readTexts[rtIdx] = readTextsTokens[rtIdx].intValue();
-		dprintln("readTexts[" + rtIdx + "]: " + readTexts[rtIdx]);
 	    }
 
 	    if (readTexts.length > 0) {
