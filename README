@@ -1,6 +1,6 @@
 ** LatteKOM README
 ** -*- Mode: auto-fill -*-
-** $Id: README,v 1.4 2000/08/27 15:05:56 erik-bar Exp $
+** $Id: README,v 1.5 2004/05/09 03:34:55 pajp Exp $
 
 * Brief description:
 
@@ -27,19 +27,18 @@ References:
 5: ftp://ftp.lysator.liu.se/pub/lyskom/draft/Protocol-A.texi
 
 
-* About the code - the usual disclaimer, but for real
+* About the code
 
-This code _is_ ugly. I'm only releasing it because that makes more
-sense than letting it grow old in my own digital attics. Also, I'm
-hoping to get some of my enthusiasm back if I get some help.
-
+Much of this code was written in 1998, and there are some less
+successful design choices in it, as well as bad practices and
+references to deprecated APIs. My apologies.
 
 * Authors:
 
 The original author of this code is Rasmus Sten
-<rasmus@halogen.com>. Staffan Malmgren <staffan@ehand.se> was the
-first person to see the code, and has provided bug fixes, features,
-test implementations, documentation and more.
+<rasmus@dll.nu>. Staffan Malmgren <staffan@ehand.se> was the first
+person to see the code, and has provided bug fixes, features, test
+implementations, documentation and more.
 
 
 * License
