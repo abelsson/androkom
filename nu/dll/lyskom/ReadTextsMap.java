@@ -9,7 +9,7 @@
 package nu.dll.lyskom;
 
 import java.util.Set;
-import java.util.TreeSet;
+import java.util.HashSet;
 
 /**
  * Class that can be used to check if a text has been read.
@@ -17,7 +17,7 @@ import java.util.TreeSet;
  */
 public class ReadTextsMap {
 
-    Set textNumberSet = new TreeSet();
+    Set textNumberSet = new HashSet();
 
     public void add(int no) {
 	textNumberSet.add(new Integer(no));

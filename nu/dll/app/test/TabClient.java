@@ -200,7 +200,7 @@ public class TabClient {
 		    try {
 			String fileName = configNameField.getText() + suffix;
 			FileOutputStream out = new FileOutputStream(new File(confDir, fileName));
-			props.store(out, null);
+			props.save(out, null);
 			out.close();
 			populateConfigChooser();
 		    } catch (IOException ex1) {
@@ -228,7 +228,7 @@ public class TabClient {
 		else
 		    Debug.println("did not create lattekom dir");
 	    }
-	    File[] files = confDir.listFiles(new FilenameFilter() {
+	    String[] files = confDir.list(new FilenameFilter() {
 		    public boolean accept(File dir, String name) {
 			return name.endsWith(suffix);
 		    }
@@ -236,19 +236,20 @@ public class TabClient {
 
 	    configChooser.removeAllItems();
 	    for (int i=0; i < files.length; i++) {
-		String fileName = files[i].getName();
+		File f = new File(confDir, files[i]);
+		String fileName = f.getName();
 		String name = fileName.substring(0, fileName.length() - suffix.length());
 		ConfigProperties item = new ConfigProperties();
 		item.name = name;
 		try {
 		    Properties confProps = new Properties();
-		    confProps.load(new FileInputStream(files[i]));
+		    confProps.load(new FileInputStream(f));
 		    item.server = confProps.getProperty("server");
 		    item.username = confProps.getProperty("username");
 		    item.password = confProps.getProperty("password");
 		    configChooser.addItem(item);
 		} catch (IOException ex1) {
-		    Debug.println("Error loading " + files[i] + ": " + ex1.getMessage());
+		    Debug.println("Error loading " + f + ": " + ex1.getMessage());
 		}
 	    }
 	}
