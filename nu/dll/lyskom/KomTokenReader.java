@@ -77,7 +77,7 @@ class KomTokenReader {
     throws IOException {
 	for (int i=0;i<buffer.length;i++) {
 	    byte b = (byte) in.read();
-	    if (b == -1) throw(new IOException("End of Stream"));
+	    //if (b == -1) throw(new IOException("End of Stream"));
 	    buffer[i] = b;
 	}
 	if (debugBuffer != null) debugBuffer.append(new String(buffer) + " ");
@@ -91,6 +91,7 @@ class KomTokenReader {
 	byte b = 0;
 	byte lastB = 0;
 
+	Debug.println("Reading from input stream " + input.getClass().getName());
 	while (true) {
 	    lastB = b;
 	    b = (byte) input.read();
@@ -102,8 +103,8 @@ class KomTokenReader {
 		lastByteWasEol = false;
 	    
 	    switch ((int)b) {
-	    case -1:
-		throw(new IOException("End of stream"));
+		//case -1:
+		//throw(new IOException("End of stream"));
 	    case '\n':
 	    case ' ':
 		if (lastB == b)

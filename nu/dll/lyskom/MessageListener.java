@@ -30,6 +30,7 @@ implements Runnable {
     Vector asynchReceivers = new Vector(1);
     Thread thread = null;
     Session session;
+    boolean disconnect = false;
 
     boolean asynch = false;
 
@@ -58,17 +59,33 @@ implements Runnable {
 	return thread;
     }
 
+    public void disconnect() {
+	disconnect = true;
+    }
+
     // cannot throw exceptions from here, use callback error handling?
    public void run() {
 
-	while(asynch) {
-	    KomToken[] row;
+	while(asynch && !disconnect) {
+	    KomToken[] row = {};
+	    Throwable readError = null;
 	    try {
 		row = session.getKomTokenReader().readLine();
 	    } catch (ProtocolException ex) {
-		throw new KomProtocolException(ex.getMessage());
+		Debug.println("ProtocolException: " + ex.getClass().getName() + ": " + ex.getMessage());
+		readError = ex;
 	    } catch (IOException ex) {
-		throw new KomProtocolException(ex.getMessage());
+		Debug.println("IOException: " + ex.getClass().getName() + ": " + ex.getMessage());
+		readError = ex;
+	    }
+	    if (readError != null) {
+		if (disconnect) {
+		    System.err.println("Disconnected.");
+		    continue;
+		}
+		throw new RuntimeException("Fatal read error occured, read thread exiting: " + 
+					   readError.getClass().getName() + ": " +
+					   readError.getMessage());
 	    }
 	    if (row.length == 0) {
 		Debug.println("Got: Empty row, skipping");

@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.26 2002/05/06 16:20:24 pajp Exp $
+ * @version $Id: Session.java,v 1.27 2002/06/06 13:48:02 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -287,10 +287,21 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	listener.setAsynch(false);
 	listener.removeAsynchMessageReceiver(this);
 	listener.removeRpcReplyReceiver(this);
+	listener.disconnect();
 	connection.close();
 	connection = null;
 	connected = false;
 	state = STATE_DISCONNECTED;
+    }
+
+    public void finalize() {
+	System.err.println("--> " + this + "::finalize().");
+	try {
+	    shutdown();
+	} catch (Throwable t1) {
+	    System.err.println("Exception in " + this + "::finalize(): " + t1.toString());
+	}
+	System.err.println("<-- " + this + "::finalize().");
     }
 
     /**
@@ -380,6 +391,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return c;
     }	
 
+    public boolean login(int id, String password, boolean hidden)
+    throws IOException {
+	return login(id, password, hidden, true);
+    }
 
     /**
      * Logs on to the LysKOM server.
@@ -390,9 +405,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param hidden if true, session will not be broadcasted on LysKOM
      *
      */
-    public boolean login(int id, String password, boolean hidden)
+    public boolean login(int id, String password, boolean hidden,
+			 boolean getMembership)
     throws IOException {
 	int rpcid = count();
+	if (password == null) throw new IOException("Null password not allowed.");
 	RpcCall loginCall = new RpcCall(rpcid, Rpc.C_login).
 	    add(new KomToken(id)).add(new Hollerith(password)).
 	    add(hidden ? "1" : "0"); // invisibility
@@ -404,7 +421,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (loggedIn) {
 	    myPerson = getPersonStat(id);
 	    myPerson.uconf = getUConfStat(id);
-	    membership = getMyMembershipList();
+	    if (getMembership) {
+		membership = getMyMembershipList();
+	    }
 	}
 	state = STATE_LOGIN;
 	return loggedIn = reply.getSuccess();
@@ -423,6 +442,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void updateUnreads()
     throws IOException {
+	if (membership == null) membership = getMyMembershipList();
 	int persNo = myPerson.getNo();
 	unreads = getUnreadConfsList(persNo);
 	
@@ -443,15 +463,17 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		
 		// ok, this textmapping may contain text numbers that
 		// we've already read, lets purge.
-		for (int j=0; j < m.readTexts.length; j++) {
-		    int global = tm.localToGlobal(m.readTexts[j]);
-		    if (tm.removePair(m.readTexts[j])) {
-			Debug.println("Removed already read text " + m.readTexts[j]);
-			markAsRead(global);
+		if (false) {
+		    for (int j=0; j < m.readTexts.length; j++) {
+			int global = tm.localToGlobal(m.readTexts[j]);
+			if (tm.removePair(m.readTexts[j])) {
+			    Debug.println("Removed already read text " + m.readTexts[j]);
+			    markAsRead(global);
+			}
 		    }
+		    unreadTexts.add(tm);
+		    m.setTextMapping(tm);
 		}
-		unreadTexts.add(tm);
-		m.setTextMapping(tm);
 	    }
 	}
     }
@@ -1767,12 +1789,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    return text.getStat();
 
 	RpcReply reply = waitFor(doGetTextStat(textNo).getId());
+
 	if (!reply.getSuccess()) throw (RpcFailure) reply.getException().fillInStackTrace();
 
 	ts = TextStat.createFrom(textNo, reply);
 	textStatCache.add(ts);
 	return ts;
-
 
     }
 
@@ -1918,6 +1940,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    auxTokenArray = new KomTokenArray(0);
 	}
 
+	// XXX: the MiscInfo list must be sorted to prevent
+	// eg. comm-to to appear before rcpt in the resulting
+	// array!!
 
 	RpcCall req = new RpcCall(count(), Rpc.C_create_text).
 	    add(new Hollerith(text)).

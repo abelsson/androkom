@@ -15,6 +15,7 @@ public class RpcFailure extends RuntimeException {
     RpcReply reply;
     int errorCode = 0;
     int errorStatus = 0;
+    Throwable nested = null;
 
     RpcFailure(RpcReply r, String s) {
 	super(s);
@@ -23,6 +24,17 @@ public class RpcFailure extends RuntimeException {
 	    errorCode = r.getParameters()[0].toInteger();
 	    errorStatus = r.getParameters()[1].toInteger();
 	}
+    }
+
+    RpcFailure(Throwable t) {
+	reply = null;
+	errorCode = -1;
+	errorStatus = -1;
+	nested = t;
+    }
+
+    public Throwable getException() {
+	return nested;
     }
 
     /**
