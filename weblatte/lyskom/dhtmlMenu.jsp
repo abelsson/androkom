@@ -16,6 +16,8 @@
 <div class="menuitems" url="<%= basePath %>prefs.jsp">Inställningar</div>
 <hr>
 <div class="menuitems" url="<%= basePath %>vilka/">Vilka är inloggade?</div>
+<div class="menuitems" url="<%= basePath %>active.jsp">Lista mötesaktivitet</div>
+
 <%  if (lyskom.getServer().equals("sno.pp.se") && vemArVem) { %>
 <div class="menuitems" url="<%= basePath %>bilder/">Vem är vem i SnoppKOM?</div>
 <%  } %>

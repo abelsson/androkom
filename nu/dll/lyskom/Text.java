@@ -422,6 +422,10 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	return r;
     }
 
+    public String getSubjectString() throws UnsupportedEncodingException {
+	return new String(getSubject(), getCharset());
+    }
+
     public String getBodyString() throws UnsupportedEncodingException {
 	return new String(getBody(), getCharset());
     }

@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.88 2004/11/12 03:25:46 pajp Exp $
+ * @version $Id: Session.java,v 1.89 2004/11/12 04:52:28 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1829,7 +1829,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return req;
     }
 
-    public int findPreviousTextNo(int text) {
+    public int findPreviousTextNo(int text) throws IOException {
 	RpcReply r = waitFor(doFindPreviousTextNo(text));
 	if (!r.getSuccess()) throw r.getException();
 	return r.getParameters()[0].intValue();

@@ -11,7 +11,7 @@ package nu.dll.lyskom;
  * need the full status of a conference for a task.
  */
 public class UConference {
-    protected byte[] name;
+    protected Hollerith name;
     protected Bitstring type;
     protected int highestLocalNo;
     protected int nice;
@@ -28,7 +28,7 @@ public class UConference {
 
     void setFrom(KomToken[] tokens) {
 	int c = 0;
-	name = tokens[c++].getContents();
+	name = (Hollerith) tokens[c++];
 	type = new Bitstring(tokens[c++]);
 	highestLocalNo = tokens[c++].intValue();
 	nice = tokens[c++].intValue();
@@ -56,7 +56,11 @@ public class UConference {
      * Returns the name of this conference.
      */
     public byte[] getName() {
-	return name;
+	return name.getContents();
+    }
+
+    public String getNameString() {
+	return name.getContentString();
     }
 
     /**

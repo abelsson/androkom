@@ -19,7 +19,7 @@ import javax.mail.internet.ContentType;
  */
 public class Conference {
     int no;
-    private byte[] name;
+    private Hollerith name;
     private int nice;
     private ConfType type;
     private KomTime creationTime;
@@ -44,6 +44,7 @@ public class Conference {
     AuxItem[] auxItems;
 
 
+
     Conference(int no) {
 	this.no = no;
     }
@@ -65,16 +66,15 @@ public class Conference {
      * Return this conference's name.
      */
     public byte[] getName() {
-	return name;
+	return name.getContents();
     }
 
 
     /**
      * Return this conference's name, translated into a String according to the current platform's default encoding.
-     * @deprecated You should not rely on the platform's default encoding
      */
     public String getNameString() {
-	return new String(name);
+	return name.getContentString();
     }
 
     /**
@@ -146,7 +146,7 @@ public class Conference {
      */
     void setFrom(KomToken[] tokens) {
 	int c = 0;
-	name = tokens[c++].getContents();
+	name = (Hollerith) tokens[c++];
 	type = new ConfType(tokens[c++]);
 	creationTime = KomTime.createFrom(c, tokens);
 	c += KomTime.ITEM_SIZE;

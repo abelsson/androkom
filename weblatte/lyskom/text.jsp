@@ -358,7 +358,7 @@
 	    } catch (MessagingException ex1) {
 		out.println("<div class=\"statusError\">Fel: det gick inte att tolka inläggets MIME-innehåll.<br/>");
 		out.println("(" + ex1.getMessage() + ")<br/>");
-		out.println("(<a href=\"/lyskom/?text=" + text.getNo() + "&forceContentType=text/plain\">återse omodifierad</a>)</div>");
+		out.println("(<a href=\"" + basePath + "?text=" + text.getNo() + "&forceContentType=text/plain\">återse omodifierad</a>)</div>");
 	    }
         } else if (contentTypeObj.match("multipart/alternative")) {
   	    if (commonPreferences.getBoolean("dashed-lines")) {
@@ -471,7 +471,7 @@
 		}
 %>
 		Bilaga av typen <%= ts.getContentType() %> i <%= textLink(request, lyskom, comments[i], false) %>
-		 (<a href="/lyskom/rawtext.jsp?text=<%=comments[i]%>">visa</a>)<br/>
+		 (<a href="<%= basePath %>rawtext.jsp?text=<%=comments[i]%>">visa</a>)<br/>
 <%
 	    } else {
 %>
@@ -507,7 +507,7 @@
 	</div>
 <%
     out.flush();
-    RequestDispatcher d = getServletContext().getRequestDispatcher("/lyskom/text.jsp?footnote");
+    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "text.jsp?footnote");
     for (Iterator i = includeTexts.iterator(); i.hasNext();) {
 	request.setAttribute("text", i.next());
 	d.include(request, response);
