@@ -528,7 +528,7 @@
 	    manyMemberships = true;
 	} else {
 	    if (!manyMemberships) {
-		lyskom.updateUnreads();
+		lyskom.updateUnreads(preferences.getBoolean("prequery-local-texts"));
 	    } else {
 		out.println("(\"många möten\" aktiverad)...");
 	    }
@@ -1210,6 +1210,14 @@
 			    confIter.remove();
 			    continue;
 			}
+			if (preferences.getBoolean("prequery-local-texts")) {
+			    List list = lyskom.nextUnreadTexts(conf, false, 
+					    preferences.getInt("show-multiple-texts"), false);
+			    if (list.size() == 0) {
+				confIter.remove();
+				continue;
+			    }
+			}
 			sum += unreads;
 			sum -= readTexts.length;
 			confsum++;
@@ -1476,7 +1484,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.76 $
+$Revision: 1.77 $
 </div>
 </body>
 </html>

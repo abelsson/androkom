@@ -9,6 +9,7 @@ package nu.dll.lyskom;
 import java.net.*;
 import java.io.*;
 import java.util.*;
+import java.lang.ref.*;
 import java.lang.reflect.*;
 /**
  * <p>
@@ -85,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.76 2004/06/09 23:17:29 pajp Exp $
+ * @version $Id: Session.java,v 1.77 2004/06/10 01:06:31 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -605,7 +606,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    myPerson.uconf = getUConfStat(id);
 	    acceptAsynchAll();
 	    if (getMembership) {
-		membership = getMyMembershipList();
+		membership = getMyMembershipList(false);
 	    }
 	}
 	state = STATE_LOGIN;
@@ -652,7 +653,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void updateUnreads()
     throws IOException {
-	updateUnreads(null);
+	updateUnreads(null, false);
+    }
+
+    public void updateUnreads(boolean getReadTexts)
+    throws IOException {
+	updateUnreads(null, getReadTexts);
     }
 
     /**
@@ -664,9 +670,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * getUnreadConfsListCached(). If null, getUnreadConfsList()
      * will be called to retrieve that data instead.
      */
-    public void updateUnreads(List _unreads)
+    public void updateUnreads(List _unreads, boolean getReadTexts)
     throws IOException {
-	if (membership == null) getMyMembershipList();
+	if (membership == null) getMyMembershipList(getReadTexts);
 	int persNo = myPerson.getNo();
 	if (_unreads == null) {
 	    getUnreadConfsList(persNo, true);
@@ -828,6 +834,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */   
     public List nextUnreadTexts(int conference, boolean updateUnread, int maxTexts)
     throws IOException {
+	return nextUnreadTexts(conference, updateUnread, maxTexts, true);
+    }
+    public List nextUnreadTexts(int conference, boolean updateUnread, int maxTexts, boolean modifyUnreadList)
+    throws IOException {
 	if (unreads.size() == 0) return new LinkedList();
 	
 	UConference c = getUConfStat(conference);
@@ -837,10 +847,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    TextMapping tm = localToGlobal(conference, localNo, maxTexts);
 
 	    if (!tm.hasMoreElements()) {
-		synchronized (unreads) {
-		    unreads.remove(new Integer(conference));
+		if (modifyUnreadList) {
+		    synchronized (unreads) {
+			unreads.remove(new Integer(conference));
+		    }
+		    setLastRead(conference, c.getHighestLocalNo());
 		}
-		setLastRead(conference, c.getHighestLocalNo());
 		return new LinkedList();
 	    }
 	    List returnList = new LinkedList();
@@ -854,10 +866,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    }
 
 	    if (returnList.size() == 0) {
-		synchronized (unreads) {
-		    unreads.remove(new Integer(conference));
+		if (modifyUnreadList) {
+		    synchronized (unreads) {
+			unreads.remove(new Integer(conference));
+		    }
+		    setLastRead(conference, c.getHighestLocalNo());
 		}
-		setLastRead(conference, c.getHighestLocalNo());
 		Debug.println("no unread texts found");
 		return new LinkedList();
 	    }
@@ -873,7 +887,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    lastText = ((Integer) returnList.get(returnList.size()-1)).intValue();
 	    return returnList;
 	} else {
-	    unreads.remove(new Integer(conference));
+	    if (modifyUnreadList) unreads.remove(new Integer(conference));
 	    return new LinkedList();
 	}
     }
@@ -913,7 +927,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		Debug.println("Warning: isMemberOf(" + confNo + ") " +
 			      "called before membership has been queried " +
 			      "from server (querying now)");
-		getMyMembershipList();
+		getMyMembershipList(false);
 	    } else {
 		return false;
 	    }
@@ -1452,12 +1466,27 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param noOfExistingTexts The maximum number of texts that the returned mapping should contain
      * @see nu.dll.lyskom.Session#doLocalToGlobal(int, int, int)
      */
+    Map ltgCache = new HashMap();
     public  TextMapping localToGlobal(int confNo, int firstLocalNo,
 						  int noOfExistingTexts)
     throws IOException, RpcFailure {
 	if (firstLocalNo == 0)
 	    throw new IllegalArgumentException("First local text number cannot be zero.");
-	TextMapping m = new TextMapping();
+	String key = confNo + "-" + firstLocalNo + "-" + noOfExistingTexts;
+	Reference ref;
+	TextMapping m;
+	synchronized (ltgCache) {
+	    ref = (Reference) ltgCache.get(key);
+	    m = (TextMapping) (ref != null ? ref.get() : null);
+	}
+	
+	if (m != null) {
+	    Debug.println("returning cached TextMapping " + m);
+	    m.first();
+	    return m;
+	}
+
+	m = new TextMapping();
 
 	int offset = 0;
 	int existingTextsLeft;
@@ -1473,6 +1502,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    m.update(0, r.getParameters(), false);
 	    offset += 255; 
 	} while ((noOfExistingTexts - offset) > 0);
+
+	synchronized (ltgCache) {
+	    ltgCache.put(key, new WeakReference(m));
+	}
 	return m;
 		 
     }
@@ -1660,9 +1693,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * Equal to <tt>getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, new Bitstring("0"))</tt>
      * @see nu.dll.lyskom.Session#getMembershipList(int, int, int, Bitstring)
      */
-    public List getMyMembershipList()
+    public List getMyMembershipList(boolean wantReadTexts)
     throws IOException {
-	return membership = getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, false);
+	return membership = getMembershipList(myPerson.getNo(), 0, myPerson.noOfConfs+1, wantReadTexts);
     }
 
     /**
@@ -1965,6 +1998,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (unreads != null && !unreads.contains(new Integer(confNo))) {
 	    if (lastRead < highest) unreads.add(new Integer(confNo));
 	}
+	readTexts.clear();
     }
 
 
@@ -2173,7 +2207,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (!reply.getSuccess()) {
 	    throw reply.getException();
 	}
-	membership = getMyMembershipList(); // XXX
+	membership = getMyMembershipList(false); // XXX
     }
 
     /**
@@ -2244,7 +2278,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void joinConference(int confNo) throws IOException, RpcFailure {
 	addMember(confNo, getMyPerson().getNo(), 100, getMyPerson().noOfConfs+1, false, false, false);
-	membership = getMyMembershipList();
+	membership = getMyMembershipList(false); // XXX
     }
 
     /**
