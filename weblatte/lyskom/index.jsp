@@ -3,7 +3,6 @@
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
 <%
-
     String server = request.getParameter("server") != null ? 
 	request.getParameter("server") : Servers.defaultServer.hostname;
     Session lyskom = (Session) session.getAttribute("lyskom");
@@ -83,8 +82,9 @@
 		    session.setAttribute("lyskom", lyskom);
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.10 $" + 
-					    (Debug.ENABLED ? " (devel)" : ""));
+		    lyskom.setLatteName("WebLatte");
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.11 $" + 
+					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
@@ -147,6 +147,7 @@
 <%
     }
     if (request.getParameter("debug") != null) {
+	debug = true;
 	out.print("<pre>");
 	Map info = lyskom != null ? lyskom.getInfo() : new HashMap();
 	for (Iterator i = info.entrySet().iterator(); i.hasNext();) {
@@ -219,7 +220,7 @@
 
     if (authenticated.booleanValue()) {
 	if (true) {
-	    if (Debug.ENABLED) {
+	    if (debug) {
 		out.print("<pre style=\"color: blue;\">DEBUGLÄGE: ");
 		out.print("Person: " + lyskom.getMyPerson().getNo());
 		out.print(", User-Area: " + lyskom.getMyPerson().getUserArea());
@@ -781,6 +782,7 @@
 		request.getParameter("comment") == null && newTextNo == 0 &&
 		!response.isCommitted()) {
 		response.sendRedirect(myURI(request)+"?listnews");
+		return;
 	    }
 	}
 %>
@@ -922,6 +924,8 @@
 	while (mapping.hasMoreElements()) {
 	    int textNo = ((Integer) mapping.nextElement()).intValue();
 	    Text text = lyskom.getText(textNo);
+	    String charset = text.getCharset();
+	    if ("us-ascii".equals(charset)) charset = "iso-8859-1";
 	    if (pyjamas) out.print("<tr bgcolor=\"#ccffff\">");
 	    else out.print("<tr>");
 	    out.print("<td>");
@@ -929,7 +933,7 @@
 	    out.print("</td><td>");
 	    out.print(lookupName(lyskom, text.getAuthor(), true));
 	    out.print("</td><td>");
-	    out.print(new String(text.getSubject()));
+	    out.print(new String(text.getSubject(), charset));
 	    out.println("</td></tr>");
 	    out.flush();
 	    pyjamas = !pyjamas;
@@ -1194,13 +1198,13 @@ Du är inte inloggad.
 <%  } else { %>
 [ <a href="?pom=true">visa menyer</a> ]
 <%  }
-    if (Debug.ENABLED) { %>
+    if (debug) { %>
 	<p><a href="<%= basePath%>?debug">debugdata</a>
 	   <a href="prefs.jsp">inställningar</a></p>
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.10 2004/04/22 22:16:07 pajp Exp $
+$Id: index.jsp,v 1.11 2004/04/23 01:16:56 pajp Exp $
 </p>
 </body>
 </html>

@@ -89,7 +89,11 @@
 	<% } %>
 	<br/>
 	Skapad <%= df.format(text.getCreationTime()) %><br/>
-<%	if (Debug.ENABLED) {
+<%	if (debug) {
+	Hollerith[] creatingSoftware = text.getStat().getAuxData(AuxItem.tagCreatingSoftware);
+	for (int i=0; i < creatingSoftware.length; i++) {
+	    out.println("Klient: " + lyskom.toString(creatingSoftware[i].getContents()) + "<br/>");
+        }
 %>
 	Datatyp: <%= rawContentType %><br/>
 <%	}
@@ -123,7 +127,7 @@
 	}
 	if (!contentType.equals("x-kom/user-area")) {
 %>
-	Ärende: <%= subject %><br/>
+	Ärende: <%= htmlize(subject) %><br/>
 <%
 	} else {
 	    out.println("<p class=\"statusSuccess\">Texten är en User-Area.</p>");

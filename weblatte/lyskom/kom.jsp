@@ -306,4 +306,5 @@ String dir = getServletContext().getRealPath("/lyskom/bilder/");
 UserArea userArea = null;
 KomPreferences commonPreferences = null;
 KomPreferences preferences = null;
+boolean debug = Debug.ENABLED;
 %>\

@@ -34,6 +34,10 @@
 	Conference conf = lyskom.getConfStat(confNo);
 	if (conf.getPresentation() > 0) {
 	    oldPresentation = lyskom.getText(conf.getPresentation());
+	    String charset = oldPresentation.getCharset();
+
+	    // work around texts created by buggy elisp clients...
+	    if ("us-ascii".equals(charset)) charset = "iso-8859-1";
 
  	    int[] _rcpts = oldPresentation.getRecipients();
 	    int[] _ccRcpts = oldPresentation.getCcRecipients();
@@ -42,8 +46,8 @@
 	    for (int i=0; i < _ccRcpts.length; i++)
 	    	ccRecipients.add(lookupName(lyskom, _ccRcpts[i]));
 
-	    if ("".equals(subject)) subject = new String(oldPresentation.getSubject(), oldPresentation.getCharset());
-	    if ("".equals(body)) body = new String(oldPresentation.getBody(), oldPresentation.getCharset());
+	    if ("".equals(subject)) subject = new String(oldPresentation.getSubject(), charset);
+	    if ("".equals(body)) body = new String(oldPresentation.getBody(), charset);
 
 	} else {
 	    Map info = lyskom.getInfo();
@@ -165,7 +169,6 @@
 <% if (errors.length() > 0) { %>
 <p class="statusError"><%=errors.toString()%></p>
 <% } %>
-
 <form enctype="application/x-www-form-urlencoded; charset=utf-8" class="boxed" method="post" action="<%=request.getRequestURI()%>">
 <%
     if (request.getParameter("contentType") != null) {
@@ -207,7 +210,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.3 2004/04/22 22:16:07 pajp Exp $
+$Id: composer.jsp,v 1.4 2004/04/23 01:16:56 pajp Exp $
 </p>
 </body>
 </html>
