@@ -28,7 +28,7 @@ class TextComposer extends Box {
 	this.comment = comment;
 	this.footnote = footnote;
 	if (comment) {
-	    newText = new Text(new String(text.getSubject(), Session.serverEncoding), "");
+	    newText = new Text(new String(text.getSubject(), kom.getServerEncoding()), "");
 	    
 	} else {
 	    newText = (Text) text.clone();
@@ -94,7 +94,7 @@ class TextComposer extends Box {
         String a = "";
         try {
             for (int i=0; i < rcpts.length; i ++) {
-                a = a + new String(kom.getConfName(rcpts[i]), Session.serverEncoding) + (i < rcpts.length-1 ? ", " : "");
+                a = a + new String(kom.getConfName(rcpts[i]), kom.getServerEncoding()) + (i < rcpts.length-1 ? ", " : "");
             }
         } catch (IOException ex) {
             System.err.println("** I/O error: " + ex.getMessage());
@@ -111,7 +111,7 @@ class TextComposer extends Box {
         JLabel subjectLabel = new JLabel("Ämne: ");
         subjectPanel.add(subjectLabel);
 	try {
-	    subjectField = new JTextField(new String(text.getSubject(), Session.serverEncoding), 72);
+	    subjectField = new JTextField(new String(text.getSubject(), kom.getServerEncoding()), 72);
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported server envoding: " + ex1);
 	}
@@ -176,7 +176,7 @@ class TextComposer extends Box {
     void wrapText() throws UnsupportedEncodingException {
 	bodyArea.setText(bodyArea.getText().trim());
 	newText.setContents((getSubject() + "\n" +
-			     getBody().trim()).getBytes(Session.serverEncoding));
+			     getBody().trim()).getBytes(kom.getServerEncoding()));
 	java.util.List rows = newText.getBodyList();
 	java.util.List newRows = new LinkedList();
 

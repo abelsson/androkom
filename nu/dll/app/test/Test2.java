@@ -215,7 +215,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
      */
     public String bytesToString(byte[] bytes) {
 	try {
-	    return new String(bytes, Session.serverEncoding);
+	    return new String(bytes, foo.getServerEncoding());
 	} catch (UnsupportedEncodingException ex1) {
 	    throw new RuntimeException("Unsupported Encoding");
 	}
@@ -1319,7 +1319,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    textb.append(i.next().toString() + "\n");
 	}
 	
-	t.setContents((subject + "\n" + textb.toString().trim()).getBytes(Session.serverEncoding));
+	t.setContents((subject + "\n" + textb.toString().trim()).getBytes(foo.getServerEncoding()));
 	return t;
     }
     void displayText(int tn) throws IOException {
@@ -1428,12 +1428,18 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
 
 	consoleWriteLn("Ärende: " + bytesToString(text.getSubject()));
-	consoleWriteLn("------------------------------------------------------------");
-	String textBody = bytesToString(text.getBody());
-	StringTokenizer rows = new StringTokenizer(textBody, "\n");
-	while (rows.hasMoreElements()) {
-	    consoleWriteLn(rows.nextToken());
+	if (isDisplayable(text)) {
+	    consoleWriteLn("------------------------------------------------------------");
+	    String textBody = bytesToString(text.getBody());
+	    StringTokenizer rows = new StringTokenizer(textBody, "\n");
+	    while (rows.hasMoreElements()) {
+		consoleWriteLn(rows.nextToken());
+	    }
+	} else {
+	    consoleWriteLn("Datatypen \"" + text.getContentType() + "\" kan inte visas");
+	    consoleWriteLn("Använd kommandot \"spara text\" för att spara innehållet i en fil.");
 	}
+
 	consoleWriteLn(pad("(" + text.getNo() + ") /" + confNoToName(text.getAuthor()) +  "/", consoleWidth, '-'));
 
 	int[] comments = text.getComments();
@@ -1461,6 +1467,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    }
 
 	}
+    }
+
+    boolean isDisplayable(Text t) {
+	String ct = t.getContentType();
+	if (ct.startsWith("text/")) return true;
+	if (ct.equals("x-kom/text")) return true;
+	return false;
     }
 
     static JFrame createConsoleFrame() {

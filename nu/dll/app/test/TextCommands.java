@@ -1,10 +1,15 @@
 package nu.dll.app.test;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.StringTokenizer;
 import java.text.MessageFormat;
+
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.InputStream;
+import java.io.IOException;
+
 
 import nu.dll.lyskom.*;
 
@@ -12,8 +17,9 @@ public class TextCommands extends AbstractCommand {
 
     // "återse" renamed to "återse text" due to a conflict
     String[] myCommands = { "återse text", "}terse text", "fotnotera", "kommentera", "inlägg", "radera text",
-			    "markera text", "lista markerade texter", "återse urinklägg", "}terse urinl{gg" };
-    int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7 };
+			    "markera text", "lista markerade texter", "återse urinklägg", "}terse urinl{gg",
+			    "spara text" };
+    int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8 };
     String[] myDescriptions = {
 	"återse text <textnummer>", // 0
 	"fotnotera (text) [textnummer]", // 1
@@ -22,7 +28,8 @@ public class TextCommands extends AbstractCommand {
 	"radera text", // 4
 	"markera text [textnummer] [markeringstyp]", // 5
 	"lista markerade texter", // 6
-	"återse urinlägg [textnummer]" // 7
+	"återse urinlägg [textnummer]", // 7
+	"spara text (till fil) [textnummer]" // 8
     };
 
     public TextCommands() {
@@ -88,7 +95,7 @@ public class TextCommands extends AbstractCommand {
 	    if (textNo < 1) {
 		throw new CmdErrException("Du måste ange ett giltigt " +
 					  "textnummer eller läsa/skriva " +
-					  "en text först")´;
+					  "en text först");
 	    }
 
 	    text = session.getText(textNo);
@@ -134,11 +141,55 @@ public class TextCommands extends AbstractCommand {
 	case 7: // review original
 	    reviewOriginal(textNo);
 	    break;
+	case 8:
+	    if (textNo < 1 && application.getLastText() != null)
+		textNo = application.getLastText().getNo();	    saveText(textNo);
+	    break;
 	default:
 	    throw new CmdErrException("Internfel: okänt kommando \"" + s + "\".");
 	}
 
 	return Command.OK;
+    }
+
+    public void saveText(int textNo) throws IOException, CmdErrException {
+	Text t = session.getText(textNo);
+	String defaultName = t.getNo() + ".txt";
+	if (t.getContentType().equals("image/jpeg")) defaultName = t.getNo() + ".jpg";
+	if (t.getContentType().equals("image/png")) defaultName = t.getNo() + ".png";
+	if (t.getContentType().equals("image/gif")) defaultName = t.getNo() + ".gif";
+
+	String filename = application.crtReadLine("Ange filnamn att spara till [" + 
+						  defaultName + "]: ", defaultName);
+	File f = new File(filename);
+	if (f.exists()) throw new CmdErrException("Filen \"" + f.getAbsolutePath() + "\" existerar redan.");
+	FileOutputStream os = new FileOutputStream(f);
+	if (t instanceof BigText) {
+	    HollerithStream hs = ((BigText) t).getBodyStream();
+	    InputStream is = hs.getStream();
+	    int blockSize = 512;
+	    byte[] buffer = new byte[blockSize];
+	    int blocks = hs.getSize()/blockSize;
+	    int rest = hs.getSize() - blocks*blockSize;
+	    int bytesRead = 0;
+	    while (bytesRead < hs.getSize()) {
+		int bytesToRead = blockSize;
+		if ((hs.getSize() - bytesRead) < blockSize) {
+		    bytesToRead = hs.getSize() - bytesRead;
+		}
+		int read = is.read(buffer, 0, bytesToRead);
+		bytesRead += read;
+		os.write(buffer, 0, read);
+	    }
+	    hs.setExhausted();
+	} else {
+	    byte[] data = t.getBody();
+	    os.write(data, 0, data.length);
+	}
+	os.close();
+	application.consoleWriteLn("OK, text " + t.getNo() + " har sparas i filen \"" + 
+				   f.getAbsolutePath() + "\".");
+
     }
 
     public void reviewOriginal(int textNo) throws IOException, CmdErrException {
