@@ -1,0 +1,60 @@
+<% if (lyskom != null && lyskom.getLoggedIn()) { %>
+<!-- Context menu Script- © Dynamic Drive (www.dynamicdrive.com) Last updated: 01/08/22
+     For full source code and Terms Of Use, visit http://www.dynamicdrive.com -->
+<div id="ie5menu" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?listnews">Lista nyheter</div>
+<div class="menuitems" url="<%= basePath %>composer.jsp">Skriv inlägg</div>
+<%  if (lyskom.getServer().equals("sno.pp.se")) { %>
+<div class="menuitems" url="<%= basePath %>?uploadForm">Ladda upp bild</div>
+<%  } %>
+<div class="menuitems" url="<%= basePath %>?reviewMarked">Lista markerade texter</div>
+<div class="menuitems" script="change_name_interactive(window, '<%= dqescJS(lookupName(lyskom, lyskom.getMyPerson().getNo())) %>');">Byt namn...</div>
+<div class="menuitems" script="search_interactive(window);">Sök möte/person...</div>
+<hr>
+<div class="menuitems" url="<%= basePath %>vilka/">Vilka är inloggade?</div>
+<%  if (lyskom.getServer().equals("sno.pp.se")) { %>
+<div class="menuitems" url="<%= basePath %>bilder/">Vem är vem i SnoppKOM?</div>
+<%  } %>
+<hr>
+<div class="menuitems" url="?purgeOtherSessions">Logga ut mina andra sessioner</div>
+<div class="menuitems" url="?logout">Logga ut denna session</div>
+</div>
+
+<div id="ctxmenu_conference" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
+<div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
+<div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
+<div class="menuitems" url="<%= basePath %>?join=%NAME%">Bli medlem</div>
+<div class="menuitems" url="<%= basePath %>?leave=%NAME%">Utträda</div>
+<div class="menuitems" script="javascript:endast_interactive(window, %NO%, '%NAME%');">Endast...</div>
+</div>
+
+<div id="ctxmenu_letterbox" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
+<div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
+<div class="menuitems" url="<%= basePath %>composer.jsp?recipientNo=%NO%&recipientNo=<%=lyskom.getMyPerson().getNo()%>">Skicka brev</div>
+<div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
+</div>
+
+<div id="ctxmenu_text" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?mark=%NO%&text=%NO%">Markera</div>
+<div class="menuitems" url="<%= basePath %>?unmark=%NO%&text=%NO%">Avmarkera</div>
+<div class="menuitems" url="<%= basePath %>?privateReply=%NO%&text=%NO%">Personligt svar</div>
+</div>
+<script language="JavaScript1.2">
+//set this variable to 1 if you wish the URLs of the highlighted menu to be displayed in the status bar
+var display_url=0;
+ 
+var ie5=document.all&&document.getElementById;
+var ns6=document.getElementById&&!document.all;
+
+var menuobj;
+getMenuObj();
+if (ie5||ns6){
+  menuobj.style.display='';
+  document.oncontextmenu=showmenuie5;
+  document.onclick=hidemenuie5;
+  //document.onclick=showhidemenu
+}
+</script>
+<% } %>
