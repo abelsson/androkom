@@ -322,7 +322,7 @@ public class Text extends Hollerith implements java.io.Serializable {
 
     /**
      * Returns the body of this text as a List of String objects, converted from
-     * bytes using iso-8859-1.
+     * bytes using server encoding.
      */ 
     public List getBodyList() {
 	try {

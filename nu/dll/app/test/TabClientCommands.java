@@ -58,6 +58,7 @@ public class TabClientCommands extends AbstractCommand {
 		tabName = "edit-" + tabClient.editCount;
 	    }
 	    int preSelectedIndex = tabPane.getSelectedIndex();
+	    application.consoleWriteLn("Editorläge");
 	    tabPane.addTab(tabName, composer);
 	    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	    composer.waitForAction();
@@ -111,6 +112,7 @@ public class TabClientCommands extends AbstractCommand {
 		tabName = "edit-" + tabClient.editCount;
 	    }
 	    int preSelectedIndex = tabPane.getSelectedIndex();
+	    application.consoleWriteLn("Editorläge");
 	    tabPane.addTab(tabName, composer);
 	    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	    composer.waitForAction();

@@ -159,7 +159,7 @@ class TextInfoLabel extends JLabel {
                         String s = null; 
                         if (stat != null) {
                             s = prefix + getNo() + " av " +
-                                    new String(getKomSession().getConfName(stat.getAuthor()));
+                                    new String(getKomSession().getConfName(stat.getAuthor()), Session.serverEncoding);
                             setText(s);
                         }
                         Debug.println("*** " + s);
@@ -168,8 +168,8 @@ class TextInfoLabel extends JLabel {
                 } catch (IOException ex) {
                     System.err.println("foo " + ex.getMessage());
                     System.exit(42);
+		}
 
-                }
 
             }
         });        

@@ -833,11 +833,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		String personName = confNoToName(vilka[i].getPerson());
 		String conferenceName = confNoToName(vilka[i].getWorkingConference());
 
-		consoleWrite(vilka[i].getSession() + " " + personName);
+		String row = vilka[i].getSession() + " " + personName;
 		if (vilka[i].getWorkingConference() != 0) {
-		    consoleWrite(" i möte " + conferenceName);
+		    row += " i möte " + conferenceName;
 		}
-		consoleWriteLn("");
+		consoleWriteLn(row);
 		consoleWriteLn("\t(" + bytesToString(vilka[i].getWhatAmIDoing()) + ")");
 	    }
 	    consoleWriteLn("----------------------------------------------------------------");
@@ -927,7 +927,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     void consoleWriteLn(String s) {
 	linesSinceLastPrompt++;
-	if (linesSinceLastPrompt > linesPerScreen-1) {
+	if (linesSinceLastPrompt > linesPerScreen-2) {
 	    crtReadLine("(-- tryck Enter för att fortsätta --)", true);
 	}
 	consoleWrite(s + lineSeparator);	
@@ -1242,8 +1242,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    // the 'toread' stack for later viewing (in reverse)
 	    int[] comments = text.getComments();
 	    for (int i=comments.length-1; i >= 0; i--) {
-		if (!foo.getReadTexts().contains(comments[i]))
-		    toread.push((Object) new Integer(comments[i]));
+		if (!foo.getReadTexts().contains(comments[i])) {
+		    try {
+			foo.getTextStat(comments[i], true);
+			toread.push((Object) new Integer(comments[i]));
+		    } catch (RpcFailure ex1) {}
+		}
 	    }
 	}
     }

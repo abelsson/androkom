@@ -83,7 +83,8 @@ public class TabClient {
 	    gridBag.setConstraints(filler, constr);
 	    add(filler);
 
-	    JScrollPane consolePane = new JScrollPane(t2.getConsole());
+	    //t2.getConsole().setLineWrap(true);
+	    JScrollPane consolePane = new JScrollPane(t2.getConsole());	    
 	    constr.gridwidth = 2;
 	    constr.gridx=0;
 	    constr.gridy=1;
@@ -290,7 +291,9 @@ public class TabClient {
 	}
 	serverNames.put(server, new Integer(count));
 	SessionPanel sessionPanel = new SessionPanel(t2, tabName);
-	tabPane.addTab(tabName, sessionPanel);
+	JPanel sessionPanelPanel = new JPanel(new GridLayout(1, 1));
+	sessionPanelPanel.add(sessionPanel);
+	tabPane.addTab(tabName, sessionPanelPanel);
 	tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	clients.add(t2);
 
@@ -340,7 +343,7 @@ public class TabClient {
 	    });
 
 	frame.pack();
-	frame.setResizable(false);
+	//frame.setResizable(false);
 	frame.setVisible(true);
     }
 
