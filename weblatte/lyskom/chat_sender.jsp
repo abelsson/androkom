@@ -47,8 +47,7 @@
 	String recipientName = request.getParameter("recipient_name");
 	String message = request.getParameter("message");
         List messages = (List) session.getAttribute("lyskom.chat.messages");
-
-	if (recipientName != null && !"".equals(recipientName.trim())) {
+	if (!message.trim().equals("") && recipientName != null && !"".equals(recipientName.trim())) {
 	    try {
 		ConfInfo recipient = lookupName(lyskom, recipientName, true, true);
 ;
