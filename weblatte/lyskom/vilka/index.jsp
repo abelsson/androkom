@@ -21,12 +21,15 @@
 <link rel="stylesheet" href="<%= basePath %>/lattekom.css" />
 <body>
 <h2>vilka är inloggade i <%= serverShort(lyskom) %>?</h2>
+<script language="JavaScript1.2" src="<%= basePath %>stuff.js"></script>
+<%@ include file='../dhtmlMenu.jsp' %>
 <%
     out.flush();
     DynamicSessionInfo[] who = lyskom.whoIsOnDynamic(request.getParameter("noVisible") == null,
 						     request.getParameter("wantInvisible") != null,
 						     activeLast);
 %>
+<p class="StatusSuccess">Listar <%= who.length %> sessioner:</p>
 <table>
 <tr bgcolor="#aaaaaa" width="80%"><td width="10%"><b>#</b></td><td width="30%"><b>namn</b></td><td width="15%"><b>gör</b></td><td width="35%"><b>i möte</b></td></tr>
 <%
@@ -35,31 +38,57 @@
 	pyjamas = !pyjamas;
 	int conf = who[i].getWorkingConference();
 	String confName = null;
-	try {
-	    if (conf > 0) confName = new String(lyskom.getConfName(conf));
-        } catch (RpcFailure e1) {}
+	int idle = who[i].getIdleTime()/60;
+	int idleHours = idle/60;
+	int idleMinutes = idle - idleHours*60;
+	SessionInfo _session = lyskom.getLoggedIn() ? lyskom.getStaticSessionInfo(who[i].getSession()): null;
 	Mugshot mug = null;
 	if (lyskom.getServer().equals("sno.pp.se")) {
 	    File mugFile = new File(dir, who[i].getPerson() + ".txt");
 	    mug = mugFile.exists() ? new Mugshot(mugFile) : null;	
         }
 %>
-	<tr <%= pyjamas ? "bgcolor=\"#aaeeee\"" : "" %>><td align="right"><%= who[i].getSession() %></td>
+	<tr <%= pyjamas ? "bgcolor=\"#aaeeee\"" : "" %>><td align="right"
+<%
+	    if (_session != null) {
+	        String identUser = lyskom.toString(_session.getIdentUser());
+	        String username = lyskom.toString(_session.getUsername());
+	        String hostname = lyskom.toString(_session.getHostname());
+	        out.print("title=\"Uppkopplad " + df.format(_session.getConnectionTime().getTime()) + ", ");
+	        out.print("från " + hostname);
+	        out.print("\"");
+	    }
+%>
+	    ><%= who[i].getSession() %></td>
 	    <td><%= who[i].getPerson() == 0 ? "<i>ej inloggad</i>" :
 		(mug != null ? "<a href=\"../bilder/" + mug.image + "\">" : "") +
-		new String(lyskom.getConfName(who[i].getPerson())) +
+		lookupName(lyskom, who[i].getPerson(), true) +
 		(mug != null ? "</a>" : "")
 	    %></td>
-            <td><%= who[i].getWhatAmIDoingString() %></td><td><%= confName != null ? confName : "&nbsp;" %></td></tr>
+            <td title="<%= (idle > 0 ? "inaktiv " : "aktiv") + (idle > 0 ? (idleHours > 0 ? idleHours + (idleHours > 1 ? " timmar" : " timme") + ", " : "") + idleMinutes + (idleMinutes > 1 ? " minuter" : " minut") : "") %>">
+<%= who[i].getWhatAmIDoingString() %></td>
+	    <td><%= conf > 0 ? lookupName(lyskom, conf, true) : "&nbsp;" %></td></tr>
 <%
+	        if (request.getParameter("showClientInfo") != null) {
+	            String clientName = lyskom.toString(lyskom.getClientName(who[i].getSession()));
+	            String clientVersion = lyskom.toString(lyskom.getClientVersion(who[i].getSession()));
+	            if (!clientName.equals("")) {
+	                out.print("<tr " + (pyjamas ? "bgcolor=\"#aaeeee\"" : "") + "><td>&nbsp;</td><td colspan=\"3\">Kör ");
+	                out.print(htmlize(clientName));
+	                if (!clientVersion.equals("")) {
+	                    out.print(" version " + htmlize(clientVersion));
+	                }
+	                out.println("</td></tr>");
+	            }
+	        }
 	out.flush();
     }
-    if (disconnectLast) lyskom.disconnect(true);
+    if (disconnectLast || !lyskom.getLoggedIn()) lyskom.disconnect(true);
 %>
 </table>
 <p>[ <a href="../">logga in här</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.2 2004/04/15 22:33:58 pajp Exp $
+$Id: index.jsp,v 1.3 2004/04/16 12:27:55 pajp Exp $
 </p>
 </body>
 </html>

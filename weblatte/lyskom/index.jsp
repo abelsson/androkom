@@ -85,7 +85,7 @@
 			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		session.setAttribute("lyskom", lyskom);
 		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.5 $");
+		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.6 $");
 		lyskom.changeWhatIAmDoing("kör web-latte");
 	    }
 	} else if (names != null && names.length == 0) {
@@ -754,6 +754,8 @@
 	}
 	if (pres > 0) {
 	    textNumber = conf.getPresentation();
+	    out.println("<p class=\"statusSuccess\">Återser presentation för " +
+	                lookupName(lyskom, conf.getNo(), true) + ".</p>");
 	} else {
 	    out.println("<p class=\"statusError\">" + lookupName(lyskom, conf.getNo(), true) + " har ingen presentation.</p>");
 	}
@@ -1091,7 +1093,7 @@ Du är inte inloggad.
 <% } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.5 2004/04/15 23:42:17 pajp Exp $
+$Id: index.jsp,v 1.6 2004/04/16 12:27:53 pajp Exp $
 </p>
 </body>
 </html>
