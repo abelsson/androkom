@@ -21,7 +21,7 @@ import java.util.Vector;
 
 public class Session
 implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
-    public final static int MAX_TIMEOUT = 10000;
+    public final static int MAX_TIMEOUT = 20000;
     public final static int DEFAULT_TIMEOUT = 100;
 
     private final static int DEBUG = 3;
@@ -70,6 +70,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     PersonCache personCache;
     ConferenceCache conferenceCache;
     MembershipCache membershipCache;
+    TextStatCache textStatCache;
+    
     ReadTextsMap readTexts;
     
     RpcHeap rpcHeap;
@@ -91,6 +93,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	personCache = new PersonCache();
 	conferenceCache = new ConferenceCache();
 	membershipCache = new MembershipCache();
+	textStatCache = new TextStatCache();
 	readTexts = new ReadTextsMap();
 	rpcHeap = new RpcHeap();
 	rpcEventListeners = new Vector(1);
@@ -745,6 +748,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     public synchronized TextStat getTextStat(int textNo)
     throws IOException {
 
+        TextStat ts = textStatCache.get(textNo);
+        if (ts != null) return ts;
+
 	Text text = textCache.get(textNo);
 	if (text != null && text.getStat() != null)
 	    return text.getStat();
@@ -794,6 +800,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 			    t.getStat().getAuxItems());
     }
 
+
+    /**
+     * Very simple reply function. Application developers are encouraged to 
+     * use createText() instead
+     */
     public synchronized int reply(int textNo, Text t)
     throws IOException {
 	Text commented = getText(textNo);

@@ -64,6 +64,14 @@ public class Membership {
 	this.readTexts = readTexts;
     }
 
+    public void setLastTextRead(int i) {
+        lastTextRead = i;
+    }
+
+    public int getLastTextRead() {
+        return lastTextRead;   
+    }
+
     public int getNo() {
 	return conference;
     }
@@ -81,11 +89,13 @@ public class Membership {
 	    if (DEBUG>0) Debug.println("membership #"+i+"...");
 	    int j=0;
 	    try {
+		
+		int position = memberships[i][j++].toInteger(); // not used
 		KomTime lastTimeRead = KomTime.createFrom(j, memberships[i]);
-		j = j + 9;
+		j = j + KomTime.ITEM_SIZE;
 		int conf = memberships[i][j++].toInteger();
 		int prio = memberships[i][j++].toInteger();
-		int last = memberships[i][j++].toInteger();
+		int lastTextRead = memberships[i][j++].toInteger(); // !! last -> lastTextRead
 		int readTextsLength = memberships[i][j++].toInteger();
 		KomToken[] readTextsTokens = ((KomTokenArray) memberships[i][j++]).getTokens();
 		int[] readTexts;
@@ -96,7 +106,12 @@ public class Membership {
 		    for (int k=0;k<readTextsLength;k++)
 			readTexts[k] = readTextsTokens[k].toInteger();
 		}
-		ml[i] = new Membership(lastTimeRead, conf, prio, last,
+		int addedBy = memberships[i][j++].toInteger(); // not used
+		KomTime addedAt = KomTime.createFrom(j, memberships[i]); // not used
+		j = j + KomTime.ITEM_SIZE;
+		Bitstring type = Bitstring.createFrom(j, memberships[i]); // not used
+												     
+		ml[i] = new Membership(lastTimeRead, conf, prio, lastTextRead,
 				       readTexts);
 	    } catch (ArrayIndexOutOfBoundsException ex) {
 		Debug.println("Oj-bang: "+ex);

@@ -5,8 +5,10 @@
  */
 package nu.dll.lyskom;
 
+import java.io.Serializable;
+
 // simple LysKOM Time implementation
-public class KomTime {
+public class KomTime implements Serializable {
     final static int DEBUG = 1;
     public static int ITEM_SIZE = 9;
 

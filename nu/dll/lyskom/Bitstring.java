@@ -5,8 +5,11 @@
  */
 package nu.dll.lyskom;
 
-public class Bitstring extends KomToken {
+import java.io.Serializable;
 
+public class Bitstring extends KomToken implements Serializable {
+    public static int ITEM_SIZE = 1;
+    
     public Bitstring() {
 	super();
     }
@@ -40,6 +43,11 @@ public class Bitstring extends KomToken {
 
 	return bs;
     }
+    
+    public static Bitstring createFrom(int offset, KomToken[] array) {
+    	return new Bitstring(array[offset]);
+    }
+    
     public String toString() {
 	return "BITSTRING:"+new String(getContents());
     }

@@ -3,10 +3,9 @@
  * Copyright (c) 1999 by Rasmus Sten <rasmus@sno.pp.se>
  *
  */
-// -*- Mode: Java; c-basic-offset: 4 -*-
 package nu.dll.lyskom;
 
-public class Hollerith extends KomToken {
+public class Hollerith extends KomToken implements java.io.Serializable {
 
     public Hollerith() {
 	setContents(null);

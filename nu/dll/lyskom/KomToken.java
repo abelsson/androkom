@@ -6,8 +6,9 @@
 // -*- Mode: Java; c-basic-offset: 4 -*-
 
 package nu.dll.lyskom;
+import java.io.Serializable;
 
-public class KomToken {
+public class KomToken implements Serializable {
     public final static int PRIMITIVE = 0;
     public final static int COMPL     = 1;
     public final static int ARRAY     = 2;

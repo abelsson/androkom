@@ -64,14 +64,13 @@ public class ConferenceCache {
 
     public Conference getConference(int conferenceNo) {
 	Conference t = (Conference) confHash.get(new Integer(conferenceNo));
+        Debug.println("ConferenceCache: returning "+t);
 	return t;
     }
 
     public UConference getUConference(int conferenceNo) {
 	UConference t = (UConference) uConfHash.get(new Integer(conferenceNo));
-	if (t != null)
-	    if (DEBUG > 0) 
-		Debug.println("ConferenceCache: returning "+conferenceNo);
+	Debug.println("ConferenceCache: returning "+t);
 		
 	return t;
     }

@@ -8,6 +8,7 @@ package nu.dll.lyskom;
 //import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
+import java.io.Serializable;
 
 /** NOTE: as of now, only Integer and KomToken objects are handled
  ** correctly by the toToken() method.
@@ -17,7 +18,7 @@ import java.util.Vector;
  * todo: move the selection stuff in TextStat to a createFrom() method
  *       here. (or constructor)
  */
-public class Selection {
+public class Selection implements Serializable {
     boolean[] keys; // since a selection item can be empty
     Vector[] values;
 

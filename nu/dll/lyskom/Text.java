@@ -9,7 +9,7 @@ import java.util.Hashtable;
 import java.util.Enumeration;
 import java.util.Vector;
 
-public class Text extends Hollerith {
+public class Text extends Hollerith implements java.io.Serializable {
 
     public final static int DEBUG = 1;
 

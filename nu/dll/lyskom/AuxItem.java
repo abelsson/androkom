@@ -8,7 +8,7 @@ package nu.dll.lyskom;
 
 
 /** Aux-Item, introduced in version 10 */
-public class AuxItem {
+public class AuxItem implements java.io.Serializable {
     int no, tag, creator;
     KomTime createdAt;
     Bitstring flags;

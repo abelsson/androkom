@@ -64,7 +64,7 @@ public class RpcCall extends Rpc {
     }
     
     public Object getAux(int n) {
-	if (n < 0 || n > aux.size())
+	if (n < 0 || n > aux.size()-1)
 	    return null;
 
 	return aux.elementAt(n);

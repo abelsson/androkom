@@ -35,6 +35,10 @@ public class Person {
     public int getNo() {
 	return number;
     }
+    
+    public UConference getUConference() {
+    	return uconf;	
+    }
 
     public static Person createFrom(int persNo, RpcReply reply) {
 	Person person = new Person(persNo);

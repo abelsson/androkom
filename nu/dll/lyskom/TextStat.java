@@ -6,7 +6,7 @@
 package nu.dll.lyskom;
 import java.util.Enumeration;
 
-public class TextStat {
+public class TextStat implements java.io.Serializable {
 
     // Misc-Info selection values
     public final static int miscRecpt    =  0;
