@@ -119,12 +119,20 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    
     }
 
+    public void setLastText(Text t) {
+	lastText = t;
+    }
+
     public Text getLastText() {
 	return lastText;	
     }
 
     public Text getLastSavedText() {
 	return lastSavedText;
+    }
+
+    public void setLastSavedText(Text t) {
+	lastSavedText = t;
     }
 
     public String confNoToName(String n)
@@ -172,10 +180,15 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
+    /**
+     * note: should not print out error messages here, but rather change the return
+     * codes to better reflect what actually happened (like -1 for "not found" and
+     * -2 for "ambigous name"
+     */
     public int parseNameArgs(String arg, boolean wantPersons, boolean wantConfs)
     throws IOException {
 	int confNo = 0;
-	if (arg.startsWith("m ") || arg.startsWith("p ")) {	    
+	if (arg.startsWith("m ") || arg.startsWith("p ")) {
 	    StringTokenizer st = new StringTokenizer(arg, " ");
 	    st.nextToken();
 	    try {
@@ -370,6 +383,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     public void initCommands() {
 	commands = new CommandMap(foo, this);
 	commands.addCommand(ConfCommands.class);
+	commands.addCommand(TextCommands.class);
     }
 
     public void run() {
@@ -711,40 +725,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return 1;
 	    
 	}
-	if (cmd.equals("å") || cmd.equals("}")) { // återse inlägg (å <txtno>)
-	    String txt = st.hasMoreTokens() ? st.nextToken() : null;
-	    if (txt == null) throw new CmdErrException("du måste ange inläggsnummer");
-	    int txtNo = 0;
-	    try {
-		txtNo = Integer.parseInt(txt);
-	    } catch (NumberFormatException ex) {
-		throw(new CmdErrException("trasigt inläggsnummer: " + txt));
-	    }
-	    lastText = foo.getText(txtNo);
-	    displayText(txtNo);
-	    return 1;
-	}
-	if (cmd.equals("ln")) { // lista nyheter
-	    int[] conferences = foo.getUnreadConfs(foo.getMyPerson().getNo());
-	    int sum = 0;
-	    int confsum = 0;
-	    for (int i=0; i < conferences.length; i++) {
-		int unreads = foo.getUnreadCount(conferences[i]);
-		sum += unreads;
-		confsum++;
-		consoleWriteLn("Du har " + unreads + " " + (unreads > 1 ? "olästa" : "oläst") +
-			       " i " + confNoToName(conferences[i]));
-	    }
-	    if (confsum == 0) {
-		consoleWriteLn("Du har läst alla inlägg.");
-	    } else {
-		consoleWriteLn("");
-		consoleWriteLn("Du har totalt " + sum + " " + (sum > 1 ? "olästa" : "oläst") +
-			       " inlägg i " + confsum + " " + (confsum > 1 ? "möten" : "möte"));
-	    }
-	    
-	    return 1;
-	}
 	if (cmd.equals("rm")) { // radera möte
 	    consoleWriteLn("-- Den här funktionen är inte implementerad ännu.");
 	    return 1;	    
@@ -776,110 +756,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    break;
 		}
 	    }
-	}
-	if (cmd.equals("f")) { // fotnotera
-	    String opt = null;
-	    if (st.hasMoreTokens()) opt = st.nextToken();
-	    if (opt != null) {
-		try {
-		    t = foo.getText(Integer.parseInt(opt));
-		} catch (NumberFormatException ex) {
-		    throw new CmdErrException("trasigt inläggsnummer: " + opt);
-		}
-	    }
-	    if (t == null) {
-	      consoleWriteLn("Hittar inget inlägg att fotnotera");
-	      return 1;
-	    }
-
-	    setStatus("Skriver en fotnot.");
-	    consoleWriteLn("-- Fotnot till text " + t.getNo() + ".");
-	    consoleWriteLn("-- Skriv din fotnot, avsluta med \".\" på tom rad.");
-	    Text nText = new Text(bytesToString(t.getSubject()), "");
-	    nText.addFootnoted(t.getNo());
-	    nText.addRecipients(t.getRecipients());
-	    nText.addCcRecipients(t.getCcRecipients());
-	    nText = editText(nText);
-	    if (nText == null) {
-		consoleWriteLn("Editeringen avbruten.");
-		return 1;
-	    }
-	    consoleWrite("\nSkapar fotnot... ");
-
-	    int newText = foo.createText(nText);
-	    
-	    if (newText > 0) {
-		consoleWriteLn("text nummer " + newText + " skapad.");
-		if (!dontMarkOwnTextsAsRead) {
-		    markAsRead(newText);
-		}
-	    }
-	    return 1;
-	}
-	if (cmd.equals("k")) { // kommentera (k [txtno])
-	    String opt = null;
-	    if (st.hasMoreTokens()) opt = st.nextToken();
-	    if (opt != null) {
-		try {
-		    t = foo.getText(Integer.parseInt(opt));
-		} catch (NumberFormatException ex) {
-		    throw new CmdErrException("trasigt inläggsnummer: " + opt);
-		}
-	    }
-	    if (t == null) consoleWriteLn("Hittar inget inlägg att kommentera");
-	    setStatus("Skriver en kommentar");
-	    consoleWriteLn("-- Kommentar till text " + t.getNo() + ".");
-	    consoleWriteLn("-- Skriv din kommentar, avsluta med \".\" på tom rad.");
-	    Text nText = new Text(bytesToString(t.getSubject()), "");
-
-	    nText.addCommented(t.getNo());
-
-	    int[] recipients = t.getRecipients();
-	    for (int i=0; i < recipients.length; i++) {
-		Conference conf = foo.getConfStat(recipients[i]);
-		if (conf.getType().original()) {
-		    int superconf = conf.getSuperConf();
-		    if (superconf > 0) {
-			nText.addRecipient(superconf);
-		    } else {
-			consoleWriteLn("Du får inte skriva kommentarer i " +
-				       conf.getNameString());
-		    }
-		} else {
-		    nText.addRecipient(recipients[i]);
-		}
-	    }
-
-	    nText = editText(nText);
-	    if (nText == null) {
-		consoleWrite("Avbruten.");
-		return 1;
-	    }
-	    consoleWrite("\nSkapar kommentar... ");
-
-
-	    int newText = 0;
-	    try {
-		newText = foo.createText(nText);
-	    } catch (RpcFailure ex1) {
-		consoleWrite("%Fel: kunde inte skapa fotnot: ");
-		switch (ex1.getError()) {
-		case Rpc.E_not_author:
-		    consoleWriteLn("du är inte författare till texten");
-		    break;
-		default:
-		    consoleWriteLn(ex1.getMessage());
-		}
-		return 1;
-	    }
-	    if (newText > 0) {
-		consoleWriteLn("text nummer " + newText + " skapad.");
-		if (!dontMarkOwnTextsAsRead) {
-		    markAsRead(newText);
-		    t = foo.getText(newText);
-		}
-	    }
-	    return 1;
 	}
 	if (cmd.equals("lmt")) {
 	    consoleWriteLn("Markerade inlägg:");
@@ -940,25 +816,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return 1;
 
 	}
-	if (cmd.equals("i")) { // skriv inlägg i nuvarande möte
-	    if (foo.getCurrentConference() == -1) {
-		throw new CmdErrException("Du måste vara i ett möte för att kunna skriva ett inlägg.");
-	    }
-	    setStatus("Skriver ett inlägg");
-	    StringBuffer textb = new StringBuffer();
-	    consoleWriteLn("-- Inlägg i möte " + confNoToName(foo.getCurrentConference()));
-	    consoleWriteLn("Avsluta med \".\" på tom rad.");
-	    Text nText = new Text();
-	    nText.addRecipient(foo.getCurrentConference());
-	    nText = editText(nText);
-
-	    int newText = foo.createText(nText);
-	    if (newText > 0) {
-		consoleWriteLn("text nummer " + newText + " skapad.");
-		markAsRead(newText);
-	    } else consoleWriteLn("misslyckades att skapa inlägg.");
-	    return 1;
-	}		 
 	if (cmd.equals("ss")) { // status (för) session
 	    try {
 		int sessionNo = Integer.parseInt(st.nextToken());
@@ -1022,40 +879,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    return 1;
 
 	}
-	if (cmd.equals("bn")) { // byt namn
-	    int confNo = 0;
-	    try {
-		confNo = parseNameArgs(st.nextToken("").substring(1), true, true);
-	    } catch (NoSuchElementException ex1) {
-		confNo = foo.getMyPerson().getNo();
-	    }
-	    if (confNo < 1) return 1;
-	    consoleWriteLn("Byta namn på " + confNoToName(confNo));
-	    try {
-		foo.changeName(confNo, crtReadLine("Nytt namn> "));
-	    } catch (RpcFailure ex1) {
-		consoleWrite("Det gick inte att byta namn: ");
-		switch (ex1.getError()) {
-		case Rpc.E_permission_denied:
-		    consoleWriteLn("du saknar behörighet för operationen");
-		    break;
-		case Rpc.E_conference_exists:
-		    consoleWriteLn("det finns redan ett möte med detta namn");
-		    break;
-		case Rpc.E_string_too_long:
-		    consoleWriteLn("det nya namnet är för långt");
-		    break;
-		case Rpc.E_bad_name:
-		    consoleWriteLn("det nya namnet innehåller ogiltiga tecken");
-		    break;
-		default:
-		    consoleWriteLn("felkod " + ex1.getError());
-		    break;
-		}
-	    }
-	    return 1;
-
-	}
 	if (cmd.equals("s")) { // sända meddelande
 	    int confNo = 0;
 	    try {
@@ -1080,52 +903,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		consoleWriteLn("Det gick inte att skicka meddelandet. Felkod: " + ex1.getError());
 	    }
 	    return 1;
-	}
-	if (cmd.equals("nm")) { // nästa möte
-	    int nextConf = foo.nextUnreadConference(true);
-	    if (nextConf != -1) {
-		while (!toread.isEmpty()) toread.pop(); // töm att-läsa-listan här också
-		consoleWriteLn("nästa möte - " + confNoToName(nextConf));
-	    } else {
-		consoleWriteLn("Det finns inga fler olästa möten.");
-	    }
-	    return 1;
-	}
-	if (cmd.equals("sm")) { // skapa möte
-	    String name = null;
-	    try {
-		name = st.nextToken("").substring(1);
-	    } catch (NoSuchElementException ex1) {
-		throw new CmdErrException("Du måste ange ett namn på mötet.");
-	    }
-	    consoleWrite("Försöker skapa möte \"" + name + "\"...");
-	    int confNo = foo.createConf(name, false, false, false);
-	    if (confNo > 0) consoleWriteLn(" lyckades: mötet fick nummer " + confNo);
-	    else consoleWriteLn(" det gick inte.");
-	    return 1;
-	}
-	if (cmd.equals("lm")) { // lista möten
-	    String substring = null;
-	    try {
-		substring = st.nextToken("").substring(1);
-	    } catch (NoSuchElementException ex1) {
-		substring = "";
-	    }
-	    ConfInfo[] confs = foo.lookupName(substring, false, true);
-	    consoleWriteLn("Hittade " + confs.length + " möten");
-	    MessageFormat form = new MessageFormat(" {0,number}\t{2} {1}");
-
-	    for (int i=0; i < confs.length; i++) {
-		boolean memberOf = foo.isMemberOf(confs[i].getNo());
-		consoleWriteLn(form.format(new Object[] {new Integer(confs[i].getNo()),
-							 confs[i].getNameString(),
-							 (memberOf ? " " : "*")
-					
-		}));
-	    }
-	    consoleWriteLn("-- Slut på listningen");
-	    return 1;
-
 	}
 	if (cmd.equals("q") || cmd.equals(".")) return -1; // avsluta
 	throw(new CmdErrException("Förstod inte \"" + cmd + "\""));
@@ -1197,12 +974,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
     Text editText(Text t)
     throws IOException {
 	String subject = bytesToString(t.getSubject());
-	Debug.println("pre subj: \"" + subject + "\"");
-	if (subject.length() == 0) {
-	    subject = crtReadLine("Ärende: ");
-	} else {
-	    consoleWriteLn("Ärende: " + subject);
-	}
+
 	int[] rcpts = t.getRecipients();
 	for (int i=0; i < rcpts.length; i++) {
 	    consoleWriteLn("Mottagare: " + confNoToName(rcpts[i]));
@@ -1211,6 +983,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	for (int i=0; i < ccRcpts.length; i++) {
 	    consoleWriteLn("Extra kopiemottagare: " + confNoToName(ccRcpts[i]));
 	}
+
+	if (subject.length() == 0) {
+	    subject = crtReadLine("Ärende: ");
+	} else {
+	    consoleWriteLn("Ärende: " + subject);
+	}
+
 	consoleWriteLn("--- skriv \"!?\" på tom rad för hjälp ----------------------------------");
 	if (subject == null) return null;
 	int rowCount = 1;

@@ -3,20 +3,29 @@ package nu.dll.app.test;
 import java.io.IOException;
 import java.util.List;
 import java.util.LinkedList;
+import java.text.MessageFormat;
 
 import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
-    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g" };
+    String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm" };
+
+    // descriptions according to commandIndices
     String[] myDescriptions = {
-	"återse presentation",
 	"återse presentation",
 	"ändra presentation",
 	"återse FAQ",
-	"återse FAQ",
 	"ändra FAQ",
-	"gå till möte"
+	"gå till möte",
+	"lista nyheter",
+	"byta namn",
+	"n{sta m|te",
+	"skapa m|te",
+	"lista m|ten"
     };
+
+    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9 };
+
     public ConfCommands() {
 	setCommands(myCommands);
     }
@@ -24,7 +33,7 @@ public class ConfCommands extends AbstractCommand {
     int getCommandIndex(String command) {
 	String[] commands = getCommands();
 	for (int i=0; i < commands.length; i++) {
-	    if (commands[i].equals(command)) return i;
+	    if (commands[i].equals(command)) return commandIndices[i];
 	}
 	return -1;
     }
@@ -38,44 +47,137 @@ public class ConfCommands extends AbstractCommand {
 	if (parameters != null) confNo = application.parseNameArgs(parameters, true, true);
 
 	switch (getCommandIndex(s)) {
-	case 0:
-	case 1:
+	case 0: // review presentation
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    reviewPresentation(confNo);
 	    break;
-	case 2:
+	case 1: // change presentation
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    changePresentation(confNo);
 	    break;
-	case 3:
-	case 4:
+	case 2: // review FAQ
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    reviewFaq(confNo);
 	    break;
-	case 5:
+	case 3: // change FAQ
 	    if (confNo < 1)
 		confNo = session.getMyPerson().getNo();
 
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    changeFaq(confNo);
 	    break;
-	case 6:
+	case 4: // change conference
 	    if (parameters == null) throw new CmdErrException("Du måste ange ett möte att gå till.");
 	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
 	    changeConference(confNo);
 	    break;
-	    
+	case 5: // list news
+	    listNews();
+	    break;
+	case 6: // change name
+	    if (confNo < 1)
+		confNo = session.getMyPerson().getNo();
+
+	    if (confNo < 1) throw new CmdErrException("Hittade inte mötet eller personen");
+	    changeName(confNo);
+	    break;
+	case 7: // next unread conference
+	    nextUnreadConference();
+	    break;
+	case 8: // create conference
+	    if (parameters == null) throw new CmdErrException("Du m}ste ange ett m|tesnamn");
+	    createConference(parameters);
+	    break;
+	case 9: // list conferences
+	    listConferences(parameters != null ? parameters : "");
+	    break;
 	default: 
 	    throw new RuntimeException("Unknown command " + s);
 	}
 	return OK;
 
+    }
+
+    public void listConferences(String substring) throws IOException, CmdErrException {
+	ConfInfo[] confs = session.lookupName(substring, false, true);
+	application.consoleWriteLn("Hittade " + confs.length + " möten");
+	MessageFormat form = new MessageFormat(" {0,number}\t{2} {1}");
+
+	for (int i=0; i < confs.length; i++) {
+	    boolean memberOf = session.isMemberOf(confs[i].getNo());
+	    application.consoleWriteLn(form.format(new Object[] {new Integer(confs[i].getNo()),
+								 confs[i].getNameString(),
+								 (memberOf ? " " : "*")
+								 
+	    }));
+	}
+	application.consoleWriteLn("-- Slut på listningen");
+    }
+
+    public void createConference(String name) throws CmdErrException, IOException {
+	application.consoleWrite("Försöker skapa möte \"" + name + "\"...");
+	int confNo = session.createConf(name, false, false, false);
+	if (confNo > 0) application.consoleWriteLn(" lyckades: mötet fick nummer " + confNo);
+	else application.consoleWriteLn(" det gick inte.");	
+    }
+
+
+    public void nextUnreadConference() throws CmdErrException, IOException {
+	int nextConf = session.nextUnreadConference(true);
+	if (nextConf > 0) {
+	    while (!application.toread.isEmpty())
+		application.toread.pop(); // töm att-läsa-listan
+	    application.consoleWriteLn("nästa möte - " + application.confNoToName(nextConf));
+	} else {
+	    application.consoleWriteLn("Det finns inga fler olästa möten.");
+	}
+    }
+
+    public void changeName(int confNo) throws CmdErrException, IOException {
+	application.consoleWriteLn("Byta namn på " + application.confNoToName(confNo));
+	try {
+	    session.changeName(confNo, application.crtReadLine("Nytt namn> "));
+	} catch (RpcFailure ex1) {
+	    application.consoleWrite("Det gick inte att byta namn: ");
+	    switch (ex1.getError()) {
+	    case Rpc.E_permission_denied:
+		throw new CmdErrException("du saknar behörighet för operationen");
+	    case Rpc.E_conference_exists:
+		throw new CmdErrException("det finns redan ett möte med detta namn");
+	    case Rpc.E_string_too_long:
+		throw new CmdErrException("det nya namnet är för långt");
+	    case Rpc.E_bad_name:
+		throw new CmdErrException("det nya namnet innehåller ogiltiga tecken");
+	    default:
+		throw new CmdErrException("felkod " + ex1.getError());
+	    }
+	}
+    }
+
+    public void listNews() throws CmdErrException, IOException {
+	int[] conferences = session.getUnreadConfs(session.getMyPerson().getNo());
+	int sum = 0;
+	int confsum = 0;
+	for (int i=0; i < conferences.length; i++) {
+	    int unreads = session.getUnreadCount(conferences[i]);
+	    sum += unreads;
+	    confsum++;
+	    application.consoleWriteLn("Du har " + unreads + " " + (unreads > 1 ? "olästa" : "oläst") +
+				       " i " + application.confNoToName(conferences[i]));
+	}
+	if (confsum == 0) {
+	    application.consoleWriteLn("Du har läst alla inlägg.");
+	} else {
+	    application.consoleWriteLn("");
+	    application.consoleWriteLn("Du har totalt " + sum + " " + (sum > 1 ? "olästa" : "oläst") +
+				       " inlägg i " + confsum + " " + (confsum > 1 ? "möten" : "möte"));
+	}
     }
 
     public void changeConference(int confNo) throws CmdErrException, IOException {
