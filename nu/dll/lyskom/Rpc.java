@@ -320,7 +320,7 @@ public abstract class Rpc {
 
     public final static int C_logout = 1;
     public final static int C_change_conference = 2;
-
+    public final static int C_change_what_i_am_doing = 4;
     public final static int C_delete_conf = 11;
 
     // C_get_conf_stat_old = 13

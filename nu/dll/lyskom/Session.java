@@ -656,6 +656,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return c;
     }
 
+    /** change-what-i-am-doing **/
+    public synchronized void changeWhatIAmDoing(String text)
+    throws IOException {
+	writeRpcCall(new RpcCall(count(), Rpc.C_change_what_i_am_doing)
+	    .add(new Hollerith(text)));
+    }
+
     /** change-conference **/
     public synchronized void changeConference(int confNo)
     throws IOException {

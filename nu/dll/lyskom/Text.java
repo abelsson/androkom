@@ -19,7 +19,8 @@ public class Text extends Hollerith implements java.io.Serializable {
     TextStat stat = null;
 
     public Text setCached(boolean b) {
-	cached = b; return this;
+	cached = b;
+	return this;
     }
 
     public boolean isCached(boolean n) { return cached; }

@@ -19,6 +19,8 @@ implements Runnable, RpcEventListener {
     JTextField userNameField;
     JTextField passwordField;
 
+    JButton defaultCommandButton;
+
     JDesktopPane desktop;
 
     public final static int DEBUG = 255;
@@ -28,7 +30,10 @@ implements Runnable, RpcEventListener {
     public final static int STATE_CONNECT = 2;
     public final static int STATE_GET_MEMBERSHIP = 3;
     public final static int STATE_ONLINE = 4;
+
     int threadState = STATE_NONE;
+
+    int nextUnread = 0;
 
     volatile boolean markAsRead = false;
     volatile boolean readRecursive = false;
@@ -39,10 +44,10 @@ implements Runnable, RpcEventListener {
     JTextArea logArea;
 
     JTabbedPane mainSessionTabPane;
-    JSplitPane messagePane;
     JScrollPane indexScrollPane, readerScrollPane;
     
     Container unreadIndexBox;
+    UnreadDisplay unreadDisplay;
     
     Dimension tabPaneDimension = new Dimension(700, 100);
 
@@ -81,61 +86,26 @@ implements Runnable, RpcEventListener {
 	mainSessionTabPane.addTab("Logg", null, setupLogPanel(),
 				  "Sessionslogg");
 	
-
-        
-        
-	//JTextArea indexTree = new JTextArea();
-	//indexTree.setText("index tree!");
 	unreadIndexBox = new Box(BoxLayout.Y_AXIS);
-	
-	//JTextArea readerTextArea = new JTextArea();
-	//readerTextArea.setText("message area");
-	ActionPanel actionPanel = new ActionPanel(this, kom);
-	
-	
-	
+
 	indexScrollPane = new JScrollPane(unreadIndexBox);
 	indexScrollPane.setPreferredSize(new Dimension(0, 100));
-	readerScrollPane = new JScrollPane(actionPanel);
-	actionPanel.setMinimumSize(new Dimension(0, 0));
 
-	messagePane = new JSplitPane(JSplitPane.VERTICAL_SPLIT);
-	messagePane.setOneTouchExpandable(true);
-	messagePane.setDividerLocation(1.0);
+	JPanel bottomPanel = new JPanel();
+	bottomPanel.setLayout(new BorderLayout());
+	bottomPanel.add(indexScrollPane, BorderLayout.CENTER);
+	bottomPanel.add(setupCommandPanel(), BorderLayout.SOUTH);
 
-	messagePane.setTopComponent(indexScrollPane);
-	//messagePane.setBottomComponent(readerScrollPane);
-
-
-
-	JSplitPane mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT, mainSessionTabPane, messagePane);
-	mainPanel.setDividerLocation(150);
+	JSplitPane mainPanel = new JSplitPane(JSplitPane.VERTICAL_SPLIT,
+					      mainSessionTabPane, bottomPanel);
+	mainPanel.setDividerLocation(160);
 
 	setContentPane(mainPanel);
-
-        //setContentPane(mainSessionTabPane);
-	//passwordField.setSize(50, 50);
-	
-	/*
-	try {
-	    setMaximum(true);
-	} catch (PropertyVetoException ex) {
-	    Debug.println(ex.getClass().getName() + ": " + ex.getMessage());	
-	}*/
-
-	
-	//Dimension minimumSize = new Dimension(100, 50);
-	//indexScrollPane.setMinimumSize(minimumSize);
-	//readerScrollPane.setMinimumSize(minimumSize);
 	
 	pack();
 
 	setPreferredSize(new Dimension(640, 640));
 	setLocation(0,0);
-	
-	
-	
-	
 	
 	show();
 
@@ -152,6 +122,23 @@ implements Runnable, RpcEventListener {
 
     void log(String s) {
 	logArea.append(s+"\n");
+    }
+
+    JPanel setupCommandPanel() {
+	JPanel panel = new JPanel();
+	panel.setLayout(new FlowLayout(FlowLayout.LEFT));
+	
+	JButton dcButton = new JButton("Nästa olästa inlägg");
+	dcButton.setEnabled(false);
+	dcButton.addActionListener(new ActionListener() {
+		public void actionPerformed(ActionEvent e) {
+		    showText(nextUnread);
+		}
+	    });
+	
+       	panel.add(dcButton);
+	defaultCommandButton = dcButton;
+	return panel;
     }
 
     class UnreadDisplay extends JPanel {
@@ -186,6 +173,14 @@ implements Runnable, RpcEventListener {
             updateInfoLabel(m);
             add(list, BorderLayout.NORTH);
         }
+
+	void update() throws IOException {
+	    kom.updateUnreads();
+	    mlist.setList(kom.getUnreadMembership());
+	    Membership m = null;
+	    if (list.getSelectedIndex() != -1) m = mlist.getList()[list.getSelectedIndex()];
+	    updateInfoLabel(m);
+	}
         
         void updateInfoLabel(Membership m) throws IOException {
             if (m != null) {
@@ -211,22 +206,29 @@ implements Runnable, RpcEventListener {
                 UConference uconf = kom.getUConfStat(confNo);
                 TextMapping unreadMap = kom.localToGlobal(confNo, lastTextRead + 1, 5);
                 if (unreadMap.hasMoreElements()) {
-                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", ((Integer) unreadMap.nextElement()).intValue(),
+		    nextUnread = ((Integer) unreadMap.nextElement()).intValue();
+                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", nextUnread,
                                           kom, null, SwingConstants.LEFT);
+		    defaultCommandButton .setEnabled(true);
+		    kom.changeConference(confNo);
                     t.setSessionFrame(parent);
                     add(t);
 		    repaint();
                 } else {
 		    JLabel t = new JLabel("inga olästa inlägg");
+		    defaultCommandButton.setEnabled(false);
+		    nextUnread = 0;
 		    add(t);
 		    repaint();
 		}
+
             }   
         }
     }
 
+
     Container setupUnreadIndexBox() throws IOException {
-        return new UnreadDisplay(this, kom);
+        return unreadDisplay = new UnreadDisplay(this, kom);
         
     }
 
@@ -509,6 +511,7 @@ implements Runnable, RpcEventListener {
 	case STATE_ONLINE:
 	    try {
                 indexScrollPane.setViewportView(unreadIndexBox = setupUnreadIndexBox());
+		kom.changeWhatIAmDoing("leker hacker");
             } catch (IOException ex) {
                 networkError("I/O-fel: " + ex.getMessage());
             }
@@ -520,8 +523,16 @@ implements Runnable, RpcEventListener {
     }
     
     public void showText(int textNo) {
-        try {
-            new InternalTextFrame(this, kom, textNo);   
+        try {	    
+            new InternalTextFrame(this, kom, textNo);
+	    Text t = kom.getText(textNo);
+	    int cc = kom.getCurrentConference();
+	    int[] _local = { t.getLocal(cc) };
+	    kom.markAsRead(kom.getCurrentConference(), _local); // xxx
+
+	    unreadDisplay.update();
+
+	    
         } catch (IOException ex) {
             networkError("I/O-fel: " + ex.getMessage());   
         }
