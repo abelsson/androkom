@@ -247,9 +247,9 @@
 	return;	
     }
 
-    if (multipart && (parts.size() == 0 ||
-	parameters.get("newFile") != null ||
-	parameters.containsKey("multipart-file"))) {
+    if (multipart && 
+	(parameters.get("newFile") != null ||
+	 parameters.containsKey("multipart-file"))) {
 	Map part = new HashMap();
 	part.put("content-type", "application/octet-stream");
 	parts.add(part);
@@ -584,7 +584,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.16 2004/06/07 01:45:42 pajp Exp $
+$Id: composer.jsp,v 1.17 2004/06/07 02:15:38 pajp Exp $
 </div>
 </body>
 </html>
