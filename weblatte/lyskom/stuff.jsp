@@ -3,9 +3,10 @@
 if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
   response.setContentType("text/javascript;charset=iso-8859-1");
 }
+response.setDateHeader("Expires", System.currentTimeMillis()+(1440*60*1000));
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.8 2004/06/04 23:07:00 pajp Exp $
+// $Id: stuff.jsp,v 1.9 2004/09/09 08:38:57 pajp Exp $
 
 var nohide = false;
 var ignorevanligklick = false;
