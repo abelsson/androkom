@@ -17,9 +17,19 @@
 	    String name = request.getParameter("name");
 	    for (int i=0; part == null && i < multipart.getCount(); i++) {
 		BodyPart _part = multipart.getBodyPart(i);
-		Debug.println("examining " + _part + " with name " + _part.getFileName() + 
+                String partName = _part.getFileName();
+           	if (partName == null) {
+		    String[] locHeaders = _part.getHeader("Content-Location");
+		    if (locHeaders != null && locHeaders.length > 0) {
+			partName = locHeaders[0];
+		    } else {
+			Debug.println("part " + i + " has no name nor " +
+				      "content-location");
+		    }
+		}
+		Debug.println("examining " + i + " with name " + partName + 
 			" ?= " + name);
-		if (name.equals(_part.getFileName())) {
+		if (name.equals(partName)) {
 		    part = _part;
 		}
 	    }

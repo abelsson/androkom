@@ -273,8 +273,13 @@
 			}
 		    }
 		    ContentType partContentTypeObj = new ContentType(part.getContentType());
-		    if (partContentTypeObj.match("text/*")) 
-{	    		if (commonPreferences.getBoolean("dashed-lines")) {
+	            Debug.println("part " + i + " content-type: " + partContentTypeObj.toString());
+
+		    if (partContentTypeObj.match("text/html") ||
+	                partContentTypeObj.match("text/plain") ||
+			partContentTypeObj.match("text/x-kom-basic") ||
+			partContentTypeObj.match("text/enriched")) {
+	    		if (commonPreferences.getBoolean("dashed-lines")) {
 	        	    out.println("<hr noshade width=\"95%\" align=\"left\" />");
 	    		}
 

@@ -14,6 +14,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 
 
     HTML.Attribute[] alwaysAllowedAttributesArray = {
+	HTML.Attribute.BGCOLOR,
 	HTML.Attribute.STYLE,
 	HTML.Attribute.CLASS,
 	HTML.Attribute.TITLE,
@@ -24,6 +25,10 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	HTML.Attribute.BORDER,
 	HTML.Attribute.ID,
 	HTML.Attribute.NAME
+    };
+
+    HTML.Tag[] strippedTagsArray = {
+	HTML.Tag.SCRIPT
     };
 
     HTML.Tag[] allowedTagsArray = {
@@ -53,6 +58,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	HTML.Tag.I,
 	HTML.Tag.IMG,
 	HTML.Tag.LI,
+	HTML.Tag.LINK,
 	HTML.Tag.OL,
 	HTML.Tag.P,
 	HTML.Tag.PRE,
@@ -64,15 +70,19 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	HTML.Tag.TABLE,
 	HTML.Tag.TD,
 	HTML.Tag.TH,
+	HTML.Tag.TITLE,
 	HTML.Tag.TR,
 	HTML.Tag.U,
 	HTML.Tag.UL
     };
 
+    final static boolean debug = Boolean.getBoolean("htmlsanitizer.debug");
+
     static Pattern styleUrlPattern = Pattern.compile("url\\((.*?)\\)");
     static Pattern dqEscPattern = Pattern.compile("\"");
 
     Set allowedTags = new HashSet(Arrays.asList(allowedTagsArray));
+    Set strippedTags = new HashSet(Arrays.asList(strippedTagsArray));
     Set alwaysAllowedAttributes = new HashSet(Arrays.asList(alwaysAllowedAttributesArray));
 
     Writer out;
@@ -165,11 +175,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 			    lcaseValue.startsWith("https://")) {
 			    attributes.put(attribute, value);
 			} else {
-			    String filename = URLDecoder.decode((String) value, "iso-8859-1");
-			    attributes.put(attribute,
-					   "rawtext.jsp?text=" + textNo +
-					   "&name=" +
-					   URLEncoder.encode(filename, "iso-8859-1"));
+			    rewriteRef((String) value, textNo, attributes, attribute, null);
 			}
 		    }
 		} else if (tag == HTML.Tag.TD ||
@@ -179,6 +185,18 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 			attribute == HTML.Attribute.COLSPAN) {
 			attributes.put(attribute, value);
 		    }
+		} else if (tag == HTML.Tag.LINK) {
+		    if (attribute == HTML.Attribute.REL) {
+			String lcvalue = ((String) value).toLowerCase();
+			if (lcvalue.equals("stylesheet"))
+			    attributes.put(attribute, value);
+		    }		
+		    if (attribute == HTML.Attribute.HREF) {
+			rewriteRef((String) value, textNo, attributes, attribute, null);
+		    }
+		}
+		if (attribute == HTML.Attribute.BACKGROUND) {
+		    rewriteRef((String) value, textNo, attributes, attribute, null);
 		}
 	    }
 	    if (tag == HTML.Tag.A) {
@@ -200,6 +218,16 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	}
     }
 
+    private void rewriteRef(String value, int textNo, Map attributes,
+			    HTML.Attribute attribute, String append)
+    throws UnsupportedEncodingException {
+	attributes.put(attribute, 
+		       "rawtext.jsp?text=" + textNo + 
+		       "&name=" + 
+		       URLEncoder.encode(value, "iso-8859-1") + 
+		       (append != null ? "&" + append : ""));
+    }
+
     public void handleText(char[] data, int pos) {
 	try {
 	    /* For some reason "<br />" translates to:
@@ -217,6 +245,10 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 		dataString = new String(data);
 	    }
 	    dprintln("handleText(): " + dataString);
+	    if (strippedTags.contains(lastOpenedTag)) {
+		dprintln("\t(stripping)");
+		return;
+	    }
 	    dataString = dataString.replaceAll("<", "&lt;");
 	    if (lastOpenedTag == HTML.Tag.STYLE) {
 		Matcher m = styleUrlPattern.matcher(dataString);
@@ -253,7 +285,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
     }
 
     static void dprintln(String s) {
-	nu.dll.lyskom.Debug.println(s);
+	if (debug) nu.dll.lyskom.Debug.println(s);
     }
 
     private static String dquote(String s) {

@@ -599,7 +599,7 @@
 		<div class="asynchMessage">
 		<i>Meddelande från <%=lookupName(lyskom, sender, true)%> till
                       <%= recipient != 0 ? lookupName(lyskom, recipient, true) : "alla"%>:</i><br>
-		<tt><%=htmlize(text).replaceAll("\n", "<br/>")%></tt><br/>
+		<tt class="asynchMessage-text"><%=htmlize(text).replaceAll("\n", "<br/>")%></tt><br/>
 		<small>(mottaget <%= df.format(m.getArrivalTime()) %>)</small>
 		</div>
 <%
@@ -1474,7 +1474,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.73 $
+$Revision: 1.74 $
 </div>
 </body>
 </html>

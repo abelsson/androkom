@@ -108,6 +108,10 @@
 			contentType = new ContentType("image/gif");
 		    }
 		}
+		if (contentType.match("message/rfc822") &&
+		    fpart.getFileName().toLowerCase().endsWith(".mht")) {
+		    contentType.getParameterList().set("x-lyskom-variant", "rfc2557");
+		}
 		typeMap.put(fpart.getName(), contentType.toString());
 		parameterKeys.add(fpart.getName());
 		String upkey = fpart.getName().substring(0, fpart.getName().lastIndexOf("_")) +
@@ -248,7 +252,7 @@
     }
 
     if (multipart && 
-	(parameters.get("newFile") != null ||
+	(parameters.containsKey("newFile") ||
 	 parameters.containsKey("multipart-file"))) {
 	Map part = new HashMap();
 	part.put("content-type", "application/octet-stream");
@@ -256,7 +260,7 @@
     }
 
     if (multipart && (parts.size() == 0 ||
-	parameters.get("newPart") != null)) {
+	parameters.containsKey("newPart"))) {
 	Map part = new HashMap();
 	part.put("content-type", "text/html;charset="+defaultCharset);
 	parts.add(part);
@@ -478,9 +482,8 @@
 	    }
 	    out.println("<input type=\"submit\" name=\"part_" + count + "_delete\" value=\"ta bort del " + (count+1) + "\"/><br/>");
 	    if (part.containsKey("uploaded")) {
-		out.println("Datatyp: " + part.get("content-type") + "<br/>");
-		out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" +
-			part.get("content-type") + "\" />");
+		out.println("Datatyp: <input size=\"30\" type=\"text\" name=\"part_" + count + "_type\" value=\"" + part.get("content-type") + "\"/><br/>");
+		//out.println("<input type=\"hidden\" name=\"part_" + count + "_type\" value=\"" + part.get("content-type") + "\" />");
 		File f = new File(tempDir, (String) part.get("uploaded"));
 		out.println("Binärdata: <b>uppladdad, " + f.length() + " bytes</b><br/>");
 		session.setAttribute("wl_composer_image_" + part.get("filename"), part);
@@ -584,7 +587,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.17 2004/06/07 02:15:38 pajp Exp $
+$Id: composer.jsp,v 1.18 2004/06/08 00:33:30 pajp Exp $
 </div>
 </body>
 </html>

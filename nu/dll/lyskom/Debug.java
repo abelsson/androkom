@@ -14,22 +14,12 @@ public class Debug {
     /**
      * <tt>true</tt> iff the "lattekom.debug" system property is non-null and equal to "true".
      */
-    public static boolean ENABLED = false;
+    public final static boolean ENABLED = Boolean.getBoolean(getPropertyKey());
 
     static {
-        try {
-            ENABLED = Boolean.getBoolean(getPropertyKey());
-	    if (ENABLED) {
-		println("LatteKOM debug output enabled.");
-	    }
-        } catch (SecurityException ex1) {
-            
-        } catch (NullPointerException ex2) {
-            
-        } catch (IllegalArgumentException ex3) {
-            
-        }        
-        
+	if (ENABLED) {
+	    println("LatteKOM debug output enabled.");
+	}
     }
     
     /**

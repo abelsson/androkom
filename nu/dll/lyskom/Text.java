@@ -144,7 +144,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
      * except for Content-Type.
      *
      * An MHTML text is identified as having a content-type matching
-     * "message/rfc822; x-type=mhtml".
+     * "message/rfc822; x-lyskom-variant=rfc2557".
      *
      */
     public String getContentType() {
@@ -158,7 +158,8 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	}
 	
 	boolean mhtml = contentType.match("message/rfc822") &&
-	    contentType.getParameterList().get("x-type").equals("mhtml");
+	    ("mhtml".equals(contentType.getParameterList().get("x-type")) ||
+	     "rfc2557".equals(contentType.getParameterList().get("x-lyskom-variant")));
 
 	// hack for WinLMSG-created texts with incorrect content-type.
 	// it checks the first row of the text to see if it contains

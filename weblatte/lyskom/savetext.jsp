@@ -301,11 +301,18 @@
 
 		}
 	    }
-	    if (request.getParameterValues("footnoteTo") != null) {
-		String[] fntToFields = request.getParameterValues("footnoteTo");
+	    if (parameters.containsKey("footnoteTo")) {
+                Object obj = parameters.get("footnoteTo");
+       		String[] fntToFields;
+		if (obj instanceof String)
+		    fntToFields = new String[] { (String) obj };
+		else 
+		    fntToFields = (String[]) obj;
+
 		for (int i=0; i < fntToFields.length; i++) {
 		    int textNo = Integer.parseInt(fntToFields[i]);
 		    newText.addFootnoted(textNo);
+                    Debug.println("new text is a footnote-to: " + textNo);
 		    // so we won't keep the old text's comments status
 		    lyskom.purgeTextCache(textNo); 
 		}

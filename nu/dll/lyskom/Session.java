@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.70 2004/06/03 22:23:02 pajp Exp $
+ * @version $Id: Session.java,v 1.71 2004/06/08 00:33:30 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -868,19 +868,30 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return nextUnreadText(currentConference, updateUnread);
 
     }
+    public boolean isMemberOf(int confNo) throws IOException {
+	return isMemberOf(confNo, true);
+    }
 
     /**
      * Returns <tt>true</tt> if the current user is a member of confNo,
      * otherwise <tt>false</tt>.
      *
+     * If the membership list hasn't been read from the server, it will
+     * be fetched if "fetchMembership" is true. If it is false,
+     * this method will return <tt>false</tt>.
+     *
      * @param confNo Conference number
      */
-    public boolean isMemberOf(int confNo) throws IOException {
+    public boolean isMemberOf(int confNo, boolean fetchMembership) throws IOException {
 	if (membership == null) {
-	    Debug.println("Warning: isMemberOf(" + confNo + ") " +
-			  "called before membership has been queried " +
-			  "from server (querying now)");
-	    getMyMembershipList();
+	    if (fetchMembership) {
+		Debug.println("Warning: isMemberOf(" + confNo + ") " +
+			      "called before membership has been queried " +
+			      "from server (querying now)");
+		getMyMembershipList();
+	    } else {
+		return false;
+	    }
 	}
 	Iterator i = membership.iterator();
 	while (i.hasNext()){
@@ -3031,9 +3042,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		if (cachedMs != null) {
 			    
 		}
-		if (!unreads.contains(recipientObj)) {
-		    unreads.add(recipientObj);
-		}
+		try {
+		    if (!unreads.contains(recipientObj) && isMemberOf(recipient, false)) {
+			unreads.add(recipientObj);
+		    }
+		} catch (IOException ex1) {}
 	    }
 	    if (key == TextStat.miscCommTo) {
 		textStatCache.remove(misc.getIntValue());
@@ -3052,9 +3065,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	purgeTextCache(textNo);
 	Integer textNoObj = new Integer(textNo);
 	if (!readTexts.contains(textNo)) {
-	    if (unreads != null && !unreads.contains(new Integer(confNo))) {
-		unreads.add(new Integer(confNo));
-	    }
+	    try {
+		if (unreads != null && !unreads.contains(new Integer(confNo))
+		    && isMemberOf(confNo, false)) {
+		    unreads.add(new Integer(confNo));
+		}
+	    } catch (IOException ex1) {}
 	}
 	if (membershipCache.contains(confNo))
 	    membershipCache.remove(confNo);

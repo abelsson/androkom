@@ -1,4 +1,4 @@
-/* $Id: lattekom.css,v 1.12 2004/06/07 02:53:30 pajp Exp $ */
+/* $Id: lattekom.css,v 1.13 2004/06/08 00:33:30 pajp Exp $ */
 
 body {
   margin: 1em 1em 2em 0.5em;
@@ -51,9 +51,13 @@ p.footnotes {
   font-size: x-small;
 }
 
-p.asynchMessage {
+.asynchMessage {
   background: #ddddff;
   width: 70%
+}
+
+.asynchMessage-text { 
+  margin-left: 1em;
 }
 
 .chatMessage { 
