@@ -82,7 +82,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.17 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.18 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1231,8 +1231,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-<a href="about.jsp">Hjälp och information</a><br />
-$Revision: 1.17 $
+$Revision: 1.18 $
 </p>
 </body>
 </html>
