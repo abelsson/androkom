@@ -71,7 +71,7 @@
 	    int sender    = m.getParameters()[1].intValue();
 	    String text   = lyskom.toString(m.getParameters()[2].getContents());
 
-	    if (preferences.getBoolean("chat-hide-messages-from-me")) {
+	    if (preferences.getBoolean("chat-hide-messages-from-me") && me == sender) {
 		continue;
 	    }
 	    out.println("<pre class=\"chatMessage\">");
