@@ -34,8 +34,20 @@
 		return;
 	    }
 	}
-
- 	out.println("<div class=\"text\">");
+        int depthOnPage = 0;
+        Integer lastTextDisplayed = (Integer) request.getAttribute("last-text-displayed");
+        if (preferences.getBoolean("indent-comments-on-page") && lastTextDisplayed != null) {
+	    if (lastTextDisplayed.equals(request.getAttribute("text-" +
+		text.getNo() + "-commented")) ||
+		lastTextDisplayed.equals(request.getAttribute("text-" + 
+		text.getNo() + "-footnoted"))) {
+		depthOnPage = ((Integer) request.getAttribute("text-" +
+			lastTextDisplayed + "-depth")).intValue()+1;
+	    }
+	}
+        request.setAttribute("text-" + text.getNo() + "-depth", new Integer(depthOnPage));
+        request.setAttribute("last-text-displayed", new Integer(text.getNo()));
+ 	out.println("<div class=\"text\" style=\"margin-left: " + depthOnPage + "em;\">");
 
 	List viewedTexts = (List) request.getAttribute("viewedTexts");
 	if (viewedTexts == null) {
@@ -395,6 +407,7 @@
 	}
 	out.println("<div class=\"text-comment-list\">");
         for (int i=comments.length-1; i >= 0; i--) {
+	    request.setAttribute("text-" + comments[i] + "-commented", new Integer(text.getNo()));
 	    if (preferences.getBoolean("read-comments-first") &&
                 request.getParameter("text") == null) {
 		if (conferenceNumber > 0) {
@@ -440,8 +453,9 @@
 	    }
  	}
 	for (int i=0; i < footnotes.length; i++) {
+	    request.setAttribute("text-" + footnotes[i] + "-footnoted", new Integer(text.getNo()));
 %>
-	Fotnot i text <%= textLink(request, lyskom, footnotes[i]) %><br/>
+	    Fotnot i text <%= textLink(request, lyskom, footnotes[i]) %><br/>
 <%
 	}
 %>
