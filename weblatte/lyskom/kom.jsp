@@ -253,6 +253,23 @@
 	return names[0];
     }
 
+    /* hack to fallback to js redirect when buffer is small
+     * and the response has already been committed to the client.
+     * returns true if a HTTP redirect has been done, signalling to
+     * the caller that it may stop sending further data to the client
+     */
+    boolean redirectHack(HttpServletResponse response, JspWriter out, String target) throws IOException {
+        if (!response.isCommitted()) {
+	    response.sendRedirect(target);
+	    return true;
+        } else {
+	    out.println("<script language=\"JavaScript1.2\">");
+	    out.println("document.location.href=\"" + basePath + "sessions.jsp?loggedOut");
+	    out.println("</script>");
+	    return false;
+        }
+    }
+
     String textLink(HttpServletRequest request, Session lyskom, int textNo, boolean includeName)
     throws RpcFailure, IOException {
 	StringBuffer sb = new StringBuffer()

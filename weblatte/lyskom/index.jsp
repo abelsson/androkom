@@ -43,7 +43,7 @@
 	session.removeAttribute("lyskom");
 	session.removeAttribute("LysKOMauthenticated");
 
-	response.sendRedirect(basePath);
+	response.sendRedirect(basePath + "?r=" + Integer.toHexString(rnd.nextInt()));
 	return;
     }
 
@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.39 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.40 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -183,6 +183,12 @@
 	    d.forward(request, response);
 	    return;		
     	}
+	if (parameter(parameters, "dispatchToComposer") != null) {
+	    request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
+	    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
+	    d.forward(request, response);
+	    return;
+    	}
     }
 %>
 <html><head>
@@ -194,20 +200,6 @@
 </head>
 <link rel="stylesheet" href="lattekom.css" />
 <body>
-<%
-    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
-%>
-<script language="JavaScript1.2">
-<%@ include file='stuff.jsp' %>
-</script>
-<%
-    } else {
-%>
-	<script language="JavaScript1.2" src="stuff.jsp"></script>
-<%
-    }
-%>
-<%@ include file='dhtmlMenu.jsp' %>
 <%
     if (error != null) {
 %>
@@ -269,8 +261,9 @@
 	if (suspendedSessions != null && suspendedSessions.size() > 0) {
 	    session.removeAttribute("lyskom");    
 	    session.removeAttribute("LysKOMauthenticated");
-	    response.sendRedirect(basePath + "sessions.jsp?loggedOut");
-	    return;
+
+	    if (redirectHack(response, out, basePath + "sessions.jsp?loggedOut")) return;
+
 	} else {
 	    if (session != null) session.invalidate();
 	}
@@ -284,8 +277,8 @@
     } else if (authenticated.booleanValue()) {
 	%><%@ include file='prefs_inc.jsp' %><%
 	if (justLoggedIn && preferences.getBoolean("start-in-frames-mode")) {
-	    response.sendRedirect(basePath + "frames.jsp?conference=0");
-	    return;
+	    if (redirectHack(response, out, basePath + "frames.jsp?conference=0")) return;
+
 	}
         reviewList = (List) session.getAttribute("lyskom.review-list");
         if (reviewList == null || parameter(parameters, "conference") == null) {
@@ -328,12 +321,6 @@
 <%
 	    }
     if (Debug.ENABLED) Debug.println("unreadconfslist: " + lyskom.getUnreadConfsListCached());
-    if (parameter(parameters, "dispatchToComposer") != null) {
-	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
-	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
-	d.forward(request, response);
-	return;
-    }
     if (parameter(parameters, "changeName") != null) {
 	String oldName = parameter(parameters, "changeName");
 	String newName = parameter(parameters, "newName");
@@ -1489,8 +1476,22 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.39 $
+$Revision: 1.40 $
 </p>
+<%
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+%>
+<script language="JavaScript1.2">
+<%@ include file='stuff.jsp' %>
+</script>
+<%
+    } else {
+%>
+	<script language="JavaScript1.2" src="stuff.jsp"></script>
+<%
+    }
+%>
+<%@ include file='dhtmlMenu.jsp' %>
 </body>
 </html>
 

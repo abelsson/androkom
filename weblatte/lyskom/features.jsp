@@ -36,6 +36,10 @@
    från någon meny)
  * "Addera mottagare" och "Addera extrakopiemottagare" finns som
    funktioner om man högerklickar på ett inläggsnummer.
+ * "Ändra presentation" finns som alternativ vid högerklick på 
+   mötes- eller personnamn. Där finns även "Återse presentation",
+   "återse FAQ", "skicka brev" och "skicka meddelande".
+ * "Ändra lösenord" finns enbart som textmeny-alternativ.
  * Möjlighet att ha flera LysKOM-sessioner igång samtidigt genom att
    "pausa" den aktiva sessionen och logga in på nytt. Enkla medel för
    att växla mellan alla aktiva sessioner.
