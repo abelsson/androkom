@@ -227,7 +227,7 @@ class KomTokenReader {
 	while (totalBytes < data.length && bytesRead != -1) {
 	    bytesRead = is.read(data, totalBytes, data.length-totalBytes);
 	    totalBytes += bytesRead;
-	    if (Debug.ENABLED) {
+	    if (DEBUG > 2) {
 		Debug.println("read " + bytesRead + " bytes into buffer " + 
 			      "(total " + totalBytes + ", expecting " + 
 			      data.length + ")");

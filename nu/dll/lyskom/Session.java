@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.47 2004/04/25 18:35:02 pajp Exp $
+ * @version $Id: Session.java,v 1.48 2004/04/26 00:10:45 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -2489,7 +2489,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	KomToken[] confData = ((KomTokenArray) parameters[1]).getTokens();
 
 	for (int i=0, j=2 ; i < ids.length ; i++, j = j + 3)
-	    ids[i] = new ConfInfo(confData[j-2].getContents(),
+	    ids[i] = new ConfInfo((Hollerith) confData[j-2],
 				  new ConfType(confData[j-1]),
 				  confData[j].toInteger());
 
@@ -2529,7 +2529,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	KomToken[] confData = ((KomTokenArray) parameters[1]).getTokens();
 
 	for (int i=0, j=2 ; i < ids.length ; i++, j = j + 3)
-	    ids[i] = new ConfInfo(confData[j-2].getContents(),
+	    ids[i] = new ConfInfo((Hollerith) confData[j-2],
 				  new ConfType(confData[j-1]),
 				  confData[j].toInteger());
 

@@ -15,9 +15,11 @@ public class ConfInfo {
     public int confNo = -1;
     public byte[] confName;
     public ConfType confType;
+    String charset = Session.defaultServerEncoding;
 
-    public ConfInfo(byte[] confName,  ConfType confType, int confNo) {
-	this.confName = confName;
+    protected ConfInfo(Hollerith confName,  ConfType confType, int confNo) {
+	this.confName = confName.getContents();
+	this.charset = confName.getCharset();
 	this.confType = confType;
 	this.confNo = confNo;
     }
@@ -32,7 +34,7 @@ public class ConfInfo {
      */
     public String getNameString() {
 	try {
-	    return new String(confName, Session.defaultServerEncoding);
+	    return new String(confName, charset);
 	} catch (java.io.UnsupportedEncodingException e) {
 	    throw new RuntimeException("ConfInfo.getNameString(): Unsupported encoding: " + e.getMessage());
 	}
