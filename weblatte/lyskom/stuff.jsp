@@ -1,6 +1,5 @@
-<%@ page language='java' contentType='text/javascript;charset=iso-8859-1' %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.1 2004/04/22 22:30:58 pajp Exp $
+// $Id: stuff.jsp,v 1.2 2004/05/10 00:41:34 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;

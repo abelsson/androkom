@@ -1,5 +1,6 @@
 // -*- Mode: c -*-
-// $Id: stuff.js,v 1.2 2004/04/15 23:09:32 pajp Exp $
+// $Id: stuff.js,v 1.3 2004/05/10 00:41:33 pajp Exp $
+alert("hej poop.");
 function context_in(no, isLetterBox, isText, name) {
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;

@@ -106,7 +106,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.23 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.24 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -153,7 +153,6 @@
     int interval = 120; // seconds
 %>
 <html><head>
-<script language="JavaScript1.2" src="stuff.jsp"></script>
 <% if (authenticated.booleanValue()) { %>
 <title>Weblatte: <%= serverShort(lyskom) %></title>
 <% } else { %>
@@ -162,6 +161,19 @@
 </head>
 <link rel="stylesheet" href="lattekom.css" />
 <body>
+<%
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+%>
+<script language="JavaScript1.2">
+<%@ include file='stuff.jsp' %>
+</script>
+<%
+    } else {
+%>
+	<script language="JavaScript1.2" src="stuff.jsp"></script>
+<%
+    }
+%>
 <%@ include file='dhtmlMenu.jsp' %>
 <%
     if (error != null) {
@@ -1307,7 +1319,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.23 $
+$Revision: 1.24 $
 </p>
 </body>
 </html>
