@@ -2,7 +2,6 @@
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
 <%@ include file='kom.jsp' %>
 <%
-    Debug.ENABLED = false;
     String server = request.getParameter("server") != null ? 
 	request.getParameter("server") : Servers.defaultServer.hostname;
     Session lyskom = (Session) session.getAttribute("lyskom");
@@ -85,7 +84,7 @@
 			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		session.setAttribute("lyskom", lyskom);
 		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.6 $");
+		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.7 $");
 		lyskom.changeWhatIAmDoing("kör web-latte");
 	    }
 	} else if (names != null && names.length == 0) {
@@ -193,6 +192,8 @@
     }
 
     boolean showPOM = false;
+    boolean showWelcome = request.getParameter("hw") == null; // "hw" = "hide welcome message"
+    boolean showStandardBoxes = request.getParameter("hs") == null; // "hide standard boxes"
     try {
 	showPOM = session.getAttribute("pom") != null ? 
 	    ((Boolean) session.getAttribute("pom")).booleanValue() : false;
@@ -201,10 +202,12 @@
 
     if (authenticated.booleanValue()) {
 	if (true) {
+	    if (showWelcome) {
 %>
     	<h2>välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!</h2>
 	<!-- Ditt sessions-ID är "<%= Integer.toHexString(System.identityHashCode(lyskom)) %>". -->
 <%
+	    }
     if (request.getParameter("dispatchToComposer") != null) {
 	request.setAttribute("set-uri", makeAbsoluteURL("composer.jsp"));
 	RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/composer.jsp");
@@ -462,8 +465,9 @@
     }
     if (request.getParameter("markAsRead") != null) {
 	String[] values = request.getParameterValues("markAsRead");
+	Map conferences = new HashMap();
 	for (int i=0; i < values.length; i++) {
-	    Text readText = lyskom.getText(Integer.parseInt(values[i]));
+	    TextStat readText = lyskom.getTextStat(Integer.parseInt(values[i]));
 	    int[] rcpts = readText.getRecipients();
 	    int[] ccs = readText.getCcRecipients();
 	    int[] tmp = new int[rcpts.length+ccs.length];
@@ -471,11 +475,32 @@
 	    System.arraycopy(ccs, 0, tmp, rcpts.length, ccs.length);
 	    for (int j=0; j < tmp.length; j++) {
 		try {
-		    lyskom.markAsRead(tmp[j], new int[] {readText.getLocal(tmp[j])});
+		    List locals = (List) conferences.get(new Integer(tmp[j]));
+		    if (locals == null) {
+			locals = new LinkedList();
+			conferences.put(new Integer(tmp[j]), locals);
+		    }
+		    locals.add(new Integer(readText.getLocal(tmp[j])));
+		    
 		} catch (RpcFailure ex1) {
 	            if (ex1.getError() != Rpc.E_not_member)
 		    	throw ex1;
 		}
+	    }
+	}
+	for (Iterator i = conferences.entrySet().iterator(); i.hasNext();) {
+	    Map.Entry entry = (Map.Entry) i.next();
+	    int conf = ((Integer) entry.getKey()).intValue();
+	    List locals = (List) entry.getValue();
+	    int[] localTexts = new int[locals.size()];
+	    int k=0;
+	    for (Iterator j=locals.iterator(); j.hasNext(); k++) {
+		localTexts[k] = ((Integer) j.next()).intValue();
+	    }
+	    try {
+		lyskom.markAsRead(conf, localTexts);
+	    } catch (RpcFailure ex1) {
+		if (ex1.getError() != Rpc.E_not_member) throw ex1;
 	    }
 	}
     }
@@ -581,9 +606,7 @@
 
 	    }
 	} else {
-%>
-	   <p class="statusError"><%=errors.toString()%></p>
-<%
+	    out.println("<p class=\"statusError\">" + errors + "</p>");
 	}
     }
 
@@ -715,10 +738,7 @@
 	    }
 	}
 	if (nextUnreadText > 0) {
-%>
-	    Nästa olästa text i möte <%= lookupName(lyskom, conferenceNumber, true) %>: <%= textLink(request, lyskom, nextUnreadText) %>
-<%
-	    textNumber = nextUnreadText;
+	    if (request.getParameter("text") == null) textNumber = nextUnreadText;
 	} else if (nextUnreadText == -1) {
 %>
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
@@ -773,20 +793,30 @@
 
     if (textNumber != 0 || request.getParameter("text") != null) {
 	// xxx: catch NFE for more graceful error handling
-	if (request.getParameter("text") != null)
-	    textNumber = Integer.parseInt(request.getParameter("text"));
-	try {
-	    Text text = lyskom.getText(textNumber);
-	    request.setAttribute("text", new Integer(textNumber));
-	    request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
-	    out.flush();
-	    RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/text.jsp");
-	    d.include(request, response);
-	} catch (RpcFailure ex1) {
-	    if (ex1.getError() == Rpc.E_no_such_text) {
-		%><p class="statusError">Fel: text <%= textNumber %> existerar inte.</p><%
-	    } else {
-		throw ex1;
+        List textNumbers = new LinkedList();
+	if (textNumber > 0) textNumbers.add(new Integer(textNumber));
+	if (request.getParameter("text") != null) {
+	    String[] textNumberParams = request.getParameterValues("text");
+	    for (int i=0; i < textNumberParams.length; i++) {
+	        textNumbers.add(new Integer(textNumberParams[i]));
+	    }
+        }
+        for (Iterator i = textNumbers.iterator(); i.hasNext();) {
+	    textNumber = ((Integer) i.next()).intValue();
+
+	    try {
+		Text text = lyskom.getText(textNumber);
+		request.setAttribute("text", new Integer(textNumber));
+		request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
+		out.flush();
+		RequestDispatcher d = getServletContext().getRequestDispatcher(appPath + "/text.jsp");
+		d.include(request, response);
+	    } catch (RpcFailure ex1) {
+		if (ex1.getError() == Rpc.E_no_such_text) {
+		    %><p class="statusError">Fel: text <%= textNumber %> existerar inte.</p><%
+		} else {
+		    throw ex1;
+		}
 	    }
 	}
     }
@@ -807,6 +837,9 @@
 		linkText.append(" ");
 	    }
 	}
+	if (viewedTexts.size() > 4)
+	    linkText = new StringBuffer("Läsmarkera alla " + viewedTexts.size() + " texter");
+
 	if (conferenceNumber > 0) {
 	    linkText.append(" (och läs nästa)");
 	    queryStr.append("&conference=").append(conferenceNumber);
@@ -873,7 +906,7 @@
 	lyskom.changeWhatIAmDoing("Skriver en kommentar");
 	Text commented = lyskom.getText(textNumber);
 %>
-	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?	conference="+conferenceNumber:""%>">
+	<form class="boxed" method="post" action="<%=myURI(request)%><%=conferenceNumber>0?"?conference="+conferenceNumber:""%>">
 	<input type="hidden" name="postCommentTo" value="<%=textNumber%>">
 	Skriver en kommentar till text <%= textNumber %> av <%= lookupName(lyskom, lyskom.getTextStat(textNumber).getAuthor(), true) %><br/>
 	<input size="50" type="text" name="subject" value="<%= dqescHtml(new String(commented.getSubject())) %>"><br/>
@@ -913,6 +946,7 @@
 		}
 		lyskom.changeWhatIAmDoing("Väntar på inlägg");
 %>
+
 	</ul>
 		<%= confsum == 0 ? "<b>inga olästa i något möte</b>" : sum + " oläst(a) i " + confsum + " möte(n)" %>
 		<div id="countdown"></div>
@@ -996,8 +1030,8 @@
 	</form>
 <%
 	    }
+	    if (showStandardBoxes) {
 %>
-
     <form method="get" action="<%=myURI(request)%>" class="boxed">
     Läs ett inlägg: <input type="text" size="10" name="text">
     <input type="submit" value="ok!">
@@ -1023,6 +1057,7 @@
     <input type="text" name="sendText" size="60"><input type="submit" value="ok">
     </form>
 <%
+	    }
 	}
     }
 %>
@@ -1088,12 +1123,12 @@ Du är inte inloggad.
 %>
 <a href="vilka/">vilka är inloggade?</a> |
 <a href="?pom=false">dölj menyer</a> ]
-<% } else { %>
+<% } else if (showStandardBoxes) { %>
 [ <a href="?pom=true">visa menyer</a> ]
 <% } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.6 2004/04/16 12:27:53 pajp Exp $
+$Id: index.jsp,v 1.7 2004/04/20 01:02:31 pajp Exp $
 </p>
 </body>
 </html>

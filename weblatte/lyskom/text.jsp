@@ -4,10 +4,11 @@
 <%
 	Session lyskom = (Session) session.getAttribute("lyskom");
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
+	int textNumber = ((Integer) request.getAttribute("text")).intValue();
+        out.println("<a name=\"text" + textNumber + "\"></a>");
 %>
 	<p class="boxed">
 <%
-	int textNumber = ((Integer) request.getAttribute("text")).intValue();
 	Text text = null;
 	try {
 	    text = lyskom.getText(textNumber);

@@ -242,7 +242,7 @@
 	}
 	sb.append("\" ")
 		.append("onMouseOver=\"context_in(").append(textNo).append(", false, true);\" ")
-		.append("onMouseOut=\"contenxt_out()\" ")
+		.append("onMouseOut=\"context_out()\" ")
 		.append(">")
 		.append(textNo)
 		.append("</a>");

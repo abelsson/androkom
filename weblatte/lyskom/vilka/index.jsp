@@ -14,8 +14,9 @@
     	if (lyskom == null || !lyskom.getLoggedIn()) response.sendRedirect("http://dll.nu/lyskom/");
     }
 
-    int activeLast = 600*6;
-    if (request.getParameter("activeLast") != null) activeLast = Integer.parseInt(request.getParameter("activeLast"));
+    int activeLast = 3600;
+    if (request.getParameter("activeLast") != null &&
+        !"".equals(request.getParameter("activeLast"))) activeLast = Integer.parseInt(request.getParameter("activeLast"));
 %>
 <html><head><title>vilka är inloggade i <%= serverShort(lyskom) %>?</title></head>
 <link rel="stylesheet" href="<%= basePath %>/lattekom.css" />
@@ -83,12 +84,26 @@
 	        }
 	out.flush();
     }
+
     if (disconnectLast || !lyskom.getLoggedIn()) lyskom.disconnect(true);
 %>
 </table>
-<p>[ <a href="../">logga in här</a> ]</p>
+<p>
+<form method="get" action="<%= myURI(request) %>" class="boxed">
+Visa dolda sessioner <input type="checkbox" <%= request.getParameter("wantInvisible") != null ? "checked" : "" %> name="wantInvisible" /><br/>
+<span title="Visar varje sessions klientprogramvarunamn och version, om tillgänglig">Visa klientinformation <input type="checkbox" <%= request.getParameter("showClientInfo") != null ? "checked" : "" %> name="showClientInfo" /></span><br/>
+Visa sessioner som varit aktiva inom:
+<select name="activeLast">
+<option value="" />1 timme
+<option value="14400" />4 timmar
+<option value="0" />Visa alla
+</select><br/>
+<input type="submit" value="ok"/>
+</form>
+</p>
+<p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.3 2004/04/16 12:27:55 pajp Exp $
+$Id: index.jsp,v 1.4 2004/04/20 01:02:33 pajp Exp $
 </p>
 </body>
 </html>
