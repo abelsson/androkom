@@ -21,11 +21,12 @@
 </div>
 
 <div id="ctxmenu_conference" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
+<div class="menuitems" url="<%= basePath %>?conference=%NO%">Gå till</div>
 <div class="menuitems" url="<%= basePath %>?reviewPresentation=%NO%">Återse presentation</div>
 <div class="menuitems" url="<%= basePath %>?changePresentation=%NO%">Ändra presentation</div>
 <div class="menuitems" url="<%= basePath %>?sendTo=%NO%#sendMessage">Skicka meddelande</div>
-<div class="menuitems" url="<%= basePath %>?join=%NAME%">Bli medlem</div>
-<div class="menuitems" url="<%= basePath %>?leave=%NAME%">Utträda</div>
+<div class="menuitems" url="<%= basePath %>?joinNo=%NO%">Bli medlem</div>
+<div class="menuitems" url="<%= basePath %>?leaveNo=%NO%">Utträda</div>
 <div class="menuitems" script="javascript:endast_interactive(window, %NO%, '%NAME%');">Endast...</div>
 </div>
 

@@ -85,7 +85,7 @@
 			new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		session.setAttribute("lyskom", lyskom);
 		authenticated = Boolean.TRUE;
-		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.4 $");
+		lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.5 $");
 		lyskom.changeWhatIAmDoing("kör web-latte");
 	    }
 	} else if (names != null && names.length == 0) {
@@ -294,13 +294,20 @@
 	}
     }
 
-    if (request.getParameter("join") != null) {
+    if (request.getParameter("join") != null || request.getParameter("joinNo") != null) {
+	int confNo = request.getParameter("joinNo") != null ? 
+		Integer.parseInt(request.getParameter("joinNo")) : 0;
+
 	try {
-	    ConfInfo conf = lookupName(lyskom, request.getParameter("join"), false, true);
-	    if (conf != null) {
-		out.print("<p>Bli medlem i " + lookupName(lyskom, conf.getNo(), true) + "...");
+	    ConfInfo conf = null;
+	    if (request.getParameter("join") != null) {
+		conf = lookupName(lyskom, request.getParameter("join"), false, true);
+		if (conf != null) confNo = conf.getNo();
+	    }
+	    if (confNo > 0) {
+		out.print("<p>Bli medlem i " + lookupName(lyskom, confNo, true) + "...");
 		out.flush();
-		lyskom.joinConference(conf.getNo());
+		lyskom.joinConference(confNo);
 		out.print("OK!</p>");
 		out.flush();
 		session.setAttribute("mbInited", Boolean.FALSE);
@@ -319,13 +326,19 @@
 	}
     }
  
-    if (request.getParameter("leave") != null) {
+    if (request.getParameter("leave") != null || request.getParameter("leaveNo") != null) {
 	try {
-	    ConfInfo conf = lookupName(lyskom, request.getParameter("leave"), false, true);
-	    if (conf != null) {
-		out.print("<p>Utträda ur möte " + lookupName(lyskom, conf.getNo(), true) + "...");
+	    int confNo = request.getParameter("leaveNo") != null ?
+		Integer.parseInt(request.getParameter("leaveNo")) : 0;
+
+	    if (request.getParameter("leave") != null) {
+	        ConfInfo conf = lookupName(lyskom, request.getParameter("leave"), false, true);
+		if (conf != null) confNo = conf.getNo();
+	    }
+	    if (confNo > 0) {
+		out.print("<p>Utträda ur möte " + lookupName(lyskom, confNo, true) + "...");
 		out.flush();
-		lyskom.subMember(conf.getNo(), lyskom.getMyPerson().getNo());
+		lyskom.subMember(confNo, lyskom.getMyPerson().getNo());
 		out.println("OK!</p>");
 		out.flush();
 		session.setAttribute("mbInited", Boolean.FALSE);
@@ -687,16 +700,26 @@
 %>
 	<p>
 <%
-	lyskom.changeWhatIAmDoing("Läser");
-	lyskom.changeConference(conferenceNumber);
-	//lyskom.updateUnreads();
-	int nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
+	int nextUnreadText = 0;
+
+	try {
+	    lyskom.changeWhatIAmDoing("Läser");
+	    lyskom.changeConference(conferenceNumber);
+	    nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
+	} catch (RpcFailure ex1) {
+	    if (ex1.getError() == Rpc.E_not_member) {
+		out.println("<p class=\"statusError\">Fel: du är inte medlem i " +
+			lookupName(lyskom, conferenceNumber, true) + "</p>");
+	    } else {
+		throw ex1;
+	    }
+	}
 	if (nextUnreadText > 0) {
 %>
 	    Nästa olästa text i möte <%= lookupName(lyskom, conferenceNumber, true) %>: <%= textLink(request, lyskom, nextUnreadText) %>
 <%
 	    textNumber = nextUnreadText;
-	} else {
+	} else if (nextUnreadText == -1) {
 %>
 	Det finns inte fler olästa i <%= lookupName(lyskom, conferenceNumber, true) %>.
 <%
@@ -1068,7 +1091,7 @@ Du är inte inloggad.
 <% } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.4 2004/04/15 23:11:35 pajp Exp $
+$Id: index.jsp,v 1.5 2004/04/15 23:42:17 pajp Exp $
 </p>
 </body>
 </html>
