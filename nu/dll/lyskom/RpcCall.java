@@ -58,6 +58,10 @@ public class RpcCall implements Rpc {
 	return reply;
     }
 
+    public int getParameterCount() {
+	return parameters.size();
+    }
+
     public KomToken getParameter(int n) {
 	return (KomToken) parameters.elementAt(n);
     }

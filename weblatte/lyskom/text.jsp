@@ -45,6 +45,9 @@
 			lastTextDisplayed + "-depth")).intValue()+1;
 	    }
 	}
+	if (depthOnPage > preferences.getInt("max-indent")) {
+	    depthOnPage = preferences.getInt("max-indent");
+	}
         request.setAttribute("text-" + text.getNo() + "-depth", new Integer(depthOnPage));
         request.setAttribute("last-text-displayed", new Integer(text.getNo()));
  	out.println("<div class=\"text\" style=\"margin-left: " + depthOnPage + "em;\">");
