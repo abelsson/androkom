@@ -130,7 +130,7 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.54 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.55 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -794,6 +794,7 @@
 		ByteArrayOutputStream bodyStream = new ByteArrayOutputStream();
 		ContentType ct;
 		byte[] subject = lyskom.toByteArray(parameter(parameters, "subject"));
+	  	boolean wrapInRfc822 = preferences.getBoolean("post-rich-texts-as-rfc822");
 
 		if (parts.size() == 1) {
 		    Map partMap = (Map) parts.get(0);
@@ -913,10 +914,26 @@
 		}
 		newText = new Text();
 		byte[] body = bodyStream.toByteArray();
+		if (wrapInRfc822) {
+		    ByteArrayOutputStream rfc822os =
+	  		new ByteArrayOutputStream();
+		    OutputStreamWriter rfc822writer =
+			new OutputStreamWriter(rfc822os, "us-ascii");
+		    ct.getParameterList().set("type", "html");
+		    rfc822writer.write("Content-Type: " + ct.toString() + "\r\n");
+		    rfc822writer.write("Content-Transfer-Encoding: binary\r\n");
+		    rfc822writer.write("\r\n");
+		    ct = new ContentType("message/rfc822; x-type=mhtml");
+		    rfc822writer.flush();
+		    rfc822os.write(body);
+		    body = rfc822os.toByteArray();
+		}
+
 		byte[] contents = new byte[subject.length + body.length + 1];
 		System.arraycopy(subject, 0, contents, 0, subject.length);
 		System.arraycopy(body, 0, contents, subject.length+1, body.length);
 		contents[subject.length] = (byte) '\n';
+
 		newText.setContents(contents);
 		newText.getStat().replaceOrAddAuxItem(new AuxItem(AuxItem.tagContentType,
 						ct.toString()));
@@ -984,18 +1001,18 @@
 	    }
 
 	    newTextNo = lyskom.createText(newText);
-	    newText = lyskom.getText(newTextNo);
+	    TextStat newTextStat = lyskom.getTextStat(newTextNo);
 	    if (newTextNo > 0) {
 		if (commonPreferences.getBoolean("created-texts-are-read")) {
-		    int[] recipientNos = newText.getRecipients();
-		    int[] ccRecps = newText.getCcRecipients();
+		    int[] recipientNos = newTextStat.getRecipients();
+		    int[] ccRecps = newTextStat.getCcRecipients();
 		    int[] allRecps = new int[recipientNos.length+ccRecps.length];
 		    System.arraycopy(recipientNos, 0, allRecps, 0, recipientNos.length);
 		    System.arraycopy(ccRecps, 0, allRecps, recipientNos.length, ccRecps.length);
 		    recipientNos = allRecps;
 		    for (int i=0; i < recipientNos.length; i++) {
 			try {
-			    lyskom.markAsRead(recipientNos[i], new int[] { newText.getLocal(recipientNos[i]) });	
+			    lyskom.markAsRead(recipientNos[i], new int[] { newTextStat.getLocal(recipientNos[i]) });	
 			} catch (RpcFailure ex1) {
 			    if (ex1.getError() != Rpc.E_not_member)
 				throw ex1;
@@ -1057,13 +1074,13 @@
 	    }
 	}
 	newTextNo = lyskom.createText(newText);
-	newText = lyskom.getText(newTextNo);
+	TextStat newTextStat = lyskom.getTextStat(newTextNo);
 	lyskom.purgeTextCache(commentedText.getNo());
 	if (newTextNo > 0) {
-	    recipients = newText.getRecipients();
+	    recipients = newTextStat.getRecipients();
 	    for (int i=0; i < recipients.length; i++) {
 		try {
-		    lyskom.markAsRead(recipients[i], new int[] { newText.getLocal(recipients[i]) });	
+		    lyskom.markAsRead(recipients[i], new int[] { newTextStat.getLocal(recipients[i]) });	
 		} catch (RpcFailure ex1) {
 		    if (ex1.getError() != Rpc.E_not_member)
 			throw ex1;
@@ -1309,9 +1326,7 @@
         }
         for (Iterator i = textNumbers.iterator(); i.hasNext();) {
 	    textNumber = ((Integer) i.next()).intValue();
-
 	    try {
-		Text text = lyskom.getText(textNumber);
 		request.setAttribute("text", new Integer(textNumber));
 		request.setAttribute("conferenceNumber", new Integer(conferenceNumber));
 		out.flush();
@@ -1775,7 +1790,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.54 $
+$Revision: 1.55 $
 </p>
 </body>
 </html>

@@ -11,7 +11,7 @@
 	    response.sendError(HttpServletResponse.SC_NOT_FOUND);
 	    return;
 	}
-	FileInputStream is = new FileInputStream((String) part.get("uploaded"));
+	FileInputStream is = new FileInputStream(new File(tempDir, (String) part.get("uploaded")));
 	OutputStream os = response.getOutputStream();
 	response.setContentType((String) part.get("content-type"));
 	byte[] byf = new byte[2048];
@@ -30,8 +30,6 @@
 <script type="text/javascript" src="<%= basePath %>htmlarea/htmlarea.js"></script>
 <script type="text/javascript">
    var haConfig = new HTMLArea.Config();
-   haConfig.height = '400px';
-   haConfig.width = '500px';
    function buttonHandler(editor, buttonId) {
       switch (buttonId) {
       case "weblatte-query-image":
@@ -501,7 +499,7 @@
 		} else {
 		    out.println("Skriv textinnehåll:<br/>");
 		    String taid = "part_" + count + "_contents";
-		    out.println("<textarea id=\"" + taid + "\" name=\"" + taid + "\" cols=\"71\" rows=\"5\">" + contents + "</textarea><br/>");
+		    out.println("<textarea id=\"" + taid + "\" name=\"" + taid + "\" style=\"width: 100%; height: 25em;\">" + contents + "</textarea><br/>");
 		    out.println("Typ av text: <select name=\"part_" + count + "_type\">");
 		    out.println("<option value=\"text/plain;charset=" + defaultCharset + "\" " + 
 			(ctype.match("text/plain") ? "selected" : "") + ">Ren text</option>");
@@ -579,7 +577,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.11 2004/05/29 20:02:00 pajp Exp $
+$Id: composer.jsp,v 1.12 2004/06/03 02:27:38 pajp Exp $
 </p>
 </body>
 </html>

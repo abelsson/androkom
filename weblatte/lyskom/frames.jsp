@@ -1,4 +1,4 @@
-<%@ page language='java' import='nu.dll.lyskom.*' %>
+<%@ page language='java' import='nu.dll.lyskom.*, java.net.URLEncoder' %>
 <%@ include file='kom.jsp' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%
@@ -30,8 +30,17 @@
 %>
 </title>
   </head>
-  <frameset rows="*" cols="20%,*" border="0">
-    <frame src="tree.jsp?conference=<%=conference%>" name="treeView">
+  <frameset rows="*" cols="20%,*" border="1">
+<%
+    out.print("<frame src=\"tree.jsp?");
+    if (conference > 0) {
+	out.print("conference=" + conference + "&");
+    }
+    if (request.getParameter("reviewTree") != null) {
+	out.print("reviewTree=" + URLEncoder.encode(request.getParameter("reviewTree")));
+    }
+    out.println("\" name=\"treeView\">");
+%>
     <frame src="about:blank" name="textViewFrame">
   </frameset>
 </html>

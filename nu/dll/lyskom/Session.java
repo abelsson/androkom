@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.67 2004/05/28 23:06:18 pajp Exp $
+ * @version $Id: Session.java,v 1.68 2004/06/03 02:27:38 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1221,6 +1221,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
 	TextStat textStat = getTextStat(textNo, refreshCache);
 	if (textStat == null) return null;
+	if (refreshCache || !textStatCache.contains(textNo)) textStatCache.add(text.getStat());
 
 	boolean textIsBig = textStat.getSize() > bigTextLimit;
 	int contentLimit = textStat.getSize();
@@ -1257,7 +1258,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		Debug.println("Not caching " + text + " (" + text.getContentType() + ")");
 	    }
 	}
-	textStatCache.add(text.getStat());
 	return text;
     }
 

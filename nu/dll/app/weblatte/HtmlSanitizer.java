@@ -21,7 +21,9 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	HTML.Attribute.HEIGHT,
 	HTML.Attribute.ALIGN,
 	HTML.Attribute.NOSHADE,
-	HTML.Attribute.BORDER
+	HTML.Attribute.BORDER,
+	HTML.Attribute.ID,
+	HTML.Attribute.NAME
     };
 
     HTML.Tag[] allowedTagsArray = {
@@ -36,6 +38,7 @@ public class HtmlSanitizer extends HTMLEditorKit.ParserCallback {
 	HTML.Tag.CAPTION,
 	HTML.Tag.CENTER,
 	HTML.Tag.CODE,
+	HTML.Tag.DIV,
 	HTML.Tag.EM,
 	HTML.Tag.FONT,
 	HTML.Tag.H1,

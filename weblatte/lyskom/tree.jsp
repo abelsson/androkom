@@ -34,7 +34,7 @@
 	for (int i=0; i < depth; i++) 
 	    buf.append("&nbsp;&nbsp;");
 	buf.append("</tt>");
-	buf.append("<a onClick=\"selectText(" + textNumber + ");\" title=\"" + textNumber + " av " + htmlize(authorName) + "\" href=\"¤LINK¤#text" + textNumber + "\" target=\"textViewFrame\">");
+	buf.append("<a onClick=\"selectText(" + textNumber + ");\" title=\"" + textNumber + " av " + dqescHtml(authorName) + "\" href=\"¤LINK¤#text" + textNumber + "\" target=\"textViewFrame\">");
 	buf.append(htmlize(authorNameStripped));
 	buf.append("</a>");
 	buf.append("<br/>\n");
@@ -81,9 +81,14 @@
 
     int me = lyskom.getMyPerson().getNo();
     int conferenceNumber = 0;
+    int reviewTree = 0;
     try {
 	conferenceNumber = Integer.parseInt(request.getParameter("conference"));
     } catch (NumberFormatException ex1) {}
+
+    if (request.getParameter("reviewTree") != null) {
+	reviewTree = Integer.parseInt(request.getParameter("reviewTree"));
+    }
 
     if (conferenceNumber > 0) {
 	out.println("<p>Läser inläggsträd (det kan ta ett tag)...</p>");
@@ -169,7 +174,7 @@
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
 		link + "#text" + firstText + "\";selectText(" + firstText + ");</script>");
-    } else {
+    } else if (reviewTree == 0) {
 		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
 		int sum = 0, confsum = 0;
 		boolean abort = false;
@@ -216,10 +221,81 @@
 	    }
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
 		basePath + "\";</script>");
+    } else if (reviewTree > 0) {
+	out.println("<p>Läser inläggsträd (det kan ta ett tag)...</p>");
+	out.flush();
+	Map nodes = new HashMap();
+	List texts = new LinkedList();
+	Set seen = new HashSet();
+	List textsToView = new LinkedList();
+	LinkedList textsToExamine = new LinkedList();
+	textsToExamine.add(new Integer(reviewTree));
+	while (textsToExamine.size() > 0) {
+	    TextStat stat = null;
+	    try {
+		stat = lyskom.getTextStat(((Integer) textsToExamine.removeLast()).intValue());
+	    } catch (RpcFailure ex1) {
+		if (ex1.getError() == Rpc.E_no_such_text) continue;
+		else throw ex1;
+	    }
+	    Integer textNoObj = new Integer(stat.getNo());
+	    TextTreeNode node = new TextTreeNode(stat);
+	    nodes.put(new Integer(stat.getNo()), node);
+	    if (!texts.contains(textNoObj) && !seen.contains(textNoObj)) {
+		texts.add(textNoObj);
+	    }
+	    int[] comments = stat.getComments();
+	    for (int i=0; i < comments.length; i++) {
+		int comment = comments[i];
+		Integer commentNoObj = new Integer(comment);
+		textsToExamine.add(commentNoObj);
+		TextTreeNode commentNode = (TextTreeNode) nodes.get(commentNoObj);
+		if (commentNode == null) {
+		    try {
+			commentNode = new TextTreeNode(lyskom.getTextStat(comment));
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() == Rpc.E_no_such_text) {
+			    continue;
+			} else {
+			    throw ex1;
+			}
+		    }
+		    nodes.put(commentNoObj, commentNode);
+		}
+		if (commentNode != null) {
+		    node.comments.add(commentNode);
+		    seen.add(commentNoObj);
+		}
+	    }
+	}
+	StringBuffer treeHtml = new StringBuffer(1024);
+	while (texts.size() > 0) {
+	    printNode(treeHtml, lyskom, nodes, texts, ((Integer) texts.remove(0)).intValue(), textsToView, 0);
+	}
+	StringBuffer linkBuf = new StringBuffer();
+	linkBuf.append(basePath).
+		append("?popupComment&hw&hs&");
+	for (Iterator i = textsToView.iterator(); i.hasNext();) {
+	    linkBuf.append("text="+i.next());
+	    if (i.hasNext()) linkBuf.append("&");
+	}
+	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
+	String link = linkBuf.toString();
+	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
+	out.println(html);
+	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
+		link + "#text" + firstText + "\";selectText(" + firstText + ");</script>");
+
     }
 %>
   <p>
+<%
+    if (reviewTree == 0) {
+%>
   >> <a href="tree.jsp?conference=<%=conferenceNumber%>">uppdatera</a><br/>
+<%
+    }
+%>
   >> <a target="_top" href="frames.jsp?conference=0">nyheter</a><br/>
   >> <a href="<%=basePath%>?listnews" target="_top">Till standardvy</a><br/>
   </p>

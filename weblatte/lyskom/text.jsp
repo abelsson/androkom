@@ -27,7 +27,7 @@
 	    text = lyskom.getText(textNumber);
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_no_such_text) {
-		out.println("<p class=\"statusError\">Text " + 
+		out.println("<p class=\"statusError\">Fel: text " + 
 		    textNumber + " finns inte.</p>");
 		out.println("</p>");
 		return;
@@ -144,19 +144,21 @@
 	}
 
 	List miscInfo = text.getStat().getMiscInfo();
-	boolean conferenceFoundAmongRecipients = conferenceNumber > 0;
-	for (int i=0; conferenceNumber > 0 && i < miscInfo.size(); i++) {
-	    Selection misc = (Selection) miscInfo.get(i);
-	    int key = misc.getKey();
-	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt || key == TextStat.miscBccRecpt) {
-		if (misc.getIntValue() == conferenceNumber)
-		    conferenceFoundAmongRecipients = true;
+	if (conferenceNumber > 0) {
+	    boolean conferenceFoundAmongRecipients = false;
+	    for (int i=0; !conferenceFoundAmongRecipients && i < miscInfo.size(); i++) {
+	    	Selection misc = (Selection) miscInfo.get(i);
+	        int key = misc.getKey();
+	        if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt || key == TextStat.miscBccRecpt) {
+		    if (misc.getIntValue() == conferenceNumber)
+		    	conferenceFoundAmongRecipients = true;
+	    	}
 	    }
-	}
 
-	if (!conferenceFoundAmongRecipients) { // means text-stat is not up to date.
-	    Debug.println("text.jsp: refreshing text-stat for " + text.getNo());
-	    text.setStat(lyskom.getTextStat(text.getNo(), true));
+	    if (!conferenceFoundAmongRecipients) { // means text-stat is not up to date.
+	    	Debug.println("text.jsp: refreshing text-stat for " + text.getNo());
+	    	text.setStat(lyskom.getTextStat(text.getNo(), true));
+	    }
 	}
 	miscInfo = text.getStat().getMiscInfo();
 	

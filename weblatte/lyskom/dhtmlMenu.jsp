@@ -51,6 +51,7 @@
 <div class="menuitems" url="<%= basePath %>?privateReply=%NO%&text=%NO%">Personligt svar</div>
 <div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscRecpt %>)">Addera mottagare</div>
 <div class="menuitems" script="add_recipient_interactive(window, %NO%, <%= TextStat.miscCcRecpt %>)">Addera extra kopiemottagare</div>
+<div class="menuitems" url="<%= basePath %>frames.jsp?reviewTree=%NO%" target="_top">Läs kommentarsträd</div>
 </div>
 <script language="JavaScript1.2">
 //set this variable to 1 if you wish the URLs of the highlighted menu to be displayed in the status bar

@@ -21,14 +21,21 @@ class TextStatCache {
 
 	Debug.println("TextStatCache: adding "+t.getNo());
 	if (hash.put((Object) new Integer(t.getNo()), (Object) t)!=null) {
-	    Debug.println("TextStatCache: " +
-		          "replacing text-stat #" +
-			  t.getNo()+" in cache");
+	    if (Debug.ENABLED) {
+		new Exception().printStackTrace();
+		Debug.println("TextStatCache: " +
+			      "replacing text-stat #" +
+			      t.getNo()+" in cache");
+	    }
 	}
     }
 
     public void clear() {
 	hash.clear();
+    }
+
+    public boolean contains(int textNo) {
+	return hash.containsKey(new Integer(textNo));
     }
 
     public synchronized boolean remove(int textNo) {

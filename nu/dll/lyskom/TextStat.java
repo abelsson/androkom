@@ -296,9 +296,22 @@ public class TextStat implements java.io.Serializable {
 
     /**
      * Returns the content-type for this text.
+     *
+     * This method returns only the base content-type,
+     * excluding any parameters. Use getFullContentType()
+     * to retreive the entire content-type value.
      */
     public String getContentType() {
 	return (String) parseContentTypeAuxItem()[0];
+    }
+
+    public boolean isMimeType(String type) {
+	try {
+	    ContentType ct = new ContentType(getFullContentType());
+	    return ct.match(type);
+	} catch (javax.mail.internet.ParseException ex1) {
+	    throw new RuntimeException("Unable to parse text content-type.");
+	}
     }
 
     /**
@@ -516,6 +529,10 @@ public class TextStat implements java.io.Serializable {
      */
     public int[] getCommented() {
 	return getStatInts(miscCommTo);
+    }
+
+    public int[] getComments() {
+	return getStatInts(miscCommIn);
     }
 
     /**
