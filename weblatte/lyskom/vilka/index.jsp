@@ -45,7 +45,7 @@
 	int idleMinutes = idle - idleHours*60;
 	SessionInfo _session = null;
 	try {
-	    _session = lyskom.getLoggedIn() ? lyskom.getStaticSessionInfo(who[i].getSession()): null;
+	    _session = lyskom.getLoggedIn() ? lyskom.getStaticSessionInfo(who[i].getSession()) : null;
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() != Rpc.E_undefined_session) throw ex1;
 	}
@@ -109,7 +109,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.6 2004/04/22 22:19:29 pajp Exp $
+$Id: index.jsp,v 1.7 2004/04/25 18:29:49 pajp Exp $
 </p>
 </body>
 </html>

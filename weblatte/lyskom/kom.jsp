@@ -7,8 +7,11 @@
     public KomPreferences preferences(Session lyskom, String blockName) throws IOException, RpcFailure {
 	KomPreferences prefs = (KomPreferences) lyskom.getAttribute("weblatte.preferences." + blockName);
 	if (prefs == null) {
-	    UserArea userArea = lyskom.getUserArea();
-	    Hollerith data = userArea.getBlock(blockName);
+	    Hollerith data = null;
+	    if (lyskom.getLoggedIn()) {
+		UserArea userArea = lyskom.getUserArea();
+		data = userArea.getBlock(blockName);
+	    }
 	    if (data != null) {	
 		prefs = new KomPreferences(new HollerithMap(data), blockName);
 	    } else {
@@ -178,7 +181,7 @@
 		throw ex1;
 	}
 	if (conf != null) {
-	    boolean isMe = lyskom.getMyPerson().getNo() == number;
+	    boolean isMe = lyskom.getLoggedIn() && lyskom.getMyPerson().getNo() == number;
 	    KomPreferences prefs = preferences(lyskom, "weblatte");
 	    boolean bold = isMe && prefs.getBoolean("my-name-in-bold");
 	    return "<span title=\"" + (conf.getType().getBitAt(ConfType.letterbox) ? "Person " : "Möte ") + conf.getNo() + "\" onMouseOut=\"context_out()\" onMouseOver=\"context_in(" + number + ", " + conf.getType().getBitAt(ConfType.letterbox) + ", false, '" + sqescJS(lyskom.toString(conf.getName())) + "');\">" + (bold ? "<b>" : "") + htmlize(name) + (bold ? "</b>" : "") + "</span>";

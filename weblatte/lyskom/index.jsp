@@ -1,6 +1,7 @@
 <%@ page language='java' import='nu.dll.lyskom.*, com.oreilly.servlet.multipart.*, java.util.*,
 				 java.net.*, java.io.*, java.text.*,java.util.regex.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
+<%@ page errorPage='fubar.jsp' %>
 <%@ include file='kom.jsp' %>
 <%
     String server = request.getParameter("server") != null ? 
@@ -83,7 +84,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.11 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.12 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -1204,7 +1205,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.11 2004/04/23 01:16:56 pajp Exp $
+$Id: index.jsp,v 1.12 2004/04/25 18:29:43 pajp Exp $
 </p>
 </body>
 </html>

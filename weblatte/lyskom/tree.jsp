@@ -18,7 +18,11 @@
 	textsToView.add(new Integer(textNumber));
 	if (depth == 0) {
 	    buf.append("<br/><i>");
-	    buf.append(htmlize(lyskom.toString(lyskom.getText(textNumber).getSubject())));
+            Text text = lyskom.getText(textNumber);
+	    String charset = text.getCharset();
+	    if ("us-ascii".equals(charset)) charset = "iso-8859-1";
+
+	    buf.append(htmlize(new String(text.getSubject(), charset)));
 	    buf.append("</i><br/>\n");
 	}
 	String authorName = lookupName(lyskom, node.textStat.getAuthor(), false);
