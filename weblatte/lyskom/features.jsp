@@ -48,7 +48,8 @@
  * "Många möten" är en funktion för mer sparsam inläsning utav
    mötesinformation för de möten man har olästa. Denna gör det möjligt
    att använda Weblatte oavsett hur många olästa möten man har. "Många
-   möten" aktiveras automatiskt om man har fler än 200 olästa möten.
+   möten" aktiveras automatiskt om man har fler än 50 olästa möten 
+   (konfigurerbart).
  * Inlägg med okänd content-type kan laddas ned till webbläsaren i sin
    helhet. Webbläsaren presenteras med inläggets riktiga content-type,
    vilket gör att man till exempel kan titta på en bifogad bild direkt

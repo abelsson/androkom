@@ -1,6 +1,7 @@
 <%@ page language='java' import='nu.dll.lyskom.*' %>
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' %>
 <%@ include file='kom.jsp' %>
+<%@ include file='prefs_inc.jsp' %>
 <%!
     static class TextTreeNode {
 	public TextStat textStat;
@@ -15,7 +16,8 @@
     void printNode(StringBuffer buf, Session lyskom, Map nodes, List texts, int textNumber, List textsToView, int depth) throws Exception {
 	texts.remove(new Integer(textNumber));
 	TextTreeNode node = (TextTreeNode) nodes.get(new Integer(textNumber));
-	textsToView.add(new Integer(textNumber));
+	if (!textsToView.contains(new Integer(textNumber)))
+	    textsToView.add(new Integer(textNumber));
 	if (depth == 0) {
 	    buf.append("<br/><i>");
             Text text = lyskom.getText(textNumber, false, true);
@@ -68,29 +70,35 @@
     }
   </script>
   <body class="treeView">
-
 <%
-
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
 	response.sendRedirect("/lyskom/");
 	return;
     }
 
+    boolean manyMemberships = lyskom.getAttribute("many-memberships") != null &&
+		((Boolean) lyskom.getAttribute("many-memberships")).booleanValue();
+
+    int me = lyskom.getMyPerson().getNo();
     int conferenceNumber = 0;
     try {
 	conferenceNumber = Integer.parseInt(request.getParameter("conference"));
     } catch (NumberFormatException ex1) {}
 
     if (conferenceNumber > 0) {
+	out.println("<p>Läser inläggsträd (det kan ta ett tag)...</p>");
+	out.flush();
 	Membership membership = lyskom.queryReadTextsCached(conferenceNumber);
+	if (membership == null) lyskom.queryReadTexts(me, conferenceNumber);
 	UConference uconf = lyskom.getUConfStat(conferenceNumber);
 	TextMapping mapping = uconf.getHighestLocalNo() > membership.getLastTextRead() ?
-		lyskom.localToGlobal(conferenceNumber, membership.getLastTextRead()+1, 100) : null;
+		lyskom.localToGlobal(conferenceNumber, membership.getLastTextRead()+1, 
+				preferences.getInt("tree-texts-to-fetch")) : null;
 	Map nodes = new HashMap();
 	List texts = new LinkedList();
 	Set seen = new HashSet();
 	List textsToView = new LinkedList();
-	while (mapping != null &&mapping.hasMoreElements()) {
+	while (mapping != null && mapping.hasMoreElements()) {
 	    int textNo = ((Integer) mapping.nextElement()).intValue();
 	    TextStat ts;
 	    try {
@@ -102,12 +110,25 @@
 		    throw ex1;
 		}
 	    }
+
+	    int[] footnoteTo = ts.getStatInts(TextStat.miscFootnTo);
+	    for (int i=0; i < footnoteTo.length; i++) {
+		Integer fto = new Integer(footnoteTo[i]);
+		if (seen.contains(fto)) {
+		    continue;
+		}
+	    }
+
 	    TextTreeNode node = new TextTreeNode(ts);
 	    nodes.put(new Integer(textNo), node);
+
 	    if (!texts.contains(new Integer(textNo)) && !seen.contains(new Integer(textNo)))
 		texts.add(new Integer(textNo));
+
 	    seen.add(new Integer(textNo));
 	    int[] comments = node.textStat.getStatInts(TextStat.miscCommIn);
+
+
 	    for (int j=0; j < comments.length; j++) {
 		int comment = comments[j];
 		TextTreeNode commentNode = (TextTreeNode) nodes.get(new Integer(comment));
@@ -128,8 +149,8 @@
 		    seen.add(new Integer(comment));
 		}
 	    }
-
 	}
+
 	StringBuffer treeHtml = new StringBuffer(1024);
 	while (texts.size() > 0) {
 	    printNode(treeHtml, lyskom, nodes, texts, ((Integer) texts.remove(0)).intValue(), textsToView, 0);
@@ -137,7 +158,7 @@
 
 	StringBuffer linkBuf = new StringBuffer();
 	linkBuf.append(basePath);
-	linkBuf.append("?hw&hs&conference=").append(conferenceNumber).append("&");
+	linkBuf.append("?popupComment&hw&hs&conference=").append(conferenceNumber).append("&");
 	for (Iterator i=textsToView.iterator(); i.hasNext();) {
 	    linkBuf.append("text=" + i.next());
 	    if (i.hasNext()) linkBuf.append("&");
@@ -151,9 +172,29 @@
     } else {
 		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
 		int sum = 0, confsum = 0;
-		while (confIter.hasNext()) {
+		boolean abort = false;
+		int skipTo = 0;
+		int lastconf = 0;
+	        int skipped = 0;
+		if (request.getParameter("skipTo") != null)
+		    skipTo = Integer.parseInt(request.getParameter("skipTo"));
+
+		while (confIter.hasNext() && !abort) {
 		    int conf = ((Integer) confIter.next()).intValue();
+
+			if (skipTo > 0 && skipTo != conf) {
+			    skipped++;
+			    continue;
+			} else if (skipTo == conf) {
+			    skipped++;
+			    skipTo = 0;
+			    continue;
+			}
+		    lastconf = conf;
 		    Membership membership = lyskom.queryReadTextsCached(conf);
+		    if (membership == null)
+			membership = lyskom.queryReadTexts(me, conf);
+
 		    UConference uconf = lyskom.getUConfStat(conf);
 		    int unreads = 0;
 		    if (uconf.getHighestLocalNo() > membership.getLastTextRead()) {
@@ -167,7 +208,12 @@
 				conf + "\">" + 
 				lookupName(lyskom, conf, true) + "</a>: " +
 				unreads + "<br/>");
+		    out.flush();
+		    if (manyMemberships && confsum > 5) abort = true;
 		}
+	    if (manyMemberships && confIter.hasNext()) {
+		out.println("<p><a href=\"tree.jsp?skipTo=" + lastconf + "\">Nästa 5 möten >></a></p>");
+	    }
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
 		basePath + "\";</script>");
     }
@@ -175,7 +221,7 @@
   <p>
   >> <a href="tree.jsp?conference=<%=conferenceNumber%>">uppdatera</a><br/>
   >> <a target="_top" href="frames.jsp?conference=0">nyheter</a><br/>
-  >> <a href="<%=basePath%>" target="_top">Till huvudsidan</a><br/>
+  >> <a href="<%=basePath%>?listnews" target="_top">Till standardvy</a><br/>
   </p>
   </body>
 </html>

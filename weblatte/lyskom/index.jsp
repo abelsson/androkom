@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.41 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.42 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -294,6 +294,9 @@
     boolean showWelcome = parameter(parameters, "hw") == null &&
 		(preferences != null && preferences.getBoolean("always-show-welcome"));
 
+    boolean popupComment = request.getParameter("popupComment") != null;
+    request.setAttribute("popupComment", popupComment ? Boolean.TRUE : null);
+
     boolean showStandardBoxes = parameter(parameters, "hs") == null
 	  && preferences != null && !preferences.getBoolean("hide-standard-boxes"); // "hide standard boxes"
     try {
@@ -457,6 +460,8 @@
 		((Boolean) lyskom.getAttribute("many-memberships")).booleanValue();
 
     manyMemberships = manyMemberships || preferences.getBoolean("many-memberships");
+    lyskom.setAttribute("many-memberships", new Boolean(manyMemberships));
+
     if (!mbInitedObj.booleanValue()) {
 	out.print("<p>Läser in medlemskapsinformation...");
 	out.flush();
@@ -569,7 +574,7 @@
 		    for (int j=0; j < commented.length; j++) {
 			lyskom.purgeTextCache(commented[j]);
 		    }
-	            if (!preferences.getBoolean("many-memberships")) {
+	            if (!manyMemberships) {
 	                lyskom.updateUnreads();
 	            } else {
 			lyskom.getUnreadConfsList(me);
@@ -1332,7 +1337,21 @@
 	    </table>
 	</form>
 <%
-	    }
+	}
+	if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+%>
+<script language="JavaScript1.2">
+<%@ include file='stuff.jsp' %>
+</script>
+<%
+	} else {
+%>
+	<script language="JavaScript1.2" src="stuff.jsp"></script>
+<%
+	}
+%>
+<%@ include file='dhtmlMenu.jsp' %>
+<%
 	    if (showStandardBoxes) {
 %>
     <form method="get" action="<%=myURI(request)%>" class="boxed">
@@ -1478,22 +1497,8 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.41 $
+$Revision: 1.42 $
 </p>
-<%
-    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
-%>
-<script language="JavaScript1.2">
-<%@ include file='stuff.jsp' %>
-</script>
-<%
-    } else {
-%>
-	<script language="JavaScript1.2" src="stuff.jsp"></script>
-<%
-    }
-%>
-<%@ include file='dhtmlMenu.jsp' %>
 </body>
 </html>
 

@@ -24,23 +24,8 @@ public class SessionWrapper implements HttpSessionBindingListener {
 			    lyskom.invokeLater(new Runnable() {
 				    public void run() {
 					try {
-					    KomPreferences prefs =
-						(KomPreferences)
-						lyskom.getAttribute("weblatte.preferences.weblatte");
-					    
-					    if (prefs == null) {
-						UserArea ua = lyskom.getUserArea();
-						Hollerith data = ua.getBlock("weblatte");
-					        prefs = new KomPreferences(new HollerithMap(data),
-									   "weblatte");
-					    }
-					    if (prefs.getBoolean("many-memberships")) {
-						lyskom.getUnreadConfsList(lyskom.getMyPerson().
-									  getNo());
-					    } else {
-						lyskom.updateUnreads();
-					    }
-					    lyskom.setAttribute("mbInited", Boolean.TRUE);
+					    lyskom.getUnreadConfsList(lyskom.getMyPerson().
+								      getNo());
 					} catch (IOException ex1) {
 					    Debug.println("I/O error: " + ex1);
 					} catch (RpcFailure ex2) {

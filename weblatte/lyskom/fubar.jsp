@@ -14,7 +14,8 @@
     <h1>Weblatte: ett fel har uppstått</h1>
     <p>
         Tyvärr har ett fel uppstått som WebLatte inte kunde hantera på egen hand.
-        Du har blivit utloggad, och måste <a href="<%= basePath %>">logga in på nytt</a>
+        Du har blivit utloggad, och måste <a target="_top" href="<%=
+        basePath %>">logga in på nytt</a>
 	om du vill forsätta läsa LysKOM. Jag beklagar olägenheten. Om du vill får du gärna
 	rapportera felet till LatteKOM-utvecklarna. För att göra det, kopiera all text i 
 	rutan nedanför, och gå sedan till

@@ -89,10 +89,14 @@ public class BigText extends Text {
      */
     public byte[] getContents() {
 	try {
-	    System.err.println("Warning: getContents() called on BigText");
+	    Debug.println("Warning: getContents() called on BigText");
 	    byte[] bytes = new byte[getStat().getSize()];
 	    HollerithStream hs = getContentStream();
-	    hs.getStream().read(bytes, 0, bytes.length);
+	    int count = KomTokenReader.readFill(hs.getStream(), bytes);
+	    if (count != bytes.length) {
+		Debug.println("BigText.getContents(): Warning: " + 
+			      count + " != " + bytes.length);
+	    }
 	    hs.setExhausted();
 	    return bytes;
 	} catch (IOException ex1) {

@@ -81,8 +81,8 @@
     <h2>Avancerade funktioner</h2>
     <p>
       Det finns en mer eller mindre <a href="features.jsp">fullständig
-      lista över funktioner i Weblatte</a> tillgänglig. Detta stycker
-      beskriver några av dem.
+      lista över funktioner i Weblatte</a> tillgänglig. Följande
+      stycken beskriver några av dem.
     </p>
     <h3>Att använda flera LysKOM-servrar samtidigt</h3>
     <p>
@@ -212,7 +212,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.14 $
+      $Revision: 1.15 $
     </p>
   </body>
 </html>

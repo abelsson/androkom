@@ -4,6 +4,8 @@
 <%@ include file='kom.jsp' %>
 <%@ include file='prefs_inc.jsp' %>
 <%
+        boolean popupComment = request.getParameter("popupComment") != null ||
+            request.getAttribute("popupComment") != null;
 	int conferenceNumber = ((Integer) request.getAttribute("conferenceNumber")).intValue();
         List reviewList = (List) request.getAttribute("reviewList");
 	int textNumber = ((Integer) request.getAttribute("text")).intValue();
@@ -257,7 +259,7 @@
     }
     if (textNumber > 0) {
 %>
-	<a <%= (noComments ? "onClick=\"return confirm('Textförfattaren vill helst inte ha några kommentarer till denna text. Vill du fortsätta ändå?');\"" : "") %> href="<%= myURI(request) %>?<%= conferenceNumber > 0 ? "conference="+conferenceNumber : ""%>&markAsRead=<%=textNumber%>&text=<%=textNumber%>&comment=<%=textNumber%>">
+	<a <%= (popupComment ? "target=\"_blank\" " : "") %> <%= (noComments ? "onClick=\"return confirm('Textförfattaren vill helst inte ha några kommentarer till denna text. Vill du fortsätta ändå?');\"" : "") %> href="<%= myURI(request) %>?<%= conferenceNumber > 0 ? "conference="+conferenceNumber : ""%>&markAsRead=<%=textNumber%>&text=<%=textNumber%>&comment=<%=textNumber%>">
 	  Kommentera (och läsmarkera) denna text.</a><br/>
 <%
     }

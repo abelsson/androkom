@@ -13,6 +13,7 @@ import java.util.LinkedList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
+import java.util.Arrays;
 import java.io.*;
 
 /** NB! Rename this class!
@@ -238,7 +239,10 @@ implements Runnable {
 		for(Enumeration e = asynchReceivers.elements();
 		    e.hasMoreElements();) {
 		    AsynchMessageReceiver rcvr = (AsynchMessageReceiver) e.nextElement();
-		    Debug.println("dispatching asynch message to " + rcvr);
+		    if (Debug.ENABLED) {
+			Debug.println("dispatching asynch message {" +
+				      Arrays.asList(row) + "} to " + rcvr);
+		    }
 		    rcvr.asynchMessage(new AsynchMessage(row));
 		}
 	    }

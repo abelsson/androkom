@@ -197,7 +197,7 @@ class KomTokenReader {
 		    if (strictHollerith)
 			throw new IOException(error);
 		    else
-			Debug.println(error);
+			Debug.println("** WARNING: " + error);
 		}
 		if (is.read() == '\n') { // eat trailing space/cr
 		    wasEol = true;
@@ -224,7 +224,7 @@ class KomTokenReader {
 	return token;
     }
 
-    private static int readFill(InputStream is, byte[] data)
+    protected static int readFill(InputStream is, byte[] data)
     throws IOException {
 	int bytesRead = 0;
 	int offset = 0;
