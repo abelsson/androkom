@@ -115,8 +115,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	}
     }
 
+    String status = null;
     public void setStatus(String s) 
     throws IOException {
+	status = s;
 	if (fixedWhatIAmDoing == null && !lastWhatIAmDoing.equals(s)) {
 	    foo.changeWhatIAmDoing(s);
 	    lastWhatIAmDoing = s;
@@ -129,8 +131,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    } else if (!embedded) {
 		consoleFrame.setTitle("LatteKOM/T2 - " + s);
 	    }
-	}
-	    
+	}	    
+    }
+
+    public String getStatus() {
+	return status;
     }
 
     public void setLastText(Text t) {
@@ -215,7 +220,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
 	ConfInfo[] names = foo.lookupName(arg, wantPersons, wantConfs);
 	if (names.length == 0) {
-	    consoleWriteLn("%Fel: hittar inget sådant möte eller sådan person");
+	    //consoleWriteLn("%Fel: hittar inget sådant möte eller sådan person");
 	    return -1;
 	}
 	if (names.length > 1) {
@@ -344,6 +349,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		
 	    }
 	}
+    }
+    
+    String clientName = null;
+    String clientVersion = null;
+    public void setVersion(String name, String version) {
+	clientName = name;
+	clientVersion = version;
     }
 
     public void setDefaultUser(String s) {
@@ -514,7 +526,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 			       loginUser + ")");
 		if (!foo.login(names[0].confNo, loginPassword, false)) {
 		    consoleWriteLn("Inloggningen misslyckades!");
-		    loginPassword = null;
+		    defaultPassword = loginPassword = null;
 		    names = new ConfInfo[0];
 		    loginUser = 0;
 		}		
@@ -553,7 +565,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		t.start();
 	    }
 
-	    foo.setLatteVersion("T2", "$Version$");
+	    if (clientName == null) 
+		foo.setLatteVersion("T2", "$Version$");
+	    else
+		foo.setLatteVersion(clientName, clientVersion);
+
 	    //4303588, 100035, 4257987, 4244657
 	    int me = foo.getMyPerson().getNo();
 	    int rc = 1;
@@ -619,17 +635,35 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		if (rc == -1) shutdown = true;
 	    }
 	    
-	    consoleWrite("\n\n-- Read " + noRead + " texts.\n");
+	    consoleWrite("\n\n-- Läste " + noRead + " inlägg.\n");
 	    
-	    foo.logout(true);
-	    foo.disconnect(false);
+	    shutdown();
 	    if (!embedded) System.exit(0);
-	    consoleWriteLn("Logged out");
 	} catch (ProtocolException ex) {
 	    System.err.println("Protokollfel: "+ex);
 	} catch (IOException ex) {
-	    System.err.println("I/O-fel: "+ex);
+	    consoleWriteLn("I/O-fel: "+ex.getMessage());
+	    try {
+		shutdown(false);
+	    } catch (IOException ex2) {}
 	}
+    }
+
+    public void shutdown() throws IOException {
+	shutdown(true);
+    }
+
+    public void shutdown(boolean block) throws IOException {	
+	if (foo.getLoggedIn()) {
+	    foo.logout(block);
+	    consoleWriteLn("Utloggad.");
+	}
+	if (foo.getConnected()) {
+	    foo.disconnect(false);
+	    consoleWriteLn("Nedkopplad.");
+	}
+	if (asynchInvoker != null) asynchInvoker.quit();
+	foo.shutdown();
     }
 
     String genericPrompt()
@@ -732,11 +766,14 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	String cmd = st.nextToken();
 	Command command = commands.getCommand(cmd);
 	if (command != null) {
-	    Debug.println("Executing command " + command.toString());
+	    Debug.println("Executing command " + cmd + "@" + command.toString());
 	    String parameters = null;
 	    try {
 		parameters = st.nextToken("").substring(1);
 	    } catch (NoSuchElementException ex1) {}
+
+	    while (cmd.startsWith("!"))
+		cmd = cmd.substring(1);
 	    return command.doCommand(cmd, parameters);
 	}
 	if (cmd.equals("?")) {
@@ -890,7 +927,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
     void consoleWriteLn(String s) {
 	linesSinceLastPrompt++;
-	if (linesSinceLastPrompt > linesPerScreen) {
+	if (linesSinceLastPrompt > linesPerScreen-1) {
 	    crtReadLine("(-- tryck Enter för att fortsätta --)", true);
 	}
 	consoleWrite(s + lineSeparator);	

@@ -16,33 +16,50 @@ class TextComposer extends Box {
     JLabel rcptLabel;
     
     Object actionLock = new Object();
-
+    boolean comment = false;
+    boolean footnote = false;
     boolean abort = false;
 
-    public TextComposer(Session lyskom, Text text, boolean comment) throws IOException {
+    public TextComposer(Session lyskom, Text text, boolean comment, boolean footnote) throws IOException {
         super(BoxLayout.Y_AXIS);
         this.kom = lyskom;
         this.commentedText = text;
-
-        newText = new Text(new String(text.getSubject()), "");
+	this.comment = comment;
+	this.footnote = footnote;
+	if (comment) {
+	    newText = new Text(new String(text.getSubject()), "");
+	} else {
+	    newText = (Text) text.clone();
+	}
         
         bodyArea = new JTextArea(20, 72);
         bodyArea.setEditable(true);
         bodyArea.setFont(new Font("Courier", Font.PLAIN, 12));
+	bodyArea.addKeyListener(new KeyAdapter() {
+		public void keyPressed(KeyEvent event) {
+		    if (event.getKeyCode() == KeyEvent.VK_ENTER && event.isControlDown()) {
+			synchronized (actionLock) {
+			    actionLock.notifyAll();
+			}
+		    }
+		}
+	    });
+
         Box headerPanel = new Box(BoxLayout.Y_AXIS);
        
         JScrollPane scroll = new JScrollPane(bodyArea);
 
-        int[] commTo = { text.getNo() };
-	newText.addCommented(text.getNo());
+        int[] commTo = comment ?  new int[] { text.getNo() } : new int[0];
+	if (comment && !footnote) newText.addCommented(text.getNo());
+	if (comment && footnote) newText.addFootnoted(text.getNo());
         JPanel commp = new JPanel();
         FlowLayout commpLayout = new FlowLayout(FlowLayout.LEFT);
         commpLayout.setVgap(1);
         commp.setLayout(commpLayout);
 
-        CommentListPanel commentedPanel = new CommentListPanel("Kommentar till text ", commTo, kom, null, 
+        CommentListPanel commentedPanel = new CommentListPanel((footnote ? "Fotnot" : "Kommentar") +
+							       " till text ", commTo, kom, null, 
                                                                SwingConstants.LEFT);
-
         commp.add(commentedPanel);
         headerPanel.add(commp);
         
@@ -53,9 +70,9 @@ class TextComposer extends Box {
         rcptPanel.add(rcptLabel);
 
 	int[] recipients = text.getRecipients();
-	for (int i=0; i < recipients.length; i++) {
+	for (int i=0; (comment || footnote) && i < recipients.length; i++) {
 	    Conference conf = lyskom.getConfStat(recipients[i]);
-	    if (conf.getType().original()) {
+	    if (!footnote && conf.getType().original()) {
 		int superconf = conf.getSuperConf();
 		if (superconf > 0) {
 		    newText.addRecipient(superconf);
@@ -115,6 +132,18 @@ class TextComposer extends Box {
 		}
             }
         });
+	constr.gridx=2;
+	JButton abortButton = new JButton("Avbryt");
+	abortButton.addActionListener(new ActionListener() {
+            public void actionPerformed(ActionEvent event) {
+		abort = true;
+		synchronized (actionLock) {
+		    actionLock.notifyAll();
+		}
+            }
+	    });
+	gridBag.setConstraints(abortButton, constr);
+	optionsPanel.add(abortButton);
         optionsPanel.add(submitText);
         add(optionsPanel);
     }
@@ -127,6 +156,14 @@ class TextComposer extends Box {
 	    throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
 	}
 	return newText;
+    }
+
+    public boolean isAborted() {
+	return abort;
+    }
+
+    public boolean isCommentOrFootnote() {
+	return comment || footnote;
     }
 
     public void waitForAction() {

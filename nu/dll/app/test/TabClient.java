@@ -11,6 +11,7 @@ import java.awt.event.WindowListener;
 import java.awt.event.ComponentAdapter;
 import java.awt.event.ComponentListener;
 import java.awt.event.ComponentEvent;
+import java.awt.Component;
 import java.awt.Container;
 import java.awt.Dimension;
 import java.awt.Font;
@@ -18,6 +19,7 @@ import java.awt.FlowLayout;
 import java.awt.GridLayout;
 import java.awt.GridBagLayout;
 import java.awt.GridBagConstraints;
+import javax.swing.JComboBox;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JPasswordField;
@@ -29,13 +31,18 @@ import javax.swing.JButton;
 import javax.swing.ViewportLayout;
 import javax.swing.event.ChangeListener;
 import javax.swing.event.ChangeEvent;
-import java.util.Map;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
-import java.util.ArrayList;
+import java.util.Map;
+import java.util.Properties;
 import java.util.StringTokenizer;
 import java.io.IOException;
+import java.io.File;
+import java.io.FilenameFilter;
+import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import nu.dll.lyskom.*;
 
 public class TabClient {
@@ -45,8 +52,10 @@ public class TabClient {
 
     class SessionPanel extends JPanel {
 	String tabName;
+	Test2 t2;
 	public SessionPanel(Test2 t2, String name) {
 	    tabName = name;
+	    this.t2 = t2;
 	    GridBagLayout gridBag = new GridBagLayout();
 	    GridBagConstraints constr = new GridBagConstraints();
 	    setLayout(gridBag);
@@ -60,6 +69,10 @@ public class TabClient {
 
 	    closeButton.addActionListener(new ActionListener() {
 		    public void actionPerformed(ActionEvent event) {
+			try {
+			    shutdown();
+			} catch (IOException ex1) {}
+			tabPane.setSelectedIndex(tabPane.getTabCount()-2);
 			tabPane.remove(tabPane.indexOfTab(tabName));
 		    }
 		});
@@ -77,6 +90,9 @@ public class TabClient {
 	    constr.fill = GridBagConstraints.BOTH;
 	    gridBag.setConstraints(consolePane, constr);
 	    add(consolePane);
+	}
+	public void shutdown() throws IOException {
+	    t2.shutdown();
 	}
     }
 
@@ -106,15 +122,18 @@ public class TabClient {
 		connect();
 	    }
 	}
-	
+
 	JTextField serverField = null;
 	JTextField nameField = null;
 	JPasswordField passwordField = null;
-
+	JComboBox configChooser = null;
+	JTextField configNameField = null;
+	JButton configSaveButton = null;
+	JButton configDeleteButton = null;
 	public SetupPanel() {
-	    setLayout(new GridLayout(2, 1));
+	    setLayout(new GridLayout(3, 1));
 	    JPanel serverPanel = new JPanel();
-	    serverPanel.setLayout(new FlowLayout());
+	    serverPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 	    serverPanel.add(new JLabel("Anslut till server: "));
 	    serverField = new JTextField(30);
 	    serverPanel.add(serverField);
@@ -129,25 +148,119 @@ public class TabClient {
 	    settingsPanel.add(nameField);
 	    settingsPanel.add(new JLabel("Lösenord: "));
 	    passwordField = new JPasswordField(8);
-	    passwordField.setEchoChar('¤');
+	    //passwordField.setEchoChar('¤');
 	    settingsPanel.add(passwordField);
 	    add(settingsPanel);
 
 	    // set up the listeners after all the widgets has been
 	    // instantiated, so that we can pass references of them.
-	    serverField.addKeyListener(new SetupActionListener(serverField, nameField,
-							       passwordField));
-	    connectButton.addActionListener(new SetupActionListener(serverField, nameField,
-								    passwordField));
-	    passwordField.addKeyListener(new SetupActionListener(serverField, nameField,
-								 passwordField));
-	    nameField.addKeyListener(new SetupActionListener(serverField, nameField,
-							     passwordField));
+	    SetupActionListener setupActionListener =
+		new SetupActionListener(serverField, nameField, passwordField);
+	    serverField.addKeyListener(setupActionListener);
+	    connectButton.addActionListener(setupActionListener);
+	    passwordField.addKeyListener(setupActionListener);
+	    nameField.addKeyListener(setupActionListener);
 
+	    JPanel filePanel = new JPanel(new FlowLayout(FlowLayout.LEFT));
+	    configChooser = new JComboBox();
+	    configNameField = new JTextField(16);
+	    configSaveButton = new JButton("Spara");
+	    configDeleteButton = new JButton("Ta bort");
+	    configSaveButton.addActionListener(new SaveLoadActionListener());
+	    configChooser.addActionListener(new SaveLoadActionListener());
+	    configDeleteButton.addActionListener(new SaveLoadActionListener());
+	    filePanel.add(configChooser);
+	    filePanel.add(configNameField);
+	    filePanel.add(configSaveButton);
+	    filePanel.add(configDeleteButton);
+	    add(filePanel);
+	    populateConfigChooser();
 	    //setMaximumSize(getPreferredSize());
 	    Debug.println("MaximumSize: " + getMaximumSize());
-
 	}
+	String suffix = ".session";
+
+	class SaveLoadActionListener implements ActionListener {
+	    public void actionPerformed(ActionEvent event) {
+		if (event.getSource() == configDeleteButton) {
+		    File homeDir = new File(System.getProperty("user.home"));
+		    File confDir = new File(homeDir, ".lattekom");
+		    File propFile = new File(confDir, configChooser.getSelectedItem().toString() + suffix);
+		    propFile.delete();
+		    populateConfigChooser();
+		}
+		if (event.getSource() == configSaveButton) {
+		    File homeDir = new File(System.getProperty("user.home"));
+		    File confDir = new File(homeDir, ".lattekom");
+		    Properties props = new Properties();
+		    props.put("server", serverField.getText());
+		    props.put("username", nameField.getText());
+		    props.put("password", new String(passwordField.getPassword()));
+		    try {
+			String fileName = configNameField.getText() + suffix;
+			FileOutputStream out = new FileOutputStream(new File(confDir, fileName));
+			props.store(out, null);
+			out.close();
+			populateConfigChooser();
+		    } catch (IOException ex1) {
+			Debug.println(ex1.getMessage());
+		    }
+		}
+		if (event.getSource() instanceof JComboBox) {
+		    ConfigProperties props = (ConfigProperties) configChooser.getSelectedItem();
+		    if (props != null) {
+			serverField.setText(props.server);
+			nameField.setText(props.username);
+			passwordField.setText(props.password);
+			configNameField.setText(props.name);
+		    }
+		}
+	    }
+	}
+	
+	void populateConfigChooser() {
+	    File homeDir = new File(System.getProperty("user.home"));
+	    File confDir = new File(homeDir, ".lattekom");
+	    if (!confDir.exists()) {
+		if (confDir.mkdir()) 
+		    Debug.println("created lattekom dir");
+		else
+		    Debug.println("did not create lattekom dir");
+	    }
+	    File[] files = confDir.listFiles(new FilenameFilter() {
+		    public boolean accept(File dir, String name) {
+			return name.endsWith(suffix);
+		    }
+		});
+
+	    configChooser.removeAllItems();
+	    for (int i=0; i < files.length; i++) {
+		String fileName = files[i].getName();
+		String name = fileName.substring(0, fileName.length() - suffix.length());
+		ConfigProperties item = new ConfigProperties();
+		item.name = name;
+		try {
+		    Properties confProps = new Properties();
+		    confProps.load(new FileInputStream(files[i]));
+		    item.server = confProps.getProperty("server");
+		    item.username = confProps.getProperty("username");
+		    item.password = confProps.getProperty("password");
+		    configChooser.addItem(item);
+		} catch (IOException ex1) {
+		    Debug.println("Error loading " + files[i] + ": " + ex1.getMessage());
+		}
+	    }
+	}
+
+	class ConfigProperties {
+	    public String name = null;
+	    public String server = null;
+	    public String username = null;
+	    public String password = null;
+	    public String toString() { return name != null ? name : super.toString(); }
+	}
+
+	
     }
 
     class StatusPanel extends JPanel {
@@ -181,83 +294,10 @@ public class TabClient {
 	tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	clients.add(t2);
 
-	t2.addCommand("k", new AbstractCommand() {
-		public int doCommand(String s, String parameters)
-		throws IOException, CmdErrException {
-		    int textNo = 0;
-		    Text text = null;
-		    boolean footnote = false;
-		    StringTokenizer st = null;
-		    
-		    if (parameters != null) {
-			st = new StringTokenizer(parameters, " ");
-			try {
-			    if (st.hasMoreTokens())
-				textNo = Integer.parseInt(st.nextToken());
-			} catch (NumberFormatException ex1) {
-			    textNo = -1;
-			}
-		    }
-		    if (textNo < 1) {
-			if (footnote && application.getLastSavedText() != null)
-			    textNo = application.getLastSavedText().getNo();
-			else
-			    if (application.getLastText() != null)
-				textNo = application.getLastText().getNo();
-		    }
-		    
-		    if (textNo < 1) {
-			throw new CmdErrException("Du måste ange ett giltigt textnummer eller läsa/skriva en text först");
-		    }
-		    
-		    text = session.getText(textNo);
-		    
-		    if (text == null) {
-			text = session.getText(textNo);
-			if (text == null) throw new CmdErrException("Hittade inget inlägg");
-		    }
-
-		    TextComposer composer = new TextComposer(session, text, true);
-		    String tabName = "edit";
-		    editCount++;
-		    if (tabPane.indexOfTab(tabName) != -1) {
-			tabName = "edit-" + editCount;
-		    }
-		    tabPane.addTab(tabName, composer);
-		    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
-		    composer.waitForAction();
-		    tabPane.remove(composer);
-
-		    int newTextNo = 0;
-		    try {
-			newTextNo = session.createText(composer.getNewText());
-			application.setLastSavedText(session.getText(newTextNo));
-		    } catch (RpcFailure ex1) {
-			application.consoleWrite("%Fel: kunde inte skapa kommentar/fotnot: ");
-			switch (ex1.getError()) {
-			case Rpc.E_not_author:
-			    application.consoleWriteLn("du är inte författare till text " + ex1.getErrorStatus());
-			    break;
-			default:
-			    throw new CmdErrException("Okänt fel: " + ex1.getMessage());
-			}
-			return Command.ERROR;
-		    }
-		    if (newTextNo > 0) {
-			application.consoleWriteLn("text nummer " + newTextNo + " skapad.");
-			if (!application.dontMarkOwnTextsAsRead) {
-			    application.markAsRead(newTextNo);
-			}
-		    }
-
-		    editCount--;
-		    return Command.OK;
-		}
-		public String[] getCommandDescriptions() {
-		    return new String[0];
-		}
-	    });
+	TabClientCommands newCommands = new TabClientCommands(this);
+	t2.addCommand(newCommands);
 	frame.pack();
+	t2.setVersion("TabbedGUI", "$Version$");
 	new Thread(t2, "connMain-" + connCount++).start();
     }
     static int connCount = 0;
@@ -269,18 +309,33 @@ public class TabClient {
 	tabPane = new JTabbedPane(JTabbedPane.LEFT);
 	contentPane.add(tabPane);
 	JPanel setupRootPanel = new JPanel();
-	setupRootPanel.setLayout(new FlowLayout());
+	setupRootPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
 	SetupPanel setupPanel = new SetupPanel();
 	setupRootPanel.add(setupPanel);
 	tabPane.add("Start", setupRootPanel);
 
-	frame.setTitle("LatteKOM/T2");
+	frame.setTitle("LatteKOM/TabbedGUI");
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 	//frame.setSize(800,600);
 
 	tabPane.addChangeListener(new ChangeListener() {
 		public void stateChanged(ChangeEvent e) {
 		    frame.pack();
+		    Object source = e.getSource();
+		    if (source instanceof JTabbedPane) {
+			JTabbedPane tabPane = (JTabbedPane) source;
+			Component nowVisible = tabPane.getSelectedComponent();
+			Debug.println("stateChanged(): selected component " + nowVisible.getClass().getName());
+			if (nowVisible instanceof SessionPanel) {
+			    Debug.println("stateChanged(): requesting console focus");
+			    ((SessionPanel) nowVisible).t2.getConsole().requestFocus();
+			} else if (nowVisible instanceof TextComposer) {
+			    TextComposer tc = (TextComposer) nowVisible;
+			    if (tc.isCommentOrFootnote()) tc.bodyArea.requestFocus();
+			    else tc.subjectField.requestFocus();
+			}
+			
+		    }
 		}
 	    });
 

@@ -356,7 +356,7 @@ public interface Rpc {
     public final static int C_get_client_version = 71;
     public final static int C_mark_text = 72;
     public final static int C_unmark_text = 73;
-
+    public final static int C_re_z_lookup = 74;
     public final static int C_lookup_z_name = 76;
     public final static int C_set_last_read = 77;
     public final static int C_get_uconf_stat = 78;

@@ -9,7 +9,7 @@ import nu.dll.lyskom.*;
 
 public class ConfCommands extends AbstractCommand {
     String[] myCommands = { "åp", "}p", "äp", "åf", "}f", "äf", "g", "ln", "bn", "nm", "sm", "lm", "um",
-                            "lä"};
+                            "lä", "smr"};
 
     // descriptions according to commandIndices
     String[] myDescriptions = {
@@ -24,10 +24,11 @@ public class ConfCommands extends AbstractCommand {
 	"skapa möte <namn på mötet>",
 	"lista möten [substräng]",
 	"utträda (ur) möte <namn på mötet>",
-	"lista ärenden (olästa i nuvarande möte)"
+	"lista ärenden (olästa i nuvarande möte)",
+	"sök möte (med) regexp [regexp]"
     };
 
-    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11 };
+    int[] commandIndices = { 0, 0, 1, 2, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12 };
 
     public ConfCommands() {
 	setCommands(myCommands);
@@ -119,6 +120,12 @@ public class ConfCommands extends AbstractCommand {
 		throw new CmdErrException("Du måste vara i ett möte för att kunna lista ärenden");
 	    listSubjects();
 	    break;
+	case 12:
+	    if (parameters == null)
+		throw new CmdErrException("Du måste ange ett sökuttryck");
+	    searchConferences(parameters);
+	    break;
+
 	default: 
 	    throw new RuntimeException("Unknown command " + s);
 	}
@@ -174,8 +181,15 @@ public class ConfCommands extends AbstractCommand {
 	}
     }
 
+    public void searchConferences(String regexp) throws IOException, CmdErrException {
+	listConferences(regexp, true);
+    }
     public void listConferences(String substring) throws IOException, CmdErrException {
-	ConfInfo[] confs = session.lookupName(substring, false, true);
+	listConferences(substring, false);
+    }
+    public void listConferences(String substring, boolean useRegexp) throws IOException, CmdErrException {
+	ConfInfo[] confs = useRegexp ? session.reLookup(substring, false, true) :
+	    session.lookupName(substring, false, true);
 	application.consoleWriteLn("Hittade " + confs.length + " möten");
 	MessageFormat form = new MessageFormat(" {0,number}\t{2} {1}");
 

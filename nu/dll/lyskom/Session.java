@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.24 2002/04/15 18:37:24 pajp Exp $
+ * @version $Id: Session.java,v 1.25 2002/04/24 08:14:53 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1810,6 +1810,22 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	
 	waitFor(logoutCall.getId());
     }
+    
+    /**
+     * Forcibly logout, disconnect, and finish all threads
+     */
+    public void shutdown() {
+	try {
+	    if (loggedIn) logout(false);
+	    if (connected) disconnect(false);
+	} catch (IOException ex1) {
+
+	} finally {
+	    if (invoker != null) invoker.quit();
+	    invoker = null;
+	    listener = null;
+	}
+    }
 
     /**
      * Writes a raw (custom) RPC call to the server. The reference number will
@@ -2070,6 +2086,41 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (!reply.getSuccess()) throw reply.getException();
     }
 
+    /**
+     * Lookup names of persons or conferences using regular expressions
+     *
+     * @param regexp A string containing the regexp that will be used for search
+     * @param wantPersons Return persons matching <tt>name</tt>
+     * @param wantConfs Return conferences matching <tt>name</tt>
+     * @return An RpcCall object representing this specific RPC call
+     * @see #lookupName(String, boolean, boolean)
+     */
+    public RpcCall doReLookup(String regexp, boolean wantPersons, boolean wantConfs)
+    throws IOException {
+	RpcCall req = new RpcCall(count(), Rpc.C_re_z_lookup);
+	req.add(new Hollerith(regexp));
+	req.add(new KomToken(wantPersons ? "1" : "0"));
+	req.add(new KomToken(wantConfs ? "1" : "0"));
+	writeRpcCall(req);
+	return req;		
+    }
+
+    public ConfInfo[] reLookup(String regexp, boolean wantPersons, boolean wantConfs)
+    throws IOException, RpcFailure {
+	RpcReply reply = waitFor(doReLookup(regexp, wantPersons, wantConfs));
+	if (!reply.getSuccess()) throw reply.getException();
+	KomToken[] parameters = reply.getParameters();
+	ConfInfo[] ids = new ConfInfo[parameters[0].toInteger()];
+	KomToken[] confData = ((KomTokenArray) parameters[1]).getTokens();
+
+	for (int i=0, j=2 ; i < ids.length ; i++, j = j + 3)
+	    ids[i] = new ConfInfo(confData[j-2].getContents(),
+				  new ConfType(confData[j-1]),
+				  confData[j].toInteger());
+
+	return ids;
+    }
+
 
     /**
      * Lookup names of persons/conferences.
@@ -2096,7 +2147,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	RpcReply reply = waitFor(id);
 
 	if (!reply.getSuccess()) {
-	    return null;
+	    throw reply.getException();
 	}
 	KomToken[] parameters = reply.getParameters();
 	ConfInfo[] ids = new ConfInfo[parameters[0].toInteger()];

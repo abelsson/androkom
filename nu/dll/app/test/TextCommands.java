@@ -47,6 +47,7 @@ public class TextCommands extends AbstractCommand {
     }
 
     public int doCommand(String s, String parameters) throws CmdErrException, IOException {
+	Debug.println("--> TextCommands.doCommand(" + s + ", " + parameters + ")");
 	int textNo = 0;
 	Text text = null;
 	boolean footnote = false;
@@ -72,6 +73,7 @@ public class TextCommands extends AbstractCommand {
 	case 1: // footnote text
 	    footnote = true;
 	case 2: // comment text
+	    Debug.println("--> TextCommands.doCommand(): comment text");
 	    if (textNo < 1) {
 		if (footnote && application.getLastSavedText() != null)
 		    textNo = application.getLastSavedText().getNo();
@@ -127,9 +129,11 @@ public class TextCommands extends AbstractCommand {
 	case 7: // review original
 	    reviewOriginal(textNo);
 	    break;
+	default:
+	    throw new CmdErrException("Internfel: okänt kommando \"" + s + "\".");
 	}
 
-	return 1;
+	return Command.OK;
     }
 
     public void reviewOriginal(int textNo) throws IOException, CmdErrException {

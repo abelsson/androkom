@@ -66,7 +66,7 @@ implements Runnable {
 	    try {
 		row = session.getKomTokenReader().readLine();
 	    } catch (ProtocolException ex) {
-		throw(new KomProtocolException(ex.getMessage()));
+		throw new KomProtocolException(ex.getMessage());
 	    } catch (IOException ex) {
 		throw new KomProtocolException(ex.getMessage());
 	    }
@@ -114,7 +114,7 @@ implements Runnable {
 		}
 	    }
 	}
-	System.err.println("MessageListener.run() finishing");
+	Debug.println("MessageListener.run() finishing");
    }
 
     private KomToken[] stripFirstToken(KomToken[] tokens) {

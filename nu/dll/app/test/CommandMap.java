@@ -64,12 +64,25 @@ public class CommandMap {
     }
 
     public void addCommand(String str, Class cmd) {
-	commands.put(str, initCommand(cmd));
+	if (commands.containsKey(str)) {
+	    Object oldCommand = commands.put(str, initCommand(cmd));
+	    commands.put("!" + str, oldCommand);
+	} else {
+	    commands.put(str, initCommand(cmd));
+	}
+
 	if (!commandList.contains(cmd)) commandList.add(cmd);
     }
     public void addCommand(String str, Command cmd) {
 	cmd.setEnvironment(session, application);
-	commands.put(str, cmd);
+
+	if (commands.containsKey(str)) {
+	    Object oldCommand = commands.put(str, cmd);
+	    commands.put("!" + str, oldCommand);
+	} else {
+	    commands.put(str, cmd);
+	}
+
 	if (!commandList.contains(cmd)) commandList.add(cmd);
     }
 
