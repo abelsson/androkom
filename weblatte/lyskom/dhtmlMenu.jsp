@@ -3,7 +3,7 @@
      For full source code and Terms Of Use, visit http://www.dynamicdrive.com -->
 <div id="ie5menu" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
 <div class="menuitems" url="<%= basePath %>?listnews">Lista nyheter</div>
-<div class="menuitems" url="<%= basePath %>composer.jsp"><b>Skriv inlägg</b></div>
+<div class="menuitems" url="<%= basePath %>composer.jsp" style="font-weight: bold">Skriv inlägg</div>
 <div class="menuitems" target="_top" url="<%= basePath %>frames.jsp">Ramvy</div>
 <%  if (lyskom.getServer().equals("sno.pp.se")) { %>
 <div class="menuitems" url="<%= basePath %>?uploadForm">Ladda upp bild</div>
@@ -21,7 +21,7 @@
 <div class="menuitems" url="<%= basePath %>?refresh" target="_top">Starta om</div>
 <div class="menuitems" url="<%= basePath %>?suspend" target="_top">Pausa</div>
 <div class="menuitems" url="<%= basePath %>?purgeOtherSessions">Logga ut mina andra sessioner</div>
-<div class="menuitems" url="<%= basePath %>?logout" target="_top"><b>Logga ut</b></div>
+<div class="menuitems" url="<%= basePath %>?logout" target="_top" style="font-weight: bold">Logga ut</div>
 </div>
 
 <div id="ctxmenu_conference" class="skin0" onMouseover="highlightie5(event)" onMouseout="lowlightie5(event)" onClick="jumptoie5(event)" display:none>
