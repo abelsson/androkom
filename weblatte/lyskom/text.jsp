@@ -132,11 +132,12 @@
 	for (int i=0; !footnoteDisplay && i < footnoted.length; i++) {
 %>
 	Fotnot till text <%= textLink(request, lyskom, footnoted[i]) %><br/>
+
 <%
 	}
 
 	List miscInfo = text.getStat().getMiscInfo();
-	boolean conferenceFoundAmongRecipients = false;
+	boolean conferenceFoundAmongRecipients = conferenceNumber > 0;
 	for (int i=0; conferenceNumber > 0 && i < miscInfo.size(); i++) {
 	    Selection misc = (Selection) miscInfo.get(i);
 	    int key = misc.getKey();
@@ -154,7 +155,6 @@
 	
 	for (int i=0; !footnoteDisplay && i < miscInfo.size(); i++) {
 	    Selection misc = (Selection) miscInfo.get(i);
-	    Debug.println("misc-info key: " + misc.getKey() + ", value: " + misc.getValue());
 	    int key = misc.getKey();
 	    if (key == TextStat.miscRecpt || key == TextStat.miscCcRecpt || key == TextStat.miscBccRecpt) {
 		    String title = "";
@@ -245,6 +245,35 @@
 	for (Iterator i = auxMxMimePartIn.iterator(); i.hasNext();) {
 	    attachmentTexts.add(new Integer(((KomToken) i.next()).intValue()));
 	}
+        for (int i=comments.length-1; i >= 0; i--) {
+	    if (preferences.getBoolean("read-comments-first")) {
+		if (conferenceNumber > 0) {
+		    TextStat ts = null;
+		    try {
+			ts = lyskom.getTextStat(comments[i]);
+		    } catch (RpcFailure ex1) {
+			if (ex1.getError() == Rpc.E_no_such_text) {
+			    continue;
+			}
+			throw ex1;
+		    }
+		    if (ts.hasRecipient(conferenceNumber)) {
+			if (!reviewList.contains(new Integer(comments[i])) &&
+			    !lyskom.getReadTexts().contains(comments[i])) {
+			    Debug.println("*** Adding " + comments[i] + " to review-list");
+			    reviewList.add(new Integer(comments[i]));
+			}
+		    } else {
+			Debug.println("NOT adding " + comments[i] + " to review-list " +
+				      " (not in conference " + conferenceNumber + ")");
+		    }
+		} else {
+		    Debug.println("read-comments-first is true, but not in a conference");
+		}
+	    } else {
+		Debug.println("read-comments-first is false");
+	    }
+        }
 	for (int i=0; i < comments.length; i++) {
 	    if (attachmentTexts.contains(new Integer(comments[i]))) {
 		TextStat ts = lyskom.getTextStat(comments[i]);
@@ -254,24 +283,6 @@
 		 (<a href="/lyskom/rawtext.jsp?text=<%=comments[i]%>">visa</a>)<br/>
 <%
 	    } else {
-	        if (preferences.getBoolean("read-comments-first")) {
-		    if (conferenceNumber > 0) {
-			TextStat ts = lyskom.getTextStat(comments[i]);
-			if (ts.hasRecipient(conferenceNumber)) {
-			    if (reviewList.contains(new Integer(comments[i]))) {
-				reviewList.add(new Integer(comments[i]));
-			    }
-			    Debug.println("Adding " + comments[i] + " to review-list");
-			} else {
-			    Debug.println("NOT adding " + comments[i] + " to review-list " +
-				" (not in conference " + conferenceNumber + ")");
-			}
-		    } else {
-		        Debug.println("read-comments-first is true, but not in a conference");
-		    }
-	        } else {
-		    Debug.println("read-comments-first is false");
-		}
 %>
 		Kommentar i text <%= textLink(request, lyskom, comments[i]) %><br/>
 <%
@@ -287,7 +298,7 @@
 <%
     if (conferenceNumber > 0 && textNumber > 0 && request.getParameter("comment") == null) {
 %>	<br/>
-	<a href="<%= myURI(request) %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
+	<a accesskey="N" href="<%= myURI(request) %>?conference=<%=conferenceNumber%>&markAsRead=<%=textNumber%>">
 	  Läsmarkera denna text (och läs nästa).</a><br/>
 <%
     }

@@ -32,6 +32,18 @@ Tid: <%= df.format(new Date()) %>
 Request-URI: <%= request.getAttribute("javax.servlet.error.request_uri") + 
 	(request.getQueryString() != null ? ("?"+request.getQueryString()) : "") %>
 
+Request-parametrar: <%
+    Enumeration enum = request.getParameterNames();
+    while (enum.hasMoreElements()) {
+	String name = (String) enum.nextElement();
+	out.print(name+"=");
+	if (name.equals("lyskomLosen")
+	    out.println("********");
+	else
+	    out.println(request.getParameter(name));
+    }
+%>
+
 Felklass: <%= exception.getClass().getName() %>
 Felmeddelande: <%= exception.getMessage() %>
 

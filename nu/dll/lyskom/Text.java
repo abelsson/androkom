@@ -197,6 +197,9 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Adds a recipient to this text.
      */
     public Text addRecipient(int no) {
+	if (stat.hasRecipient(no)) {
+	    throw new IllegalArgumentException(no + " is already a recipient");
+	}
 	addMiscInfoEntry(TextStat.miscRecpt, no);
 	return this;
     }
@@ -235,6 +238,9 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Adds one CC-recipient to this text.
      */
     public Text addCcRecipient(int no) {
+	if (stat.hasRecipient(no)) {
+	    throw new IllegalArgumentException(no + " is already a recipient");
+	}
 	addMiscInfoEntry(TextStat.miscCcRecpt, no);
 	return this;
     }
@@ -302,6 +308,10 @@ public class Text extends Hollerith implements java.io.Serializable {
 	for (i=0;i<r.length;i++)
 	    r[i] = b[i];
 	return r;
+    }
+
+    public String getBodyString() throws UnsupportedEncodingException {
+	return new String(getBody(), getCharset());
     }
     
     /**

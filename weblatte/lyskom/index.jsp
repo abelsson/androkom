@@ -124,7 +124,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.46 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.47 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -141,9 +141,11 @@
 	    }
 	}
     } catch (ConnectException ex1) {
+	lyskom.shutdown();
 	lyskom = null;
 	error = "Det gick inte att ansluta till servern: " + ex1.getMessage();
     } catch (UnknownHostException ex2) {
+	lyskom.shutdown();
 	lyskom = null;
 	error = "Det gick inte att slå upp serverns DNS-namn: " + ex2.getMessage();
     }
@@ -282,6 +284,7 @@
 	}
         reviewList = (LinkedList) lyskom.getAttribute("lyskom.review-list");
         if (reviewList == null || parameter(parameters, "conference") == null) {
+	    Debug.println("*** creating new review-list");	
 	    reviewList = new LinkedList();
 	    lyskom.setAttribute("lyskom.review-list", reviewList);
     	}
@@ -641,6 +644,8 @@
 	Map conferences = new HashMap();
 	for (int i=0; i < values.length; i++) {
 	    TextStat readText = lyskom.getTextStat(Integer.parseInt(values[i]));
+	    lyskom.getReadTexts().add(readText.getNo());
+
 	    int[] rcpts = readText.getRecipients();
 	    int[] ccs = readText.getCcRecipients();
 	    int[] tmp = new int[rcpts.length+ccs.length];
@@ -802,10 +807,14 @@
 		}
 	    }
 	    for (Iterator i=recipients.iterator(); i.hasNext();) {
-		newText.addRecipient(((ConfInfo) i.next()).getNo());
+	        int confNo = ((ConfInfo) i.next()).getNo();
+		if (!newText.getStat().hasRecipient(confNo))
+		    newText.addRecipient(confNo);
 	    }
 	    for (Iterator i=ccRecipients.iterator(); i.hasNext();) {
-		newText.addCcRecipient(((ConfInfo) i.next()).getNo());
+	        int confNo = ((ConfInfo) i.next()).getNo();
+		if (!newText.getStat().hasRecipient(confNo))
+		    newText.addCcRecipient(confNo);
 	    }
 
 	    newTextNo = lyskom.createText(newText);
@@ -1003,6 +1012,7 @@
     if (conferenceNumber > 0 && parameter(parameters, "listSubjects") == null) {
 	int nextUnreadText = 0;
 	try {
+	    lyskom.changeConference(conferenceNumber);
 	    Membership ms = lyskom.queryReadTextsCached(conferenceNumber);
 	    if (ms == null) ms = lyskom.queryReadTexts(lyskom.getMyPerson().getNo(), conferenceNumber);
 
@@ -1010,6 +1020,7 @@
 	    int unreads = 0;
 	    if (uconf.getHighestLocalNo() > ms.getLastTextRead()) {
 	    	unreads = uconf.getHighestLocalNo() - ms.getLastTextRead();
+		unreads -= ms.getReadTexts().length;
 	    }
 %>
 	    <p>
@@ -1019,9 +1030,12 @@
 	    nextUnreadText = 0;
 
 	    lyskom.doChangeWhatIAmDoing("Läser");
-	    lyskom.changeConference(conferenceNumber);
+	    if (reviewList != null) {
+		if (Debug.ENABLED) Debug.println("*** review-list: " + reviewList);
+	    }
 	    if (reviewList != null && reviewList.size() > 0) {
 		nextUnreadText = ((Integer) reviewList.removeLast()).intValue();
+		Debug.println("*** using text snatched from review-list: " + nextUnreadText);
 	    } else {
             	nextUnreadText = lyskom.nextUnreadText(conferenceNumber, false);
 	    }
@@ -1029,6 +1043,9 @@
 	    if (ex1.getError() == Rpc.E_not_member) {
 		out.println("<p class=\"statusError\">Fel: du är inte medlem i " +
 			lookupName(lyskom, conferenceNumber, true) + "</p>");
+	    } else if (ex1.getError() == Rpc.E_undefined_conference) {
+		out.println("<p class=\"statusError\">Fel: möte " +
+			ex1.getErrorStatus() + " finns inte.</p>");
 	    } else {
 		throw ex1;
 	    }
@@ -1167,7 +1184,7 @@
 	    queryStr.append("&conference=").append(conferenceNumber);
 	}
 	linkText.append(".");
-	out.println("<p><a href=\"?" + queryStr.toString() + "\">" +
+	out.println("<p><a accesskey=\"N\" href=\"?" + queryStr.toString() + "\">" +
 		linkText.toString() + "</a></p>");
     }
 
@@ -1587,7 +1604,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.46 $
+$Revision: 1.47 $
 </p>
 </body>
 </html>

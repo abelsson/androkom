@@ -324,6 +324,33 @@
 	return s.replaceAll(" *\\(.*?\\) *", "").trim();
     }
 
+    public String xmlConference(Session lyskom, int confNo)
+    throws IOException, RpcFailure {
+	StringBuffer buf = new StringBuffer();
+	Conference conf = lyskom.getConfStat(confNo);
+	buf.append("<conference id=\"" + confNo + "\" letterbox=\"" + 
+		conf.getType().letterbox() + "\">");
+	buf.append(lookupName(lyskom, confNo, false));
+	buf.append("</conference>");
+	return buf.toString();
+    }
+
+    public String xmlTextRef(Session lyskom, int textNo) 
+    throws IOException, RpcFailure {
+	StringBuffer buf = new StringBuffer();
+	TextStat ts = lyskom.getTextStat(textNo);
+	buf.append("<text-ref>");
+	buf.append("<text-no>").append(textNo).append("</text-no>");
+	buf.append("<author>" + xmlConference(lyskom, ts.getAuthor()) + "</author>");
+	buf.append("</text-ref>");
+	return buf.toString();
+    }
+
+    public String xmlTimeRef(Date date) {
+	return "<formatted-time>" + df.format(date) + "</formatted-time>";
+    }
+
+
     class AmbiguousNameException extends RuntimeException {
 	ConfInfo[] possibleNames;
 	public AmbiguousNameException(ConfInfo[] names) {

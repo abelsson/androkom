@@ -5,11 +5,13 @@
  */
 package nu.dll.lyskom;
 
+import java.util.ArrayList;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.Iterator;
 import java.util.List;
 import java.util.LinkedList;
+import java.util.Collections;
 import java.io.Serializable;
 
 /**
@@ -190,8 +192,10 @@ public class Selection implements Serializable, Tokenizable {
      * Converts this selection into one KomToken object.
      */
     public KomToken toToken() {
+	List keys = new ArrayList(keyList);
+	Collections.sort(keys);
 	StringBuffer foo = new StringBuffer();
-	for (Iterator i = keyList.iterator(); i.hasNext();) {
+	for (Iterator i = keys.iterator(); i.hasNext();) {
 	    Integer key = (Integer) i.next();
 	    foo.append(key);
 	    Object o = values.get(key);

@@ -76,6 +76,7 @@
 
 
     if (request.getParameter("footnoteTo") != null) {
+        lyskom.changeWhatIAmDoing("Skriver en fotnot");
 	int footnotedTextNo = Integer.parseInt(request.getParameter("footnoteTo"));
 	Text footnotedText = lyskom.getText(footnotedTextNo);
 	int[] _rcpts = footnotedText.getRecipients();
@@ -92,13 +93,14 @@
     }
 
     int commentedTextNo = 0;
-    if (request.getParameter("postCommentTo") != null) {
-	commentedTextNo = Integer.parseInt(request.getParameter("postCommentTo"));
+    if (request.getParameter("inCommentTo") != null) {
+        lyskom.changeWhatIAmDoing("Skriver en kommentar");
+	commentedTextNo = Integer.parseInt(request.getParameter("inCommentTo"));
 	metadata.append("Kommentar till text ").
 		append(textLink(request, lyskom, commentedTextNo)).
 		append("<br/>");
     }
-    if (request.getParameter("postCommentTo") != null &&
+    if (request.getParameter("inCommentTo") != null &&
 	request.getParameter("addNewRecipient") == null) {
 	Text commentedText = lyskom.getText(commentedTextNo);
 	int[] _recipients = commentedText.getRecipients();
@@ -116,6 +118,11 @@
 		recipients.add(lookupName(lyskom, _recipients[i]));
 	    }
 	}
+    }
+
+    if (request.getParameter("inCommentTo") == null &&
+        request.getParameter("footnoteTo") == null) {
+        lyskom.changeWhatIAmDoing("Skriver ett inlägg");	
     }
 
     StringBuffer errors = new StringBuffer();
@@ -192,9 +199,8 @@
 <br/>
 Ämne: <input type="text" size="50" name="subject" value="<%=subject%>"><br/>
 <textarea name="body" cols="71" rows="10"><%=body%></textarea><br/>
-<% if (request.getParameter("postCommentTo") != null) { %>
-<input type="hidden" name="postCommentTo" value="<%=request.getParameter("postCommentTo")%>">
-<input type="hidden" name="inCommentTo" value="<%=request.getParameter("postCommentTo")%>">
+<% if (request.getParameter("inCommentTo") != null) { %>
+<input type="hidden" name="inCommentTo" value="<%=request.getParameter("inCommentTo")%>">
 <% } %>
 <% if (request.getParameter("changePresentation") != null) { %>
 <input type="hidden" name="changePresentation" value="<%=request.getParameter("changePresentation")%>">
@@ -209,7 +215,7 @@
 </form>
 
 <p class="footer">
-$Id: composer.jsp,v 1.5 2004/04/27 21:24:31 pajp Exp $
+$Id: composer.jsp,v 1.6 2004/05/23 16:21:29 pajp Exp $
 </p>
 </body>
 </html>

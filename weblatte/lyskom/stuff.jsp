@@ -5,8 +5,9 @@ if (request.getHeader("User-Agent").indexOf("MSIE") == -1) {
 }
 %>
 // -*- Mode: c -*-
-// $Id: stuff.jsp,v 1.5 2004/05/13 02:42:27 pajp Exp $
+// $Id: stuff.jsp,v 1.6 2004/05/23 16:21:30 pajp Exp $
 function context_in(no, isLetterBox, isText, name) {
+  //alert("no: " + no + ", letterbox: " + isLetterBox + ", isText: " + isText + ", name: \"" + name + "\"");
   document.ctxNo = no;
   document.ctxIsLetterBox = isLetterBox;
   document.ctxIsText = isText;
@@ -157,7 +158,12 @@ function lowlightie5(e){
 
 function ctxVars(str) {
   var s = str;
+  var origs = s;
   s = s.replace("%NO%", document.ctxNo);
+  while (origs != s) {
+      origs = s;
+      s = s.replace("%NO%", document.ctxNo);
+  }
   s = s.replace("%NAME%", escape(document.ctxName));
   return s;
 }
@@ -174,7 +180,6 @@ function jumptoie5(e){
     }
     var urlAttr = firingobj.getAttribute("url");
     var _url = ctxVars(urlAttr);
-    
     if (firingobj.getAttribute("target"))
       window.open(_url,firingobj.getAttribute("target"));
     else

@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.63 2004/05/19 15:57:15 pajp Exp $
+ * @version $Id: Session.java,v 1.64 2004/05/23 16:21:28 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -245,6 +245,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     int bigTextLimit = defaultBigTextLimit;
     int bigTextHead = defaultBigTextHead;
     int lazyTextLimit = defaultLazyTextLimit;
+
+    List pendingAsynchMessages = new LinkedList();
+    boolean storeAsynchMessages = false;
     
     Map serverInfo = null;
 
@@ -271,6 +274,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     public void setBigTextEnabled(boolean b) {
 	enableBigText = b;
+    }
+
+    public void setStoreAsynchMessages(boolean b) {
+	storeAsynchMessages = b;
     }
 
     protected boolean isCachableType(String contentType) {
@@ -2803,6 +2810,21 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return null;
     }
 
+    public AsynchMessage getAsynchMessage() {
+	storeAsynchMessages = true;
+	synchronized (pendingAsynchMessages) {
+	    if (pendingAsynchMessages.size() == 0) {
+		try {
+		    pendingAsynchMessages.wait();
+		} catch (InterruptedException ex1) {}
+	    }
+	    if (pendingAsynchMessages.size() > 0) {
+		return (AsynchMessage) pendingAsynchMessages.remove(0);
+	    }
+	}
+	return null;
+    }
+
     /**
      * This methods provides a synchronous way of waiting for RPC
      * replies. Note that this method should never be called from
@@ -3030,6 +3052,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @see nu.dll.lyskom.AsynchMessageReceiver
      */
     public void asynchMessage(AsynchMessage m) {
+	if (storeAsynchMessages) {
+	    synchronized (pendingAsynchMessages) {
+		pendingAsynchMessages.add(m);
+		pendingAsynchMessages.notifyAll();
+	    }
+	}
 	KomToken[] parameters = m.getParameters();
 
 	int textNo = 0;
