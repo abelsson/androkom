@@ -253,6 +253,10 @@ public class TextStat implements java.io.Serializable {
 	return ((Properties) parseContentTypeAuxItem()[1]).getProperty("charset", "iso-8859-1");
     }
 
+    public int getSize() {
+	return chars;
+    }
+
     /**
      * Returns the number of AuxItem objects attached to this text.
      */

@@ -3,12 +3,16 @@
  * Copyright (c) 1999 by Rasmus Sten <rasmus@sno.pp.se>
  *
  */
-// -*- Mode: Java; c-basic-offset: 4 -*-
 package nu.dll.lyskom;
 
 import java.net.ProtocolException;
 import java.util.Vector;
 import java.util.Enumeration;
+import java.util.List;
+import java.util.LinkedList;
+import java.util.Map;
+import java.util.HashMap;
+import java.util.Iterator;
 import java.io.*;
 
 /** NB! Rename this class!
@@ -25,6 +29,10 @@ class MessageListener
 implements Runnable {
 
     private final static int DEBUG = 0;
+
+    Map streamReceivers = new HashMap();
+
+    HollerithStream pendingStream = null;
 
     Vector rpcReceivers = new Vector(1);
     Vector asynchReceivers = new Vector(1);
@@ -64,14 +72,111 @@ implements Runnable {
 	session.getKomTokenReader().close();
     }
 
+    protected void addHollerithStreamReceiver(int id, int limit) {
+	synchronized (streamReceivers) {
+	    streamReceivers.put(new Integer(id), new Integer(limit));
+	}
+    }
+
+    private boolean waitingForStream() {
+	synchronized (streamReceivers) {
+	    return streamReceivers.size() > 0;
+	}
+    }
+
+    private boolean waitingForStream(int rpcId) {
+	synchronized (streamReceivers) {
+	    return streamReceivers.containsKey(new Integer(rpcId));
+	}
+    }
+
+    private int hollerithLimitForStreamReceiver(int rpcId) {
+	synchronized (streamReceivers) {
+	    return ((Integer) streamReceivers.get(new Integer(rpcId))).intValue();
+	}
+    } 
+    
+    private void purgeStreamReceiver(int rpcId) {
+	synchronized (streamReceivers) {
+	    streamReceivers.remove(new Integer(rpcId));
+	}
+    }
+
     // cannot throw exceptions from here, use callback error handling?
    public void run() {
 
 	while(asynch && !disconnect) {
 	    KomToken[] row = {};
 	    Throwable readError = null;
+	    boolean rowCompleted = false;
+	    KomTokenReader reader = session.getKomTokenReader();
+	    boolean isRpcReply = false, isAsynchMessage = false, good = false;
+	    int id = 0;
 	    try {
-		row = session.getKomTokenReader().readLine();
+		if (pendingStream != null) {
+		    synchronized (pendingStream) {
+			while (!pendingStream.isExhausted()) {
+			    Debug.println("Blocking further reads until the pending HollerithStream is exhausted...");
+			    pendingStream.wait(5000);
+			}
+		    }
+		    pendingStream = null;
+		}
+		LinkedList tokens = new LinkedList();
+		KomToken first = reader.readToken();
+		tokens.add(first);
+		byte[] descriptor = first.getContents();
+		isRpcReply = descriptor[0] == '=' || descriptor[0] == '%';
+		isAsynchMessage = descriptor[0] == ':';
+		if (isRpcReply) {
+		    if (descriptor[0] == '%' && descriptor[1] == '%') {
+			while (!reader.lastByteWasEol) {
+			    tokens.add(reader.readToken());
+			}
+			throw new KomProtocolException(tokens.toString());
+		    }
+
+		    good = descriptor[0] == '=';
+		    try {
+			id = Integer.parseInt(new String(descriptor, 1, descriptor.length-1));
+		    } catch (NumberFormatException ex1) {
+			throw new KomProtocolException("Bad RPC ID: " + ex1.getMessage());
+		    }
+		    if (waitingForStream()) {
+			if (waitingForStream(id)) {
+			    int limit = hollerithLimitForStreamReceiver(id);
+			    KomToken token = null;
+			    boolean stopReading = false;
+			    while (!reader.lastByteWasEol && !stopReading) {
+				token = reader.readToken(limit);
+				tokens.add(token);
+				if (token instanceof HollerithStream) stopReading = true;
+				if (Debug.ENABLED) Debug.println("Read token: " + token);
+			    }
+			    purgeStreamReceiver(id);
+			    if (token instanceof HollerithStream) {
+				pendingStream = (HollerithStream) token;
+				Debug.println("HollerithStream received.");
+			    } else {
+				Debug.println("HollerithStream NOT received.");
+			    }
+			    rowCompleted = true;
+			}
+		    }
+		}
+
+		// asynch message data read in here as well.
+		if (!rowCompleted) {
+		    while (!reader.lastByteWasEol) {
+			tokens.add(reader.readToken());
+		    }
+		}
+
+		row = new KomToken[tokens.size()];
+		Iterator ti = tokens.iterator();
+		for (int i=0; i < tokens.size(); i++) {
+		    row[i] = (KomToken) ti.next();
+		}
 	    } catch (ProtocolException ex) {
 		Debug.println("ProtocolException: " + ex.getClass().getName() + ": " + ex.getMessage());
 		readError = ex;
@@ -95,38 +200,17 @@ implements Runnable {
 		Debug.println("Got: Empty row, skipping");
 		continue;
 	    }
-	    String descriptor = new String(row[0].toNetwork());
-	    if (descriptor.startsWith("=") ||
-		descriptor.startsWith("%")) { // RPC reply
-		if (descriptor.startsWith("%%")) {
-		    StringBuffer dbgs = new StringBuffer();
-		    for (int i=0;i<row.length;i++)
-			dbgs.append(" " +
-					 new String(row[i].toNetwork()));
-		    dbgs.append(" ("+row.length+" elements)");
-		    throw(new KomProtocolException(dbgs.toString()));
-		}
-			    
-		boolean good = (descriptor.startsWith("=") ? true : false);
-		/*if (descriptor.startsWith("=")) good = true;
-		  else good = false;*/
-		int id;
-		try {
-		    id = Integer.parseInt(descriptor.substring(1));
-		} catch (NumberFormatException ex) {
-		    throw new KomProtocolException("Bad RPC ID: " +
-						   descriptor);
-		}
+	    byte[] descriptor = row[0].getContents();
+	    if (isRpcReply) {
 		KomToken[] params = new KomToken[row.length-1];
-		for (int i=0;i<params.length;i++)
-		    params[i] = row[i+1];
+		System.arraycopy(row, 1, params, 0, params.length);
 
 		// notify listeners...
 		for(Enumeration e = rpcReceivers.elements();
 		    e.hasMoreElements();)
 		    ((RpcReplyReceiver)
 		     e.nextElement()).rpcReply(new RpcReply(good, id, params));
-	    } else if (descriptor.startsWith(":")) { // Asynch message
+	    } else if (isAsynchMessage) { // Asynch message
 		for(Enumeration e = asynchReceivers.elements();
 		    e.hasMoreElements();) {
 		    AsynchMessageReceiver rcvr = (AsynchMessageReceiver) e.nextElement();

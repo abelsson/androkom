@@ -61,10 +61,10 @@ class KomTokenReader {
     StringBuffer debugBuffer;
     public KomToken[] readLine()
     throws ProtocolException, IOException {
-	debugBuffer = new StringBuffer();
+	if (Debug.ENABLED) debugBuffer = new StringBuffer();
 	Vector v = new Vector();
 	while (!lastByteWasEol)
-	    v.addElement((Object) readToken());
+	    v.addElement(readToken());
 
 	lastByteWasEol = false;
 
@@ -74,11 +74,13 @@ class KomTokenReader {
 	for (int i=0;i<foo.length;i++)
 	    foo[i] = (KomToken) e.nextElement();
 
-	Debug.println("RCV: " + debugBuffer.toString());
+	if (Debug.ENABLED) Debug.println("RCV: " + debugBuffer.toString());
 	return foo;
     }
 
-    // Ultimately, we should fix our own InputSteamReader
+    /**
+     * @deprecated TODO: remove all references to this method asap.
+     */
     private void read(InputStream in, byte[] buffer)
     throws IOException {
 	for (int i=0;i<buffer.length;i++) {
@@ -89,14 +91,20 @@ class KomTokenReader {
 	if (debugBuffer != null) debugBuffer.append(new String(buffer) + " ");
     }
 
-    public KomToken readToken()
+    protected KomToken readToken() 
+    throws IOException, ProtocolException {
+	return readToken(-1);
+    }
+    protected KomToken readToken(int hollerithLimit)
     throws IOException, ProtocolException {
 	ByteArrayOutputStream os = new ByteArrayOutputStream(32);
 	boolean readMore = true;
 	int arrlen = -1;
 	byte b = 0;
 	byte lastB = 0;
-
+	if (Debug.ENABLED && hollerithLimit > -1) {
+	    Debug.println("readToken(" + hollerithLimit + ")");
+	}
 	while (true) {
 	    lastB = b;
 	    b = (byte) input.read();
@@ -129,6 +137,12 @@ class KomTokenReader {
 		    throw(new KomProtocolException("Bad hollerith \""+
 						   new String(os.toByteArray()) + "\"?"));
 		}
+		if (hollerithLimit != -1 && arrlen > hollerithLimit) {
+		    if (Debug.ENABLED)
+			Debug.println("Returning HollerithStream of " + arrlen + " bytes");
+		    lastToken = new HollerithStream(input, arrlen, session.getServerEncoding());
+		    return lastToken;
+		}
 		byte[] hstring = new byte[arrlen];
 		read(input, hstring);
 		if (DEBUG>2)
@@ -140,7 +154,7 @@ class KomTokenReader {
 		} else {
 		    lastByteWasEol = false;
 		}
-		return lastToken = (KomToken) new Hollerith(hstring, session.getServerEncoding());
+		return lastToken = new Hollerith(hstring, session.getServerEncoding());
 	    default:
 		os.write(b);
 	    }

@@ -49,8 +49,8 @@ public class KomToken implements Serializable {
     /**
      * Returns <tt>true</tt> if the supplied object is of type
      * KomToken, and it's contents are equal to this,
-     * or if it is a String which, converted to the default
-     * charset, equals this object's contents, or if it is
+     * <i>or</i> if it is a String which, converted to the default
+     * charset, equals this object's contents, <i>or</i> if it is
      * an Integer, which, when converted to a Protocol A
      * representation of its value, is equal to this 
      * object's contents.

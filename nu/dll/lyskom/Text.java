@@ -34,8 +34,6 @@ import java.io.UnsupportedEncodingException;
  */
 public class Text extends Hollerith implements java.io.Serializable {
 
-    public final static int DEBUG = 1;
-
     boolean cached = false;
 
     int textNo = -1;
@@ -76,7 +74,8 @@ public class Text extends Hollerith implements java.io.Serializable {
     }
 
     /**
-     * Creates a new text with the supplied subject and body, converted into bytes using iso-8559-1.
+     * Creates a new text with the supplied subject and body, converted into bytes using
+     * the default encoding iso-8559-1.
      */
     public Text(String subject, String body) {
 	stat = new TextStat();
@@ -302,7 +301,10 @@ public class Text extends Hollerith implements java.io.Serializable {
      * Returns the subject (first row) of this text.
      */ 
     public byte[] getSubject() {
-	int i=0; byte[] b = getContents();
+	// do not use getContents() since, if we are a BigText object,
+	// we don't want to fetch the entire body form the server.
+	byte[] b = contents; 
+	int i=0;
 	while (i < b.length && b[i] != '\n') i++;
 	if (i >= b.length) { byte[] r = {} ; return r; }
 	byte[] r = new byte[i];
@@ -323,7 +325,7 @@ public class Text extends Hollerith implements java.io.Serializable {
 	i++; // skip '\n'
 	System.arraycopy(b, i, r, 0, r.length);
 
-	Debug.println("Text.getBody(): returning \"" + new String(r) + "\"");
+	Debug.println("Text.getBody(): returning " + r.length + " bytes");
 	return r;
     }
 
@@ -337,23 +339,24 @@ public class Text extends Hollerith implements java.io.Serializable {
 	    List bodyList = new LinkedList();
 	    int i=0;
 	    int lastLf = 0;
+	    String charset = getCharset();
 	    while (i < body.length) {
 		if (body[i] == '\n') {
 		    byte[] thisLine = new byte[i-lastLf];
 		    System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		    bodyList.add(new String(thisLine, getCharset()));
+		    bodyList.add(new String(thisLine, charset));
 		    lastLf = i+1;
 		    Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
 		}
 		i++;
 	    }
 	    if (lastLf == 0 && body.length > 0) {
-		bodyList.add(new String(body, getCharset()));
+		bodyList.add(new String(body, charset));
 		Debug.println("Text.getBodyList(): adding " + new String(body) + " to bodyList");
 	    } else if (lastLf < i) {
 		byte[] thisLine = new byte[body.length-lastLf];
 		System.arraycopy(body, lastLf, thisLine, 0, thisLine.length);
-		bodyList.add(new String(thisLine, getCharset()));
+		bodyList.add(new String(thisLine, charset));
 		Debug.println("Text.getBodyList(): adding " + new String(thisLine) + " to bodyList");
 		
 	    }

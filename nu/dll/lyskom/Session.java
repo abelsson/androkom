@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.39 2004/04/06 05:04:55 pajp Exp $
+ * @version $Id: Session.java,v 1.40 2004/04/15 15:30:04 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -124,11 +124,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public static String defaultServerEncoding = null;
 
+    public static boolean defaultEnabledBigText;
+    public static int defaultBigTextLimit;
+    public static int defaultBigTextHead;
+
     // set property values
     static {
 	defaultServerEncoding = System.getProperty("lyskom.encoding", "iso-8859-1");
 	rpcTimeout = Integer.getInteger("lyskom.rpc-timeout", 30).intValue() * 1000;
 	rpcSoftTimeout = Integer.getInteger("lyskom.rpc-soft-timeout", 0).intValue() * 1000;
+	defaultBigTextLimit = Integer.getInteger("lyskom.big-text-limit", 20*1024).intValue();
+	defaultBigTextHead = Integer.getInteger("lyskom.big-text-head", 100).intValue();
+	defaultEnabledBigText = Boolean.getBoolean("lyskom.big-text");
     }
 
 
@@ -212,6 +219,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     String latteName = "LatteKOM";
 
     String serverEncoding = defaultServerEncoding;
+    boolean enableBigText = defaultEnabledBigText;
+    int bigTextLimit = defaultBigTextLimit;
+    int bigTextHead = defaultBigTextHead;
     
     Map serverInfo = null;
 
@@ -234,6 +244,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     Thread mainThread;
     public Session() {
 	init();
+    }
+
+    public void setBigTextEnabled(boolean b) {
+	enableBigText = b;
     }
 
     protected boolean isCachableType(String contentType) {
@@ -348,13 +362,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     public void finalize() {
-	System.err.println("--> " + this + "::finalize().");
+	if (Debug.ENABLED) System.err.println("--> " + this + "::finalize().");
 	try {
 	    shutdown();
 	} catch (Throwable t1) {
 	    System.err.println("Exception in " + this + "::finalize(): " + t1.toString());
 	}
-	System.err.println("<-- " + this + "::finalize().");
+	if (Debug.ENABLED) System.err.println("<-- " + this + "::finalize().");
     }
 
     /**
@@ -1006,19 +1020,32 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (text != null && text.getContents() != null)
 	    return text.setCached(true);
 
-	if (text == null) text = new Text(textNo);
+	//if (text == null) text = new Text(textNo);
 
 	Debug.println("** getting text " + textNo);
 
-	if (text.getStat() == null) text.setStat(getTextStat(textNo, refreshCache));
-	if (text.getStat() == null) return null; // no such text
+	TextStat textStat = getTextStat(textNo, refreshCache);
+	if (textStat == null) return null;
 
+	//-->if (text.getStat() == null) text.setStat(getTextStat(textNo, refreshCache));
+	//if (text.getStat() == null) return null; // no such text
+
+	boolean textIsBig = textStat.getSize() > bigTextLimit;
+	if (Debug.ENABLED) Debug.println(textNo + " is big: " + textIsBig);
+	if (enableBigText && textIsBig) {
+	    Debug.println("Creating a BigText");
+	    text = new BigText(this, textNo);
+	} else {
+	    text = new Text(textNo);
+	}
+	text.setStat(textStat);
+	
 	RpcCall textReq = new RpcCall(count(), Rpc.C_get_text).
 	    add(new KomToken(textNo)).add("0").
-	    add(new KomToken(text.getStat().chars));
+	    add(new KomToken(enableBigText && textIsBig ? bigTextHead : textStat.getSize()));
 
 	writeRpcCall(textReq);
-
+	
 	RpcReply reply = waitFor(textReq.getId());
 	if (!reply.getSuccess()) throw reply.getException();
 
@@ -1039,7 +1066,28 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    purgeTextCache(texts[i]);
 
 	return text;
+    }
 
+    /**
+     * Returns a text's contents as a HollerithStream.
+     *
+     * @see nu.dll.lyskom.HollerithStream
+     */
+    public HollerithStream getTextStream(int textNo, int startChar, int endChar)
+    throws IOException, RpcFailure { 
+	int rpcId = count();
+	listener.addHollerithStreamReceiver(rpcId, 0);
+
+	RpcCall textReq = new RpcCall(rpcId, Rpc.C_get_text).
+	    add(new KomToken(textNo)).add(new KomToken(startChar)).
+	    add(new KomToken(endChar));
+
+	writeRpcCall(textReq);
+	
+	RpcReply reply = waitFor(textReq.getId());
+	if (!reply.getSuccess()) throw reply.getException();
+	
+	return (HollerithStream) reply.getParameters()[0];
     }
 
     /**
@@ -1521,10 +1569,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public UConference getUConfStat(int confNo, boolean refreshCache)
     throws IOException, RpcFailure {
+	if (confNo == 0)
+	    throw new IllegalArgumentException("Attempt to use conference zero.");
+
 	UConference cc = refreshCache ? null : conferenceCache.getUConference(confNo);
 	if (cc != null) return cc;
 	RpcCall req = doGetUConfStat(confNo);	
-	Debug.println("uconf-stat for " + confNo + " not in cache, asking server");
+	if (Debug.ENABLED) Debug.println("uconf-stat for " + confNo + " not in cache, asking server");
 	RpcReply rep = waitFor(req.getId());
 	if (rep.getSuccess()) {	    
 	    cc = new UConference(confNo, rep.getParameters());	
@@ -2540,20 +2591,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @see nu.dll.lyskom.RpcReplyReceiver
      */
     public void rpcReply(RpcReply r) {
-	if (false) {
-	    if (r.getSuccess())
-		Debug.print("OK, ");
-	    else
-		Debug.print("ERROR, ");
-
-	    Debug.print("ID="+r.getId());
-	    KomToken[] foo = r.getParameters();
-	    for (int i=0;i<foo.length;i++) {
-		Debug.print(" ["+foo[i].toString()+"]");
-	    }
-	    Debug.println("!");
-	}
-
 
 	RpcCall originCall = rpcHeap.getRpcCall(r.getId(), false);
 	if (originCall != null) {
@@ -2561,7 +2598,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	}
 
 	synchronized (rpcHeap) {
-	    Debug.println("notifying waiting threads");
+	    if (Debug.ENABLED) {
+		Debug.println("notifying waiting threads: " + r.getId() + " " +
+			      (r.getSuccess() ? ":-)" : ":-("));
+	    }
 	    rpcHeap.notifyAll();
 	}
 
@@ -2593,15 +2633,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	case Asynch.new_recipient: // TODO: refresh the caches.
 	case Asynch.sub_recipient: // TODO: should also update unread status (where?)
 	    textNo = parameters[0].intValue();
-	    synchronized (textStatCache) {
-		textStatCache.remove(textNo);
-	    }
-	    synchronized (textCache) {
-		if (textCache.contains(textNo)) {
-		    ((Text) textCache.get(textNo)).stat = null;
-		}
-	    }
-
+	    purgeTextCache(textNo);
 	    break;
 
 	case Asynch.new_text_old:

@@ -130,7 +130,17 @@ class Connection {
     throws IOException {
 	synchronized (output) {
 	    try {
-		output.write(s.getBytes(session.serverEncoding));
+		byte[] bytes = s.getBytes(session.serverEncoding);
+		byte[] line;
+		// append \n if necessary
+		if (bytes[bytes.length-1] != '\n') {
+		    line = new byte[bytes.length+1];
+		    System.arraycopy(bytes, 0, line, 0, bytes.length);
+		    line[bytes.length] = '\n';
+		} else {
+		    line = bytes;
+		}
+		output.write(line);
 	    } catch (UnsupportedEncodingException ex1) {
 		throw new RuntimeException("Unsupported server encoding: " + ex1.getMessage());
 	    }
