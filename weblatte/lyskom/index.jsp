@@ -40,7 +40,7 @@
 	    session.setAttribute("lyskom.suspended", suspendedSessions);
 	}
 	synchronized (suspendedSessions) {
-	    lyskom.doChangeWhatIAmDoing("Pausar Weblatte");
+	    lyskom.changeWhatIAmDoing("Pausar Weblatte");
 	    lyskomWrapper.setSuspended(true);
 	    suspendedSessions.add(lyskomWrapper);
 	}
@@ -130,10 +130,10 @@
 		    if (parameters.containsKey("mini"))
 			lyskom.setAttribute("weblatte.minimalistic", Boolean.TRUE);
 		    lyskom.setLatteName("Weblatte");
-		    lyskom.setClientVersion("Weblatte", "$Revision: 1.64 $".
+		    lyskom.setClientVersion("Weblatte", "$Revision: 1.65 $".
       					    replaceAll("\\$" + "Revision: (.*) " + "\\$", "$1") + 
 					    (Debug.ENABLED ? " (devel)" : ""));
-		    lyskom.doChangeWhatIAmDoing("kör web-latte");
+		    lyskom.changeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
 		error = "Namnet du angav (\"" + htmlize(parameter(parameters, "lyskomNamn")) + "\") " +
@@ -1217,7 +1217,7 @@
 	    int maxTextsToShow = preferences.getInt("show-multiple-texts");
 	    nextUnreadText = -1;	    
 
-	    lyskom.doChangeWhatIAmDoing("Läser");
+	    lyskom.changeWhatIAmDoing("Läser");
 	    if (Debug.ENABLED) Debug.println("*** review-list: " + reviewList);
 
 	    int textsAdded = 0;
@@ -1480,7 +1480,7 @@
 	out.println("</table></p>");
     }
     if (parameter(parameters, "comment") != null && textNumber > 0) {
-	lyskom.doChangeWhatIAmDoing("Skriver en kommentar");
+	lyskom.changeWhatIAmDoing("Skriver en kommentar");
 	Text commented = lyskom.getText(textNumber);
 	String ccharset = commented.getCharset();
 	if (ccharset.equals("us-ascii")) ccharset = "iso-8859-1";
@@ -1509,14 +1509,23 @@
 		var interval = <%= interval %>*1000;
 		var timeLeft = interval;
 	        var refreshInProgress = false;
+	        var countdownAborted = false;
+		var ivref;
 		function countdown() {
+		    var div = document.getElementById("countdown");
+	            if (countdownAborted) {
+	                if (div != null) {
+			    div.innerHTML = "<span class=\"countdown\">(avbruten)</span>";
+			}
+			return;
+	            }
 		    timeLeft -= 1000;
 		    var s = timeLeft / 1000;
-		    var div = document.getElementById("countdown");
 		    if (div != null && timeLeft > 0) {
 			div.innerHTML = "<span class=\"countdown\">(uppdaterar om " + s + 
 			    (s > 1 ? " sekunder" : " sekund") + ")</span>";
-		    } else if (div != null) {
+	                
+		    } else if (div != null && !countdownAborted) {
 			if (!refreshInProgress) {
 	                    div.innerHTML = "<span class=\"countdown\">(uppdaterar...)</span>";
 	                    refresh();
@@ -1527,7 +1536,15 @@
 	            refreshInProgress = true;
 		    document.location.href = "<%=basePath%>?listnews&saveMessages&autoRefresh";
 		}
-		var ivref = window.setInterval(countdown, 1000);
+	        function abortCountdown() {
+		    countdownAborted = true;
+		    window.clearInterval(ivref);
+		    countdown();
+		}
+		function startCountdown() {
+		    ivref = window.setInterval(countdown, 1000);
+		}
+		startCountdown();
 	    </script>
 
 <%		} 
@@ -1720,7 +1737,7 @@
     <input type="text" size="40" name="sendToName" value="<%=lastReceivedOrSent!=null?lastReceivedOrSent:""%>">
 <br/>
     Text:<br/>
-    <input type="text" name="sendText" size="60"><input type="submit" value="ok">
+    <input onFocus="abortCountdown();" onChange="abortCountdown();" type="text" name="sendText" size="60"><input type="submit" value="ok">
     </form>
 <%
 	    }
@@ -1841,7 +1858,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.64 $
+$Revision: 1.65 $
 </p>
 </body>
 </html>
