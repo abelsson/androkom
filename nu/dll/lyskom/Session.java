@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.82 2004/06/28 23:49:25 pajp Exp $
+ * @version $Id: Session.java,v 1.83 2004/06/29 00:28:56 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -301,7 +301,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	textCache.clear();
 	textStatCache.clear();
 	membershipCache.clear();
-	unreads.clear();
+	synchronized (unreads) {
+	    unreads.clear();
+	}
 	conferenceCache.clear();
 	sessionCache.clear();
 	personCache.clear();
@@ -2012,8 +2014,12 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	if (ms != null) {
 	    ms.setLastTextRead(lastRead);
 	}
-	if (unreads != null && !unreads.contains(new Integer(confNo))) {
-	    if (lastRead < highest) unreads.add(new Integer(confNo));
+	if (unreads != null) {
+	    synchronized (unreads) {
+		if (!unreads.contains(new Integer(confNo))) {
+		    if (lastRead < highest) unreads.add(new Integer(confNo));
+		}
+	    }
 	}
 	readTexts.clear();
     }
@@ -2921,7 +2927,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 			  " (" + c.getParameterCount() + " parameters)");
 	}
 	if (connection == null) {
-	    throw new IOException("Connection has gone tjockis.");
+	    throw new IOException("Connection has gone away (see SF bug ID 973278).");
 	}
 	connection.queuedWrite(c.toNetwork());
 	return c; 
@@ -3238,11 +3244,14 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    }
 		}
 		try {
-		    if (unreads != null &&
-			!unreads.contains(recipientObj) &&
-			!readTexts.contains(textStat.getNo()) &&
-			isMemberOf(recipient, false)) {
-			unreads.add(recipientObj);
+		    if (unreads != null) {
+			synchronized (unreads) {
+			    if (!unreads.contains(recipientObj) &&
+				!readTexts.contains(textStat.getNo()) &&
+				isMemberOf(recipient, false)) {
+				unreads.add(recipientObj);
+			    }
+			}
 		    }
 		} catch (IOException ex1) {}
 	    }
@@ -3264,9 +3273,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	Integer textNoObj = new Integer(textNo);
 	if (!readTexts.contains(textNo)) {
 	    try {
-		if (unreads != null && !unreads.contains(new Integer(confNo))
-		    && isMemberOf(confNo, false)) {
-		    unreads.add(new Integer(confNo));
+		if (unreads != null) {
+		    synchronized (unreads) {
+			if (!unreads.contains(new Integer(confNo))
+			    && isMemberOf(confNo, false)) {
+			    unreads.add(new Integer(confNo));
+			}
+		    }
 		}
 	    } catch (IOException ex1) {}
 	}
