@@ -3,7 +3,7 @@
 <%@ page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8' 
     isErrorPage='true' %>
 <%@ include file='kom.jsp' %>
-<% exception.printStackTrace() %>
+<% exception.printStackTrace(); %>
 <!DOCTYPE HTML PUBLIC "-//W3C//DTD HTML 4.01 Transitional//EN">
 <html>
   <head>
