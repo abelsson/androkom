@@ -4,6 +4,9 @@ import java.io.OutputStream;
 import java.io.UnsupportedEncodingException;
 
 
+/**
+ * $Revision: 1.3 $
+ */
 class LogOutputStream extends OutputStream {
     Console target = null;
     String encoding = "iso-8859-1";
