@@ -90,8 +90,8 @@
 	Conference c = lyskom.getConfStat(conf.intValue());
 	if (c.getType().letterbox()) continue;
 	
-	out.print("<tr " + (pyjamas ? "class=\"pyjamas\"" : "") + "><td><b>" + lookupName(lyskom, conf.intValue(), true));
-	out.print("</b> (" + texts.size() + (texts.size() == 1 ? " text" : " texter") + ")<br>");
+	out.print("<tr " + (pyjamas ? "class=\"pyjamas\"" : "") + "><td>" + lookupName(lyskom, conf.intValue(), true));
+	out.print(" (" + texts.size() + (texts.size() == 1 ? " text" : " texter") + ")<br>");
 	Text text = lyskom.getText(((Integer) texts.get(0)).intValue(), false, true);
 	out.println("Senaste inlägg: " + textLink(request, lyskom, text.getNo()) +
 		    "<br>Ärende: " + htmlize(text.getSubjectString()) + "<br>");
