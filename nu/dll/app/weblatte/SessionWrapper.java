@@ -3,12 +3,7 @@ package nu.dll.app.weblatte;
 import java.io.IOException;
 import javax.servlet.http.HttpSessionBindingListener;
 import javax.servlet.http.HttpSessionBindingEvent;
-import nu.dll.lyskom.Session;
-import nu.dll.lyskom.Debug;
-import nu.dll.lyskom.RpcFailure;
-import nu.dll.lyskom.AsynchMessageReceiver;
-import nu.dll.lyskom.AsynchMessage;
-import nu.dll.lyskom.Asynch;
+import nu.dll.lyskom.*;
 
 public class SessionWrapper implements HttpSessionBindingListener {
     Session lyskom;
@@ -29,7 +24,22 @@ public class SessionWrapper implements HttpSessionBindingListener {
 			    lyskom.invokeLater(new Runnable() {
 				    public void run() {
 					try {
-					    lyskom.updateUnreads();
+					    KomPreferences prefs =
+						(KomPreferences)
+						lyskom.getAttribute("weblatte.preferences.weblatte");
+					    
+					    if (prefs == null) {
+						UserArea ua = lyskom.getUserArea();
+						Hollerith data = ua.getBlock("weblatte");
+					        prefs = new KomPreferences(new HollerithMap(data),
+									   "weblatte");
+					    }
+					    if (prefs.getBoolean("many-memberships")) {
+						lyskom.getUnreadConfsList(lyskom.getMyPerson().
+									  getNo());
+					    } else {
+						lyskom.updateUnreads();
+					    }
 					    lyskom.setAttribute("mbInited", Boolean.TRUE);
 					} catch (IOException ex1) {
 					    Debug.println("I/O error: " + ex1);
