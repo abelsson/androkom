@@ -164,13 +164,13 @@
 	session.setAttribute("weblatte.tree." + treeId, textsToView);
 
 	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
-	String link = basePath + "?popupComment&hw&hs&treeId=" + treeId;
+	String link = basePath + "?popupComment&tv&hw&hs&treeId=" + treeId;
 	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
 		link + "#text" + firstText + "\";selectText(" + firstText + ");</script>");
     } else if (reviewTree == 0) {
-		Iterator confIter = new LinkedList(lyskom.getUnreadConfsListCached()).iterator();
+		Iterator confIter = new LinkedList(lyskom.getUnreadConfsList(me)).iterator();
 		int sum = 0, confsum = 0;
 		boolean abort = false;
 		int skipTo = 0;
@@ -270,7 +270,7 @@
 	int firstText = textsToView.size() > 0 ? ((Integer) textsToView.get(0)).intValue() : 0;
         String treeId = Integer.toHexString(rnd.nextInt());
 	session.setAttribute("weblatte.tree." + treeId, textsToView);
-	String link = basePath + "?popupComment&hw&hs&treeId=" + treeId;
+	String link = basePath + "?popupComment&tv&hw&hs&treeId=" + treeId;
 	String html = treeHtml.toString().replaceAll("¤LINK¤", link);
 	out.println(html);
 	out.println("<script language=\"JavaScript1.2\">parent.textViewFrame.document.location = \"" +
