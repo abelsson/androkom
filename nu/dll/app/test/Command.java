@@ -5,6 +5,7 @@ import nu.dll.lyskom.CmdErrException;
 import java.io.IOException;
 
 interface Command {
+    public static int UNHANDLED = 0;
     public static int OK = 1;
     public static int ERROR = 2;
     public static int USER_1 = 11;

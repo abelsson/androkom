@@ -446,6 +446,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	commands = new CommandMap(foo, this);
 	commands.addCommand(ConfCommands.class);
 	commands.addCommand(TextCommands.class);
+	commands.addCommand(IntCommands.class);
     }
 
     public String getServerString() {
@@ -797,7 +798,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    throw new CmdErrException("Flertydigt kommando.");
 	} else if (lookedUp.length == 1) {
 	    Command command = commands.getCommand(lookedUp[0].command);
-	    consoleWriteLn(lookedUp[0].command + " - " + command.getCommandDescription(lookedUp[0].command));
+	    consoleWriteLn(lookedUp[0].command);
 	    String cmd = lookedUp[0].command;
 	    String parameters = command.getParameters(lookedUp[0], s);
 	    return command.doCommand(cmd, parameters);
@@ -935,29 +936,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
 	}
 	if (cmd.equals("s")) { // sända meddelande
-	    int confNo = 0;
-	    try {
-		confNo = parseNameArgs(st.nextToken("").substring(1), true, true);
-	    } catch (NoSuchElementException ex1) {
-		if (!crtReadLine("Vill du skicka ett alarmmeddelande? (j/N) ").equals("j")) return 1;
-	    }
-	    if (confNo > 0) {
-		consoleWriteLn("Skicka meddelande till " + confNoToName(confNo));
-	    } else if (confNo == -1) {
-		return 1;
-	    }
-	    String message = crtReadLine("Text att skicka> ");
-	    if (message == null || message.trim().equals("")) {
-		consoleWriteLn("Avbruten");
-	    }
-	    try {
-		foo.sendMessage(confNo, message);
-		if (confNo == 0) consoleWriteLn("Ditt alarmmeddelande har skickats.");
-		else consoleWriteLn("Ditt meddelande har skickats till " + confNoToName(confNo));
-	    } catch (RpcFailure ex1) {
-		consoleWriteLn("Det gick inte att skicka meddelandet. Felkod: " + ex1.getError());
-	    }
-	    return 1;
+
 	}
 	if (cmd.equals("q") || cmd.equals(".")) return -1; // avsluta
 	throw(new CmdErrException("Förstod inte \"" + cmd + "\""));

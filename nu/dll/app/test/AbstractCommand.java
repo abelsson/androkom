@@ -38,11 +38,18 @@ abstract class AbstractCommand implements Command {
 	return getCommandDescriptions()[i];
     }
     public String getCommandDescription(String command) {
-	for (int i=0; i < commands.length; i++) {
-	    if (command.equals(commands[i])) return getCommandDescription(i);
-	}
-	return null;
+	return getCommandDescription(getCommandIndex(command));
     }
+
+    int getCommandIndex(String command) {
+	String[] commands = getCommands();
+	for (int i=0; i < commands.length; i++) {
+	    if (commands[i].equals(command)) return i; // commandIndices[i];
+	}
+	return -1;
+    }
+
+
 
     public abstract String[] getCommandDescriptions();    
     public String getDescription() {

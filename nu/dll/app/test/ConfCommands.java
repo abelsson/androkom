@@ -44,7 +44,6 @@ public class ConfCommands extends AbstractCommand {
 	return myDescriptions[commandIndices[i]];
     }
 
-
     int getCommandIndex(String command) {
 	String[] commands = getCommands();
 	for (int i=0; i < commands.length; i++) {
