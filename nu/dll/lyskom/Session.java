@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.32 2004/03/27 21:20:32 pajp Exp $
+ * @version $Id: Session.java,v 1.33 2004/03/28 16:31:42 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -290,6 +290,18 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
  	for (Enumeration e = rpcEventListeners.elements();
 	     e.hasMoreElements();)
 	    ((RpcEventListener) e.nextElement()).rpcEvent(ev);
+    }
+
+    public RpcCall doDisconnect(int sessionNo, boolean discardReply)
+    throws IOException {
+	return writeRpcCall(new RpcCall(count(), Rpc.C_disconnect).
+			    add(new KomToken(sessionNo)), !discardReply);
+    }
+
+    public void disconnect(int sessionNo)
+    throws IOException, RpcFailure {
+	RpcReply reply = waitFor(doDisconnect(sessionNo, false));
+	if (!reply.getSuccess()) throw reply.getException();
     }
 
     /**
@@ -1056,7 +1068,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public  TextMapping localToGlobal(int confNo, int firstLocalNo,
 						  int noOfExistingTexts)
-    throws IOException {
+    throws IOException, RpcFailure {
+	if (firstLocalNo == 0)
+	    throw new IllegalArgumentException("First local text number cannot be zero.");
 	TextMapping m;
 	if (membershipCache.contains(confNo)) {
 	    Membership membership = membershipCache.get(confNo);
@@ -1078,6 +1092,9 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    existingTextsLeft = noOfExistingTexts - offset;
 	    RpcReply r = waitFor(doLocalToGlobal(confNo, firstLocalNo+offset,
 						 ((existingTextsLeft > 255) ? 255 : existingTextsLeft)).getId());
+	    if (!r.getSuccess()) throw new RpcFailure(r, "in localToGloal(" + confNo + 
+						      ", " + firstLocalNo + ", " + noOfExistingTexts + ")");
+
 	    m.update(0, r.getParameters(), false);
 	    offset += 255; 
 	} while ((noOfExistingTexts - offset) > 0);
@@ -1847,11 +1864,26 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Sends the RPC call user-active to the server.
      *
+     * This method does not store the RpcCall for user with a later
+     * call to waitFor(), since the call is always expected to succeed.
+     *
      * @return An RpcCall object representing this specific RPC call
      */
     public RpcCall doUserActive()
     throws IOException {
 	return writeRpcCall(new RpcCall(count(), Rpc.C_user_active), false);
+    }
+
+    public RpcCall doWhoAmI()
+    throws IOException {
+	return writeRpcCall(new RpcCall(count(), Rpc.C_who_am_i), true);
+    }
+
+    public int whoAmI()
+    throws IOException, RpcFailure {
+	RpcReply r = waitFor(doWhoAmI());
+	if (!r.getSuccess()) throw r.getException();
+	return r.getParameters()[0].toInteger();
     }
 
     /**

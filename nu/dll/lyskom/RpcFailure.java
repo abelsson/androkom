@@ -62,7 +62,8 @@ public class RpcFailure extends RuntimeException {
      * Returns a string containing the error code and status.
      */ 
     public String getMessage() {
-	return "RPC error " + errorCode + ", status " + errorStatus;
+	return "RPC error " + errorCode + ", status " + errorStatus + 
+	    ", message: " + super.getMessage();
     }
     
 

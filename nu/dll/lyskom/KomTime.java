@@ -50,7 +50,7 @@ public class KomTime implements Serializable {
 		    int year, int weekday, int yearday, int isdst) {
 	this.seconds = sec;
 	this.minutes = min;
-	this.hours = hours;
+	this.hours = hours-isdst;
 	this.mday = mday;
 	this.month = month;
 	this.year = year;
@@ -88,6 +88,7 @@ public class KomTime implements Serializable {
 	cal.set(Calendar.MINUTE, minutes);
 	cal.set(Calendar.SECOND, seconds);
 	cal.set(Calendar.MILLISECOND, 0);
+	cal.set(Calendar.DST_OFFSET, isdst);
 	return cal.getTime();
     }
 

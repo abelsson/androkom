@@ -58,7 +58,11 @@ public class RpcReply {
      * Returns a string containing information about this object.
      */
     public String toString() {
-	return "RpcReply(id: "+id+"; OK: "+good+"; parameters: "+parameters.length+")";
+	StringBuffer buf = new StringBuffer();
+	if (parameters != null)
+	    for (int i=0; i < parameters.length; i++)
+		buf.append(parameters[i]).append(" ");
+	return "RpcReply(id: "+id+"; OK: "+good+"; " + parameters.length + " parameters: "+buf.toString() + ")";
     }
 
 }

@@ -101,6 +101,11 @@ public class TextMapping implements Enumeration {
     public void update(int offset, KomToken[] tk, boolean keepZeroes) {
 	int rangeBegin = tk[offset++].toInteger();
 	int rangeEnd = tk[offset++].toInteger();
+	if (offset >= tk.length) {
+	    StringBuffer buf = new StringBuffer();
+	    for (int i=0; i < tk.length; i++) buf.append(tk[i].toString()).append(" ");
+	    throw new RuntimeException("offset > " + tk.length + ", data: " + buf.toString());
+	}
 	boolean laterTextsExists = (tk[offset++].toInteger() == 1 ?
 				    true : false);
 
