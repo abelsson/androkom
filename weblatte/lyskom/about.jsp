@@ -119,17 +119,19 @@
     </p>
     <h3>Många olästa möten</h3>
     <p>
-      Om du är medlem i många möten där du har olästa inlägg (fler än 
-      200), så kommer Weblatte automatiskt aktivera en funktion som
+      Om du är medlem i många möten där du har olästa inlägg (fler än
+      50), så kommer Weblatte automatiskt aktivera en funktion som
       heter "många möten". Den innebär i korthet att Weblatte inte
       frågar LysKOM-servern om information om alla olästa möten vid
       inloggning, utan istället gör det först när du ska läsa i ett
-      möte, samt att nyhetslistan begränsas till att visa fem möten
-      åt gången. När du har mindre än 200 olästa möten så kan du
+      möte, samt att nyhetslistan begränsas till att visa fem möten åt
+      gången. När du har mindre än 50 olästa möten så kan du
       deaktivera funktionen under "Inställningar". Du kan givetvis
       aktivera "många möten" även om du inte har fler än 200 olästa
       möten, om du föredrar den snabbare inloggningen som funktionen
-      ger.
+      ger. Du kan justera gränsen för när "många möten" skall
+      aktiveras genom inställningen "Max antal olästa möten innan
+      'många möten' aktiveras automatiskt".
     </p>
     <h3>Om internationell teckenkodning</h3>
     <p>
@@ -210,7 +212,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.12 $
+      $Revision: 1.13 $
     </p>
   </body>
 </html>
