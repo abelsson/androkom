@@ -1,0 +1,48 @@
+<!-- $Id -->
+
+<project default="all">
+  <property name="src" location="."/>
+  <property name="build" location="build"/>
+  <property name="javadoc" location="javadocs"/>
+  <property name="manifests" location="manifests"/>
+  <property name="lattekom.build" location="${build}/lattekom"/>
+  <property name="swingkom.build" location="${build}/swingkom"/>
+
+  <target name="init">
+    <tstamp/>
+    <mkdir dir="${javadoc}"/>
+    <mkdir dir="${lattekom.build}"/>
+    <mkdir dir="${swingkom.build}"/>
+  </target>
+
+  <target name="lattekom.compile" depends="init">
+    <javac destdir="${build}" srcdir="${src}"
+           includes="nu/dll/lyskom/*"/>
+  </target>
+
+  <target name="clean">
+    <delete dir="${build}"/>
+  </target>
+
+  <target name="lattekom.jar" depends="lattekom.compile">
+    <jar destfile="lattekom.jar" basedir="${build}"/>
+  </target>
+
+  <target name="all" depends="clean,lattekom.jar,swingkom.jar"/>
+
+  <target name="javadoc">
+    <javadoc sourcepath="${src}" destdir="${javadoc}"
+             packagenames="nu.dll.lyskom"/>
+  </target>
+
+  <target name="swingkom.compile" depends="init">
+    <javac destdir="${swingkom.build}" srcdir="${src}"
+           includes="nu/dll/app/swingkom/*" classpath="lattekom.jar"/>
+  </target>
+
+  <target name="swingkom.jar" depends="swingkom.compile">
+    <jar destfile="swingkom.jar" basedir="${swingkom.build}"
+         manifest="${manifests}/swing-manifest"/>
+  </target>
+
+</project>
