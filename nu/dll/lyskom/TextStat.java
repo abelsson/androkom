@@ -407,21 +407,7 @@ public class TextStat implements java.io.Serializable {
      * and the value <tt>value</tt>.
      */
     public void addMiscInfoEntry(int key, int value) {
-	Iterator i = miscInfo.iterator();
-	/*
-	while (i.hasNext()) {
-	    Selection selection = (Selection) i.next();
-	    if (selection.contains(key)) {
-		selection.add(key, new Integer(value));
-		Debug.println("adding key " + key + ", value " + value + " to selection " + selection);
-		return;
-	    }
-	    }*/
-	Selection selection = new Selection(TextStat.MISC_INFO_COUNT);
-	Debug.println("adding key " + key + ", value " + value + " to new selection " + selection);
-	new Exception().printStackTrace();
-	selection.add(key, new Integer(value));	
-	miscInfo.add(selection);
+	miscInfo.add(new Selection().add(key, new Integer(value)));
     }
 
     /**
@@ -536,6 +522,8 @@ public class TextStat implements java.io.Serializable {
 		rcpt = selection.getIntValue(TextStat.miscRecpt);
 	    if (selection.contains(TextStat.miscCcRecpt))
 		rcpt = selection.getIntValue(TextStat.miscCcRecpt);
+	    if (selection.contains(TextStat.miscBccRecpt))
+		rcpt = selection.getIntValue(TextStat.miscBccRecpt);
 
 	    if (rcpt == confNo) {
 		int no = selection.getIntValue(TextStat.miscLocNo);
@@ -605,18 +593,13 @@ public class TextStat implements java.io.Serializable {
 	    case 5: // footnote-in
 	    case 15: // bcc-recipient
 		lastMajorSelectionId = selectionId;
-		Debug.println("new misc-info selection group: " + selectionId);
-		selection = new Selection(MISC_INFO_COUNT);
+		selection = new Selection();
 		miscInfo.add(selection);
 
 	    case 6: // loc-no                  ! Lokalt textnummer
 	    case 8: // sent-by
 		int value = miscInfoTokens[mcount++].intValue();
-		Debug.println("adding key " + selectionId + ", value " + value + " to misc-info group " + lastMajorSelectionId);
-		selection.add(selectionId, new Integer(value));
-		//miscInfo.add(selectionId,
-		//     (Object) new Integer(miscInfoTokens[mcount++].
-		//			  toInteger()));
+		selection.add(selectionId, value);
 		break;
 		
 		/* items to be stored as KomTime */
@@ -632,7 +615,7 @@ public class TextStat implements java.io.Serializable {
 					  miscInfoTokens[mcount++].intValue(),
 					  miscInfoTokens[mcount++].intValue()
 					  );
-		selection.add(selectionId, (Object) stm);
+		selection.add(selectionId, stm);
 		break;
 	    default:
 		break;
