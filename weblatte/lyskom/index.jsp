@@ -78,17 +78,10 @@
 				  request.getParameter("lyskomDold") != null, false)) {
 		    error = "Felaktigt lösenord!";
 		} else {
-		    if (names != null) {
-			session.setAttribute("lyskomPersonNo", new Integer(names[0].getNo()));
-			session.setAttribute("lyskomPassword", request.getParameter("lyskomLosen"));
-			session.setAttribute("lyskomPerson", lyskom.getMyPerson());
-                        justLoggedIn = true;
-		    }
-		    session.setAttribute("lyskomName",
-					 new String(lyskom.getConfName(lyskom.getMyPerson().getNo())));
 		    session.setAttribute("lyskom", lyskom);
 		    authenticated = Boolean.TRUE;
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.8 $");
+                    justLoggedIn = true;
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.9 $");
 		    lyskom.changeWhatIAmDoing("kör web-latte");
 		}
 	    } else if (names != null && names.length == 0) {
@@ -116,10 +109,18 @@
         if (authenticated.booleanValue()) {
 	    String gotoURL = (String) session.getAttribute("goto");
     	    if (gotoURL != null) {
+		if (justLoggedIn) {
+		    if (gotoURL.indexOf("?") == -1) {
+			gotoURL = gotoURL + "?jul";
+		    } else {
+			gotoURL = gotoURL + "&jul";
+		    }
+		}
 	        session.removeAttribute("goto");
 	        response.sendRedirect(gotoURL);
 	        return;
             }
+	    justLoggedIn = request.getParameter("jul") != null;
         }
     } catch (IllegalStateException ex1) {}
     List messages = null;
@@ -947,9 +948,8 @@
 %>
 <%
 
-	boolean listNews = request.getParameter("listnews") != null ||
+	    boolean listNews = request.getParameter("listnews") != null ||
 	        (justLoggedIn && commonPreferences.getBoolean("print-number-of-unread-on-entrance"));
-	
 	    if (listNews) {
 		if (preferences.getBoolean("auto-refresh-news") &&
 		    (request.getHeader("User-Agent").indexOf("MSIE") >= 0 ||
@@ -1194,7 +1194,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.8 2004/04/22 02:03:05 pajp Exp $
+$Id: index.jsp,v 1.9 2004/04/22 02:17:18 pajp Exp $
 </p>
 </body>
 </html>
