@@ -33,7 +33,6 @@
 	    if (ex1.getError() == Rpc.E_no_such_text) {
 		out.println("<p class=\"statusError\">Fel: text " + 
 		    textNumber + " finns inte.</p>");
-		out.println("</p>");
 		return;
 	    }
 	}
