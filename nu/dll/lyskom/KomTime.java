@@ -1,4 +1,4 @@
-/**! -*- Mode: Java; c-basic-offset: 4 -*-
+ /**! -*- Mode: Java; c-basic-offset: 4 -*-
  *
  * Copyright (c) 1999 by Rasmus Sten <rasmus@sno.pp.se>
  *
@@ -71,7 +71,7 @@ public class KomTime implements Serializable {
 	this.month   = cal.get(Calendar.MONTH);
 	this.year    = cal.get(Calendar.YEAR)-1900;
 	this.weekday = cal.get(Calendar.DAY_OF_WEEK);
-	this.yearday = cal.get(Calendar.DAY_OF_YEAR);
+	this.yearday = cal.get(Calendar.DAY_OF_YEAR)-1; // LysKOM Time yearday starts with zero
 	this.isdst   = cal.get(Calendar.DST_OFFSET); // protocol violation if > 1 and < 0, I think	    
     }
 
@@ -83,7 +83,7 @@ public class KomTime implements Serializable {
 	Calendar cal = new GregorianCalendar();
 	cal.set(Calendar.DST_OFFSET, isdst*60*1000);
 	cal.set(Calendar.YEAR, year+1900);
-	cal.set(Calendar.DAY_OF_YEAR, yearday);
+	cal.set(Calendar.DAY_OF_YEAR, yearday+1); // LysKOM Time yearday starts with zero
 	cal.set(Calendar.HOUR_OF_DAY, hours);
 	cal.set(Calendar.MINUTE, minutes);
 	cal.set(Calendar.SECOND, seconds);

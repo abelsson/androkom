@@ -17,6 +17,9 @@ import java.util.Random;
 import java.text.SimpleDateFormat;
 import java.text.MessageFormat;
 
+import java.util.Calendar;
+import java.util.GregorianCalendar;
+
 import java.awt.event.WindowAdapter;
 import java.awt.event.WindowEvent;
 import java.awt.event.WindowListener;
@@ -72,9 +75,23 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 
     String server = System.getProperty("lyskom.server");
 
+    Locale locale = new Locale("sv", "se");  // language and location
+
+    SimpleDateFormat fullTimeFormat = new SimpleDateFormat("EEEE d MMMM yyyy k:mm", locale);
+    SimpleDateFormat timestampFormat = fullTimeFormat;
+    SimpleDateFormat thisYearTimeFormat = new SimpleDateFormat("EEEE d MMMM k:mm", locale);
+    SimpleDateFormat yesterdayTimeFormat = new SimpleDateFormat("'igår' HH:mm", locale);
+    SimpleDateFormat todayTimeFormat = new SimpleDateFormat("'idag' HH:mm", locale);
+
+
+
     GuiInput guiInput = null;
     Console console = null;
     JFrame consoleFrame = null;
+
+    String lastWhatIAmDoing = "";
+
+    Text lastSavedText = null;
 
     static {
 	if (encoding == null) {
@@ -83,7 +100,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	}
     }
 
-    String lastWhatIAmDoing = "";
     public void setStatus(String s) 
     throws IOException {
 	if (fixedWhatIAmDoing == null && !lastWhatIAmDoing.equals(s)) {
@@ -102,6 +118,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    
     }
 
+    public Text getLastText() {
+	return lastText;	
+    }
+
+    public Text getLastSavedText() {
+	return lastSavedText;
+    }
 
     public String confNoToName(String n)
 	throws IOException {
@@ -183,9 +206,28 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	return foo.toString();
     }
 
+    public String komTimeFormat(Date d) {
+	Calendar now = new GregorianCalendar(locale);
+	Calendar then = new GregorianCalendar(locale);
+	Debug.println("then YEAR: " + then.get(Calendar.YEAR));
+	Debug.println("then DAY_OF_YEAR: " + then.get(Calendar.DAY_OF_YEAR));
+
+	then.setTime(d);
+	if (now.get(Calendar.YEAR) == then.get(Calendar.YEAR)) {
+	    if (now.get(Calendar.DAY_OF_YEAR) == then.get(Calendar.DAY_OF_YEAR)) { // today
+		return todayTimeFormat.format(d);
+	    }
+	    Calendar yesterday = (Calendar) now.clone();
+	    yesterday.add(Calendar.DAY_OF_YEAR, -1);
+	    if (then.get(Calendar.DAY_OF_YEAR) == yesterday.get(Calendar.DAY_OF_YEAR)) { // yesterday, fails day after new year's eve
+		return yesterdayTimeFormat.format(d);
+	    }
+	    return thisYearTimeFormat.format(d);
+	}
+	return fullTimeFormat.format(d);
+    }
+
     boolean serverSynch = false;
-    Locale locale = new Locale("sv", "se");  // language and location
-    SimpleDateFormat timestampFormat = new SimpleDateFormat("EEEE d MMMM kk:mm", new Locale("sv", "se"));
     void handleMessages() {
 	while (messages.size() > 0) {
 	    AsynchMessage m = null;
@@ -222,13 +264,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		consoleWriteLn("++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++");
 		if (params[0].intValue() == foo.getMyPerson().getNo()) {
 		    consoleWriteLn("Personligt meddelande från " + sender + 
-				   " (" + timestampFormat.format(m.getArrivalTime()) + "):");
+				   " (" + komTimeFormat(m.getArrivalTime()) + "):");
 		} else if (params[0].intValue() == 0) {
-		    consoleWriteLn("Alarmmeddelande från " + sender + " (" + timestampFormat.format(m.getArrivalTime()) + "):");
+		    consoleWriteLn("Alarmmeddelande från " + sender + " (" + komTimeFormat(m.getArrivalTime()) + "):");
 		} else {
 		    consoleWriteLn("Meddelande till " + recipient);
 		    consoleWriteLn("från " + sender +
-				   " (" + timestampFormat.format(m.getArrivalTime()) + "):");
+				   " (" + komTimeFormat(m.getArrivalTime()) + "):");
 		}
 		consoleWriteLn("\n" + ((Hollerith) params[2]).getContentString());
 		consoleWriteLn("----------------------------------------------------------------");
@@ -236,7 +278,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    case Asynch.login:
 		try {
 		    consoleWriteLn(confNoToName(params[0].intValue()) + " loggade in i LysKOM (" +
-				   timestampFormat.format(m.getArrivalTime()) + ")");
+				   komTimeFormat(m.getArrivalTime()) + ")");
 
 		} catch (IOException ex) {
 		    System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
@@ -245,7 +287,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    case Asynch.logout:
 		try {
 		    consoleWriteLn(confNoToName(params[0].intValue()) + " loggade ut ur LysKOM (" +
-				   timestampFormat.format(m.getArrivalTime()) + ")");
+				   komTimeFormat(m.getArrivalTime()) + ")");
 
 		} catch (IOException ex) {
 		    System.err.println("Det gick inte att utföra get-conf-name: " + ex.getMessage());
@@ -316,12 +358,18 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	consoleWriteLn("   -gui                   Aktivera GUI-konsoll");
     }
 
+    CommandMap commands = null;
+    public void initCommands() {
+	commands = new CommandMap(foo, this);
+	commands.addCommand(ConfCommands.class);
+    }
+
     public void run() {
 	Debug.println("line separator: \"" + lineSeparator + "\"");
 	try {
 	    while (server == null) {
 		server = crtReadLine("Vilken server vill du ansluta till? ");
-		if (server == null) { // user might have pressed ^D, or we're lacking a stdin stream
+		if (server == null) { // user might have pressed ^D, or stdin == /dev/null
 		    consoleWriteLn("\nDet verkar vara problem med att läsa från stdin. Det kan hända att\n" +
 				   "Javamiljön för denna applikation inte har någon inmatningsterminal.\n" +
 				   "Om så är fallet, så bör en ny konsoll nu öppnas utav applikationen.\n" +
@@ -335,6 +383,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		}
 	    }
 	    foo = new Session();
+
+	    initCommands();
+
 	    foo.connect(server, 4894);
 	    consoleWriteLn("Ansluten till " + server);
 	    foo.addAsynchMessageReceiver(this);	    
@@ -451,7 +502,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 			    likesAsynchMessages = true;
 			    String myCmd = crtReadLine(genericPrompt());
 			    likesAsynchMessages = false;
-			    rc = doCommand(lastText, myCmd);
+			    rc = doCommand(myCmd);
 			} catch (CmdErrException ex) {
 			    consoleWriteLn("%Fel: " + ex.getMessage());
 			    rc = 1;
@@ -492,7 +543,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    
 		    if (text != null) {
 			displayText(text, true); noRead++;
-
+			
 			lastTextNo = textNo;
 			lastText = text;
 		    } else {
@@ -588,12 +639,22 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
      * CmdErrException should not be in nu.dll.lyskom.
      *
      */
-    int doCommand(Text t, String s)
+    int doCommand(String s)
     throws CmdErrException, IOException {
+	Text t = getLastText();
 	if (s == null) return -1;
 	if (s.equals("")) return 0;
 	StringTokenizer st = new StringTokenizer(s);
 	String cmd = st.nextToken();
+	Command command = commands.getCommand(cmd);
+	if (command != null) {
+	    Debug.println("Executing command " + command.toString());
+	    String parameters = null;
+	    try {
+		parameters = st.nextToken("").substring(1);
+	    } catch (NoSuchElementException ex1) {}
+	    return command.doCommand(cmd, parameters);
+	}
 	if (cmd.equals("?")) {
 	    consoleWriteLn("-- kommandon\n" +
 			   "\tbn <mötesnamn>    -- byt namn\n" + 
@@ -641,72 +702,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    foo.writeRaw(rno, params);
 	    return 1;
 	    
-	}
-	if (cmd.equals("åf") || cmd.equals("}f")) { // återse FAQ
-	    int confNo = 0;
-	    try {
-		confNo = parseNameArgs(st.nextToken(), true, true);
-	    } catch (NoSuchElementException ex1) {
-		throw new CmdErrException("Du måste ange ett möte eller brevlåda");
-	    }
-	    if (confNo < 1) return 1;
-	    consoleWriteLn("Återse FAQ för möte " + confNoToName(confNo));
-	    AuxItem[] confAuxItems = foo.getConfStat(confNo).getAuxItems();
-	    for (int i=0; i < confAuxItems.length; i++) {
-		if (confAuxItems[i].getTag() == AuxItem.tagFaqText) {
-		    displayText(foo.getText(confAuxItems[i].getData().intValue()));
-		}
-	    }
-	    return 1;
-
-	}
-	if (cmd.equals("äf")) { // ändra FAQ
-	    int confNo = 0;
-	    try {
-		confNo = parseNameArgs(st.nextToken(), true, true);
-	    } catch (NoSuchElementException ex1) {
-		throw new CmdErrException("Du måste ange ett möte eller brevlåda");
-	    }
-	    if (confNo < 1) return 1;
-	    consoleWriteLn("Ändra FAQ för möte " + confNoToName(confNo));
-	    AuxItem[] confAuxItems = foo.getConfStat(confNo).getAuxItems();
-	    List oldFaqItems = new LinkedList();
-	    for (int i=0; i < confAuxItems.length; i++) {
-		if (confAuxItems[i].getTag() == AuxItem.tagFaqText)
-		    oldFaqItems.add(new Integer(confAuxItems[i].getNo()));
-	    }
-	    int[] oldFaqAux = new int[oldFaqItems.size()];
-	    for (int i=0; i < oldFaqAux.length; i++) oldFaqAux[i] = ((Integer) oldFaqItems.get(i)).intValue();
-
-	    String faqText = crtReadLine("Ange textnummer för FAQ> ");
-	    int faq;
-	    try {
-		faq = Integer.parseInt(faqText);
-	    } catch (NumberFormatException e) {
-		throw new CmdErrException("Felaktigt textnummer");
-	    }
-	    try {
-		foo.modifyAuxInfo(true, confNo, oldFaqAux,
-				  new AuxItem[] { new AuxItem(AuxItem.tagFaqText,
-							      new Bitstring("00000000"), 0,
-							      new Hollerith(""+faq)) });
-		consoleWriteLn("OK: FAQ satt till text " + faq);
-	    } catch (RpcFailure ex1) {
-		consoleWrite("%Fel: gick inte att ändra FAQ: ");
-		switch (ex1.getError()) {
-		case Rpc.E_aux_item_permission:
-		    consoleWriteLn("otillräcklig behörighet");
-		    break;
-		case Rpc.E_illegal_aux_item:
-		    consoleWriteLn("felaktigt aux-item");
-		    break;
-		default:
-		    consoleWriteLn("felkod " + ex1.getError());
-		}
-	    }
-
-
-	    return 1;
 	}
 	if (cmd.equals("å") || cmd.equals("}")) { // återse inlägg (å <txtno>)
 	    String txt = st.hasMoreTokens() ? st.nextToken() : null;
@@ -956,21 +951,6 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 	    } else consoleWriteLn("misslyckades att skapa inlägg.");
 	    return 1;
 	}		 
-	if (cmd.equals("åp") || cmd.equals("}p")) {
-	    if (!st.hasMoreElements()) throw new CmdErrException("Du måste ange ett möte eller en person");
-	    int confNo = parseNameArgs(st.nextToken(), true, true);
-	    if (confNo < 1) return 1;
-	    int presNo = foo.getConfStat(confNo).getPresentation();
-	    if (presNo < 1) {
-		throw new CmdErrException("Hittade ingen presentation för " + confNoToName(confNo));
-	    }
-	    
-	    Text presText = foo.getText(presNo);
-	    if (presText == null) throw new CmdErrException("Kunde inte hämta text " + presNo);
-	    displayText(presText);
-
-	    return 1;
-	}
 	if (cmd.equals("äp")) {
 	    int confNo = foo.getMyPerson().getNo();
 	    if (st.hasMoreTokens()) {
@@ -1019,7 +999,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		if (!ident.equals("unknown")) {
 		    consoleWriteLn(" Ident        : " + ident);
 		}
-		consoleWriteLn(" Starttid     : " + timestampFormat.format(si.getConnectionTime().getTime()));
+		consoleWriteLn(" Starttid     : " + komTimeFormat(si.getConnectionTime().getTime()));
 		String clientName = bytesToString(foo.getClientName(sessionNo));
 		String clientVersion = bytesToString(foo.getClientVersion(sessionNo));
 		if (!clientName.equals(""))
@@ -1154,7 +1134,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
 		    if (wantsChange.equals("j")) {
 			try {
 			    foo.joinConference(confNo);
-			    doCommand(t, "g m " + confNo);
+			    doCommand("g m " + confNo);
 			} catch (RpcFailure failed2) {
 			    consoleWrite("Det gick inte att gå med i mötet: ");
 			    switch (failed2.getError()) {
@@ -1524,7 +1504,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener {
         if (false) {
             saveText(text);   
         }
-	consoleWriteLn(text.getNo()+" " + timestampFormat.format(text.getCreationTime()) + " /" + text.getRows() + " " +
+	consoleWriteLn(text.getNo()+" " + komTimeFormat(text.getCreationTime()) + " /" + text.getRows() + " " +
 			   (text.getRows() > 1 ? "rader" : "rad") + "/ " +
 			   (text.getAuthor() > 0 ? confNoToName(text.getAuthor()) : "anonym person"));
 
