@@ -38,7 +38,12 @@ public class TextMapping implements Enumeration {
     Hashtable hash = new Hashtable();
     int enumc = 0;
     List list = new LinkedList();
+    boolean laterTextsExists;
     //int[] list;
+
+    public boolean laterTextsExists() {
+	return laterTextsExists;
+    }
 
     public int localToGlobal(int n) {
 	Integer i = (Integer) hash.get((Object) new Integer(n));
@@ -107,20 +112,20 @@ public class TextMapping implements Enumeration {
      * deleted)
      */
     public void update(int offset, KomToken[] tk, boolean keepZeroes) {
-	int rangeBegin = tk[offset++].toInteger();
-	int rangeEnd = tk[offset++].toInteger();
+	int rangeBegin = tk[offset++].intValue();
+	int rangeEnd = tk[offset++].intValue();
 	if (offset >= tk.length) {
 	    StringBuffer buf = new StringBuffer();
 	    for (int i=0; i < tk.length; i++) buf.append(tk[i].toString()).append(" ");
 	    throw new RuntimeException("offset > " + tk.length + ", data: " + buf.toString());
 	}
-	boolean laterTextsExists = (tk[offset++].toInteger() == 1 ?
-				    true : false);
+	laterTextsExists = (tk[offset++].intValue() == 1 ?
+			    true : false);
 
-	switch (tk[offset++].toInteger()) { // sparse/dense?
+	switch (tk[offset++].intValue()) { // sparse/dense?
 	case 0: // sparse -- local-global pairs
 	    if (DEBUG > 0) Debug.println("TextMapping.update(): sparse mode");
-	    int textNumberPairArrayLength = tk[offset++].toInteger();
+	    int textNumberPairArrayLength = tk[offset++].intValue();
 	    if (textNumberPairArrayLength == 0) { break; }
 	    if (hash == null)
 		hash = new Hashtable(textNumberPairArrayLength);
@@ -142,8 +147,8 @@ public class TextMapping implements Enumeration {
 	case 1: // dense
 	    if (DEBUG > 0)
 		Debug.println("TextMapping.update(): dense mode");
-	    int firstLocalNo = tk[offset++].toInteger();
-	    int arraySize = tk[offset++].toInteger();
+	    int firstLocalNo = tk[offset++].intValue();
+	    int arraySize = tk[offset++].intValue();
 	    int[] numbers = ((KomTokenArray) tk[offset++]).intValues();
 	    //list = new int[numbers.length];
 	    for (int i=0; i < numbers.length; i++) {
