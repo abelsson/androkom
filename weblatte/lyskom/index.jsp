@@ -233,14 +233,15 @@
     	}
     }
 %>
-<html><head>
+<html>
+<head>
 <% if (authenticated.booleanValue()) { %>
 <title>Weblatte: <%= serverShort(lyskom) %></title>
 <% } else { %>
 <title>Weblatte LysKOM-klient</title>
 <% } %>
+<link rel="stylesheet" href="lattekom.css">
 </head>
-<link rel="stylesheet" href="lattekom.css" />
 <body>
 <%
     if (error != null) {
@@ -1508,7 +1509,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.84 $
+$Revision: 1.85 $
 </div>
 </body>
 </html>
