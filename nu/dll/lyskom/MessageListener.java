@@ -196,7 +196,10 @@ implements Runnable {
 
 		try {
 		    session.connection.close();
-		} catch (IOException ex1) {}
+		}
+		catch (IOException ex1) {}
+		catch (NullPointerException ex2) {}
+	         
 
 		// sends a null to all receivers to notify about the disconnection
 		// this is not very clean, we should probably extend the interface

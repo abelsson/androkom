@@ -206,9 +206,6 @@ public class TextStat implements java.io.Serializable {
 	} else {
 	    auxItems[auxItemCount++] = a;
 	}
-	if (Debug.ENABLED) {
-	    Debug.println("TextStat.addAuxItem(): added " + a);
-	}
     }
 
     protected void replaceOrAddAuxItem(AuxItem a) {

@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.62 2004/05/17 14:59:45 pajp Exp $
+ * @version $Id: Session.java,v 1.63 2004/05/19 15:57:15 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -124,10 +124,22 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * system property "lyskom.encoding". Default is "iso-8859-1".
      */
     public static String defaultServerEncoding = null;
-
+    
+    /**
+     * Value of system property <tt>lyskom.big-text</tt> (default false)
+     */
     public static boolean defaultEnabledBigText;
+    /**
+     * Value of system property <tt>lyskom.big-text-limit</tt> (default 20480)
+     */
     public static int defaultBigTextLimit;
+    /**
+     * Value of system property <tt>lyskom.big-text-head</tt> (default 100)
+     */
     public static int defaultBigTextHead;
+    /**
+     * Value of system property <tt>lyskom.lazy-text-limit</tt> (default 80)
+     */
     public static int defaultLazyTextLimit;
 
     // set property values
@@ -250,7 +262,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	textPrefetchQueue = new LinkedList();
 	invoker = new AsynchInvoker();
 	invoker.setDaemon(true);
-        invoker.start();
     }
 
     Thread mainThread;
@@ -346,12 +357,20 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	    ((RpcEventListener) e.nextElement()).rpcEvent(ev);
     }
 
+    /**
+     * Disconnects the given session from the server,
+     * given appropriate permissions.
+     */
     public RpcCall doDisconnect(int sessionNo, boolean discardReply)
     throws IOException {
 	return writeRpcCall(new RpcCall(count(), Rpc.C_disconnect).
 			    add(new KomToken(sessionNo)), !discardReply);
     }
 
+    /**
+     * Disconnects the given session from the server,
+     * given appropriate permissions.
+     */
     public void disconnect(int sessionNo)
     throws IOException, RpcFailure {
 	RpcReply reply = waitFor(doDisconnect(sessionNo, false));
@@ -495,9 +514,35 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return connected;
     }
 
+    /**
+     * Logs on to the LysKOM server and retrieves the user's membership list..
+     * LysKOM call: login
+     *
+     * @param id ID number of the person to log in as
+     * @param password corresponding password, will be converted to bytes according to server encoding
+     * @param hidden if true, session will not be broadcasted on LysKOM
+     *
+     */
     public boolean login(int id, String password, boolean hidden)
     throws IOException {
 	return login(id, password, hidden, true);
+    }
+
+
+    /**
+     * Logs on to the LysKOM server.
+     * LysKOM call: login
+     *
+     * @param id ID number of the person to log in as
+     * @param password corresponding password, will be converted to bytes according to server encoding
+     * @param hidden if true, session will not be broadcasted on LysKOM
+     * @param getMembership if true, the users membership will be queried upon login
+     *
+     */
+    public boolean login(int id, String password, boolean hidden,
+			 boolean getMembership) 
+    throws IOException {
+	return login(id, password.getBytes(serverEncoding), hidden, getMembership);
     }
 
     /**
@@ -507,9 +552,10 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param id ID number of the person to log in as
      * @param password corresponding password
      * @param hidden if true, session will not be broadcasted on LysKOM
+     * @param getMembership if true, the users membership will be queried upon login
      *
      */
-    public boolean login(int id, String password, boolean hidden,
+    public boolean login(int id, byte[] password, boolean hidden,
 			 boolean getMembership)
     throws IOException {
 	int rpcid = count();
@@ -547,14 +593,21 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     }
 
     /**
-     *
+     * Returns the current cached list of unread conferences.
+     * If neither getUnreadConfsList() nor updateUnreads() has
+     * been called, this list will be empty. 
      */
     public List getUnreadConfsListCached() {
 	return unreads;
     }
 
     /**
-     *
+     * Returns the current cached Membership of the given conference.
+     * If the Membership for the given conference hasn't yet been
+     * queries, <tt>null</tt> is returned. Calling updateUnreads()
+     * before guarantees that Membership has been queried for all
+     * conferences in the Unread-Conferences list returned by 
+     * getUnreadConfsList[Cached]().
      */
     public Membership queryReadTextsCached(int confNo) {
 	return membershipCache.get(confNo);
@@ -572,6 +625,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Updates the unreadMembership array with Membership objects for
      * conferences that may contain unreads.
+     * If the given parameter is non-null, it will be used as the
+     * starting point for which conferences are queries, and the
+     * same list will be returned by subsequent calles to
+     * getUnreadConfsListCached(). If null, getUnreadConfsList()
+     * will be called to retrieve that data instead.
      */
     public void updateUnreads(List _unreads)
     throws IOException {
@@ -585,15 +643,46 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	
 	unreadMembership = new LinkedList();
 	unreadTexts = new LinkedList();
-        
+
+        // first, bulkly send all get-uconf-stat and query-read-texts
+	// calls to the server
+
+	List pendingCalls = new LinkedList();
+	synchronized (unreads) {
+	    for (Iterator i = unreads.iterator(); i.hasNext();) {
+		int conf = ((Integer) i.next()).intValue();
+		pendingCalls.add(doGetUConfStat(conf));
+		pendingCalls.add(doQueryReadTexts(persNo, conf));
+	    }
+	}
+
+	// then just wait for them all to finish and put their results
+	// into the caches
+	while (pendingCalls.size() > 0) {
+	    RpcCall rc = waitForCall(pendingCalls);
+	    if (rc.getOp() == Rpc.C_get_uconf_stat) {
+		conferenceCache.add(new UConference(rc.getParameter(0).intValue(), 
+						    rc.getReply().getParameters()));
+	    } else if (rc.getOp() == Rpc.C_query_read_texts) {
+		membershipCache.add(new Membership(0, rc.getReply().getParameters()));
+	    } else {
+		throw new RuntimeException("Unexpected RPC reply " + 
+					   rc.getOp());
+	    }
+
+	    pendingCalls.remove(rc);
+	}
+
+	// by now, we know for sure that the caches are filled with 
+	// fresh data about all the conferences we are interested in.
+	// theoretically, assuming the caches aren't purged, the
+	// remaining code should never result in another server call.
 	for (int i=0; i < unreads.size(); i++) {
 	    int conf = ((Integer) unreads.get(i)).intValue();
-	    conferenceCache.removeAll(conf);
-	    membershipCache.remove(conf);
-
 	    Membership m = queryReadTexts(persNo, conf);
-	    membershipCache.add(m);
 	    int possibleUnreads = getUConfStat(m.getNo()).getHighestLocalNo() - m.lastTextRead;
+	    possibleUnreads -= m.getReadTexts().length;
+
 	    if (possibleUnreads > 0 ) {
 		unreadMembership.add(m);
 	    }
@@ -703,7 +792,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	Membership m = queryReadTexts(myPerson.getNo(), conference, true);
 	if (c.getHighestLocalNo() > m.lastTextRead) {
 	    int localNo = m.lastTextRead + 1;	    
-	    TextMapping tm = localToGlobal(conference, localNo, 10);
+	    TextMapping tm = localToGlobal(conference, localNo, 1);
 
 	    if (!tm.hasMoreElements()) {
 		synchronized (unreads) {
@@ -762,6 +851,11 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param confNo Conference number
      */
     public boolean isMemberOf(int confNo) {
+	if (membership == null) {
+	    throw new IllegalStateException("isMemberOf(" + confNo +
+					    "): Membership hasn't been " +
+					    "queried from the server yet.");
+	}
 	Iterator i = membership.iterator();
 	while (i.hasNext()){
 	    Membership m = (Membership) i.next();
@@ -1824,6 +1918,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void changeConference(int confNo)
     throws IOException, RpcFailure {
+	if (confNo == currentConference) return;
+
 	RpcReply reply = waitFor(doChangeConference(confNo).getId());
 	if (reply.getSuccess()) {
 	    currentConference = confNo;
@@ -2687,15 +2783,25 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     /**
      * Retrieves an object previously stored with setAttribute()
      *
-     * @see #setAttribute(String, Object);
+     * @see #setAttribute(String, Object)
      */
-
     public Object getAttribute(String key) {
 	synchronized (sessionAttributes) {
 	    return sessionAttributes.get(key);
 	}
     }
 
+    public RpcReply waitFor(int id)
+    throws IOException {
+	return waitFor(Collections.singleton(new Integer(id)));
+    }
+
+    public RpcReply waitFor(Collection ids)
+    throws IOException {
+	RpcCall rc = waitForCall(ids);
+	if (rc != null) return rc.getReply();
+	return null;
+    }
 
     /**
      * This methods provides a synchronous way of waiting for RPC
@@ -2712,7 +2818,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @see nu.dll.lyskom.Session#rpcTimeout
      *
      */
-    public RpcReply waitFor(int id)
+    public RpcCall waitForCall(Collection ids)
     throws IOException {
 
 	if (Thread.currentThread() == listener.getThread()) {
@@ -2725,55 +2831,66 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	long waitStart = System.currentTimeMillis();
 	int waitCount = 0;
 	while (call == null) {
-	    Debug.println("waitFor(" + id + ")");
-	    synchronized (rpcHeap) {
-		try {
+	    if (Debug.ENABLED) {
+		Debug.println("waitFor(" + ids + ")");
+	    }
 
-		    // do a check before the wait() in case the reply has arrived already
-		    if (null == (call = rpcHeap.getRpcCall(id, true))) {
-			waitCount++;
-			if (!listener.isConnected()) {
-			    if (listener.getException() != null) {
-				throw new IOException("Exception in listener thread: " +
-						      listener.getException().toString());
-			    } else {
-				throw new IOException("Listener is disconnected.");
-			    }
+	    try {
+		
+		// do a check before the wait() in case the reply has arrived already
+		if (null == (call = rpcHeap.getRpcCall(ids, true))) {
+		    waitCount++;
+		    if (!listener.isConnected()) {
+			if (listener.getException() != null) {
+			    throw new IOException("Exception in listener thread: " +
+						  listener.getException().toString());
+			} else {
+			    throw new IOException("Listener is disconnected.");
 			}
-			rpcHeap.wait(rpcSoftTimeout > 0 ? rpcSoftTimeout : rpcTimeout);			
-		    } else {
-			Debug.println("waitFor(" + id + ") returning after " + (System.currentTimeMillis() - waitStart)
-				      + " milliseconds (wait-count " + waitCount + ")");
-			return call.getReply();
 		    }
-
-		} catch (InterruptedException ex1) {
-		    Debug.println("RPC waitFor() interrupted: " + ex1.getMessage());
-		    // ...?
+		    synchronized (rpcHeap) {
+			rpcHeap.wait(rpcSoftTimeout > 0 ? rpcSoftTimeout : rpcTimeout);
+		    }
+		} else {
+		    if (Debug.ENABLED) {
+			Debug.println("waitFor(" + ids + ") returning after " +
+				      (System.currentTimeMillis() - waitStart)
+				      + " milliseconds (wait-count " + waitCount + ")");
+		    }
+		    rpcHeap.purgeRpcCall(call);
+		    return call;
 		}
-		call = rpcHeap.getRpcCall(id, true);
-		if (call == null && listener != null && listener.getException() != null) {
-		    throw new IOException("Exception in listener: " + 
-					  listener.getException());
-		} else if (listener == null) {
-		    throw new IOException("MessageListener has gone away!");
-		}
+		
+	    } catch (InterruptedException ex1) {
+		Debug.println("RPC waitFor() interrupted: " + ex1.getMessage());
+		// ...?
+	    }
+	    call = rpcHeap.getRpcCall(ids, true);
+	    if (call == null && listener != null && listener.getException() != null) {
+		throw new IOException("Exception in listener: " + 
+				      listener.getException());
+	    } else if (listener == null) {
+		throw new IOException("MessageListener has gone away!");
 	    }
 
 	    if (call == null) {
 		waited = System.currentTimeMillis()-waitStart;
 		if (waited > rpcTimeout) {
-		    IOException e = new IOException("Timeout waiting for RPC reply #"+id+" (" + waited + " ms)");
+		    IOException e = new IOException("Timeout waiting for RPC reply #"+ids+" (" + waited + " ms)");
 		    e.printStackTrace();
 		    throw(e);
 		}
 	    } else {
-		Debug.println("waitFor(" + id + ") returning after " + (System.currentTimeMillis() - waitStart)
-			      + " milliseconds (wait-count " + waitCount + ")");
-		reply = call.getReply();
+		rpcHeap.purgeRpcCall(call);
+		if (Debug.ENABLED) {
+		    Debug.println("waitFor(" + ids + ") returning after " +
+				  (System.currentTimeMillis() - waitStart)
+				  + " milliseconds (wait-count " + waitCount
+				  + ")");
+		}
 	    }
 	}
-	return reply;
+	return call;
     }
 
     /**

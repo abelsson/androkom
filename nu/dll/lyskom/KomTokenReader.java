@@ -19,6 +19,17 @@ import java.util.Iterator;
 
 class KomTokenReader {
 
+    /**
+     * System property <tt>lattekom.debug-parser</tt> determines
+     * the verbosity of parser debug data.
+     *
+     * Possible values are: <br/>
+     * <tt>0</tt> (default) no parser debug output<br/>
+     * <tt>1</tt> some debug output (emits readToken() traces)<br/>
+     * <tt>2</tt> reserved, same as <tt>1</tt><br/>
+     * <tt>3</tt> emits all data returned by readToken() <br/>
+     * <tt>4</tt> writes all data read to the file <tt>/lyskom-trace.log</tt><br/>
+     */
     final static int DEBUG = Integer.getInteger("lattekom.debug-parser", 0).intValue();
     final static boolean strictHollerith = Boolean.getBoolean("lattekom.strict-hollerith");
     static {
@@ -125,7 +136,7 @@ class KomTokenReader {
 	byte lastB = 0;
 	boolean wasEol = false;
 	KomToken token = null;
-	if (Debug.ENABLED && hollerithLimit > -1) {
+	if (DEBUG > 0 && hollerithLimit > -1) {
 	    Debug.println("readToken(" + hollerithLimit + ")");
 	}
 	boolean tokenCompleted = false;
@@ -182,7 +193,7 @@ class KomTokenReader {
 						   new String(os.toByteArray()) + "\"?"));
 		}
 		if (hollerithLimit != -1 && arrlen > hollerithLimit) {
-		    if (Debug.ENABLED)
+		    if (DEBUG > 0)
 			Debug.println("Returning HollerithStream of " + arrlen + " bytes");
 		    token = new HollerithStream(is, arrlen, charset);
 		    tokenCompleted = true;

@@ -12,6 +12,7 @@ public class AsynchInvoker extends Thread {
     boolean run = true;
     public void run() {
 	while (run) {
+	    Debug.println("Started.");
 	    try {
 		while (!runnables.isEmpty()) {
 		    Runnable nextRunnable = null;
@@ -30,7 +31,7 @@ public class AsynchInvoker extends Thread {
 		    runnables.wait();
 		}
 	    } catch (InterruptedException ex1) {
-		Debug.println("Interrupted");
+		Debug.println("Interrupted.");
 	    }
 	}
 	Debug.println("Finished.");
@@ -49,6 +50,7 @@ public class AsynchInvoker extends Thread {
 	    runnables.addLast(r);
 	    runnables.notifyAll();
 	}
+	if (!isAlive()) start();
     }
 
 }

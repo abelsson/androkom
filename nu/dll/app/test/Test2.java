@@ -146,7 +146,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    lastWhatIAmDoing = s;
 	}
 	if (useGui) {
-	    if (!embedded && foo != null && foo.getMyPerson() != null) {
+	    if (!embedded && foo != null && foo.getLoggedIn() && foo.getMyPerson() != null) {
 		consoleFrame.setTitle("LatteKOM/T2 - " + server + " - " + confNoToName(foo.getMyPerson().getNo()) +
 				      (foo.getCurrentConference() > 0 ? " i " + confNoToName(foo.getCurrentConference()) : "") +
 				      " - " + s);
