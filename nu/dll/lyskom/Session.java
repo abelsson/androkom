@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.69 2004/06/03 18:01:08 pajp Exp $
+ * @version $Id: Session.java,v 1.70 2004/06/03 22:23:02 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1486,7 +1486,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @see nu.dll.lyskom.Session#queryReadTexts(int, int, boolean)
      */
     public Membership queryReadTexts(int persNo, int confNo,
-						  boolean refresh)
+				     boolean refresh)
     throws IOException {
 	Membership m = null;
 	if (!refresh && persNo == myPerson.getNo()) {

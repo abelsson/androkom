@@ -83,7 +83,7 @@ public class BigText extends Text {
 
     public InputStream getInputStream() throws IOException {
 	try {
-	    return getContentStream().getStream();
+	    return getBodyStream().getStream();
 	} catch (RpcFailure ex1) {
 	    if (Debug.ENABLED) ex1.printStackTrace();
 	    throw new IOException("Stream error:" + ex1);

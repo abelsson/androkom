@@ -225,7 +225,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
     }
 
     public InputStream getInputStream() throws IOException {
-	return new ByteArrayInputStream(getContents());
+	return new ByteArrayInputStream(getBody());
     }
 
     public OutputStream getOutputStream() throws IOException {
