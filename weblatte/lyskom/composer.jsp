@@ -3,6 +3,7 @@
     page import='java.nio.charset.Charset, javax.mail.internet.ContentType'
 %><%@ 
     page pageEncoding='iso-8859-1' contentType='text/html; charset=utf-8'
+%><%@ page errorPage='fubar.jsp'
 %><%@ include file='kom.jsp' %><%@ include file='prefs_inc.jsp' %><%
     if (request.getParameter("image") != null) {
 	String name = request.getParameter("image");
@@ -603,7 +604,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.22 2004/07/03 00:25:05 pajp Exp $
+$Id: composer.jsp,v 1.23 2004/07/11 14:15:45 pajp Exp $
 </div>
 </body>
 </html>
