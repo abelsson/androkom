@@ -109,8 +109,10 @@
 
     String serverShort(Session lyskom) {
 	String host = lyskom.getServer().toLowerCase();
-	if (host.equals("sno.pp.se")) return "SnoppKOM";
-	if (host.equals("kom.lysator.liu.se")) return "LysLysKOM";
+        for (Iterator i = Servers.list.iterator(); i.hasNext();) {
+            KomServer s = (KomServer) i.next();
+            if (host.equals(s.hostname)) return s.name;
+        }
 	return lyskom.getServer();
     }
 
