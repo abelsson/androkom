@@ -35,11 +35,13 @@
 	    }
 	    if (part == null) {
 		response.setContentType("text/plain");
+		response.setStatus(404);
 		out.println("no such file");
 		return;
 	    }
 	}
         if (partNo > multipart.getCount()) {
+	    response.setStatus(404);
 	    response.setContentType("text/plain");
 	    out.println("part not found");
 	    return;
@@ -48,7 +50,7 @@
 	} else if (part == null) {
 	    throw new ServletException("part not found.");
 	}
-	if (part.isMimeType("multipart/alternative") && request.getParameter("subpart") != null) {
+	if (part.isMimeType("multipart/*") && request.getParameter("subpart") != null) {
 	    MimeMultipart alternative = new MimeMultipart(new MimePartDataSource((MimeBodyPart) part));
 	    part = alternative.getBodyPart(Integer.parseInt(request.getParameter("subpart")));
 	}
@@ -61,7 +63,11 @@
 	    String charset = partContentType.getParameterList().get("charset");
 	    if (charset == null) charset = "iso-8859-1";
 	    HtmlSanitizer.parse(text.getNo(), is, response.getOutputStream(), charset);
-	} else {	
+	} else {
+	    if (request.getParameter("download") != null) {
+		response.setHeader("Content-Disposition", "attachment; filename=\"" + 
+			part.getFileName() + "\"");
+	    }	
 	    OutputStream os = response.getOutputStream();
 	    byte[] buf = new byte[1024];
 
