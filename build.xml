@@ -1,16 +1,18 @@
-<!-- $Id: build.xml,v 1.2 2003/11/18 09:53:55 davidi Exp $ -->
+<!-- $Id: build.xml,v 1.3 2004/02/29 04:45:04 pajp Exp $ -->
 
 <project default="all">
   <property name="src" location="."/>
   <property name="build" location="build"/>
   <property name="javadoc" location="javadocs"/>
   <property name="manifests" location="manifests"/>
+  <property name="test2.build" location="${build}/test2"/>
   <property name="lattekom.build" location="${build}/lattekom"/>
   <property name="swingkom.build" location="${build}/swingkom"/>
 
   <target name="init">
     <tstamp/>
     <mkdir dir="${javadoc}"/>
+    <mkdir dir="${test2.build}"/>
     <mkdir dir="${lattekom.build}"/>
     <mkdir dir="${swingkom.build}"/>
   </target>
@@ -38,6 +40,11 @@
   <target name="swingkom.compile" depends="init">
     <javac destdir="${swingkom.build}" srcdir="${src}"
            includes="nu/dll/app/swingkom/*" classpath="lattekom.jar"/>
+  </target>
+
+  <target name="test2.compile" depends="init">
+    <javac destdir="${test2.build}" srcdir="${src}"
+           includes="nu/dll/app/test/*" classpath="lattekom.jar:readline.jar"/>
   </target>
 
   <target name="swingkom.jar" depends="swingkom.compile">

@@ -92,9 +92,12 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     static String fixedWhatIAmDoing       = System.getProperty("lattekom.whatiamdoing");
 
     /** session properties */
+    boolean textPrefetch                  = System.getProperty("lattekom.prefetch") != null 
+ 	                                    ? Boolean.getBoolean("lattekom.prefetch") : true;
     boolean macBreak                      = Boolean.getBoolean("lattekom.usecrlf");
     int linesPerScreen                    = Integer.getInteger("lattekom.rows", new Integer(24)).intValue();
     String server                         = System.getProperty("lyskom.server");
+    int port                              = 4894;
 
     /* END OF CONFIG PROPERTIES */
 
@@ -114,6 +117,8 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
     JFrame consoleFrame = null;
 
     String lastWhatIAmDoing = "";
+
+    LinkedList prefetchQueue = new LinkedList();
 
     Text lastSavedText = null;
     int linesSinceLastPrompt = 0;
@@ -426,6 +431,13 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		if (arg.equals("-server")) {
 		    server = argv[i++];
 		} else
+	        if (arg.equals("-port")) {
+		    try {
+			port = Integer.parseInt(argv[i++]);
+		    } catch (NumberFormatException ex1) {
+			usage("Felaktigt portnummer");
+		    }
+		} else
 		if (arg.equals("-?") || arg.equals("-help") ||
 		    arg.equals("--help") || arg.equals("-h")) {
 		    usage(null);
@@ -494,7 +506,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	    }
 
 
-	    foo.connect(server, 4894);
+	    foo.connect(server, port);
 	    consoleWriteLn("Ansluten till " + server);
 	    foo.addAsynchMessageReceiver(this);	    
 	    
@@ -598,7 +610,47 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 			}
 		    });
 		t.setName("KeepActiveThread");
+		t.setDaemon(true);
 		t.start();
+	    }
+
+
+	    if (textPrefetch) {
+		Debug.println("Creating prefetch thread.");
+		Thread t = new Thread() {
+			public void run() {
+			    while (true) {
+				try {
+				    if (foo.getState() == foo.STATE_LOGIN &&
+					textPrefetch) {
+					int nextPrefetchText = -1;
+					while (nextPrefetchText == -1 || nextPrefetchText > 0) {
+					    synchronized (prefetchQueue) {
+						if (prefetchQueue.size() > 0) {
+						    nextPrefetchText = ((Integer) prefetchQueue.removeFirst()).intValue();
+						} else {
+						    nextPrefetchText = 0;
+						}
+					    }
+					    if (nextPrefetchText > 0) foo.getText(nextPrefetchText);
+					}
+					synchronized (prefetchQueue) {
+					    prefetchQueue.wait(1000);
+					}
+
+				    }
+					
+				} catch (Exception e1) {
+				    e1.printStackTrace();
+				}
+			    }
+			}
+		    };
+		t.setDaemon(true);
+		t.setName("PrefetchThread");
+		t.start();
+	    } else {
+		Debug.println("Text prefetch disabled.");
 	    }
 
 	    if (clientName == null) 
@@ -1308,6 +1360,11 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    try {
 			foo.getTextStat(comments[i], true);
 			toread.push((Object) new Integer(comments[i]));
+			if (textPrefetch) {
+			    synchronized (prefetchQueue) {
+				prefetchQueue.add(new Integer(comments[i]));
+			    }
+			}
 		    } catch (RpcFailure ex1) {}
 		}
 	    }
@@ -1522,6 +1579,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 
 	asynchInvoker = new AsynchInvoker();
 	asynchInvoker.setName("T2AsynchHandler-" + (++handlerCount));
+	asynchInvoker.setDaemon(true);
 	asynchInvoker.start();
     }
     static int handlerCount = 0;
