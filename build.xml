@@ -1,4 +1,4 @@
-<!-- $Id -->
+<!-- $Id: build.xml,v 1.2 2003/11/18 09:53:55 davidi Exp $ -->
 
 <project default="all">
   <property name="src" location="."/>
