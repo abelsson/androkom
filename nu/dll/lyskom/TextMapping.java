@@ -76,7 +76,7 @@ public class TextMapping implements Enumeration {
      * Returns the next Global number
      */
     public Object nextElement() {
-	if (enumc > list.size()) {
+	if (enumc >= list.size()) {
 	    Debug.println("no such element, enum=" + enumc);
 	    return null;
 	}
