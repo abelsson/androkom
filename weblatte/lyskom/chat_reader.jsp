@@ -32,6 +32,15 @@
   <body>
 <%
     LinkedList messages = new LinkedList();
+    List oldMessages = (List) session.getAttribute("lyskom.messages");
+    if (oldMessages != null) {
+	synchronized (oldMessages) {
+	    for (Iterator i = oldMessages.iterator(); i.hasNext();) {
+		messages.add(i.next());
+		i.remove();		
+	    }
+	}
+    }
     lyskom.addAsynchMessageReceiver(new ChatMessageReceiver(messages));
     boolean chatRunning = true;
     session.setAttribute("lyskom.chat.messages", messages);

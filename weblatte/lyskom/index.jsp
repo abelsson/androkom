@@ -83,7 +83,7 @@
 		    authenticated = Boolean.TRUE;
                     justLoggedIn = true;
 		    lyskom.setLatteName("WebLatte");
-		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.13 $" + 
+		    lyskom.setClientVersion("dll.nu/lyskom", "$Revision: 1.14 $" + 
 					    (debug ? " (devel)" : ""));
 		    lyskom.doChangeWhatIAmDoing("kör web-latte");
 		}
@@ -395,6 +395,47 @@
 	lyskom.doUserActive();
     }
     String lastReceivedOrSent = null;
+
+
+    if (request.getParameter("sendToName") != null) {
+	String stn = request.getParameter("sendToName");
+	try {
+	    if (request.getParameter("chat") != null) {
+		if (!stn.trim().equals("")) {
+	            ConfInfo conf = lookupName(lyskom, stn, true, true);
+	            response.sendRedirect(basePath + "chat.jsp?default=" + conf.getNo());
+	            return;
+		} else {
+		    response.sendRedirect(basePath + "chat.jsp");
+		    return;
+		}
+	    } 
+	    String _text = request.getParameter("sendText");
+	    if (stn.trim().equals("")) {
+		lyskom.sendMessage(0, _text);
+		%><p class="statusSuccess">Alarmmeddelande skickat.</p><%
+	    } else {
+	    	ConfInfo recipient = lookupName(lyskom, stn, true, true);
+	    	if (recipient != null) {
+		    lyskom.sendMessage(recipient.getNo(), _text);
+		    lastReceivedOrSent = lookupName(lyskom, recipient.getNo());
+		    %><p class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</p><%
+	    	} else {
+		    %><p class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</p><%
+	    	}
+	    }
+	} catch (RpcFailure ex2) {
+	    if (ex2.getError() == Rpc.E_message_not_sent) {
+		%><p class="statusError">Meddelandet gick inte att skicka.</p><%
+	    } else {
+		throw ex2;
+	    }
+	} catch (AmbiguousNameException ex1) {
+	    out.println(ambiguousNameMsg(lyskom, ex1));
+	}
+    }
+
+
     messages = (List) session.getAttribute("lyskom.messages");
     if (messages != null && messages.size() > 0) {
 	synchronized (messages) {
@@ -436,44 +477,6 @@
 
     if (request.getParameter("stopChat") != null) {
         session.setAttribute("lyskom.chat-running", Boolean.FALSE);
-    }
-
-    if (request.getParameter("sendToName") != null) {
-	String stn = request.getParameter("sendToName");
-	try {
-	    if (request.getParameter("chat") != null) {
-		if (!stn.trim().equals("")) {
-	            ConfInfo conf = lookupName(lyskom, stn, true, true);
-	            response.sendRedirect(basePath + "chat.jsp?default=" + conf.getNo());
-	            return;
-		} else {
-		    response.sendRedirect(basePath + "chat.jsp");
-		    return;
-		}
-	    } 
-	    String _text = request.getParameter("sendText");
-	    if (stn.trim().equals("")) {
-		lyskom.sendMessage(0, _text);
-		%><p class="statusSuccess">Alarmmeddelande skickat.</p><%
-	    } else {
-	    	ConfInfo recipient = lookupName(lyskom, stn, true, true);
-	    	if (recipient != null) {
-		    lyskom.sendMessage(recipient.getNo(), _text);
-		    lastReceivedOrSent = lookupName(lyskom, recipient.getNo());
-		    %><p class="statusSuccess">Meddelande skickat till <%=lookupName(lyskom, recipient.getNo(), true)%>.</p><%
-	    	} else {
-		    %><p class="statusError">Hittade ingen mottagare som matchade "<%=htmlize(stn)%>".</p><%
-	    	}
-	    }
-	} catch (RpcFailure ex2) {
-	    if (ex2.getError() == Rpc.E_message_not_sent) {
-		%><p class="statusError">Meddelandet gick inte att skicka.</p><%
-	    } else {
-		throw ex2;
-	    }
-	} catch (AmbiguousNameException ex1) {
-	    out.println(ambiguousNameMsg(lyskom, ex1));
-	}
     }
 
     if (request.getParameter("sendTo") != null) {
@@ -1222,7 +1225,7 @@ Du är inte inloggad.
 <%  } %>
 </p>
 <p class="footer">
-$Id: index.jsp,v 1.13 2004/04/26 00:20:17 pajp Exp $
+$Id: index.jsp,v 1.14 2004/04/26 00:52:40 pajp Exp $
 </p>
 </body>
 </html>
