@@ -84,7 +84,7 @@ import java.util.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.31 2004/03/26 03:21:24 pajp Exp $
+ * @version $Id: Session.java,v 1.32 2004/03/27 21:20:32 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -226,6 +226,19 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
     Thread mainThread;
     public Session() {
 	init();
+    }
+
+    /**
+     * Removes any evidence of the given text in the caches
+     * (Text cache and Text-Stat cache)
+     */
+    public void purgeTextCache(int textNo) {
+	synchronized (textCache) {
+	    textCache.remove(textNo);
+	}
+	synchronized (textStatCache) {
+	    textStatCache.remove(textNo);
+	}
     }
 
     /**
