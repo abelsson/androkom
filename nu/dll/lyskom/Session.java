@@ -166,7 +166,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	reader = new KomTokenReader(connection.getInputStream());
 
 	connection.write('A'); // protocol A
-	connection.writeLine(new Hollerith("ontimagen" + (clientHost != null ? "%" + clientHost : "")).toNetwork());
+	connection.writeLine(new Hollerith("LatteKOM" + (clientHost != null ? "%" + clientHost : "")).toNetwork());
 
 	 // "LysKOM\n"
 	String serverResponse = new String(reader.readToken().getContents());
