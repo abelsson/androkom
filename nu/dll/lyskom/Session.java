@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.71 2004/06/08 00:33:30 pajp Exp $
+ * @version $Id: Session.java,v 1.72 2004/06/08 08:51:46 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -473,6 +473,23 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 
     public String getServerEncoding() {
 	return serverEncoding;
+    }
+
+    public String getCanonicalName()
+    throws IOException, RpcFailure {
+	Map info = getInfo();
+	AuxItem item = AuxItem.getFirst(AuxItem.tagCanonicalName,
+					(List) info.get("aux-item-list"));
+	return item != null ? item.getDataString() : null;
+    }
+
+    public String getServerName()
+    throws IOException, RpcFailure {
+	String name = getCanonicalName();
+	if (name != null) 
+	    return name;
+	else
+	    return getServer() + ":" + getPort();
     }
 
     public String getServer() {

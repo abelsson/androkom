@@ -7,7 +7,9 @@
 package nu.dll.lyskom;
 
 import javax.mail.internet.ContentType;
-
+import java.util.Iterator;
+import java.util.List;
+import java.util.LinkedList;
 
 /**
  * Aux-Item, a LysKOM data type introduced in version 10.
@@ -44,6 +46,8 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
     public final static int tagMxMisc           = 24;
 
     public final static int tagAllowedContentType = 30;
+    public final static int tagCanonicalName      = 31;
+    
 
     public final static int tagMxMimePartIn = 10101;
     
@@ -164,21 +168,21 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
     AuxItem(KomToken[] tokens) {
 	int pcount = 0;
 
-	this.no        = tokens[pcount++].toInteger();
-	this.tag       = tokens[pcount++].toInteger();
-	this.creator   = tokens[pcount++].toInteger();
-	this.createdAt = new KomTime(tokens[pcount++].toInteger(), // 0
-				     tokens[pcount++].toInteger(), // 1
-				     tokens[pcount++].toInteger(), // 2
-				     tokens[pcount++].toInteger(), // 3
-				     tokens[pcount++].toInteger(), // 4
-				     tokens[pcount++].toInteger(), // 5
-				     tokens[pcount++].toInteger(), // 6
-				     tokens[pcount++].toInteger(), // 7
-				     tokens[pcount++].toInteger());
+	this.no        = tokens[pcount++].intValue();
+	this.tag       = tokens[pcount++].intValue();
+	this.creator   = tokens[pcount++].intValue();
+	this.createdAt = new KomTime(tokens[pcount++].intValue(), // 0
+				     tokens[pcount++].intValue(), // 1
+				     tokens[pcount++].intValue(), // 2
+				     tokens[pcount++].intValue(), // 3
+				     tokens[pcount++].intValue(), // 4
+				     tokens[pcount++].intValue(), // 5
+				     tokens[pcount++].intValue(), // 6
+				     tokens[pcount++].intValue(), // 7
+				     tokens[pcount++].intValue());
 
 	this.flags    = new Bitstring(tokens[pcount++]);
-	this.inheritLimit = tokens[pcount++].toInteger();
+	this.inheritLimit = tokens[pcount++].intValue();
 	try {
 	    this.data     = (Hollerith) tokens[pcount++];
 	} catch (ClassCastException ex) {
@@ -217,6 +221,26 @@ public class AuxItem implements java.io.Serializable, Tokenizable {
 	int c=0;
 	for (int i=0;i<auxItems.length;i++) if (auxItems[i] != null) c++;
 	return c;
+    }
+
+    public static AuxItem getFirst(int tag, List auxItems) {
+	for (Iterator i=auxItems.iterator(); i.hasNext();) {
+	    AuxItem item = (AuxItem) i.next();
+	    if (item.getTag() == tag)
+		return item;
+	}
+	return null;
+    }
+
+    public static List getAll(int tag, List auxItems) {
+	List list = new LinkedList();
+	for (Iterator i=auxItems.iterator(); i.hasNext();) {
+	    AuxItem item = (AuxItem) i.next();
+	    if (item.getTag() == tag)
+		list.add(item);
+	}
+
+	return list;
     }
     
 }

@@ -60,11 +60,13 @@
 	    if (lyskom == null) {
 		lyskom = new Session();
 	    }
+	    int port = 4894;
 	    if (!lyskom.getConnected()) {
 		lyskom.setClientHost(request.getRemoteAddr());
 		lyskom.setClientUser("www");
-	    
-		lyskom.connect(server, 4894);
+	    	Debug.println("Connecting to " + server + ":" + port + "...");
+		lyskom.connect(server, port);
+		Debug.println("Connected.");
 		lyskom.setBigTextEnabled(true);
 		LinkedList messages = new LinkedList();
 		lyskom.setAttribute("weblatte.messages", messages);
@@ -123,6 +125,7 @@
 		    error = "Felaktigt lösenord!";
 		    lyskom.shutdown();
 		} else {
+		    Debug.println("User " + person + " logged on to " + lyskom.getServerName());
 		    session.setAttribute("lyskom", new SessionWrapper(lyskom));
 		    Cookie serverCookie = new Cookie("kom-server", server);
 		    serverCookie.setMaxAge(31536000);
@@ -328,7 +331,7 @@
 	    if (justLoggedIn || showWelcome) {
 %>
     	<div class="welcome">Välkommen till LysKOM, <%= lookupName(lyskom, lyskom.getMyPerson().getNo(), true) %>!<br>
-	    Din LysKOM-server är <%= lyskom.getServer() %>.
+	    Din LysKOM-server är <%= lyskom.getServerName() %>.
 	</div>
 <%
 		if (!minimalistic) {
@@ -1474,7 +1477,7 @@ Du är inte inloggad.
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.74 $
+$Revision: 1.75 $
 </div>
 </body>
 </html>
