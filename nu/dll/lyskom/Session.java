@@ -85,7 +85,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.73 2004/06/09 13:44:47 pajp Exp $
+ * @version $Id: Session.java,v 1.74 2004/06/09 21:13:56 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -962,9 +962,6 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      */
     public void markAsRead(int confNo, int[] localTextNo)
     throws IOException {
-	for (int i=0; i < localTextNo.length; i++) {
-	    Debug.println("about to mark text " + localTextNo[i] + " in conf " + confNo + " as read");
-	}
 
 	RpcReply r = waitFor(doMarkAsRead(confNo, localTextNo).getId());
 	if (!r.getSuccess()) throw r.getException();
@@ -3027,13 +3024,13 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 			rpcHeap.wait(rpcSoftTimeout > 0 ? rpcSoftTimeout : rpcTimeout);
 		    }
 		} else {
-		    if (Debug.ENABLED) {
-			Debug.println("waitForCall(" + ids + ") returning after " +
-				      (System.currentTimeMillis() - waitStart)
-				      + " milliseconds (wait-count " + waitCount + ")");
-		    }
 		    rpcHeap.purgeRpcCall(call);
 		    if (fallbackCheck(ids, call)) {
+			if (Debug.ENABLED) {
+			    Debug.println("waitForCall(" + ids + ") returning after " +
+					  (System.currentTimeMillis() - waitStart)
+					  + " milliseconds (wait-count " + waitCount + ")");
+			}
 			return call;
 		    }
 		}
@@ -3059,12 +3056,15 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		}
 	    } else {
 		rpcHeap.purgeRpcCall(call);
-		if (!fallbackCheck(ids, call)) call = null;
-		if (Debug.ENABLED) {
-		    Debug.println("waitForCall(" + ids + ") returning after " +
-				  (System.currentTimeMillis() - waitStart)
-				  + " milliseconds (wait-count " + waitCount
-				  + ")");
+		if (!fallbackCheck(ids, call)) {
+		    call = null;
+		} else {
+		    if (Debug.ENABLED) {
+			Debug.println("waitForCall(" + ids + ") returning after " +
+				      (System.currentTimeMillis() - waitStart)
+				      + " milliseconds (wait-count " + waitCount
+				      + ")");
+		    }
 		}
 	    }
 	}
@@ -3182,7 +3182,8 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 		    }
 		}
 		try {
-		    if (!unreads.contains(recipientObj) &&
+		    if (unreads != null &&
+			!unreads.contains(recipientObj) &&
 			!readTexts.contains(textStat.getNo()) &&
 			isMemberOf(recipient, false)) {
 			unreads.add(recipientObj);

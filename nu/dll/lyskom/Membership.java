@@ -159,6 +159,13 @@ public class Membership {
 
     public synchronized void markAsRead(int localNo) {
 	synchronized (ranges) {
+	    if (!hasReadTexts) {
+		return;
+	    }
+	    if (ranges.size() == 0) {
+		ranges.add(new Range(localNo, localNo));
+		return;
+	    }
 	    Range lastRange = (Range) ranges.get(ranges.size()-1);
 	    if (localNo == lastRange.last+1) {
 		lastRange.last = localNo;
