@@ -414,7 +414,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
 	byte[] b = contents; 
 	int i=0;
 	while (i < b.length && b[i] != '\n') i++;
-	if (i >= b.length) { byte[] r = {} ; return r; }
+	if (i >= b.length) { return new byte[] { }; }
 	byte[] r = new byte[i];
 	for (i=0;i<r.length;i++)
 	    r[i] = b[i];
@@ -431,7 +431,9 @@ public class Text extends Hollerith implements Serializable, DataSource {
     public byte[] getBody() {
 	int i=0; byte[] b = getContents();
 	while (i < b.length && b[i] != '\n') { i++; }
-	if (i >= b.length) return new byte[] {};
+	if (i >= b.length) {
+	    return b;
+	}
 	
 	byte[] r = new byte[b.length-i-1]; // -1 is \n
 	i++; // skip '\n'
