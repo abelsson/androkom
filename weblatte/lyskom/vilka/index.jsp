@@ -96,7 +96,7 @@
 		(mug != null ? "</a>" : "")
 	    %></td>
             <td title="<%= (idle > 0 ? "inaktiv " : "aktiv") + (idle > 0 ? (idleHours > 0 ? idleHours + (idleHours > 1 ? " timmar" : " timme") + ", " : "") + idleMinutes + (idleMinutes > 1 ? " minuter" : " minut") : "") %>">
-<%= who[i].getWhatAmIDoingString() %></td>
+<%= lyskom.toString(who[i].getWhatAmIDoing()) %></td>
 	    <td><%= conf > 0 ? lookupName(lyskom, conf, true) : "&nbsp;" %></td></tr>
 <%
 	        if (request.getParameter("showClientInfo") != null) {
@@ -142,7 +142,7 @@ Visa sessioner som varit aktiva inom:
 </p>
 <p>[ <a href="../">till huvudsidan</a> ]</p>
 <p class="footer">
-$Id: index.jsp,v 1.13 2004/05/16 21:15:22 pajp Exp $
+$Id: index.jsp,v 1.14 2004/05/28 13:18:59 pajp Exp $
 </p>
 </body>
 </html>
