@@ -16,6 +16,8 @@ import java.awt.Dimension;
 import java.awt.Font;
 import java.awt.FlowLayout;
 import java.awt.GridLayout;
+import java.awt.GridBagLayout;
+import java.awt.GridBagConstraints;
 import javax.swing.JFrame;
 import javax.swing.JScrollPane;
 import javax.swing.JPasswordField;
@@ -25,11 +27,16 @@ import javax.swing.JPanel;
 import javax.swing.JTextField;
 import javax.swing.JButton;
 import javax.swing.ViewportLayout;
+import javax.swing.event.ChangeListener;
+import javax.swing.event.ChangeEvent;
 import java.util.Map;
 import java.util.HashMap;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.ArrayList;
+import java.util.StringTokenizer;
+import java.io.IOException;
+import nu.dll.lyskom.*;
 
 public class TabClient {
     List clients = null;
@@ -37,13 +44,39 @@ public class TabClient {
     JTabbedPane tabPane = null;
 
     class SessionPanel extends JPanel {
-	public SessionPanel(Test2 t2) {
-	    setLayout(new FlowLayout());
-	    JPanel buttonPanel = new JPanel();
-	    buttonPanel.setLayout(new FlowLayout());
-	    buttonPanel.add(new JButton("Stäng"));
-	    add(buttonPanel);
-	    add(new JScrollPane(t2.getConsole()));
+	String tabName;
+	public SessionPanel(Test2 t2, String name) {
+	    tabName = name;
+	    GridBagLayout gridBag = new GridBagLayout();
+	    GridBagConstraints constr = new GridBagConstraints();
+	    setLayout(gridBag);
+
+	    JButton closeButton = new JButton("Stäng session");
+	    constr.fill = GridBagConstraints.NONE;
+	    constr.gridx=0;
+	    constr.gridy=0;
+	    gridBag.setConstraints(closeButton, constr);
+	    add(closeButton);
+
+	    closeButton.addActionListener(new ActionListener() {
+		    public void actionPerformed(ActionEvent event) {
+			tabPane.remove(tabPane.indexOfTab(tabName));
+		    }
+		});
+
+	    JPanel filler = new JPanel();
+	    constr.fill = GridBagConstraints.HORIZONTAL;
+	    constr.gridx=1;
+	    gridBag.setConstraints(filler, constr);
+	    add(filler);
+
+	    JScrollPane consolePane = new JScrollPane(t2.getConsole());
+	    constr.gridwidth = 2;
+	    constr.gridx=0;
+	    constr.gridy=1;
+	    constr.fill = GridBagConstraints.BOTH;
+	    gridBag.setConstraints(consolePane, constr);
+	    add(consolePane);
 	}
     }
 
@@ -106,7 +139,12 @@ public class TabClient {
 							       passwordField));
 	    connectButton.addActionListener(new SetupActionListener(serverField, nameField,
 								    passwordField));
-	    setMaximumSize(getPreferredSize());
+	    passwordField.addKeyListener(new SetupActionListener(serverField, nameField,
+								 passwordField));
+	    nameField.addKeyListener(new SetupActionListener(serverField, nameField,
+							     passwordField));
+
+	    //setMaximumSize(getPreferredSize());
 	    Debug.println("MaximumSize: " + getMaximumSize());
 
 	}
@@ -125,6 +163,8 @@ public class TabClient {
     }
 
     Map serverNames = new HashMap();
+    int editCount = 1;
+
     void addConnection(String server, String username, String password) {
 	Test2 t2 = new Test2(true, server);
 	if (!username.trim().equals("")) t2.setDefaultUser(username);
@@ -136,9 +176,87 @@ public class TabClient {
 	    tabName = server + " #" + count;
 	}
 	serverNames.put(server, new Integer(count));
-	tabPane.addTab(tabName, new SessionPanel(t2));
+	SessionPanel sessionPanel = new SessionPanel(t2, tabName);
+	tabPane.addTab(tabName, sessionPanel);
 	tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	clients.add(t2);
+
+	t2.addCommand("k", new AbstractCommand() {
+		public int doCommand(String s, String parameters)
+		throws IOException, CmdErrException {
+		    int textNo = 0;
+		    Text text = null;
+		    boolean footnote = false;
+		    StringTokenizer st = null;
+		    
+		    if (parameters != null) {
+			st = new StringTokenizer(parameters, " ");
+			try {
+			    if (st.hasMoreTokens())
+				textNo = Integer.parseInt(st.nextToken());
+			} catch (NumberFormatException ex1) {
+			    textNo = -1;
+			}
+		    }
+		    if (textNo < 1) {
+			if (footnote && application.getLastSavedText() != null)
+			    textNo = application.getLastSavedText().getNo();
+			else
+			    if (application.getLastText() != null)
+				textNo = application.getLastText().getNo();
+		    }
+		    
+		    if (textNo < 1) {
+			throw new CmdErrException("Du måste ange ett giltigt textnummer eller läsa/skriva en text först");
+		    }
+		    
+		    text = session.getText(textNo);
+		    
+		    if (text == null) {
+			text = session.getText(textNo);
+			if (text == null) throw new CmdErrException("Hittade inget inlägg");
+		    }
+
+		    TextComposer composer = new TextComposer(session, text, true);
+		    String tabName = "edit";
+		    editCount++;
+		    if (tabPane.indexOfTab(tabName) != -1) {
+			tabName = "edit-" + editCount;
+		    }
+		    tabPane.addTab(tabName, composer);
+		    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
+		    composer.waitForAction();
+		    tabPane.remove(composer);
+
+		    int newTextNo = 0;
+		    try {
+			newTextNo = session.createText(composer.getNewText());
+			application.setLastSavedText(session.getText(newTextNo));
+		    } catch (RpcFailure ex1) {
+			application.consoleWrite("%Fel: kunde inte skapa kommentar/fotnot: ");
+			switch (ex1.getError()) {
+			case Rpc.E_not_author:
+			    application.consoleWriteLn("du är inte författare till text " + ex1.getErrorStatus());
+			    break;
+			default:
+			    throw new CmdErrException("Okänt fel: " + ex1.getMessage());
+			}
+			return Command.ERROR;
+		    }
+		    if (newTextNo > 0) {
+			application.consoleWriteLn("text nummer " + newTextNo + " skapad.");
+			if (!application.dontMarkOwnTextsAsRead) {
+			    application.markAsRead(newTextNo);
+			}
+		    }
+
+		    editCount--;
+		    return Command.OK;
+		}
+		public String[] getCommandDescriptions() {
+		    return new String[0];
+		}
+	    });
 	frame.pack();
 	new Thread(t2, "connMain-" + connCount++).start();
     }
@@ -158,8 +276,16 @@ public class TabClient {
 
 	frame.setTitle("LatteKOM/T2");
 	frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-	frame.setSize(800,600);	
+	//frame.setSize(800,600);
+
+	tabPane.addChangeListener(new ChangeListener() {
+		public void stateChanged(ChangeEvent e) {
+		    frame.pack();
+		}
+	    });
+
 	frame.pack();
+	frame.setResizable(false);
 	frame.setVisible(true);
     }
 

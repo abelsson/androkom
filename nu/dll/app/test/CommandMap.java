@@ -35,6 +35,14 @@ public class CommandMap {
 	}
     }
 
+    public void addCommand(Command command) {
+	command.setEnvironment(session, application);
+	String[] strings = command.getCommands();
+	for (int i=0; i < strings.length; i++) {
+	    addCommand(strings[i], command);
+	}
+    }
+
     public void addCommands(String[] str, Class cmd) {
 	Command command = initCommand(cmd);
 	command.setEnvironment(session, application);
@@ -70,3 +78,5 @@ public class CommandMap {
     }
 
 }
+
+

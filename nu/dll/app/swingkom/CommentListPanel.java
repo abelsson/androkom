@@ -9,7 +9,7 @@ import nu.dll.lyskom.*;
 import java.util.Vector;
 import java.util.Enumeration;
 
-class CommentListPanel extends JPanel {
+public class CommentListPanel extends JPanel {
     Vector labels = new Vector();
     ReadingPane textPanel = null;
     boolean reuse = false;

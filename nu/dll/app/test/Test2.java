@@ -418,6 +418,14 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	return server;
     }
 
+    public void addCommand(Command cmd) {
+	commands.addCommand(cmd);
+    }
+    
+    public void addCommand(String text, Command cmd) {
+	commands.addCommand(text, cmd);
+    }
+
     public void run() {
 	Debug.println("line separator: \"" + lineSeparator + "\"");
 	try {
@@ -436,9 +444,7 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 		    }
 		}
 	    }
-	    foo = new Session();
 
-	    initCommands();
 
 	    foo.connect(server, 4894);
 	    consoleWriteLn("Ansluten till " + server);
@@ -1371,6 +1377,10 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	guiInited = false;
     }
 
+    public Session getSession() {
+	return foo;
+    }
+
     public Console getConsole() {
 	return console;
     }
@@ -1394,6 +1404,9 @@ public class Test2 implements AsynchMessageReceiver, ConsoleListener, Runnable {
 	if (useGui) {
 	    initGui(embedded);
 	}
+	foo = new Session();
+	initCommands();
+
 	asynchInvoker = new AsynchInvoker();
 	asynchInvoker.setName("T2AsynchHandler-" + (++handlerCount));
 	asynchInvoker.start();
