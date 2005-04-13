@@ -169,7 +169,11 @@
 		    m.appendReplacement(sb, m.group(0));
 		}
 	    }
-	    m.appendTail(sb);
+	    // we need to put the tail in a new stringbuffer to be able to escape "<" etc
+	    // separately.
+	    StringBuffer foo = new StringBuffer();
+	    m.appendTail(foo);
+	    sb.append(entitize(foo.toString()));
 	    s = sb.toString();
 	} else {
 	    s = entitize(s);
