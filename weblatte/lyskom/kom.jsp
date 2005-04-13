@@ -142,7 +142,6 @@
 
     String htmlize(Session lyskom, String s, boolean makeHtml) throws IOException, RpcFailure {
 	if (makeHtml) {
-	    s = weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
 	    StringBuffer sb = new StringBuffer();
 	    Matcher m = confNamePatternText.matcher(s);
 	    //log("htmlize() lyskom=" + lyskom + ", s=\"" + s.substring(0, s.length() > 10 ? 10 : s.length()) + "\", makeHtml=" + makeHtml);
@@ -175,6 +174,7 @@
 	    m.appendTail(foo);
 	    sb.append(entitize(foo.toString()));
 	    s = sb.toString();
+	    s = weblinkPat.matcher(s).replaceAll("<a target=\"_blank\" href=\"$1\">$1</a>");
 	} else {
 	    s = entitize(s);
 	}
