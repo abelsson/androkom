@@ -22,52 +22,6 @@
 	return;
     }
 %>
-<html><head><title>textskrivare</title>
-<link rel="stylesheet" href="lattekom.css" />
-<script type="text/javascript">
-   _editor_url = "<%= basePath %>htmlarea/";
-   _editor_lang = "en";
-</script>
-<script type="text/javascript" src="<%= basePath %>htmlarea/htmlarea.js"></script>
-<script type="text/javascript">
-   var haConfig = new HTMLArea.Config();
-   function buttonHandler(editor, buttonId) {
-      switch (buttonId) {
-      case "weblatte-query-image":
-	 var image = window.prompt("Ange bildens namn");
-	 if (typeof(image) == undefined) return;
-	 if (image == null) return;
-	 if (image == "") return;
-         editor.insertHTML("<img src=\"composer.jsp?image=" + escape(image) + "\" />");
-         break;
-      }
-   }
-   haConfig.registerButton("weblatte-query-image",  "Infoga bild", "htmlarea/images/ed_image.gif", false, buttonHandler);
-   haConfig.toolbar = [
-	[ "fontname", "space",
-	  "fontsize", "space",
-	  "formatblock", "space",
-	  "bold", "italic", "underline", "separator",
-	  "strikethrough", "subscript", "superscript", "separator",
-	  "copy", "cut", "paste", "space", "undo", "redo" ],	
-	[ "justifyleft", "justifycenter", "justifyright", "justifyfull", "separator",
-	  "insertorderedlist", "insertunorderedlist", "outdent", "indent", "separator",
-	  "forecolor", "hilitecolor", "textindicator", "separator",
-	  "inserthorizontalrule", "createlink", "weblatte-query-image", "inserttable", "htmlmode", "separator",
-	  "popupeditor", "separator", "showhelp", "about" ]
-	];
-</script>
-<body>
-<%
-    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
-	out.println("<script language=\"JavaScript1.2\">");
-	%><%@ include file='stuff.jsp' %><%
-	out.println("</script>");
-    } else {
-	out.println("<script language=\"JavaScript1.2\" src=\"stuff.jsp?pleasecache\"></script>");
-    }
-%>
-<%@ include file='dhtmlMenu.jsp' %>
 <%
     boolean expert = debug || request.getParameter("expert") != null;
     Debug.println("____ **** composer.jsp START.");
@@ -265,6 +219,54 @@
 	dispatcher.forward(request, response);
 	return;	
     }
+%>
+<html><head><title>textskrivare</title>
+<link rel="stylesheet" href="lattekom.css" />
+<script type="text/javascript">
+   _editor_url = "<%= basePath %>htmlarea/";
+   _editor_lang = "en";
+</script>
+<script type="text/javascript" src="<%= basePath %>htmlarea/htmlarea.js"></script>
+<script type="text/javascript">
+   var haConfig = new HTMLArea.Config();
+   function buttonHandler(editor, buttonId) {
+      switch (buttonId) {
+      case "weblatte-query-image":
+	 var image = window.prompt("Ange bildens namn");
+	 if (typeof(image) == undefined) return;
+	 if (image == null) return;
+	 if (image == "") return;
+         editor.insertHTML("<img src=\"composer.jsp?image=" + escape(image) + "\" />");
+         break;
+      }
+   }
+   haConfig.registerButton("weblatte-query-image",  "Infoga bild", "htmlarea/images/ed_image.gif", false, buttonHandler);
+   haConfig.toolbar = [
+	[ "fontname", "space",
+	  "fontsize", "space",
+	  "formatblock", "space",
+	  "bold", "italic", "underline", "separator",
+	  "strikethrough", "subscript", "superscript", "separator",
+	  "copy", "cut", "paste", "space", "undo", "redo" ],	
+	[ "justifyleft", "justifycenter", "justifyright", "justifyfull", "separator",
+	  "insertorderedlist", "insertunorderedlist", "outdent", "indent", "separator",
+	  "forecolor", "hilitecolor", "textindicator", "separator",
+	  "inserthorizontalrule", "createlink", "weblatte-query-image", "inserttable", "htmlmode", "separator",
+	  "popupeditor", "separator", "showhelp", "about" ]
+	];
+</script>
+<body>
+<%
+    if (request.getHeader("User-Agent").indexOf("MSIE") >= 0) {
+	out.println("<script language=\"JavaScript1.2\">");
+	%><%@ include file='stuff.jsp' %><%
+	out.println("</script>");
+    } else {
+	out.println("<script language=\"JavaScript1.2\" src=\"stuff.jsp?pleasecache\"></script>");
+    }
+%>
+<%@ include file='dhtmlMenu.jsp' %>
+<%
 
     if (multipart && 
 	(parameters.containsKey("newFile") ||
@@ -632,7 +634,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.29 2005/02/03 19:03:09 pajp Exp $
+$Id: composer.jsp,v 1.30 2005/12/20 12:50:58 pajp Exp $
 </div>
 </body>
 </html>
