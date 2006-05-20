@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.93 2005/02/09 04:50:25 pajp Exp $
+ * @version $Id: Session.java,v 1.94 2006/05/20 16:37:16 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1650,16 +1650,36 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	return getUnreadConfsList(persNo, false);
     }
 
+    /**
+     * Convenience wrapper for getUnreadConfsList().
+     * Uses the logged-in user ID.
+     *
+     * @see #getUnreadConfsList(int)
+     */
     public List getMyUnreadConfsList() 
     throws IOException {
 	return getMyUnreadConfsList(false);
     }
 
+    /**
+     * Convenience wrapper for getUnreadConfsList().
+     * Uses the logged-in user ID.
+     *
+     * @see #getUnreadConfsList(int, boolean)
+     */    
     public List getMyUnreadConfsList(boolean askServer) 
     throws IOException {
 	return getUnreadConfsList(myPersonNo, askServer);
     }
 
+    /**
+     * Returns a List containing all conferences which may contain unread
+     * texts.
+     *
+     * @param persNo The person number for which to query information
+     * @param askServer if true, do not use cached information
+     * @see nu.dll.lyskom.Session#getUnreadConfs(int)
+     */    
     public List getUnreadConfsList(int persNo, boolean askServer)
     throws IOException {
 	if (persNo == myPersonNo && !askServer && unreads != null) {
