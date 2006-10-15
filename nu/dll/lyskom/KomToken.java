@@ -125,13 +125,6 @@ public class KomToken implements Serializable {
     }
     
     /**
-     * @deprecated use intValue() to get an int, this method will be changed to return Integer
-     */
-    public int toInteger() {
-	return toInt();
-    }
-
-    /**
      * Attempts to parse the contents of this KomToken into an integer value using a radix of 10.
      */
     public int intValue() {
@@ -145,13 +138,6 @@ public class KomToken implements Serializable {
 	}
     }
 
-    /**
-     * @deprecated use intValue() instead
-     */
-    public int toInt() {
-	return intValue();
-    }
-   
     public String toString() {
 	String ktype = "TOKEN";
 	if (this instanceof Hollerith)

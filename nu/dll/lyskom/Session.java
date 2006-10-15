@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.94 2006/05/20 16:37:16 pajp Exp $
+ * @version $Id: Session.java,v 1.95 2006/10/15 11:28:52 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1699,7 +1699,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
      * @param persNo The person number for which to query information
      * @see nu.dll.lyskom.Session#getUnreadConfsList(int)
      */
-    public  int[] getUnreadConfs(int persNo)
+    public int[] getUnreadConfs(int persNo)
     throws IOException {
 	KomToken[] parameters = waitFor(doGetUnreadConfs(persNo).getId()).
 	    getParameters();
