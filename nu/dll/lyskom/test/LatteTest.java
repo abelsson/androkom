@@ -56,7 +56,7 @@ public class LatteTest extends TestCase {
     public void testChangeName() {
 	try {
 	    byte[] myname = session.getMyPerson().getUConference().getName();
-	    String newName = "LatteTest (åäö) " + random.nextInt(99999);
+	    String newName = "LatteTest (Ã¥Ã¤Ã¶) " + random.nextInt(99999);
 	    session.changeName(session.getMyPerson().getNo(), newName);
 	    assertTrue("ChangeName", Arrays.equals(newName.getBytes(), session.getMyPerson().getUConference().getName()));
 	    session.changeName(session.getMyPerson().getNo(), new String(myname));
@@ -123,7 +123,7 @@ public class LatteTest extends TestCase {
 
     public void testKomToken() {
 	KomToken t1 = new KomToken(new byte[] { 'a', 'b', 'c', 'd', 'e', (byte) 0xe5, (byte) 0xe4, (byte) 0xf6 });
-	KomToken t2 = new KomToken("abcdeåäö");
+	KomToken t2 = new KomToken("abcdeÃ¥Ã¤Ã¶");
 	assertEquals(t1, t2);
 	assertTrue(Arrays.equals(t1.getContents(), t2.getContents()));
 	KomToken t3 = new KomToken("4711");
