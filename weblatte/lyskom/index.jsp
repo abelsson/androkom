@@ -37,6 +37,16 @@
     while (penum.hasMoreElements()) {
 	String name = (String) penum.nextElement();
 	String[] values = request.getParameterValues(name);
+	for (int i=0; i < values.length; i++) {
+	    byte[] b = values[i].getBytes("iso-8859-1");
+	    String s = new String(b, "utf-8");
+	    if (!s.equals(values[i])) {
+	       // means that the parameter probably was incorrectly
+	       // decoded using iso-8859-1 but sent as utf-8 by the
+	       // browser
+	       values[i] = s;
+	    }
+	}
 	if (values == null || values.length == 0) {
 	    parameters.put(name, "");
 	} else if (values.length == 1) {
@@ -1673,7 +1683,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.98 $
+$Revision: 1.99 $
 </div>
 </body>
 </html>
