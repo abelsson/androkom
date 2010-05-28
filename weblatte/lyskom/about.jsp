@@ -186,13 +186,10 @@
     </p>
     <p>
       För mer informell kontakt och diskussion om Weblatte så får du
-      gärna posta i något utav de "officiella" LatteKOM-möten som
+      gärna posta i något utav de officiella LatteKOM-möten som
       finns på följande KOM-system:
       <ul>
-      <li><a
-      href="http://kom.dll.nu/?server=kom.sno.pp.se&conference=19">SnoppKOM: LatteKOM (nu.dll.lyskom.*, T2,
-	  SwingKOM, ...) (möte 19)</a>
-      <li><a href="http://kom.dll.nu/?server=kom.lysator.liu.se&conference=11056">LysLysKOM: LysKOM; Javaklienter baserade på LatteKOM (möte 11056)</a>
+      <li><a href="/?server=kom.lysator.liu.se&conference=11056">LysLysKOM: LysKOM; Weblatte (och andra) LatteKOM-klienter (möte 11056)</a>
       </ul>
     </p>
     <h2>Upphov, copyright, et.c.</h2>
@@ -210,7 +207,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.16 $
+      $Revision: 1.17 $
     </p>
   </body>
 </html>
