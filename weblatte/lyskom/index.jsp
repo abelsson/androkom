@@ -530,6 +530,9 @@
 	    for (int i=0; i < names.length; i++) 
 		out.println("<li>" + lookupName(lyskom, names[i].getNo(), true));
 	    out.println("</ul>");
+	    %>
+	    </div>
+	    <%
 	}
     }
 
@@ -1683,7 +1686,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.99 $
+$Revision: 1.100 $
 </div>
 </body>
 </html>
