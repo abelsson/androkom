@@ -1613,8 +1613,7 @@ Du är inte inloggad.
 </table>
 </form>
 <p class="banner">
-Nyfiken på hur Weblatte kommer att se ut i framtiden?
-Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">http://lala.gnapp.org:8080/lyskom/</a></b> och hjälp oss att göra den bättre!
+Välkommen till Weblatte!
 </p>
 <%
     } else {
@@ -1686,7 +1685,7 @@ Prova gärna testversionen på <b><a href="http://lala.gnapp.org:8080/lyskom/">htt
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.100 $
+$Revision: 1.101 $
 </div>
 </body>
 </html>
