@@ -34,9 +34,9 @@ Request-URI: <%= request.getAttribute("javax.servlet.error.request_uri") +
 	(request.getQueryString() != null ? ("?"+request.getQueryString()) : "") %>
 
 Request-parametrar: <%
-    Enumeration enum = request.getParameterNames();
-    while (enum.hasMoreElements()) {
-	String name = (String) enum.nextElement();
+    Enumeration en = request.getParameterNames();
+    while (en.hasMoreElements()) {
+	String name = (String) en.nextElement();
 	out.print(name+"=");
 	if (name.equals("lyskomLosen"))
 	    out.println("********");
