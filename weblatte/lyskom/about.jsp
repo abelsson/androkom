@@ -25,10 +25,12 @@
       href="http://webkom.lysator.liu.se/">WebKOM</a> och <a
       href="http://www.lysator.liu.se/jyskom/">JySKOM</a>.
     </p>
+<!--
     <p>
       Den officiella Weblatte-URLen är:
       <a href="http://kom.dll.nu/">http://kom.dll.nu</a>.
     </p>
+-->
     <p>Om du vill köra en egen Weblatte-server så krävs en JSP-motor
       (Resin rekommenderas) och lite CVS-färdigheter för att hämta hem
       koden från SourceForge. Fråga i KOM för mer information (se
@@ -207,7 +209,7 @@
       som den distribueras under. Tack för visat intresse!
     </p>
     <p class="footer">
-      $Revision: 1.17 $
+      $Revision: 1.18 $
     </p>
   </body>
 </html>
