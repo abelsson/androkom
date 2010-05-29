@@ -86,7 +86,7 @@ import java.lang.reflect.*;
  * </p>
  *
  * @author rasmus@sno.pp.se
- * @version $Id: Session.java,v 1.95 2006/10/15 11:28:52 pajp Exp $
+ * @version $Id: Session.java,v 1.96 2010/05/29 20:00:15 pajp Exp $
  * @see nu.dll.lyskom.Session#addRpcEventListener(RpcEventListener)
  * @see nu.dll.lyskom.RpcEvent
  * @see nu.dll.lyskom.RpcCall
@@ -1544,7 +1544,7 @@ implements AsynchMessageReceiver, RpcReplyReceiver, RpcEventListener {
 	} while (m.laterTextsExists && (noOfExistingTexts - offset) > 0);
 
 	synchronized (ltgCache) {
-	    ltgCache.put(key, new WeakReference(m));
+	    ltgCache.put(key, new SoftReference(m));
 	}
 	return m;
 		 
