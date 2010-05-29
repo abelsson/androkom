@@ -34,12 +34,18 @@ import java.util.List;
  * This class handles storage of global text numbers for one conference.
  */
 public class TextMapping implements Enumeration {
-    public final static int DEBUG = 4;
+    public final static int DEBUG = 2;
     Hashtable hash = new Hashtable();
     int enumc = 0;
+    int rangeBegin = 0;
+    int rangeEnd = 0;
     List list = new LinkedList();
     boolean laterTextsExists;
     //int[] list;
+
+    public String toString() {
+	return "<TextMapping: range-begin: " + rangeBegin + ", range-end: " + rangeEnd + ", later-texts-exists: " + laterTextsExists + ", data size: " + hash.size() + ">";
+    }
 
     public boolean laterTextsExists() {
 	return laterTextsExists;
@@ -112,8 +118,8 @@ public class TextMapping implements Enumeration {
      * deleted)
      */
     public void update(int offset, KomToken[] tk, boolean keepZeroes) {
-	int rangeBegin = tk[offset++].intValue();
-	int rangeEnd = tk[offset++].intValue();
+	rangeBegin = tk[offset++].intValue();
+	rangeEnd = tk[offset++].intValue();
 	if (offset >= tk.length) {
 	    StringBuffer buf = new StringBuffer();
 	    for (int i=0; i < tk.length; i++) buf.append(tk[i].toString()).append(" ");
@@ -165,7 +171,7 @@ public class TextMapping implements Enumeration {
 	    Debug.println("lastLocal: " + lastLocal() + ", list.length==" + list.size() + ", enumc==" + enumc);
     }
 
-    boolean search(int localNo) {
+    public boolean search(int localNo) {
 	return list.contains(new Integer(localNo));
     }
     /**

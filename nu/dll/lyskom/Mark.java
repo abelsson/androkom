@@ -8,7 +8,7 @@ import java.util.Iterator;
  *
  * @see nu.dll.lyskom.Session#getMarks()
  */
-public class Mark {
+public class Mark implements java.io.Serializable {
     int text;
     int type;
 

@@ -1294,6 +1294,7 @@
 		if (parameters.containsKey("skipTo")) {
 		    skipTo = Integer.parseInt(parameter(parameters, "skipTo"));
 		}
+		Debug.println("list-news: unreadConfsList: " + unreadConfsList);
 		synchronized (unreadConfsList) {
 		    boolean abort = false;
 		    while (confIter.hasNext() && !abort) {
@@ -1313,6 +1314,7 @@
 			Membership membership;
 			try {
 		  	    membership = lyskom.queryReadTexts(me, conf);
+			    Debug.println("membership: " + membership);
 			} catch (RpcFailure ex1) {
 			    if (ex1.getError() == Rpc.E_not_member) {
 				Debug.println("warning: index.jsp: listnews: removing non-member conf " + conf);
@@ -1328,39 +1330,40 @@
 			    continue;
 			}
 
-			int[] readTexts = membership.getReadTexts();
 			UConference uconf = lyskom.getUConfStat(conf);
 			int unreads = 0, highestLocalNo = uconf.getHighestLocalNo();
-			if (highestLocalNo > membership.getLastTextRead()) {
-			    unreads = highestLocalNo - membership.getLastTextRead();
-			}
-			if (unreads == 0) {
-			    Debug.println("index.jsp: listnews: removing conf " + conf + " with no unreads");
-			    lyskom.setLastRead(conf, highestLocalNo);
-			    confIter.remove();
-			    continue;
-			}
-			if (preferences.getBoolean("prequery-local-texts")) {
-			    List list = lyskom.nextUnreadTexts(conf, false, 
-					    preferences.getInt("show-multiple-texts"), false);
-			    if (list.size() == 0) {
-				confIter.remove();
-				continue;
+			List ranges = membership.getReadRanges();
+			Debug.println("read-ranges: " + ranges);
+			Membership.Range lastRange = null;
+			boolean fastUnreads = preferences.getBoolean("fast-unreads");
+			for (Object _range : ranges) {
+			    Membership.Range range = (Membership.Range) _range;
+			    if (lastRange != null) {
+			    	if (fastUnreads) {
+			    	    unreads += range.first - lastRange.last;
+			    	} else {
+			    	    int diff = range.first - lastRange.last;
+			    	    TextMapping tm = lyskom.localToGlobal(conf, lastRange.last+1, diff);
+			    	    for (int localno = lastRange.last+1; localno < range.first; localno++) {
+				    	if (tm.search(localno)) unreads++;
+				    }
+				}
 			    }
+			    lastRange = range;
 			}
-			int readAfterLast = 0;
+			if (lastRange != null) {
+			   if (!fastUnreads) {
+				TextMapping tm = lyskom.localToGlobal(conf, lastRange.last+1, highestLocalNo-lastRange.last);
+				for (int localno = lastRange.last+1; localno <= highestLocalNo; localno++) {
+				    if (tm.search(localno)) unreads++;
+				}
+			    } else {
+			    	unreads += highestLocalNo-lastRange.last;
+			    }
+						   
+			}
 			sum += unreads;
-		        Debug.println("conf " + conf + ": " + unreads + " unreads.");
-			Debug.println("conf " + conf + ": read-texts length: " + readTexts.length);
-			List readTextsList = new LinkedList();
-			for (int i=0;i < readTexts.length; i++) {
-			    if (readTexts[i] > membership.getLastTextRead()) {
-				readAfterLast++;
-			    }
-			    readTextsList.add(new Integer(readTexts[i]));
-			}
-			Debug.println("conf " + conf + ": read-after-last: " + readAfterLast);
-			Debug.println("conf " + conf + ": read-texts: " + readTextsList);
+			
 			confsum++;
 			out.print("<li> <a href=\"" + myURI(request) + "?conference=" +
 				  conf + "\">" + 
@@ -1409,7 +1412,7 @@
 	    MultipartParser multip = null;
 	    if (parameter(parameters, "upload") != null) {
 		multip = new MultipartParser(request, 1024*1024);
-	    	Part nextPart = null;
+		com.oreilly.servlet.multipart.Part nextPart = null;
 		boolean imageOK = false;
 		String imageFileName = null;
 		File target = null;
@@ -1685,7 +1688,7 @@ Välkommen till Weblatte!
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.101 $
+$Revision: 1.102 $
 </div>
 </body>
 </html>
