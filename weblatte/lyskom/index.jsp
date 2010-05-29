@@ -1352,7 +1352,7 @@
 			    lastRange = range;
 			}
 			if (lastRange != null) {
-			   if (!fastUnreads) {
+			   if (!fastUnreads && highestLocalNo > lastRange.last) {
 				TextMapping tm = lyskom.localToGlobal(conf, lastRange.last+1, highestLocalNo-lastRange.last);
 				for (int localno = lastRange.last+1; localno <= highestLocalNo; localno++) {
 				    if (tm.search(localno)) unreads++;
@@ -1688,7 +1688,7 @@ Välkommen till Weblatte!
     }
 %>
 <a href="about.jsp">Hjälp och information om Weblatte</a><br/>
-$Revision: 1.102 $
+$Revision: 1.103 $
 </div>
 </body>
 </html>
