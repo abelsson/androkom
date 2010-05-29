@@ -55,7 +55,7 @@
     if (_ct != null && _ct.startsWith("multipart/form-data")) {
 	MultipartParser multip = new MultipartParser(request, 1024*1024);
     	Debug.println("____ composer.jsp using multipartparser " + multip);
-	Part nextPart = null;
+	com.oreilly.servlet.multipart.Part nextPart = null;
 	while ((nextPart = multip.readNextPart()) != null) {
 	    if (nextPart.isFile()) {
 		FilePart fpart = (FilePart) nextPart;
@@ -634,7 +634,7 @@
 </form>
 
 <div class="footer">
-$Id: composer.jsp,v 1.30 2005/12/20 12:50:58 pajp Exp $
+$Id: composer.jsp,v 1.31 2010/05/29 18:56:26 pajp Exp $
 </div>
 </body>
 </html>
