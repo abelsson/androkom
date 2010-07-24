@@ -170,7 +170,11 @@ public class TextMapping implements Enumeration<Object> {
             if (DEBUG > 0)
                 Debug.println("TextMapping.update(): dense mode");
             int firstLocalNo = tk[offset++].intValue();
-            int[] numbers = ((KomTokenArray) tk[offset++]).intValues();
+      
+            offset++; 
+            KomToken arr = tk[offset++];
+
+            int[] numbers = ((KomTokenArray) arr).intValues();
             // list = new int[numbers.length];
             for (int i = 0; i < numbers.length; i++) {
                 if ((numbers[i] != 0) || keepZeroes) {
