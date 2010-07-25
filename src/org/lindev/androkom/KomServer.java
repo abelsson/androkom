@@ -14,7 +14,9 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
+import android.text.Html;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class KomServer extends Service {
@@ -24,24 +26,29 @@ public class KomServer extends Service {
      * runs in the same process as its clients, we don't need to deal with
      * IPC.
      */
-    public class LocalBinder extends Binder {
-        KomServer getService() {
+    public class LocalBinder extends Binder 
+    {
+        KomServer getService() 
+        {
             return KomServer.this;
         }
     }
 
-    public class ConferenceInfo {
+    public class ConferenceInfo 
+    {
     	public int id;
     	public String name;
     	
     	@Override
-    	public String toString() {
+    	public String toString() 
+    	{
     		return name + " <" + id + ">";
     	}
     }
     
 	@Override
-    public void onCreate() {
+    public void onCreate() 
+	{
         super.onCreate();
         
         username = "..";
@@ -53,7 +60,8 @@ public class KomServer extends Service {
 	
 	
 	@Override
-	public int onStartCommand(Intent intent, int flags, int startId) {
+	public int onStartCommand(Intent intent, int flags, int startId)
+	{
 		Log.i("LocalService", "Received start id " + startId + ": " + intent);
 		// We want this service to continue running until it is explicitly
 		// stopped, so return sticky.
@@ -62,8 +70,8 @@ public class KomServer extends Service {
 
 	
 	@Override
-	public IBinder onBind(Intent arg0) {
-		// TODO Auto-generated method stub
+	public IBinder onBind(Intent arg0) 
+	{
 		return mBinder;
 	}
 	
@@ -72,7 +80,8 @@ public class KomServer extends Service {
 
 
     @Override
-    public void onDestroy() {
+    public void onDestroy() 
+    {
  
         // Tell the user we stopped.
         Toast.makeText(this,"KomServer stopped", Toast.LENGTH_SHORT).show();
@@ -105,31 +114,37 @@ public class KomServer extends Service {
 			e.printStackTrace();
 		}
     }
-    public List<ConferenceInfo> fetchConferences() throws IOException {
-    	
+    
+    public List<ConferenceInfo> fetchConferences() 
+    {
     	ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-    	   
-    	if (!s.getConnected())
-    		connect();
-    	if (!s.getLoggedIn()) {
-    		login(username, password);
-    		Log.i("androkom", "logged in to " + server + " just fine");
+    	try { 
+    		if (!s.getConnected())
+    			connect();
+    		if (!s.getLoggedIn()) {
+    			login();
+    			Log.i("androkom", "logged in to " + server + " just fine");
+    		}
+
+    		s.updateUnreads();
+
+    		Membership[] m = s.getUnreadMembership();
+    		for (int i = 0; i < m.length; i++) {
+    			int conf = m[i].getConference();
+    			String name = s.toString(s.getConfName(conf));
+    			Log.i("androkom", name + " <" + conf + ">");
+
+    			ConferenceInfo info = new ConferenceInfo();
+    			info.id = conf;
+    			info.name = name;
+
+    			arr.add(info);
+    		}
+    	} catch (IOException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
     	}
-    	s.updateUnreads();
-    	Membership[] m = s.getUnreadMembership();
-    	for (int i = 0; i < m.length; i++) {
-    		int conf = m[i].getConference();
-    		String name = s.toString(s.getConfName(conf));
-    		Log.i("androkom", name + " <" + conf + ">");
-    		
-    		ConferenceInfo info = new ConferenceInfo();
-    		info.id = conf;
-    		info.name = name;
-    		
-    		arr.add(info);
-    	}
-    	
-    	
+
     	return arr;
     }
     
@@ -143,10 +158,9 @@ public class KomServer extends Service {
 		}
     }
     
-    public String fetchMeeting() {
-    	
-    	try {
-    		
+    public String fetchMeeting() 
+    {
+    	try {		
 			int textNo = s.nextUnreadText(s.getCurrentConference(), false);
 			Text text = s.getText(textNo);
 			return text.getBodyString();
@@ -157,7 +171,8 @@ public class KomServer extends Service {
 		return "Invalid text";
     }
     
-    void login(String username, String password) {
+    void login() 
+    {
         ConfInfo usernames[] = new ConfInfo[0];
         try {
             usernames = s.lookupName(username, true, false);
@@ -176,9 +191,31 @@ public class KomServer extends Service {
         }
     }
 
-    public static Session getSession() { return s; }
+    public void displayText(final TextView tv) 
+    {
+		final int textNo;
+		try {
+			textNo = s.nextUnreadText(false);	 			
+			if (textNo < 0) {
+				tv.setText("All read");
+				s.nextUnreadConference(true);
+			} else {
+				final Text text = s.getText(textNo);
+				final String username = s.getConfStat(text.getAuthor()).getNameString();
+				
+				final String str = "<b>Author: "+username+"<br/>Subject: " + text.getSubjectString() + "</b><br/>" + text.getBodyString();
+				
+				tv.setText(Html.fromHtml(str), TextView.BufferType.SPANNABLE);
+
+				s.markAsRead(textNo);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	}
     
-    private static Session s = null;
+    private Session s;
     private String username;
     private String password;
     private String server;
