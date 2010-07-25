@@ -13,6 +13,8 @@ import android.content.Intent;
 import android.net.Uri;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -29,7 +31,6 @@ public class ConferenceList extends ListActivity
                 
         mTimer = new Timer();
 
-        getApp().doBindService();
         	
 		mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.main);
 	    setListAdapter(mAdapter);
@@ -74,7 +75,8 @@ public class ConferenceList extends ListActivity
     protected void onDestroy() 
     {
         super.onDestroy();
-        getApp().doUnbindService();
+        if (isFinishing())
+        	getApp().doUnbindService();
     }
     
     @Override
@@ -88,6 +90,14 @@ public class ConferenceList extends ListActivity
 
     }
     
+    @Override 
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+    	MenuInflater inflater = getMenuInflater();
+
+    	inflater.inflate(R.menu.conference, menu);
+    	return true;
+    }
     
     private void populateConferences() 
     {

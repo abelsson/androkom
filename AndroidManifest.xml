@@ -7,31 +7,36 @@
                  android:icon="@drawable/icon" android:label="@string/app_name">
     	<!--  List of conferences with unread texts -->
         <activity android:name=".ConferenceList"
-                  android:label="@string/app_name">
-            <intent-filter>
-                <action android:name="android.intent.action.MAIN" />
-                <category android:name="android.intent.category.LAUNCHER" />
-            </intent-filter>
+                  android:label="Conference list">          
         </activity>
         
          <!--  A single conference -->
          <activity android:name=".Conference"       
                    android:label="Conference">
-            <!-- This filter says that we can view a conference -->
-            <intent-filter android:label="edit">
-                <action android:name="android.intent.action.VIEW" />
-                <action android:name="android.intent.action.EDIT" />
-                <category android:name="android.intent.category.DEFAULT" />
-            </intent-filter>
-            <data android:mimeType="vnd.android.cursor.item/vnd.google.note" />
+        </activity>
+        
+         <!--  Create a KOM message -->
+         <activity android:name=".CreateText"       
+                   android:label="CreateText"
+                   android:windowSoftInputMode="stateVisible|adjustResize">
+        </activity>
+        
+         <!--  Login dialog -->
+         <activity android:name=".Login"       
+                   android:label="@string/app_name"
+                   android:windowSoftInputMode="stateVisible|adjustResize">
+
+           <intent-filter>
+                <action android:name="android.intent.action.MAIN" />
+                <category android:name="android.intent.category.LAUNCHER" />
+           </intent-filter>
+       
         </activity>
         
         <!--  Connection to the KOM server -->
         <service android:name=".KomServer"
         		 android:label="@string/app_name">        	
         </service>        
-
-
 
     </application>
 

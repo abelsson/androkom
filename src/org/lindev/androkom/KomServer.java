@@ -4,6 +4,7 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcFailure;
@@ -51,9 +52,6 @@ public class KomServer extends Service {
 	{
         super.onCreate();
         
-        username = "..";
-        password = "...";
-        server = "kom.lysator.liu.se";
         if (s == null)
         	s = new Session();
 	}
@@ -105,27 +103,23 @@ public class KomServer extends Service {
     	
     }
 
-    public void connect() 
+    public int connect(String server) 
     {
     	try {
 			s.connect(server);
     	} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
+			return -1;
 		}
+    	
+    	return 0;
     }
     
     public List<ConferenceInfo> fetchConferences() 
     {
     	ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
     	try { 
-    		if (!s.getConnected())
-    			connect();
-    		if (!s.getLoggedIn()) {
-    			login();
-    			Log.i("androkom", "logged in to " + server + " just fine");
-    		}
-
     		s.updateUnreads();
 
     		Membership[] m = s.getUnreadMembership();
@@ -171,35 +165,40 @@ public class KomServer extends Service {
 		return "Invalid text";
     }
     
-    void login() 
+    public String login(String username, String password, String server) 
     {
+		if (!s.getConnected()) {
+			if (connect(server) != 0)
+				return "Couldn't connect to server";
+		}
+
         ConfInfo usernames[] = new ConfInfo[0];
         try {
             usernames = s.lookupName(username, true, false);
-            if (usernames.length != 1) {
-                Log.e("androkom", "Invalid/ambigious username");
-                System.exit(-1);
+            if (usernames.length != 1) {            
+                return "Invalid/ambigious username";
             } else {
                 // login as hidden
                 if (!s.login(usernames[0].confNo, password, true)) {
-                	Log.e("androkom","Login failed");
-                    System.exit(-1);
+                	return "Invalid password";
                 }
             }
         } catch (Exception e) {
         	Log.e("androkom", "Caught " + e.getClass().getName());
+        	return "Unknown error";
         }
+        return "";
     }
 
-    public void displayText(final TextView tv) 
+    public int displayText(final TextView tv) 
     {
-		final int textNo;
 		try {
-			textNo = s.nextUnreadText(false);	 			
+			final int textNo = s.nextUnreadText(false);	 			
 			if (textNo < 0) {
 				tv.setText("All read");
 				s.nextUnreadConference(true);
-			} else {
+			} 
+			else {
 				final Text text = s.getText(textNo);
 				final String username = s.getConfStat(text.getAuthor()).getNameString();
 				
@@ -208,16 +207,48 @@ public class KomServer extends Service {
 				tv.setText(Html.fromHtml(str), TextView.BufferType.SPANNABLE);
 
 				s.markAsRead(textNo);
+				return textNo;
 			}
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+		return -1;
 	}
     
+    public void createText(String subject, String body)
+    {
+    	createText(subject, body, -1);
+    }
+    
+    public void createText(String subject, String body, int inReplyTo) 
+    {
+    	Text text = new Text();
+    	
+    	if (inReplyTo != -1)
+    		text.addCommented(inReplyTo);
+    	
+    	text.addRecipient(s.getCurrentConference());
+    	
+    	
+    	final byte[] subjectBytes = subject.getBytes();
+    	final byte[] bodyBytes = body.getBytes();
+    	
+    	byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+    	System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+    	System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+    	contents[subjectBytes.length] = (byte) '\n';
+    	  	
+    	text.setContents(contents);
+    	text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
+    	 
+    	try {
+			s.createText(text);
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     private Session s;
-    private String username;
-    private String password;
-    private String server;
 
 }
