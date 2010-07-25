@@ -7,7 +7,6 @@ import java.util.List;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
 import org.lysator.lattekom.Membership;
-import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
 
@@ -20,12 +19,19 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
-public class KomServer extends Service {
-
+/**
+ * A service which keeps the Lattekom session object and all
+ * LysKOM stuff for the various activities in the app.
+ * 
+ * @author henrik
+ *
+ */
+public class KomServer extends Service 
+{
+	
     /**
-     * Class for clients to access.  Because we know this service always
-     * runs in the same process as its clients, we don't need to deal with
-     * IPC.
+     * Class for clients to access.  Because we assume this service always
+     * runs in the same process as its clients, we don't deal with IPC.
      */
     public class LocalBinder extends Binder 
     {
@@ -35,6 +41,9 @@ public class KomServer extends Service {
         }
     }
 
+    /**
+     * Small helper class which maps conference names and LysKOM id's.
+     */
     public class ConferenceInfo 
     {
     	public int id;
@@ -66,17 +75,17 @@ public class KomServer extends Service {
 		return START_STICKY;
 	}
 
-	
 	@Override
 	public IBinder onBind(Intent arg0) 
 	{
 		return mBinder;
 	}
 	
-    // This is the object that receives interactions from clients. 
-    private final IBinder mBinder = new LocalBinder();
 
-
+	/**
+	 * Called upon destruction of the service. If we're logged in,
+	 * we want to log out and close the connection now.
+	 */
     @Override
     public void onDestroy() 
     {
@@ -103,6 +112,11 @@ public class KomServer extends Service {
     	
     }
 
+    /**
+     * Connect to LysKOM server.
+     * 
+     * @return 0 on success, non-zero on failure.
+     */
     public int connect(String server) 
     {
     	try {
@@ -116,6 +130,9 @@ public class KomServer extends Service {
     	return 0;
     }
     
+    /**
+     * Fetch a list of conferences with unread texts.
+     */
     public List<ConferenceInfo> fetchConferences() 
     {
     	ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
@@ -142,6 +159,9 @@ public class KomServer extends Service {
     	return arr;
     }
     
+    /**
+     * Set currently active conference.
+     */
     public void setConference(int confNo) 
     {
     	try {
@@ -152,6 +172,10 @@ public class KomServer extends Service {
 		}
     }
     
+    /**
+     * Fetch next unread text. 
+     * 
+     */
     public String fetchMeeting() 
     {
     	try {		
@@ -165,6 +189,11 @@ public class KomServer extends Service {
 		return "Invalid text";
     }
     
+    /**
+     * Log in to server. 
+     * 
+     * @return Empty string on success, string describing failure otherwise
+     */
     public String login(String username, String password, String server) 
     {
 		if (!s.getConnected()) {
@@ -190,6 +219,13 @@ public class KomServer extends Service {
         return "";
     }
 
+    /**
+     * Display the next unread text in a TextView. 
+     * 
+     * TODO: This should not interact directly with GUI components.
+     * 
+     * @return text number displayed
+     */
     public int displayText(final TextView tv) 
     {
 		try {
@@ -202,7 +238,9 @@ public class KomServer extends Service {
 				final Text text = s.getText(textNo);
 				final String username = s.getConfStat(text.getAuthor()).getNameString();
 				
-				final String str = "<b>Author: "+username+"<br/>Subject: " + text.getSubjectString() + "</b><br/>" + text.getBodyString();
+				final String str = "<b>Author: "+username+ 
+				                   "<br/>Subject: " + text.getSubjectString() + 
+				                   "</b><br/>" + text.getBodyString();
 				
 				tv.setText(Html.fromHtml(str), TextView.BufferType.SPANNABLE);
 
@@ -216,11 +254,17 @@ public class KomServer extends Service {
 		return -1;
 	}
     
+    /**
+     * Create a text, which is not a reply to another text.
+     */
     public void createText(String subject, String body)
     {
     	createText(subject, body, -1);
     }
     
+    /**
+     * Create a text, in reply to another text.
+     */
     public void createText(String subject, String body, int inReplyTo) 
     {
     	Text text = new Text();
@@ -249,6 +293,10 @@ public class KomServer extends Service {
 			e.printStackTrace();
 		}
     }
+    
     private Session s;
+
+    // This is the object that receives interactions from clients. 
+    private final IBinder mBinder = new LocalBinder();
 
 }

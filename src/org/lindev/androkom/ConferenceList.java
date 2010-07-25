@@ -1,6 +1,5 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -8,11 +7,8 @@ import java.util.TimerTask;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.ListActivity;
-import android.content.ContentUris;
 import android.content.Intent;
-import android.net.Uri;
 import android.os.Bundle;
-import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -21,27 +17,35 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+/**
+ * Show a list of all conferences with unread texts.
+ * 
+ * @author henrik
+ *
+ */
 public class ConferenceList extends ListActivity 
 {
-	/** Called when the activity is first created. */
+	/**
+	 * Instantiate activity.  
+	 */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
                 
         mTimer = new Timer();
-
-        	
+ 	
 		mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.main);
 	    setListAdapter(mAdapter);
 	    
-	  
         ListView lv = getListView();
-        lv.setTextFilterEnabled(true);
-        
-                
+        lv.setTextFilterEnabled(true);   
     }
     
+    /**
+     * While activity is active, keep a timer running to periodically refresh
+     * the list of conferences with unread messages.
+     */
     @Override
     public void onResume()
     {
@@ -52,6 +56,7 @@ public class ConferenceList extends ListActivity
 
 			@Override
 			public void run() {
+				// Must populate list in UI thread.
 				runOnUiThread(new Runnable() {
 					public void run() {						
 						populateConferences();		
@@ -64,6 +69,9 @@ public class ConferenceList extends ListActivity
         
     }
     
+    /**
+     * If activity is no longer active, cancel periodic updates.
+     */
     @Override
     public void onPause()
     {
@@ -79,6 +87,10 @@ public class ConferenceList extends ListActivity
         	getApp().doUnbindService();
     }
     
+    /**
+     * Called when a conference has been clicked. Switch to Conference activity, 
+     * passing the ID along.
+     */
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) 
     {
@@ -90,6 +102,9 @@ public class ConferenceList extends ListActivity
 
     }
     
+    /**
+     * Show options menu. Currently does nothing useful.
+     */
     @Override 
     public boolean onCreateOptionsMenu(Menu menu)
     {
@@ -99,6 +114,9 @@ public class ConferenceList extends ListActivity
     	return true;
     }
     
+    /**
+     * Refresh list of unread conferences.
+     */
     private void populateConferences() 
     {
     	mAdapter.clear();
@@ -108,7 +126,6 @@ public class ConferenceList extends ListActivity
     		mAdapter.add(elem);
     	}
 
-
     	mAdapter.notifyDataSetChanged();
     }
 	
@@ -117,7 +134,7 @@ public class ConferenceList extends ListActivity
 		return (App)getApplication();
 	}
 	
-    
+ 
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<ConferenceInfo> mAdapter;
 	private Timer mTimer;

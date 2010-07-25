@@ -6,7 +6,21 @@ import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
 
-public class CreateText extends Activity {
+/**
+ * Activity showing a dialog in which the user can create 
+ * new texts. Currently assumes that each text is in reply 
+ * to another text.
+ * 
+ * @author henrik
+ *
+ */
+public class CreateText extends Activity 
+{
+	
+	/**
+	 * Create activity. Just a plain old dialog with
+	 * a subject, body and cancel and post buttons.
+	 */
 	@Override
 	public void onCreate(Bundle savedInstanceState) 
 	{
@@ -20,14 +34,17 @@ public class CreateText extends Activity {
 		Button cancelButton = (Button) findViewById(R.id.cancel);
 		
 		confirmButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) { sendMessage(); }
+			public void onClick(View view) { createText(); }
 		});
 		cancelButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) { cancelMessage(); }
+			public void onClick(View view) { cancelText(); }
 		});
 	}
 	
-	private void sendMessage()
+	/**
+	 * Request a new message be posted.
+	 */
+	private void createText()
 	{
 		String subject = mSubject.getText().toString();
 		String body = mBody.getText().toString();
@@ -35,7 +52,10 @@ public class CreateText extends Activity {
 		finish();
 	}
 	
-	private void cancelMessage()
+	/**
+	 * New text canceled. Just finish up and die.
+	 */
+	private void cancelText()
 	{
 		finish();
 	}

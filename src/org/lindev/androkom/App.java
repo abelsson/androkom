@@ -8,8 +8,19 @@ import android.content.ServiceConnection;
 import android.os.IBinder;
 import android.widget.Toast;
 
+/**
+ * Common application class shared among all the activities. It's 
+ * main purpose in life is to keep a common instance of KomServer 
+ * for all activities to share.
+ * 
+ * @author henrik
+ *
+ */
 public class App extends Application 
 {
+	/**
+	 * Return a reference to the KomServer instance.
+	 */
 	public KomServer getKom() { return mBoundService; }
 	
 	@Override
@@ -61,7 +72,7 @@ public class App extends Application
             // cast its IBinder to a concrete class and directly access it.
             mBoundService = ((KomServer.LocalBinder)service).getService();
 
-            // Tell the user about this for our demo.
+            // Tell the user about it.
             Toast.makeText(App.this, "KomServer connected",
                     Toast.LENGTH_SHORT).show();
            

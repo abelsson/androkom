@@ -11,10 +11,19 @@ import android.view.View;
 import android.view.View.OnClickListener;
 import android.widget.TextView;
 
-
+/**
+ * Show texts in a LysKOM conference.
+ * 
+ * @author henrik
+ *
+ */
 public class Conference extends Activity 
 {
-	  /** Called when the activity is first created. */
+	/**
+	 * Set up activity. Will show individual LysKOM texts
+	 * with a click anywhere on the display moving to the 
+	 * next unread text. 
+	 */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
@@ -39,10 +48,19 @@ public class Conference extends Activity
 		
     }
 
+    /**
+     * Called when user has selected a menu item from the 
+     * menu button popup. 
+     */
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         // Handle item selection
         switch (item.getItemId()) {
+        
+        /*
+         * A reply to the current text was requested, so show a 
+         * CreateText activity. 
+         */
         case R.id.reply:
         	Intent intent = new Intent(this, CreateText.class);    
         	intent.putExtra("in-reply-to", currentTextId);
@@ -53,6 +71,11 @@ public class Conference extends Activity
             return super.onOptionsItemSelected(item);
         }
     }
+    
+    /**
+     * The menu key has been pressed, instantiate the requested
+     * menu.
+     */
     @Override 
     public boolean onCreateOptionsMenu(Menu menu)
     {
