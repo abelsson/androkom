@@ -19,11 +19,11 @@ import android.widget.TextView;
  */
 public class Conference extends Activity 
 {
-	/**
-	 * Set up activity. Will show individual LysKOM texts
-	 * with a click anywhere on the display moving to the 
-	 * next unread text. 
-	 */
+    /**
+     * Set up activity. Will show individual LysKOM texts
+     * with a click anywhere on the display moving to the 
+     * next unread text. 
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
@@ -35,17 +35,17 @@ public class Conference extends Activity
         
         getApp().getKom().setConference(confNo);
 
-		final TextView tv = new TextView(this);
-		currentTextId = getApp().getKom().displayText(tv);
-		setContentView(tv);
-		
-		tv.setOnClickListener(new OnClickListener() {		
-			public void onClick(View v) 
-			{				
-				currentTextId = getApp().getKom().displayText(tv);
-			}
-		});
-		
+        final TextView tv = new TextView(this);
+        currentTextId = getApp().getKom().displayText(tv);
+        setContentView(tv);
+        
+        tv.setOnClickListener(new OnClickListener() {       
+            public void onClick(View v) 
+            {               
+                currentTextId = getApp().getKom().displayText(tv);
+            }
+        });
+        
     }
 
     /**
@@ -62,10 +62,10 @@ public class Conference extends Activity
          * CreateText activity. 
          */
         case R.id.reply:
-        	Intent intent = new Intent(this, CreateText.class);    
-        	intent.putExtra("in-reply-to", currentTextId);
-        	startActivity(intent);
-        	return true;
+            Intent intent = new Intent(this, CreateText.class);    
+            intent.putExtra("in-reply-to", currentTextId);
+            startActivity(intent);
+            return true;
        
         default:
             return super.onOptionsItemSelected(item);
@@ -79,16 +79,16 @@ public class Conference extends Activity
     @Override 
     public boolean onCreateOptionsMenu(Menu menu)
     {
-    	MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getMenuInflater();
 
-    	inflater.inflate(R.menu.conference, menu);
-    	return true;
+        inflater.inflate(R.menu.conference, menu);
+        return true;
     }
 
-	App getApp() 
-	{
-		return (App)getApplication();
-	}
-	
-	private int currentTextId;
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+    
+    private int currentTextId;
 }

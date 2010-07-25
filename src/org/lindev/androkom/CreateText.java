@@ -16,56 +16,56 @@ import android.widget.EditText;
  */
 public class CreateText extends Activity 
 {
-	
-	/**
-	 * Create activity. Just a plain old dialog with
-	 * a subject, body and cancel and post buttons.
-	 */
-	@Override
-	public void onCreate(Bundle savedInstanceState) 
-	{
-		super.onCreate(savedInstanceState);
-		setContentView(R.layout.createtext);
-		
-		inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
-		mSubject = (EditText) findViewById(R.id.subject);
-		mBody = (EditText) findViewById(R.id.body);
-		Button confirmButton = (Button) findViewById(R.id.send);
-		Button cancelButton = (Button) findViewById(R.id.cancel);
-		
-		confirmButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) { createText(); }
-		});
-		cancelButton.setOnClickListener(new View.OnClickListener() {
-			public void onClick(View view) { cancelText(); }
-		});
-	}
-	
-	/**
-	 * Request a new message be posted.
-	 */
-	private void createText()
-	{
-		String subject = mSubject.getText().toString();
-		String body = mBody.getText().toString();
-		getApp().getKom().createText(subject, body, inReplyTo);
-		finish();
-	}
-	
-	/**
-	 * New text canceled. Just finish up and die.
-	 */
-	private void cancelText()
-	{
-		finish();
-	}
-	
-	App getApp() 
-	{
-		return (App)getApplication();
-	}
-	
-	private int inReplyTo;
-	private EditText mSubject;
-	private EditText mBody;
+    
+    /**
+     * Create activity. Just a plain old dialog with
+     * a subject, body and cancel and post buttons.
+     */
+    @Override
+    public void onCreate(Bundle savedInstanceState) 
+    {
+        super.onCreate(savedInstanceState);
+        setContentView(R.layout.createtext);
+        
+        inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
+        mSubject = (EditText) findViewById(R.id.subject);
+        mBody = (EditText) findViewById(R.id.body);
+        Button confirmButton = (Button) findViewById(R.id.send);
+        Button cancelButton = (Button) findViewById(R.id.cancel);
+        
+        confirmButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) { createText(); }
+        });
+        cancelButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) { cancelText(); }
+        });
+    }
+    
+    /**
+     * Request a new message be posted.
+     */
+    private void createText()
+    {
+        String subject = mSubject.getText().toString();
+        String body = mBody.getText().toString();
+        getApp().getKom().createText(subject, body, inReplyTo);
+        finish();
+    }
+    
+    /**
+     * New text canceled. Just finish up and die.
+     */
+    private void cancelText()
+    {
+        finish();
+    }
+    
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+    
+    private int inReplyTo;
+    private EditText mSubject;
+    private EditText mBody;
 }

@@ -25,19 +25,19 @@ import android.widget.Toast;
  */
 public class ConferenceList extends ListActivity 
 {
-	/**
-	 * Instantiate activity.  
-	 */
+    /**
+     * Instantiate activity.  
+     */
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
                 
         mTimer = new Timer();
- 	
-		mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.main);
-	    setListAdapter(mAdapter);
-	    
+    
+        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.main);
+        setListAdapter(mAdapter);
+        
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);   
     }
@@ -49,22 +49,22 @@ public class ConferenceList extends ListActivity
     @Override
     public void onResume()
     {
-    	super.onResume();
-    	       
-    	mTimer = new Timer();
+        super.onResume();
+               
+        mTimer = new Timer();
         mTimer.schedule(new TimerTask() {
 
-			@Override
-			public void run() {
-				// Must populate list in UI thread.
-				runOnUiThread(new Runnable() {
-					public void run() {						
-						populateConferences();		
-					}
-					
-				});						
-			}
-        	
+            @Override
+            public void run() {
+                // Must populate list in UI thread.
+                runOnUiThread(new Runnable() {
+                    public void run() {                     
+                        populateConferences();      
+                    }
+                    
+                });                     
+            }
+            
         }, 500, 1000);
         
     }
@@ -75,8 +75,8 @@ public class ConferenceList extends ListActivity
     @Override
     public void onPause()
     {
-    	super.onPause();
-    	mTimer.cancel();
+        super.onPause();
+        mTimer.cancel();
     }
     
     @Override
@@ -84,7 +84,7 @@ public class ConferenceList extends ListActivity
     {
         super.onDestroy();
         if (isFinishing())
-        	getApp().doUnbindService();
+            getApp().doUnbindService();
     }
     
     /**
@@ -94,11 +94,11 @@ public class ConferenceList extends ListActivity
     @Override
     protected void onListItemClick(ListView l, View v, int position, long id) 
     {
-    	Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();	
-    	
-    	Intent intent = new Intent(this, Conference.class);
-    	intent.putExtra("conference-id", mConferences.get((int)id).id);
-    	startActivity(intent);
+        Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();    
+        
+        Intent intent = new Intent(this, Conference.class);
+        intent.putExtra("conference-id", mConferences.get((int)id).id);
+        startActivity(intent);
 
     }
     
@@ -108,10 +108,10 @@ public class ConferenceList extends ListActivity
     @Override 
     public boolean onCreateOptionsMenu(Menu menu)
     {
-    	MenuInflater inflater = getMenuInflater();
+        MenuInflater inflater = getMenuInflater();
 
-    	inflater.inflate(R.menu.conference, menu);
-    	return true;
+        inflater.inflate(R.menu.conference, menu);
+        return true;
     }
     
     /**
@@ -119,23 +119,23 @@ public class ConferenceList extends ListActivity
      */
     private void populateConferences() 
     {
-    	mAdapter.clear();
+        mAdapter.clear();
 
-    	mConferences = getApp().getKom().fetchConferences();
-    	for(ConferenceInfo elem : mConferences) {
-    		mAdapter.add(elem);
-    	}
+        mConferences = getApp().getKom().fetchConferences();
+        for(ConferenceInfo elem : mConferences) {
+            mAdapter.add(elem);
+        }
 
-    	mAdapter.notifyDataSetChanged();
+        mAdapter.notifyDataSetChanged();
     }
-	
-	App getApp() 
-	{
-		return (App)getApplication();
-	}
-	
+    
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+    
  
     private List<ConferenceInfo> mConferences;
-	private ArrayAdapter<ConferenceInfo> mAdapter;
-	private Timer mTimer;
+    private ArrayAdapter<ConferenceInfo> mAdapter;
+    private Timer mTimer;
  }

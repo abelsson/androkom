@@ -18,26 +18,26 @@ import android.widget.Toast;
  */
 public class App extends Application 
 {
-	/**
-	 * Return a reference to the KomServer instance.
-	 */
-	public KomServer getKom() { return mBoundService; }
-	
-	@Override
-	public void onCreate()
-	{
-		super.onCreate();
-		
-		doBindService();
-	}
-	
-	@Override
-	public void onTerminate()
-	{
-		doUnbindService();
-		super.onTerminate();
-	}
-	
+    /**
+     * Return a reference to the KomServer instance.
+     */
+    public KomServer getKom() { return mBoundService; }
+    
+    @Override
+    public void onCreate()
+    {
+        super.onCreate();
+        
+        doBindService();
+    }
+    
+    @Override
+    public void onTerminate()
+    {
+        doUnbindService();
+        super.onTerminate();
+    }
+    
     public void doBindService() 
     {
         // Establish a connection with the service.  We use an explicit
