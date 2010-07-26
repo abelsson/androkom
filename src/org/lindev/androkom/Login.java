@@ -27,6 +27,8 @@ public class Login extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
         
+        getApp().doBindService();
+        
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
 

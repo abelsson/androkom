@@ -23,20 +23,6 @@ public class App extends Application
      */
     public KomServer getKom() { return mBoundService; }
     
-    @Override
-    public void onCreate()
-    {
-        super.onCreate();
-        
-        doBindService();
-    }
-    
-    @Override
-    public void onTerminate()
-    {
-        doUnbindService();
-        super.onTerminate();
-    }
     
     public void doBindService() 
     {
