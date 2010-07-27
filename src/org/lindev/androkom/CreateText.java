@@ -30,6 +30,7 @@ public class CreateText extends Activity
         inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
         mSubject = (EditText) findViewById(R.id.subject);
         mBody = (EditText) findViewById(R.id.body);
+        
         Button confirmButton = (Button) findViewById(R.id.send);
         Button cancelButton = (Button) findViewById(R.id.cancel);
         

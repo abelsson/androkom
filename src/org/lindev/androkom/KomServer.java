@@ -7,6 +7,7 @@ import java.util.List;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
 import org.lysator.lattekom.Membership;
+import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
 
@@ -56,7 +57,12 @@ public class KomServer extends Service
         }
     }
 
-    @Override
+    public KomServer() {
+		mLastTextNo = -1;
+	}
+
+
+	@Override
     public void onCreate() 
     {
         super.onCreate();
@@ -173,23 +179,6 @@ public class KomServer extends Service
     }
 
     /**
-     * Fetch next unread text. 
-     * 
-     */
-    public String fetchMeeting() 
-    {
-        try {       
-            int textNo = s.nextUnreadText(s.getCurrentConference(), false);
-            Text text = s.getText(textNo);
-            return text.getBodyString();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
-        }
-        return "Invalid text";
-    }
-
-    /**
      * Log in to server. 
      * 
      * @return Empty string on success, string describing failure otherwise
@@ -226,34 +215,62 @@ public class KomServer extends Service
      * 
      * @return text number displayed
      */
-    public int displayText(final TextView tv) 
+    public String getNextUnreadText() 
     {
         try {
-            final int textNo = s.nextUnreadText(false);             
-            if (textNo < 0) {
-                tv.setText("All read");
+        	mLastTextNo = s.nextUnreadText(false);
+            if (mLastTextNo < 0) {                
                 s.nextUnreadConference(true);
+                return "All read";
             } 
             else {
-                final Text text = s.getText(textNo);
-                final String username = s.getConfStat(text.getAuthor()).getNameString();
-
-                final String str = "<b>Author: "+username+ 
-                "<br/>Subject: " + text.getSubjectString() + 
-                "</b><br/>" + text.getBodyString();
-
-                tv.setText(Html.fromHtml(str), TextView.BufferType.SPANNABLE);
-
-                s.markAsRead(textNo);
-                return textNo;
+            	return getTextAsHTML(mLastTextNo);                                
             }
+            
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return -1;
+        
+        return "<error fetching text>";
     }
 
+
+    /**
+     * Fetch next unread text, as a HTML formatted string. 
+     */
+    public String getTextAsHTML(int textNo)
+    {
+		try {
+			Text text;
+			text = s.getText(textNo);
+
+			final String username = s.getConfStat(text.getAuthor()).getNameString();
+
+			s.markAsRead(textNo);
+			
+			return "<b>Author: "+username+ 
+			       "<br/>Subject: " + text.getSubjectString() + 
+			       "</b><br/>" + text.getBodyString();
+			
+			
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "<Error fetching text>";
+	
+    }
+    
+    /**
+     * Get text number of last read text in current meeting, 
+     * or -1 if there is no suitable text.
+     */
+    public int getLastTextNo()
+    {
+    	return mLastTextNo;
+    }
+    
     /**
      * Create a text, which is not a reply to another text.
      */
@@ -295,6 +312,8 @@ public class KomServer extends Service
     }
 
     private Session s;
+
+	private int mLastTextNo;
 
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();

@@ -3,6 +3,7 @@ package org.lindev.androkom;
 import android.app.Activity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -29,23 +30,39 @@ public class Conference extends Activity
     {
         super.onCreate(savedInstanceState);
         
+        final Object data = getLastNonConfigurationInstance();
         int confNo = (Integer) getIntent().getExtras().get("conference-id");
-        
+               
         Log.i("androkom", "Got passed conference id: " + confNo);
         
-        getApp().getKom().setConference(confNo);
+        
 
         final TextView tv = new TextView(this);
-        currentTextId = getApp().getKom().displayText(tv);
+        
+        if (data != null) {
+        	currentText = (String)data;
+        	tv.setText(Html.fromHtml(currentText), TextView.BufferType.SPANNABLE);
+        } else {        	
+        	getApp().getKom().setConference(confNo);
+        	currentText = getApp().getKom().getNextUnreadText();
+        	tv.setText(Html.fromHtml(currentText), TextView.BufferType.SPANNABLE);
+        }
+        
         setContentView(tv);
         
         tv.setOnClickListener(new OnClickListener() {       
             public void onClick(View v) 
             {               
-                currentTextId = getApp().getKom().displayText(tv);
+                currentText = getApp().getKom().getNextUnreadText();
+                tv.setText(Html.fromHtml(currentText), TextView.BufferType.SPANNABLE);
             }
         });
         
+    }
+    
+    @Override
+    public Object onRetainNonConfigurationInstance() {    	
+    	return currentText;
     }
 
     /**
@@ -63,7 +80,7 @@ public class Conference extends Activity
          */
         case R.id.reply:
             Intent intent = new Intent(this, CreateText.class);    
-            intent.putExtra("in-reply-to", currentTextId);
+            intent.putExtra("in-reply-to", getApp().getKom().getLastTextNo());
             startActivity(intent);
             return true;
        
@@ -90,5 +107,5 @@ public class Conference extends Activity
         return (App)getApplication();
     }
     
-    private int currentTextId;
+    private String currentText;
 }
