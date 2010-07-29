@@ -52,7 +52,7 @@ public class ConferenceList extends ListActivity
         super.onResume();
                
         mTimer = new Timer();
-        mTimer.schedule(new TimerTask() {
+        mTimer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
             public void run() {
@@ -65,7 +65,7 @@ public class ConferenceList extends ListActivity
                 });                     
             }
             
-        }, 500, 1000);
+        }, 500, 10000);
         
     }
     

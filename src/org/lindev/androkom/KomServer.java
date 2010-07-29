@@ -2,11 +2,17 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 
+import org.lysator.lattekom.AsynchMessage;
+import org.lysator.lattekom.AsynchMessageReceiver;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
 import org.lysator.lattekom.Membership;
+import org.lysator.lattekom.RpcEvent;
+import org.lysator.lattekom.RpcEventListener;
 import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
@@ -20,6 +26,7 @@ import android.util.Log;
 import android.widget.TextView;
 import android.widget.Toast;
 
+
 /**
  * A service which keeps the Lattekom session object and all
  * LysKOM stuff for the various activities in the app.
@@ -27,7 +34,7 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class KomServer extends Service 
+public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver
 {
 
     /**
@@ -58,7 +65,9 @@ public class KomServer extends Service
     }
 
     public KomServer() {
+    	System.setProperty("lattekom.enable-prefetch", "true"); 
 		mLastTextNo = -1;
+		mPendingSentTexts = new HashSet<Integer>();
 	}
 
 
@@ -67,8 +76,11 @@ public class KomServer extends Service
     {
         super.onCreate();
 
-        if (s == null)
+        if (s == null) {
             s = new Session();
+            s.addRpcEventListener(this);
+            //s.addAsynchMessageReceiver(this);
+        }
     }
 
 
@@ -144,7 +156,7 @@ public class KomServer extends Service
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
         try { 
             s.updateUnreads();
-
+            
             Membership[] m = s.getUnreadMembership();
             for (int i = 0; i < m.length; i++) {
                 int conf = m[i].getConference();
@@ -217,6 +229,7 @@ public class KomServer extends Service
      */
     public String getNextUnreadText() 
     {
+    	
         try {
         	mLastTextNo = s.nextUnreadText(false);
             if (mLastTextNo < 0) {                
@@ -232,7 +245,7 @@ public class KomServer extends Service
             e.printStackTrace();
         }
         
-        return "<error fetching text>";
+        return "[error fetching text]";
     }
 
 
@@ -245,9 +258,14 @@ public class KomServer extends Service
 			Text text;
 			text = s.getText(textNo);
 
+			
 			final String username = s.getConfStat(text.getAuthor()).getNameString();
 
-			s.markAsRead(textNo);
+			// TODO: This will only mark text as read in the current conference.
+			// TODO: Should batch these up and send in a group, instead of many separate requests.
+			int confNo = s.getCurrentConference();
+			int[] localTextNo = { text.getLocal(confNo) };
+			s.doMarkAsRead(confNo, localTextNo); 
 			
 			return "<b>Author: "+username+ 
 			       "<br/>Subject: " + text.getSubjectString() + 
@@ -258,7 +276,7 @@ public class KomServer extends Service
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		return "<Error fetching text>";
+		return "[Error fetching text]";
 	
     }
     
@@ -304,7 +322,7 @@ public class KomServer extends Service
         text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
         try {
-            s.createText(text);
+            mPendingSentTexts.add(s.doCreateText(text).getId());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
@@ -318,4 +336,20 @@ public class KomServer extends Service
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
 
+	public void rpcEvent(RpcEvent e) {
+		if (mPendingSentTexts.contains(e.getId())) {
+			Log.i("androkom", "Got reply for created text " + e.getId());
+			
+			if (!e.getSuccess())
+				/* TODO: handle error here */;
+		}
+		
+	}
+
+	public void asynchMessage(AsynchMessage m) {
+		// TODO Auto-generated method stub
+		
+	}
+
+	private HashSet<Integer> mPendingSentTexts;
 }
