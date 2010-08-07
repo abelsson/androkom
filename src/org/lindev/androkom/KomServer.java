@@ -68,20 +68,20 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     public KomServer() {
-    	System.setProperty("lattekom.enable-prefetch", "true"); 
-		mLastTextNo = -1;
-		mPendingSentTexts = new HashSet<Integer>();
-	}
+        System.setProperty("lattekom.enable-prefetch", "true"); 
+        mLastTextNo = -1;
+        mPendingSentTexts = new HashSet<Integer>();
+    }
 
 
-	@Override
+    @Override
     public void onCreate() 
     {
         super.onCreate();
 
         if (s == null) {
             s = new Session();
-            
+
             s.addRpcEventListener(this);
             //s.addAsynchMessageReceiver(this);
         }
@@ -160,7 +160,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
         try { 
             s.updateUnreads();
-            
+
             Membership[] m = s.getUnreadMembership();
             for (int i = 0; i < m.length; i++) {
                 int conf = m[i].getConference();
@@ -234,22 +234,22 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
      */
     public String getNextUnreadText() 
     {
-    	
+
         try {
-        	mLastTextNo = s.nextUnreadText(false);
+            mLastTextNo = s.nextUnreadText(false);
             if (mLastTextNo < 0) {                
                 s.nextUnreadConference(true);
                 return "All read";
             } 
             else {
-            	return getTextAsHTML(mLastTextNo);                                
+                return getTextAsHTML(mLastTextNo);                                
             }
-            
+
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        
+
         return "[error fetching text]";
     }
 
@@ -259,66 +259,66 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
      */
     public String getTextAsHTML(int textNo)
     {
-		try {
-			Text text;
-			text = s.getText(textNo);
+        try {
+            Text text;
+            text = s.getText(textNo);
 
-			
-			final String username = s.getConfStat(text.getAuthor()).getNameString();
 
-			// TODO: This will only mark text as read in the current conference.
-			// TODO: Should batch these up and send in a group, instead of many separate requests.
-			int confNo = s.getCurrentConference();
-			int[] localTextNo = { text.getLocal(confNo) };
-			s.doMarkAsRead(confNo, localTextNo); 
-			
-			
-			String[] lines = text.getBodyString().split("\n");
-			StringBuilder body = new StringBuilder();
-			
-			// Some simple heuristics to reflow and htmlize KOM texts.
-			// TODO: Deal with quoted blocks prefixed with '>'.
-			
-			body.append("<p>");
-			for(String line : lines) {
-				if (line.startsWith(" ") || line.startsWith("\t"))
-					body.append("<br/>");
-								
-				
-				if (line.trim().length() == 0)
-					body.append("</p><p>");
-				
-				line = line.replaceAll("&", "&amp;");
-				line = line.replaceAll("<", "&lt;");
-				line = line.replaceAll(">", "&gt;");
-				body.append(line);
-				body.append(" ");
-			}
-			body.append("</p>");
-			
-			Log.i("androkom", body.toString());
-			return "<b>Author: "+username+ 
-			       "<br/>Subject: " + text.getSubjectString() + 
-			       "</b>" + body.toString();
-			
-			
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-		return "[Error fetching text]";
-	
+            final String username = s.getConfStat(text.getAuthor()).getNameString();
+
+            // TODO: This will only mark text as read in the current conference.
+            // TODO: Should batch these up and send in a group, instead of many separate requests.
+            int confNo = s.getCurrentConference();
+            int[] localTextNo = { text.getLocal(confNo) };
+            s.doMarkAsRead(confNo, localTextNo); 
+
+
+            String[] lines = text.getBodyString().split("\n");
+            StringBuilder body = new StringBuilder();
+
+            // Some simple heuristics to reflow and htmlize KOM texts.
+            // TODO: Deal with quoted blocks prefixed with '>'.
+
+            body.append("<p>");
+            for(String line : lines) {
+                if (line.startsWith(" ") || line.startsWith("\t"))
+                    body.append("<br/>");
+
+
+                if (line.trim().length() == 0)
+                    body.append("</p><p>");
+
+                line = line.replaceAll("&", "&amp;");
+                line = line.replaceAll("<", "&lt;");
+                line = line.replaceAll(">", "&gt;");
+                body.append(line);
+                body.append(" ");
+            }
+            body.append("</p>");
+
+            Log.i("androkom", body.toString());
+            return "<b>Author: "+username+ 
+            "<br/>Subject: " + text.getSubjectString() + 
+            "</b>" + body.toString();
+
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return "[Error fetching text]";
+
     }
-    
+
     /**
      * Get text number of last read text in current meeting, 
      * or -1 if there is no suitable text.
      */
     public int getLastTextNo()
     {
-    	return mLastTextNo;
+        return mLastTextNo;
     }
-    
+
     /**
      * Create a text, which is not a reply to another text.
      */
@@ -431,24 +431,24 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     private int mLastTextNo;
     HashMap<String, String> mUserAreaProps;
-	
+
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
 
-	public void rpcEvent(RpcEvent e) {
-		if (mPendingSentTexts.contains(e.getId())) {
-			Log.i("androkom", "Got reply for created text " + e.getId());
-			
-			if (!e.getSuccess())
-				/* TODO: handle error here */;
-		}
-		
-	}
+    public void rpcEvent(RpcEvent e) {
+        if (mPendingSentTexts.contains(e.getId())) {
+            Log.i("androkom", "Got reply for created text " + e.getId());
 
-	public void asynchMessage(AsynchMessage m) {
-		// TODO Auto-generated method stub
-		
-	}
+            if (!e.getSuccess())
+                /* TODO: handle error here */;
+        }
 
-	private HashSet<Integer> mPendingSentTexts;
+    }
+
+    public void asynchMessage(AsynchMessage m) {
+        // TODO Auto-generated method stub
+
+    }
+
+    private HashSet<Integer> mPendingSentTexts;
 }

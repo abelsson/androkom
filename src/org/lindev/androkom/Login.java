@@ -20,30 +20,30 @@ import android.widget.EditText;
  */
 public class Login extends Activity 
 {
-    
+
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
-        
+
         getApp().doBindService();
-        
+
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
 
         Button loginButton = (Button) findViewById(R.id.login);
-        
+
         SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
-        
+
         mUsername.setText(prefs.getString("username", ""));
         mPassword.setText(prefs.getString("password", ""));
-        
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });
     }
-    
+
     /**
      * Attempt to log in to "kom.lysator.liu.se". If unsuccessful, show an 
      * alert. Otherwise save username and password for successive sessions.
@@ -54,16 +54,16 @@ public class Login extends Activity
         final String password = mPassword.getText().toString();
 
         String result = getApp().getKom().login(username, password, "kom.lysator.liu.se");      
-        
+
         if (result.length() > 0) {
             AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setMessage(result)
-                   .setCancelable(false)
-                   .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                       public void onClick(DialogInterface dialog, int id) {
-                            dialog.cancel();
-                       }
-                   });
+            .setCancelable(false)
+            .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+                public void onClick(DialogInterface dialog, int id) {
+                    dialog.cancel();
+                }
+            });
             AlertDialog alert = builder.create();
             alert.show();
         }
@@ -80,9 +80,9 @@ public class Login extends Activity
             startActivity(intent);
             finish();
         }
-        
+
     }
-    
+
 
     App getApp() 
     {

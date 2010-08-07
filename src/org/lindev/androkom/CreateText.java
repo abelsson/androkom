@@ -16,7 +16,7 @@ import android.widget.EditText;
  */
 public class CreateText extends Activity 
 {
-    
+
     /**
      * Create activity. Just a plain old dialog with
      * a subject, body and cancel and post buttons.
@@ -26,14 +26,14 @@ public class CreateText extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.createtext);
-        
+
         inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
         mSubject = (EditText) findViewById(R.id.subject);
         mBody = (EditText) findViewById(R.id.body);
-        
+
         Button confirmButton = (Button) findViewById(R.id.send);
         Button cancelButton = (Button) findViewById(R.id.cancel);
-        
+
         confirmButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { createText(); }
         });
@@ -41,7 +41,7 @@ public class CreateText extends Activity
             public void onClick(View view) { cancelText(); }
         });
     }
-    
+
     /**
      * Request a new message be posted.
      */
@@ -52,7 +52,7 @@ public class CreateText extends Activity
         getApp().getKom().createText(subject, body, inReplyTo);
         finish();
     }
-    
+
     /**
      * New text canceled. Just finish up and die.
      */
@@ -60,12 +60,12 @@ public class CreateText extends Activity
     {
         finish();
     }
-    
+
     App getApp() 
     {
         return (App)getApplication();
     }
-    
+
     private int inReplyTo;
     private EditText mSubject;
     private EditText mBody;

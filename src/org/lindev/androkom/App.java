@@ -22,8 +22,8 @@ public class App extends Application
      * Return a reference to the KomServer instance.
      */
     public KomServer getKom() { return mBoundService; }
-    
-    
+
+
     public void doBindService() 
     {
         // Establish a connection with the service.  We use an explicit
@@ -42,11 +42,11 @@ public class App extends Application
             mIsBound = false;
         }
     }
-    
+
     private KomServer mBoundService;
     private boolean mIsBound;
-    
-    
+
+
     private ServiceConnection mConnection = new ServiceConnection() 
     {
         public void onServiceConnected(ComponentName className, IBinder service)
@@ -61,7 +61,7 @@ public class App extends Application
             // Tell the user about it.
             Toast.makeText(App.this, "KomServer connected",
                     Toast.LENGTH_SHORT).show();
-           
+
         }
 
         public void onServiceDisconnected(ComponentName className) 
