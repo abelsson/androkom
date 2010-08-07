@@ -2,6 +2,7 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
@@ -10,12 +11,14 @@ import org.lysator.lattekom.AsynchMessage;
 import org.lysator.lattekom.AsynchMessageReceiver;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
+import org.lysator.lattekom.Hollerith;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcEvent;
 import org.lysator.lattekom.RpcEventListener;
 import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
+import org.lysator.lattekom.UserArea;
 
 import android.app.Service;
 import android.content.Intent;
@@ -356,10 +359,79 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
     }
 
+    String[] getNextHollerith(String s) {
+        Log.i("androkom", "parse h: '" + s + "'");
+        //s = s.trim();
+        int prefixLen = s.indexOf("H");
+
+        int len = Integer.parseInt(s.substring(0, prefixLen));
+
+        prefixLen++;
+        String first = s.substring(prefixLen, prefixLen + len);
+
+
+        String second;
+        if (s.length() > first.length() + prefixLen + 1)
+            second = s.substring(first.length() + prefixLen + 1);
+        else
+            second = "";
+        Log.i("androkom", "first, second = " + first + ", " + second);
+        return new String[]{first, second};
+    }
+
+    private void parseElispUserArea()
+    {
+        try {
+
+            UserArea ua = s.getUserArea();
+            String[] blocks = ua.getBlockNames();
+
+
+            mUserAreaProps = new HashMap<String, String>();
+
+
+            for(String block : blocks) {
+                Log.i("androkom", "block: " + block);
+                if (block.equals("elisp")) {
+                    String token = ua.getBlock(block).getContentString();
+                    Log.i("androkom", token);
+                    // String[] tokens = ua.getBlock(block).getContentString().split("\n");
+                    while(token.length() > 0) {
+                        String[] first = getNextHollerith(token);
+                        String[] second = getNextHollerith(first[1]);
+
+                        mUserAreaProps.put(first[0], second[0]);
+                        token = second[1];
+                    }
+                }
+
+            }
+            for(String x : mUserAreaProps.keySet()) {
+                Log.i("androkom", "prop: '"+x+"' = "+mUserAreaProps.get(x));
+            }
+
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    public void getFriends()
+    {
+        parseElispUserArea();
+        String friends = mUserAreaProps.get("kom-friends");
+        if (friends != null) {
+            friends = friends.substring(1,friends.length()-2);
+            String[] friendList = friends.split(" ");
+            for(String friend : friendList) {
+                Log.i("androkom", "friend " + friend);
+            }
+        }
+    }
     private Session s;
 
-	private int mLastTextNo;
-
+    private int mLastTextNo;
+    HashMap<String, String> mUserAreaProps;
+	
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
 
