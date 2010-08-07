@@ -360,8 +360,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     String[] getNextHollerith(String s) {
-        Log.i("androkom", "parse h: '" + s + "'");
-        //s = s.trim();
         int prefixLen = s.indexOf("H");
 
         int len = Integer.parseInt(s.substring(0, prefixLen));
@@ -375,10 +373,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             second = s.substring(first.length() + prefixLen + 1);
         else
             second = "";
-        Log.i("androkom", "first, second = " + first + ", " + second);
+        
         return new String[]{first, second};
     }
 
+    /**
+     * Parse properties the elisp client has set, if any.
+     */
     private void parseElispUserArea()
     {
         try {
@@ -391,11 +392,9 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
 
             for(String block : blocks) {
-                Log.i("androkom", "block: " + block);
+               
                 if (block.equals("elisp")) {
                     String token = ua.getBlock(block).getContentString();
-                    Log.i("androkom", token);
-                    // String[] tokens = ua.getBlock(block).getContentString().split("\n");
                     while(token.length() > 0) {
                         String[] first = getNextHollerith(token);
                         String[] second = getNextHollerith(first[1]);
@@ -406,15 +405,17 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 }
 
             }
-            for(String x : mUserAreaProps.keySet()) {
-                Log.i("androkom", "prop: '"+x+"' = "+mUserAreaProps.get(x));
-            }
-
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
     }
+    
+    
+    /**
+     * Get a list of the IDs of all friends which are set in the elisp client 
+     * user area.
+     */
     public void getFriends()
     {
         parseElispUserArea();
