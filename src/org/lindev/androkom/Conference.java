@@ -49,7 +49,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         
         setContentView(R.layout.conference);
 
-        mCurrentTextIndex = 0;
 
         mSwitcher = (TextSwitcher)findViewById(R.id.flipper);
         mSwitcher.setFactory(this);
@@ -65,17 +64,20 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
                
         Log.i("androkom", "Got passed conference id: " + confNo);
          
-        mCurrentText = new Stack<String>();
+        
         if (data != null) {      	
-        	mCurrentText.push((String)data);
-        	mSwitcher.setText(Html.fromHtml(mCurrentText.peek()));
-        	mCurrentTextIndex = 0;
-        } else {        	
-        	getApp().getKom().setConference(confNo);
-        	mCurrentText.push(getApp().getKom().getNextUnreadText());
+        	mState = (State)data;
+        	mSwitcher.setText(Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex)));
         	
-        	Spanned text = Html.fromHtml(mCurrentText.peek());
-        	mCurrentTextIndex = 0;
+        } else {    
+        	mState = new State();
+        	mState.currentText = new Stack<String>();
+        	mState.currentTextIndex = 0;
+        	getApp().getKom().setConference(confNo);
+        	mState.currentText.push(getApp().getKom().getNextUnreadText());
+        	
+        	Spanned text = Html.fromHtml(mState.currentText.peek());
+        	mState.currentTextIndex = 0;
         	
         	mSwitcher.setText(text);
         }
@@ -121,15 +123,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
                 if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                 	
                      
-                	mCurrentTextIndex++;
-                	Log.i("androkom","moving to next text cur:" + mCurrentTextIndex + "/" + mCurrentText.size()); 
-                	if (mCurrentTextIndex >= mCurrentText.size()) {
+                	mState.currentTextIndex++;
+                	Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
+                	if (mState.currentTextIndex >= mState.currentText.size()) {
                 		Log.i("androkom", "fetching new text");
-                		mCurrentText.push(getApp().getKom().getNextUnreadText());                		
+                		mState.currentText.push(getApp().getKom().getNextUnreadText());                		
                 	}
                 		
                 	
-                	Spanned text = Html.fromHtml(mCurrentText.elementAt(mCurrentTextIndex));
+                	Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
                                 	
                 	mSwitcher.setInAnimation(mSlideLeftIn);
                     mSwitcher.setOutAnimation(mSlideLeftOut);
@@ -137,13 +139,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
                     return true;
                 }  else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                 	Log.i("androkom","left swipe detected");
-                	mCurrentTextIndex--;        
-                    if (mCurrentTextIndex <= 0) {
-                    	mCurrentTextIndex = 0;
+                	mState.currentTextIndex--;        
+                    if (mState.currentTextIndex <= 0) {
+                    	mState.currentTextIndex = 0;
                     	return true;
                     }
                 	
-                    Spanned text = Html.fromHtml(mCurrentText.elementAt(mCurrentTextIndex));
+                    Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
                     
                 	mSwitcher.setInAnimation(mSlideRightIn);
                     mSwitcher.setOutAnimation(mSlideRightOut);
@@ -167,7 +169,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
     
     @Override
     public Object onRetainNonConfigurationInstance() {    	
-    	return mCurrentText;
+    	return mState;
     }
 
    
@@ -224,9 +226,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         return (App)getApplication();
     }
     
-    private int mCurrentTextIndex;
-    private Stack<String> mCurrentText;
-    
+    private class State {
+        int currentTextIndex;
+        Stack<String> currentText;        
+    };
+    State mState;
+
     // For gestures and animations
     
     private GestureDetector mGestureDetector;
