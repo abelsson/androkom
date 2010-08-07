@@ -78,6 +78,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         if (s == null) {
             s = new Session();
+            
             s.addRpcEventListener(this);
             //s.addAsynchMessageReceiver(this);
         }
@@ -212,6 +213,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 if (!s.login(usernames[0].confNo, password, true)) {
                     return "Invalid password";
                 }
+                s.setClientVersion("Androkom", "0.01");
             }
         } catch (Exception e) {
             Log.e("androkom", "Caught " + e.getClass().getName());
@@ -267,9 +269,34 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			int[] localTextNo = { text.getLocal(confNo) };
 			s.doMarkAsRead(confNo, localTextNo); 
 			
+			
+			String[] lines = text.getBodyString().split("\n");
+			StringBuilder body = new StringBuilder();
+			
+			// Some simple heuristics to reflow and htmlize KOM texts.
+			// TODO: Deal with quoted blocks prefixed with '>'.
+			
+			body.append("<p>");
+			for(String line : lines) {
+				if (line.startsWith(" ") || line.startsWith("\t"))
+					body.append("<br/>");
+								
+				
+				if (line.trim().length() == 0)
+					body.append("</p><p>");
+				
+				line = line.replaceAll("&", "&amp;");
+				line = line.replaceAll("<", "&lt;");
+				line = line.replaceAll(">", "&gt;");
+				body.append(line);
+				body.append(" ");
+			}
+			body.append("</p>");
+			
+			Log.i("androkom", body.toString());
 			return "<b>Author: "+username+ 
 			       "<br/>Subject: " + text.getSubjectString() + 
-			       "</b><br/>" + text.getBodyString();
+			       "</b>" + body.toString();
 			
 			
 		} catch (IOException e) {
