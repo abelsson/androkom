@@ -5,15 +5,12 @@
  */
 package org.lysator.lattekom;
 
-import java.util.Enumeration;
 import java.util.Date;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
-import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.InputStream;
-import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
@@ -34,13 +31,9 @@ import java.io.StringReader;
  * @see nu.dll.lyskom.Session#createText(Text)
  */
 public class Text extends Hollerith implements Serializable {
+	private static final long serialVersionUID = -7201392864569389382L;
 
-    /**
-     * Default serial verision UID.
-     */
-    private static final long serialVersionUID = 1L;
-
-    boolean cached = false;
+	boolean cached = false;
 
     int textNo = -1;
     TextStat stat = null;

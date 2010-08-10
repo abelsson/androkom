@@ -16,6 +16,7 @@ import java.io.UnsupportedEncodingException;
  * server. It is generally a serie of bytes.
  */
 public class KomToken implements Serializable {
+	private static final long serialVersionUID = -8416655390025905367L;
 	/**
 	 * A "primitive" LysKOM token, such as INT32
 	 */

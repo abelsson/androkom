@@ -14,8 +14,9 @@ import java.util.List;
  * consist of several KomToken objects.
  */
 public class KomTokenArray extends KomToken {
+	private static final long serialVersionUID = 1450376246291777880L;
 
-    static int DEBUG = 10;
+	static int DEBUG = 10;
     KomToken[] objects;
     int length;
 

@@ -14,6 +14,7 @@ package org.lysator.lattekom;
  * 
  */
 public class ConfType extends Bitstring {
+	private static final long serialVersionUID = 200955937223544026L;
 
 	/**
 	 * Read-protected conference

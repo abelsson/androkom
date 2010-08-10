@@ -12,6 +12,7 @@ package org.lysator.lattekom;
  * calls.
  */
 public class RpcFailure extends RuntimeException {
+	private static final long serialVersionUID = 4736740254118050436L;
 	RpcReply reply;
 	int errorCode = 0;
 	int errorStatus = 0;

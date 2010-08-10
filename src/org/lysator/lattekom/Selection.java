@@ -28,8 +28,9 @@ import java.io.Serializable;
  * </p>
  */
 public class Selection implements Serializable, Tokenizable {
+	private static final long serialVersionUID = 7692748955463648617L;
 
-    Map<Integer, Object> values;
+	Map<Integer, Object> values;
     LinkedList<Integer> keyList;
 
     public static final int DEBUG = 3;

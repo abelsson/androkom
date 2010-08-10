@@ -32,6 +32,8 @@ import java.io.IOException;
  * @author Rasmus Sten
  */
 public class HollerithStream extends Hollerith {
+	private static final long serialVersionUID = -5690560997150845158L;
+
 	protected InputStream stream;
 	protected InputStream wrappedStream = null;
 

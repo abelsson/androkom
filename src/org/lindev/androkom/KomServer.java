@@ -4,7 +4,6 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.LinkedList;
 import java.util.List;
 
 import org.lysator.lattekom.AsynchMessage;
@@ -15,7 +14,6 @@ import org.lysator.lattekom.Hollerith;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcEvent;
 import org.lysator.lattekom.RpcEventListener;
-import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
 import org.lysator.lattekom.UserArea;
@@ -24,9 +22,7 @@ import android.app.Service;
 import android.content.Intent;
 import android.os.Binder;
 import android.os.IBinder;
-import android.text.Html;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 

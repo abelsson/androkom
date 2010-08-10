@@ -8,6 +8,8 @@ import java.io.UnsupportedEncodingException;
  * 
  */
 public class LazyText extends Text {
+	private static final long serialVersionUID = 2549736116184232605L;
+
 	Session session;
 	protected LazyText(Session session, int textNo) {
 		this.textNo = textNo;

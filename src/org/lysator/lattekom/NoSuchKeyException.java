@@ -10,6 +10,7 @@ package org.lysator.lattekom;
  * non-existant key.
  */
 public class NoSuchKeyException extends RuntimeException {
+	private static final long serialVersionUID = 9039238526949947507L;
 	public NoSuchKeyException() {
 		super();
 	}

@@ -9,6 +9,7 @@ package org.lysator.lattekom;
  * Represents a Membership-Type. TODO: document the flags.
  */
 public class MembershipType extends Bitstring {
+	private static final long serialVersionUID = 4585427743367499039L;
 	public static final int bitcount = 8;
 	public static final int invitation = 0;
 	public static final int passive = 1;

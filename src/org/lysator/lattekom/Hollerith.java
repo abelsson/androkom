@@ -13,6 +13,7 @@ import java.io.Serializable;
  * for all handling of strings in LysKOM.
  */
 public class Hollerith extends KomToken implements Serializable {
+	private static final long serialVersionUID = 8782974097151111491L;
 
 	String charset = Session.defaultServerEncoding;
 

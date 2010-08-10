@@ -9,7 +9,9 @@ import java.util.Iterator;
  * @see nu.dll.lyskom.Session#getMarks()
  */
 public class Mark implements java.io.Serializable {
-    int text;
+	private static final long serialVersionUID = 4104867630232961582L;
+
+	int text;
     int type;
 
     Mark(int text, int type) {

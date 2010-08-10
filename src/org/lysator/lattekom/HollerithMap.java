@@ -13,7 +13,8 @@ import java.io.IOException;
  * A HollerithMap is a collection of sequentially ordered key-value pairs.
  */
 public class HollerithMap extends Hollerith {
-    Map<String, Hollerith> map;
+	private static final long serialVersionUID = 3182639389779691871L;
+	Map<String, Hollerith> map;
 
     public HollerithMap(String charset) {
         super();

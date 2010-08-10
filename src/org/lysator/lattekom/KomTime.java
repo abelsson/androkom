@@ -12,6 +12,7 @@ import java.io.Serializable;
  * Represents the LysKOM data type "Time".
  */
 public class KomTime implements Serializable {
+	private static final long serialVersionUID = -8757361671748415580L;
 	final static int DEBUG = 1;
 	/**
 	 * The number of KomToken items that this data type is made of.

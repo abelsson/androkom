@@ -13,6 +13,7 @@ package org.lysator.lattekom;
  * @see nu.dll.lyskom.KomProtocolException#getException()
  */
 public class KomProtocolException extends RuntimeException {
+	private static final long serialVersionUID = -951995264599642369L;
 
 	Exception nestedException = null;
 

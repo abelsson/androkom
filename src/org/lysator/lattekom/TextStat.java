@@ -5,11 +5,9 @@
  */
 package org.lysator.lattekom;
 
-import java.util.Enumeration;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.Map;
@@ -63,8 +61,9 @@ import java.util.HashMap;
  * @see nu.dll.lyskom.Selection
  */
 public class TextStat implements java.io.Serializable {
+	private static final long serialVersionUID = -8561645601959148297L;
 
-    // Misc-Info selection values
+	// Misc-Info selection values
     /**
      * Misc-Info Selection selector for tagging recipient data.
      */
@@ -369,8 +368,8 @@ public class TextStat implements java.io.Serializable {
 //                contentType, props)));
     }
 
-    private String createContentTypeString(String contentType, Properties p) {
-    	return "";
+//    private String createContentTypeString(String contentType, Properties p) {
+//    	return "";
 //        try {
 //            ContentType ct = new ContentType(contentType);
 //            for (Iterator<Entry<Object, Object>> i = p.entrySet().iterator(); i
@@ -384,7 +383,7 @@ public class TextStat implements java.io.Serializable {
 //            throw new IllegalArgumentException("Unable to parse content-type "
 //                    + contentType);
 //        }
-    }
+//    }
 
     public int getSize() {
         return chars;
