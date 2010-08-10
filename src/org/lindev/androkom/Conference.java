@@ -3,7 +3,9 @@ package org.lindev.androkom;
 import java.util.Stack;
 
 import android.app.Activity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
 import android.text.Spanned;
@@ -49,7 +51,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
 
         setContentView(R.layout.conference);
 
-
         mSwitcher = (TextSwitcher)findViewById(R.id.flipper);
         mSwitcher.setFactory(this);
 
@@ -57,7 +58,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         mSlideLeftOut = AnimationUtils.loadAnimation(this, R.anim.slide_left_out);
         mSlideRightIn = AnimationUtils.loadAnimation(this, R.anim.slide_right_in);
         mSlideRightOut = AnimationUtils.loadAnimation(this, R.anim.slide_right_out);
-
 
         final Object data = getLastNonConfigurationInstance();
         final int confNo = (Integer) getIntent().getExtras().get("conference-id");
@@ -68,38 +68,69 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         if (data != null) {      	
             mState = (State)data;
             mSwitcher.setText(Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex)));
-
         } else {    
             mState = new State();
             mState.currentText = new Stack<String>();
             mState.currentTextIndex = 0;
             getApp().getKom().setConference(confNo);
-            mState.currentText.push(getApp().getKom().getNextUnreadText());
-
-            Spanned text = Html.fromHtml(mState.currentText.peek());
-            mState.currentTextIndex = 0;
-
+            new LoadMessageTask().execute();
+            
+            Spanned text = Html.fromHtml("Loading text..");   
             mSwitcher.setText(text);
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
-        mGestureListener = new View.OnTouchListener() {
-            public boolean onTouch(View v, MotionEvent event) {
-                if (mGestureDetector.onTouchEvent(event)) {
-                    return true;
-                }
-                return false;
-            }
-        };
+       
 
     }
+    
+    /**
+     * Fetch new texts asynchronously, and show a progress spinner
+     * while the user is waiting.
+     * 
+     * @author henrik
+     *
+     */
+    private class LoadMessageTask extends AsyncTask<Void, Integer, String> 
+    {
+        private final ProgressDialog dialog = new ProgressDialog(Conference.this);
 
-    class MyGestureDetector extends SimpleOnGestureListener {        
+        protected void onPreExecute() 
+        {
+            this.dialog.setCancelable(true);
+            this.dialog.setIndeterminate(true);
+            this.dialog.setMessage("Loading...");
+            this.dialog.show();
+        }
 
+        // worker thread (separate from UI thread)
+        protected String doInBackground(final Void... args) 
+        {
+            return ((App)getApplication()).getKom().getNextUnreadText();               
+        }
+
+        protected void onPostExecute(final String text) 
+        {
+            mState.currentText.push(text);           
+            Spanned spannedText = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
+            mSwitcher.setText(spannedText);
+            this.dialog.dismiss();
+        }
+    }
+
+
+    /**
+     * A gesture detector that is used to navigate within and between texts.
+     * 
+     * @author henrik
+     *
+     */
+    class MyGestureDetector extends SimpleOnGestureListener 
+    {        
         @Override
         public boolean onScroll (MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
-            Log.i("androkom","got scroll event "+distanceX + " " + distanceY);
+            //Log.i("androkom","got scroll event "+distanceX + " " + distanceY);
             if (Math.abs(e1.getX() - e2.getX()) > SWIPE_MAX_OFF_PATH)
                 return false;
 
@@ -114,33 +145,43 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
 
             return true;       	
         }
+        
         @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) {
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
+        {
             try {
                 if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
                     return false;
+                
                 // right to left swipe
                 if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-
-
-                    mState.currentTextIndex++;
                     Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
+                    mState.currentTextIndex++;
+                    
                     if (mState.currentTextIndex >= mState.currentText.size()) {
+                        // At end of list. load new text from server
                         Log.i("androkom", "fetching new text");
-                        mState.currentText.push(getApp().getKom().getNextUnreadText());                		
+                        new LoadMessageTask().execute();
+
+                        mSwitcher.setInAnimation(mSlideLeftIn);
+                        mSwitcher.setOutAnimation(mSlideLeftOut);
+                        mSwitcher.setText("Loading text..");                     
                     }
-
-
-                    Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
-
-                    mSwitcher.setInAnimation(mSlideLeftIn);
-                    mSwitcher.setOutAnimation(mSlideLeftOut);
-                    mSwitcher.setText(text);
+                    else {
+                        // Display old text, already fetched.
+                        Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
+                        mSwitcher.setInAnimation(mSlideLeftIn);
+                        mSwitcher.setOutAnimation(mSlideLeftOut);
+                        mSwitcher.setText(text);                   
+                    }
+                    
                     return true;
-                }  else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    Log.i("androkom","left swipe detected");
+                } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                    Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+                    
                     mState.currentTextIndex--;        
-                    if (mState.currentTextIndex <= 0) {
+                    
+                    if (mState.currentTextIndex < 0) {
                         mState.currentTextIndex = 0;
                         return true;
                     }
@@ -160,15 +201,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
     }
 
     @Override
-    public boolean onTouchEvent(MotionEvent event) {
+    public boolean onTouchEvent(MotionEvent event) 
+    {
         if (mGestureDetector.onTouchEvent(event))
             return true;
         else
             return false;
     }
 
+
+    /**
+     * When we're being temporarily destroyed, due to, for example 
+     * the user rotating the screen, save our state so we can restore
+     * it again.
+     */
     @Override
-    public Object onRetainNonConfigurationInstance() {    	
+    public Object onRetainNonConfigurationInstance() 
+    {    	
         return mState;
     }
 
@@ -178,7 +227,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
      * menu button popup. 
      */
     @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
+    public boolean onOptionsItemSelected(MenuItem item) 
+    {
         // Handle item selection
         switch (item.getItemId()) {
 
@@ -241,6 +291,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
     private Animation mSlideRightIn;
     private Animation mSlideRightOut;
     private TextSwitcher mSwitcher;
+
 
 
 }

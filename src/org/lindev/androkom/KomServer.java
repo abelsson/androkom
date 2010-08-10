@@ -10,7 +10,6 @@ import org.lysator.lattekom.AsynchMessage;
 import org.lysator.lattekom.AsynchMessageReceiver;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
-import org.lysator.lattekom.Hollerith;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcEvent;
 import org.lysator.lattekom.RpcEventListener;
