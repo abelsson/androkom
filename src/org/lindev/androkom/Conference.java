@@ -1,15 +1,24 @@
 package org.lindev.androkom;
 
 import java.util.Stack;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.res.ColorStateList;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.Html;
+import android.text.Spannable;
+import android.text.SpannableStringBuilder;
 import android.text.Spanned;
+import android.text.method.LinkMovementMethod;
 import android.text.method.Touch;
+import android.text.style.ClickableSpan;
+import android.text.util.Linkify;
 import android.util.Log;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -19,6 +28,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
+import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextSwitcher;
@@ -31,9 +41,8 @@ import android.widget.ViewSwitcher;
  * @author henrik
  *
  */
-public class Conference extends Activity implements ViewSwitcher.ViewFactory
+public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener
 {
-
 
     private static final int SWIPE_MIN_DISTANCE = 120;
     private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -67,7 +76,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
 
         if (data != null) {      	
             mState = (State)data;
-            mSwitcher.setText(Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex)));
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
         } else {    
             mState = new State();
             mState.currentText = new Stack<String>();
@@ -75,8 +84,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
             getApp().getKom().setConference(confNo);
             new LoadMessageTask().execute();
             
-            Spanned text = Html.fromHtml("Loading text..");   
-            mSwitcher.setText(text);
+            mSwitcher.setText(formatText("Loading text.."));
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
@@ -111,13 +119,57 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
 
         protected void onPostExecute(final String text) 
         {
-            mState.currentText.push(text);           
-            Spanned spannedText = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
-            mSwitcher.setText(spannedText);
+            mState.currentText.push(text);                   
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+            
             this.dialog.dismiss();
         }
     }
 
+
+    /**
+     * Class for handling internal text number links. 
+     * Only a skeleton for now. 
+     * 
+     * @author henrik
+     *
+     */
+    class KomInternalURLSpan extends ClickableSpan {  
+        String mLinkText;
+        
+        public KomInternalURLSpan(String mLinkText) {  
+            
+        }  
+
+        @Override  
+        public void onClick(View widget) {  
+            // TODO Conference.this.onKomLinkClicked(mLinkText);
+        }  
+    }  
+    
+ 
+    /**
+     *  Applies a regex to a Spannable turning the matches into
+     *  links. To be used with the class above.
+     */ 
+    public final boolean addLinks(Spannable s, Pattern p, String scheme) {
+        boolean hasMatches = false;
+        Matcher m = p.matcher(s);
+
+        while (m.find()) {
+            int start = m.start();
+            int end = m.end();
+
+            String url = m.group(0);
+
+            KomInternalURLSpan span = this.new KomInternalURLSpan(url);
+            s.setSpan(span, start, end, Spanned.SPAN_EXCLUSIVE_EXCLUSIVE);
+   
+            hasMatches = true;           
+        }
+
+        return hasMatches;
+    }
 
     /**
      * A gesture detector that is used to navigate within and between texts.
@@ -127,6 +179,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
      */
     class MyGestureDetector extends SimpleOnGestureListener 
     {        
+        
         @Override
         public boolean onScroll (MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
@@ -169,13 +222,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
                     }
                     else {
                         // Display old text, already fetched.
-                        Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
                         mSwitcher.setInAnimation(mSlideLeftIn);
                         mSwitcher.setOutAnimation(mSlideLeftOut);
-                        mSwitcher.setText(text);                   
+
+                        mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
                     }
                     
-                    return true;
+                  
                 } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
                     Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
                     
@@ -183,15 +236,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
                     
                     if (mState.currentTextIndex < 0) {
                         mState.currentTextIndex = 0;
-                        return true;
+                       
                     }
-
-                    Spanned text = Html.fromHtml(mState.currentText.elementAt(mState.currentTextIndex));
-
+                    
                     mSwitcher.setInAnimation(mSlideRightIn);
                     mSwitcher.setOutAnimation(mSlideRightOut);
-                    mSwitcher.setText(text);
-                    return true;
+                    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+                   
                 }
             } catch (Exception e) {
                 // nothing
@@ -200,15 +251,25 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         }
     }
 
+    /**
+     * This one is called when we, ourselves, have been touched.
+     */
     @Override
     public boolean onTouchEvent(MotionEvent event) 
-    {
+    {       
         if (mGestureDetector.onTouchEvent(event))
             return true;
         else
             return false;
     }
 
+    /**
+     * This one is called when our child TextView has been touched.
+     */
+    public boolean onTouch(View v, MotionEvent event) 
+    {
+        return onTouchEvent(event);
+    }
 
     /**
      * When we're being temporarily destroyed, due to, for example 
@@ -261,13 +322,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
     }
 
 
+    public static Spannable formatText(String text)
+    {
+        SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(text);       
+        Linkify.addLinks(spannedText, Linkify.ALL);
+        
+        return spannedText;
+    }
     /**
      * Return TextViews for switcher.
      */
     public View makeView() {
         TextView t = new TextView(this);
         t.setText("[no text loaded]", TextView.BufferType.SPANNABLE);
+        t.setMovementMethod(LinkMovementMethod.getInstance());
         t.setGravity(Gravity.TOP | Gravity.LEFT);
+        t.setTextColor(ColorStateList.valueOf(Color.WHITE));
+        t.setOnTouchListener(this);
         return t;
     }
 
@@ -280,6 +351,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory
         int currentTextIndex;
         Stack<String> currentText;        
     };
+    
     State mState;
 
     // For gestures and animations
