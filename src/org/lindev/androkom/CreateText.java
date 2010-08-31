@@ -28,9 +28,12 @@ public class CreateText extends Activity
         setContentView(R.layout.createtext);
 
         inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
+        String subject = (String)  getIntent().getExtras().get("subject-line");
         mSubject = (EditText) findViewById(R.id.subject);
         mBody = (EditText) findViewById(R.id.body);
 
+        mSubject.setText(subject);
+        
         Button confirmButton = (Button) findViewById(R.id.send);
         Button cancelButton = (Button) findViewById(R.id.cancel);
 

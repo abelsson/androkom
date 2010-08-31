@@ -13,6 +13,7 @@ import org.lysator.lattekom.ConfInfo;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcEvent;
 import org.lysator.lattekom.RpcEventListener;
+import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
 import org.lysator.lattekom.UserArea;
@@ -62,6 +63,27 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
     }
 
+    /**
+     * Small helper class to manage texts.
+     */
+    public class TextInfo 
+    {
+    	public TextInfo() { }
+
+    	public TextInfo(int textNo, String author, String subject, String body)
+    	{
+    		this.textNo = textNo;
+    		this.author = author;
+    		this.subject = subject;
+    		this.body = body;
+    	}
+    	
+		public int textNo;
+    	public String author;
+    	public String subject;
+    	public String body;
+    }
+    
     public KomServer() {
         System.setProperty("lattekom.enable-prefetch", "true"); 
         mLastTextNo = -1;
@@ -209,6 +231,25 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
         return "";
     }
+    
+    public TextInfo getParentToText(int textNo)
+    {
+    	try {
+			Text t = s.getText(textNo);
+			int arr[] = t.getCommented();
+			if (arr.length > 0) {
+				return getTextAsHTML(arr[0]);
+			}
+		} catch (RpcFailure e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+		return new TextInfo(-1, "", "", "[error fetching text]");
+    }
 
     /**
      * Display the next unread text in a TextView. 
@@ -217,14 +258,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
      * 
      * @return text number displayed
      */
-    public String getNextUnreadText() 
+    public TextInfo getNextUnreadText() 
     {
 
         try {
             mLastTextNo = s.nextUnreadText(false);
             if (mLastTextNo < 0) {                
                 s.nextUnreadConference(true);
-                return "All read";
+                return new TextInfo(-1, "", "", "All read");
             } 
             else {
                 return getTextAsHTML(mLastTextNo);                                
@@ -235,14 +276,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             e.printStackTrace();
         }
 
-        return "[error fetching text]";
+        return new TextInfo(-1, "", "", "[error fetching text]");
     }
 
 
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
-    public String getTextAsHTML(int textNo)
+    public TextInfo getTextAsHTML(int textNo)
     {
         try {
             Text text;
@@ -282,16 +323,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             body.append("</p>");
 
             Log.i("androkom", body.toString());
-            return "<b>Author: "+username+ 
-            "<br/>Subject: " + text.getSubjectString() + 
-            "</b>" + body.toString();
+            
+            return new TextInfo(textNo, username, text.getSubjectString(), text.getBodyString());
 
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return "[Error fetching text]";
+        return new TextInfo(-1, "", "", "[Error fetching text]");
 
     }
 
@@ -323,7 +363,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             text.addCommented(inReplyTo);
 
         text.addRecipient(s.getCurrentConference());
-
 
         final byte[] subjectBytes = subject.getBytes();
         final byte[] bodyBytes = body.getBytes();

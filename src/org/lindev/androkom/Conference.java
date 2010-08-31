@@ -4,6 +4,8 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.lindev.androkom.KomServer.TextInfo;
+
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
@@ -16,6 +18,7 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
+import android.text.method.ScrollingMovementMethod;
 import android.text.method.Touch;
 import android.text.style.ClickableSpan;
 import android.text.util.Linkify;
@@ -79,7 +82,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
         } else {    
             mState = new State();
-            mState.currentText = new Stack<String>();
+            mState.currentText = new Stack<TextInfo>();
             mState.currentTextIndex = 0;
             getApp().getKom().setConference(confNo);
             new LoadMessageTask().execute();
@@ -99,7 +102,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      * @author henrik
      *
      */
-    private class LoadMessageTask extends AsyncTask<Void, Integer, String> 
+    private class LoadMessageTask extends AsyncTask<Integer, Integer, TextInfo> 
     {
         private final ProgressDialog dialog = new ProgressDialog(Conference.this);
 
@@ -112,15 +115,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
 
         // worker thread (separate from UI thread)
-        protected String doInBackground(final Void... args) 
+        protected TextInfo doInBackground(final Integer... args) 
         {
-            return ((App)getApplication()).getKom().getNextUnreadText();               
+        	if (args.length == 1 && args[0] > 0) 
+        		return ((App)getApplication()).getKom().getParentToText(args[0]);    
+        	else
+        		return ((App)getApplication()).getKom().getNextUnreadText();    
+        	
+        	
         }
 
-        protected void onPostExecute(final String text) 
+        protected void onPostExecute(final TextInfo text) 
         {
-            mState.currentText.push(text);                   
+            mState.currentText.push(text);            
+            mState.currentTextIndex = mState.currentText.size() - 1;
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+            TextView widget = (TextView)mSwitcher.getCurrentView();
+            widget.scrollTo(0, 0);
             
             this.dialog.dismiss();
         }
@@ -178,12 +189,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      *
      */
     class MyGestureDetector extends SimpleOnGestureListener 
-    {        
-        
+    {     
+        /*
         @Override
         public boolean onScroll (MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
         {
-            //Log.i("androkom","got scroll event "+distanceX + " " + distanceY);
+            Log.i("androkom","got scroll event "+distanceX + " " + distanceY);
             if (Math.abs(e1.getX() - e2.getX()) > SWIPE_MAX_OFF_PATH)
                 return false;
 
@@ -198,69 +209,105 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
             return true;       	
         }
+        */
+        @Override
+        public boolean onSingleTapUp(MotionEvent e)
+        {
+        	if (e.getDownTime() > 500) {
+	             moveToNextText();
+	             return true;
+        	}     	
+        	
+        	return false;
+        }
         
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
         {
             try {
-                if (Math.abs(e1.getY() - e2.getY()) > SWIPE_MAX_OFF_PATH)
-                    return false;
-                
-                // right to left swipe
-                if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
-                    mState.currentTextIndex++;
-                    
-                    if (mState.currentTextIndex >= mState.currentText.size()) {
-                        // At end of list. load new text from server
-                        Log.i("androkom", "fetching new text");
-                        new LoadMessageTask().execute();
-
-                        mSwitcher.setInAnimation(mSlideLeftIn);
-                        mSwitcher.setOutAnimation(mSlideLeftOut);
-                        mSwitcher.setText("Loading text..");                     
-                    }
-                    else {
-                        // Display old text, already fetched.
-                        mSwitcher.setInAnimation(mSlideLeftIn);
-                        mSwitcher.setOutAnimation(mSlideLeftOut);
-
-                        mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
-                    }
-                    
-                  
-                } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
-                    Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
-                    
-                    mState.currentTextIndex--;        
-                    
-                    if (mState.currentTextIndex < 0) {
-                        mState.currentTextIndex = 0;
-                       
-                    }
-                    
-                    mSwitcher.setInAnimation(mSlideRightIn);
-                    mSwitcher.setOutAnimation(mSlideRightOut);
-                    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
-                   
+	            // Horizontal swipes
+            	if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {	                
+	                // right to left swipe
+	                if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY)            
+	                    moveToNextText();     
+	                 else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) 
+	                    moveToPrevText();  	                
                 }
+            	
+	            // Vertical swipes
+	            if (Math.abs(e1.getX() - e2.getX()) <= SWIPE_MAX_OFF_PATH) {	                
+	                // top to bottom swipe
+	                if(e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY)            
+	                    moveToParentText();     
+	                      
+                }
+	            
             } catch (Exception e) {
                 // nothing
             }
             return false;
         }
+
+		private void moveToPrevText() {
+			Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+			
+			mState.currentTextIndex--;        
+			
+			if (mState.currentTextIndex < 0) {
+			    mState.currentTextIndex = 0;
+			   
+			}
+			
+			mSwitcher.setInAnimation(mSlideRightIn);
+			mSwitcher.setOutAnimation(mSlideRightOut);
+			mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+		}
+
+		private void moveToNextText() {
+			Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
+			
+			mState.currentTextIndex++;
+			
+			if (mState.currentTextIndex >= mState.currentText.size()) {
+			    // At end of list. load new text from server
+			    Log.i("androkom", "fetching new text");
+			    new LoadMessageTask().execute(-1);
+
+			    mSwitcher.setInAnimation(mSlideLeftIn);
+			    mSwitcher.setOutAnimation(mSlideLeftOut);
+			    mSwitcher.setText("Loading text..");        
+			    mState.currentTextIndex = mState.currentText.size() - 1;
+			}
+			else {
+			    // Display old text, already fetched.
+			    mSwitcher.setInAnimation(mSlideLeftIn);
+			    mSwitcher.setOutAnimation(mSlideLeftOut);
+
+			    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+			}
+		}
+		
+		private void moveToParentText()
+		{
+		    Log.i("androkom", "fetching parent to text " + mState.getCurrent().textNo);
+		    new LoadMessageTask().execute(mState.getCurrent().textNo);
+
+		    mSwitcher.setInAnimation(mSlideLeftIn);
+		    mSwitcher.setOutAnimation(mSlideLeftOut);
+		    mSwitcher.setText("Loading text.."); 			
+		}
     }
 
     /**
      * This one is called when we, ourselves, have been touched.
      */
     @Override
-    public boolean onTouchEvent(MotionEvent event) 
+    public boolean dispatchTouchEvent(MotionEvent event)
     {       
         if (mGestureDetector.onTouchEvent(event))
-            return true;
-        else
-            return false;
+        	return true;
+        
+        return super.dispatchTouchEvent(event);          
     }
 
     /**
@@ -268,7 +315,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     public boolean onTouch(View v, MotionEvent event) 
     {
-        return onTouchEvent(event);
+        // return onTouchEvent(event);
+        if (mGestureDetector.onTouchEvent(event))
+            return true;
+        
+        return false;
     }
 
     /**
@@ -299,7 +350,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
          */
         case R.id.reply:
             Intent intent = new Intent(this, CreateText.class);    
-            intent.putExtra("in-reply-to", getApp().getKom().getLastTextNo());
+            intent.putExtra("in-reply-to", mState.getCurrent().textNo);
+            intent.putExtra("subject-line", mState.getCurrent().subject);
             startActivity(intent);
             return true;
 
@@ -322,8 +374,51 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
 
+    public static Spannable formatText(TextInfo text)
+    {
+        String[] lines = text.body.split("\n");
+        StringBuilder body = new StringBuilder();
+
+        // Some simple heuristics to reflow and htmlize KOM texts.
+        // TODO: Deal with quoted blocks prefixed with '>'.
+
+        if (text.textNo > 0) {
+            body.append("<b>Author: ");
+            body.append(text.author);
+            body.append("</b><br/>");
+            body.append("<b>Subject: ");
+            body.append(text.subject);
+            body.append("</b>");
+        }
+        
+        body.append("<p>");
+        for(String line : lines) {
+            if (line.startsWith(" ") || line.startsWith("\t"))
+                body.append("<br/>");
+
+
+            if (line.trim().length() == 0)
+                body.append("</p><p>");
+
+            line = line.replaceAll("&", "&amp;");
+            line = line.replaceAll("<", "&lt;");
+            line = line.replaceAll(">", "&gt;");
+            body.append(line);
+            body.append(" ");
+        }
+        body.append("</p>");
+
+        Log.i("androkom", body.toString());
+        
+        SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(body.toString());       
+        Linkify.addLinks(spannedText, Linkify.ALL);
+        
+        return spannedText;
+    }
+    
     public static Spannable formatText(String text)
     {
+     
         SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(text);       
         Linkify.addLinks(spannedText, Linkify.ALL);
         
@@ -335,10 +430,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     public View makeView() {
         TextView t = new TextView(this);
         t.setText("[no text loaded]", TextView.BufferType.SPANNABLE);
+        //t.setScrollBarStyle();
         t.setMovementMethod(LinkMovementMethod.getInstance());
         t.setGravity(Gravity.TOP | Gravity.LEFT);
         t.setTextColor(ColorStateList.valueOf(Color.WHITE));
-        t.setOnTouchListener(this);
+        t.setMaxHeight(500);
+        //t.setOnTouchListener(this);
         return t;
     }
 
@@ -349,7 +446,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     private class State {
         int currentTextIndex;
-        Stack<String> currentText;        
+        Stack<TextInfo> currentText;   
+        TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
     };
     
     State mState;
