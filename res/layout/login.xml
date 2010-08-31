@@ -10,7 +10,7 @@ android:orientation="vertical"
 android:id="@+id/widget31"
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
-android:text="Username:"
+android:text="@string/login_name"
 >
 </TextView>
 <EditText
@@ -25,7 +25,7 @@ android:textSize="18sp"
 android:id="@+id/widget32"
 android:layout_width="wrap_content"
 android:layout_height="wrap_content"
-android:text="Password:"
+android:text="@string/login_password"
 >
 </TextView>
 <EditText
@@ -41,7 +41,7 @@ android:textSize="18sp"
 android:id="@+id/login"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
-android:text="Login"
+android:text="@string/login_login"
 >
 </Button>
 </LinearLayout>
