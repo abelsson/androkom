@@ -130,7 +130,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
-            
+            setTitle(((App)getApplication()).getKom().getConferenceName());
             this.dialog.dismiss();
         }
     }

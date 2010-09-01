@@ -189,6 +189,28 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     /**
+     * Return name for given conference.
+     */
+    public String getConferenceName(int conf)
+    {
+    	try {
+			return s.toString(s.getConfName(conf));
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return "";
+    }
+    
+
+    /**
+     * Return name for given conference.
+     */
+    public String getConferenceName()
+    {
+    	return getConferenceName(s.getCurrentConference());
+    }
+    /**
      * Set currently active conference.
      */
     public void setConference(int confNo) 
@@ -265,11 +287,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             mLastTextNo = s.nextUnreadText(false);
             if (mLastTextNo < 0) {                
                 s.nextUnreadConference(true);
-                return new TextInfo(-1, "", "", "All read");
+                               
+                mLastTextNo = s.nextUnreadText(false);
+                if (mLastTextNo < 0)
+                	return new TextInfo(-1, "", "", "All read");
             } 
-            else {
-                return getTextAsHTML(mLastTextNo);                                
-            }
+            
+            return getTextAsHTML(mLastTextNo);                                
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
