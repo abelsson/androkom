@@ -380,11 +380,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         // Some simple heuristics to reflow and htmlize KOM texts.
         // TODO: Deal with quoted blocks prefixed with '>'.
 
-        if (text.textNo > 0) {
-            body.append("<b>Author: ");
+        if (text.textNo > 0) {   
+        	body.append(text.textNo);       	
+            body.append(" <b>");
             body.append(text.author);
-            body.append("</b><br/>");
-            body.append("<b>Subject: ");
+            body.append("</b> ");
+        	body.append(text.date);
+            body.append("<br/><b>Subject: ");
             body.append(text.subject);
             body.append("</b>");
         }

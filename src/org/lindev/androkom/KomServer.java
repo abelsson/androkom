@@ -70,15 +70,17 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
     	public TextInfo() { }
 
-    	public TextInfo(int textNo, String author, String subject, String body)
+    	public TextInfo(int textNo, String author, String date, String subject, String body)
     	{
     		this.textNo = textNo;
     		this.author = author;
+    		this.date = date;
     		this.subject = subject;
     		this.body = body;
     	}
     	
 		public int textNo;
+		public String date;
     	public String author;
     	public String subject;
     	public String body;
@@ -270,7 +272,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			e.printStackTrace();
 		}
 		
-		return new TextInfo(-1, "", "", "[error fetching text]");
+		return new TextInfo(-1, "", "", "", "[error fetching text]");
     }
 
     /**
@@ -290,7 +292,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                                
                 mLastTextNo = s.nextUnreadText(false);
                 if (mLastTextNo < 0)
-                	return new TextInfo(-1, "", "", "All read");
+                	return new TextInfo(-1, "", "", "", "All read");
             } 
             
             return getTextAsHTML(mLastTextNo);                                
@@ -300,7 +302,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             e.printStackTrace();
         }
 
-        return new TextInfo(-1, "", "", "[error fetching text]");
+        return new TextInfo(-1, "", "", "", "[error fetching text]");
     }
 
 
@@ -322,40 +324,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             int[] localTextNo = { text.getLocal(confNo) };
             s.doMarkAsRead(confNo, localTextNo); 
 
-
-            String[] lines = text.getBodyString().split("\n");
-            StringBuilder body = new StringBuilder();
-
-            // Some simple heuristics to reflow and htmlize KOM texts.
-            // TODO: Deal with quoted blocks prefixed with '>'.
-
-            body.append("<p>");
-            for(String line : lines) {
-                if (line.startsWith(" ") || line.startsWith("\t"))
-                    body.append("<br/>");
-
-
-                if (line.trim().length() == 0)
-                    body.append("</p><p>");
-
-                line = line.replaceAll("&", "&amp;");
-                line = line.replaceAll("<", "&lt;");
-                line = line.replaceAll(">", "&gt;");
-                body.append(line);
-                body.append(" ");
-            }
-            body.append("</p>");
-
-            Log.i("androkom", body.toString());
-            
-            return new TextInfo(textNo, username, text.getSubjectString(), text.getBodyString());
+          
+            return new TextInfo(textNo, username, text.getCreationTimeString(), text.getSubjectString(), text.getBodyString());
 
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-        return new TextInfo(-1, "", "", "[Error fetching text]");
+        return new TextInfo(-1, "", "", "", "[Error fetching text]");
 
     }
 
