@@ -18,8 +18,6 @@ import android.text.Spannable;
 import android.text.SpannableStringBuilder;
 import android.text.Spanned;
 import android.text.method.LinkMovementMethod;
-import android.text.method.ScrollingMovementMethod;
-import android.text.method.Touch;
 import android.text.style.ClickableSpan;
 import android.text.util.Linkify;
 import android.util.Log;
