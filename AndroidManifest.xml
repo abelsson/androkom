@@ -32,6 +32,10 @@
            </intent-filter>
        
         </activity>
+
+        <activity android:name=".Prefs"
+                  android:label="@string/settings_title">
+        </activity>
         
         <!--  Connection to the KOM server -->
         <service android:name=".KomServer"

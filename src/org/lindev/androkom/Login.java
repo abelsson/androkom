@@ -8,6 +8,10 @@ import android.content.Intent;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -22,6 +26,7 @@ import android.widget.EditText;
  */
 public class Login extends Activity 
 {
+	public static final String TAG = "Androkom";
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -46,7 +51,24 @@ public class Login extends Activity
         });
     }
 
-    
+	public boolean onCreateOptionsMenu(Menu menu) {
+		super.onCreateOptionsMenu(menu);
+		MenuInflater inflater = getMenuInflater();
+		inflater.inflate(R.menu.menu, menu);
+		return true;
+	}
+	
+	public boolean onOptionsItemSelected(MenuItem item) {
+		switch(item.getItemId()) {
+		case R.id.menu_settings_id :
+			startActivity(new Intent(this, Prefs.class));
+			return true;
+			default:
+				Log.d(TAG, "Unknown menu selected");
+		}
+		return false;
+	}
+
     /**
      * Attempt to log in to "kom.lysator.liu.se". If unsuccessful, show an 
      * alert. Otherwise save username and password for successive sessions.
@@ -70,7 +92,8 @@ public class Login extends Activity
 
         protected String doInBackground(final Void... args) 
         {
-            return getApp().getKom().login(username, password, "kom.lysator.liu.se");                
+        	String server = Prefs.getServer(getBaseContext());
+            return getApp().getKom().login(username, password, server);                
         }
 
         protected void onPostExecute(final String result) 
