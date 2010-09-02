@@ -283,8 +283,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		    new LoadMessageTask().execute(mState.getCurrent().textNo);
 
 		    mSwitcher.setInAnimation(mSlideLeftIn);
-		    mSwitcher.setOutAnimation(mSlideLeftOut);
-		    mSwitcher.setText("Loading text.."); 			
+		    mSwitcher.setOutAnimation(mSlideLeftOut);	
 		}
     }
 
