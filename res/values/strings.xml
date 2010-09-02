@@ -7,7 +7,7 @@
 	<string name="login_login">Login</string>
 	<string name="login_clearpsw">Clear saved password</string>
 
-	<string name="No_server_selected">No server selected</string>
+	<string name="No_server_selected">No server selected, press menu key to select one in preferences.</string>
 
     <string name="settings_label">Settings</string>
     <string name="settings_title">Settings for Androkom</string>
