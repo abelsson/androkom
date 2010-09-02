@@ -9,4 +9,11 @@
     android:entryValues="@array/server_values_list"
     android:dialogTitle="@string/server_dialog_title_prefs"
     />
+  <CheckBoxPreference
+    android:key="save_psw"
+    android:title="@string/save_psw_title"
+    android:summary="@string/save_psw_summary"
+    android:defaultValue="true"
+    />
+    
 </PreferenceScreen>

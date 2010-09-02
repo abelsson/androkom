@@ -49,6 +49,13 @@ public class Login extends Activity
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });
+
+        Button clearPswButton = (Button) findViewById(R.id.clearpsw_button);
+
+        clearPswButton.setOnClickListener(new View.OnClickListener() {
+            public void onClick(View view) { doClearPsw(); }
+        });
+        
     }
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -93,7 +100,11 @@ public class Login extends Activity
         protected String doInBackground(final Void... args) 
         {
         	String server = Prefs.getServer(getBaseContext());
-            return getApp().getKom().login(username, password, server);                
+        	Log.d(TAG, "Connecting to "+server);
+        	if(server.length()>0) {
+        		return getApp().getKom().login(username, password, server);
+        	}
+       		return getString(R.string.No_server_selected);
         }
 
         protected void onPostExecute(final String result) 
@@ -117,7 +128,10 @@ public class Login extends Activity
                 SharedPreferences settings = getPreferences(MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("username", username);
-                editor.putString("password", password);
+
+                if(Prefs.getSavePsw(getBaseContext())) {
+                	editor.putString("password", password);
+                }
 
                 // Commit the edits!
                 editor.commit();
@@ -132,6 +146,17 @@ public class Login extends Activity
     private void doLogin()
     {
         new LoginTask().execute();
+    }
+
+
+    private void doClearPsw()
+    {
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.remove("password");
+        editor.commit();
+
+        mPassword.setText("");
     }
 
 
