@@ -21,6 +21,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.util.Linkify;
 import android.util.Log;
+import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
@@ -34,6 +35,7 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.ViewSwitcher;
 
 /**
@@ -45,7 +47,7 @@ import android.widget.ViewSwitcher;
 public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener
 {
 
-    private static final int SWIPE_MIN_DISTANCE = 120;
+    private static final int SWIPE_MIN_DISTANCE = 150;
     private static final int SWIPE_MAX_OFF_PATH = 250;
     private static final int SWIPE_THRESHOLD_VELOCITY = 200;
 
@@ -125,6 +127,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         protected void onPostExecute(final TextInfo text) 
         {
+            if (text.textNo < 0) {
+                this.dialog.dismiss();
+                Toast.makeText(getApplicationContext(), text.body, Toast.LENGTH_SHORT).show();
+                return;
+            }
             mState.currentText.push(text);            
             mState.currentTextIndex = mState.currentText.size() - 1;
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
@@ -188,34 +195,20 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     class MyGestureDetector extends SimpleOnGestureListener 
     {     
-        /*
-        @Override
-        public boolean onScroll (MotionEvent e1, MotionEvent e2, float distanceX, float distanceY)
-        {
-            Log.i("androkom","got scroll event "+distanceX + " " + distanceY);
-            if (Math.abs(e1.getX() - e2.getX()) > SWIPE_MAX_OFF_PATH)
-                return false;
-
-            TextView widget = (TextView)mSwitcher.getCurrentView();
-
-            // Constrain to top of text widget.
-            int newX = Math.max((int)(widget.getScrollX()+distanceX),0);
-            int newY = Math.max((int)(widget.getScrollY()+distanceY),0);
-
-            // TODO: Implement momentum scrolling.
-            Touch.scrollTo(widget, widget.getLayout(), newX,  newY);
-
-            return true;       	
-        }
-        */
         @Override
         public boolean onSingleTapUp(MotionEvent e)
         {
-        	if (e.getDownTime() > 500) {
+        	Display display = getWindowManager().getDefaultDisplay();
+        	int width = display.getWidth();  
+
+        	if (e.getRawX() > 0.8*width && e.getDownTime() > 500) {
 	             moveToNextText();
 	             return true;
         	}     	
-        	
+        	if (e.getRawX() < 0.2*width && e.getDownTime() > 500) {
+	             moveToPrevText();
+	             return true;
+        	}  
         	return false;
         }
         
@@ -253,7 +246,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			
 			if (mState.currentTextIndex < 0) {
 			    mState.currentTextIndex = 0;
-			   
+			    return;
 			}
 			
 			mSwitcher.setInAnimation(mSlideRightIn);
@@ -272,8 +265,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			    new LoadMessageTask().execute(-1);
 
 			    mSwitcher.setInAnimation(mSlideLeftIn);
-			    mSwitcher.setOutAnimation(mSlideLeftOut);
-			    mSwitcher.setText("Loading text..");        
+			    mSwitcher.setOutAnimation(mSlideLeftOut);			  
 			    mState.currentTextIndex = mState.currentText.size() - 1;
 			}
 			else {
@@ -430,12 +422,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     public View makeView() {
         TextView t = new TextView(this);
         t.setText("[no text loaded]", TextView.BufferType.SPANNABLE);
-        //t.setScrollBarStyle();
         t.setMovementMethod(LinkMovementMethod.getInstance());
         t.setGravity(Gravity.TOP | Gravity.LEFT);
         t.setTextColor(ColorStateList.valueOf(Color.WHITE));
-        t.setMaxHeight(500);
-        //t.setOnTouchListener(this);
+   
+        // TODO: Eh. Figure out how calculate our height properly.	
+        t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
+      
         return t;
     }
 
