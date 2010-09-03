@@ -15,5 +15,11 @@
     android:summary="@string/save_psw_summary"
     android:defaultValue="true"
     />
+  <CheckBoxPreference
+    android:key="autologin"
+    android:title="@string/autologin_title"
+    android:summary="@string/autologin_summary"
+    android:defaultValue="false"
+    />
     
 </PreferenceScreen>

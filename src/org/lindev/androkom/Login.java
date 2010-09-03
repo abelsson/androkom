@@ -26,7 +26,7 @@ import android.widget.EditText;
  */
 public class Login extends Activity 
 {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom Login";
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
@@ -50,6 +50,9 @@ public class Login extends Activity
             public void onClick(View view) { doLogin(); }
         });
 
+        if (Prefs.getAutologin(getBaseContext())) {
+        	doLogin();
+        }
     }
 
 	public boolean onCreateOptionsMenu(Menu menu) {

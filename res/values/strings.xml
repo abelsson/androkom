@@ -21,4 +21,7 @@
     <string name="save_psw_title">Password</string>
     <string name="save_psw_summary">Save password (as preferences)</string>
     
+    <string name="autologin_title">Autologin</string>
+    <string name="autologin_summary">Automaticly login if password is saved</string>
+    
 </resources>

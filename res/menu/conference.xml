@@ -1,4 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="Reply"></item>
+	<item android:title="@string/settings_label"
+		android:alphabeticShortcut="@string/settings_shortcut"
+		android:id="@+id/menu_settings_id"/>
 </menu>

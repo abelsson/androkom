@@ -1,0 +1,10 @@
+<?xml version="1.0" encoding="utf-8"?>
+<PreferenceScreen
+  xmlns:android="http://schemas.android.com/apk/res/android">
+  <CheckBoxPreference
+    android:key="autologin"
+    android:title="@string/autologin_title"
+    android:summary="@string/autologin_summary"
+    android:defaultValue="false"
+    />
+</PreferenceScreen>

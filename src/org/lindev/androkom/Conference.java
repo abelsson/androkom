@@ -46,6 +46,7 @@ import android.widget.ViewSwitcher;
  */
 public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener
 {
+	public static final String TAG = "Androkom Conference";
 
     private static final int SWIPE_MIN_DISTANCE = 150;
     private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -322,7 +323,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         return mState;
     }
 
-
     /**
      * Called when user has selected a menu item from the 
      * menu button popup. 
@@ -330,6 +330,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     @Override
     public boolean onOptionsItemSelected(MenuItem item) 
     {
+    	Log.d(TAG, "onOptionsItemSelected");
         // Handle item selection
         switch (item.getItemId()) {
 
@@ -344,7 +345,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
             return true;
 
-        default:
+		case R.id.menu_settings_id :
+			Log.d(TAG, "Starting menu");
+			startActivity(new Intent(this, ConferencePrefs.class));
+			return true;
+
+		default:
             return super.onOptionsItemSelected(item);
         }
     }

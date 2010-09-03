@@ -21,4 +21,8 @@
     <string name="save_psw_title">Lösenord</string>
     <string name="save_psw_summary">Spara lösenord (i inställningar)</string>
 
+    <string name="autologin_title">Autologin</string>
+    <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>
+    
+
 </resources>

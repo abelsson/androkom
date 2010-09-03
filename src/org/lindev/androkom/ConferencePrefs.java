@@ -5,7 +5,7 @@ import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
 
-public class Prefs extends PreferenceActivity {
+public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_SERVER = "server";
 	private static final String OPT_SERVER_DEF = "";
 
@@ -17,7 +17,7 @@ public class Prefs extends PreferenceActivity {
 
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		addPreferencesFromResource(R.xml.settings);
+		addPreferencesFromResource(R.xml.conference_settings);
 	}
 
 	public static String getServer(Context context) {
