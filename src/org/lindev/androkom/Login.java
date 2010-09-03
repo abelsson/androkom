@@ -50,12 +50,6 @@ public class Login extends Activity
             public void onClick(View view) { doLogin(); }
         });
 
-        Button clearPswButton = (Button) findViewById(R.id.clearpsw_button);
-
-        clearPswButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) { doClearPsw(); }
-        });
-        
     }
 
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -70,7 +64,10 @@ public class Login extends Activity
 		case R.id.menu_settings_id :
 			startActivity(new Intent(this, Prefs.class));
 			return true;
-			default:
+		case R.id.menu_clearpsw_id :
+            doClearPsw();
+            return true;
+		default:
 				Log.d(TAG, "Unknown menu selected");
 		}
 		return false;

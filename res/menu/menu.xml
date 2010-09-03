@@ -2,5 +2,8 @@
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
-		android:id="@+id/menu_settings_id"></item>
+		android:id="@+id/menu_settings_id"/>
+	<item android:title="@string/login_clearpsw"
+		android:alphabeticShortcut="@string/clearpsw_shortcut"
+		android:id="@+id/menu_clearpsw_id"/>
 </menu>
