@@ -27,7 +27,8 @@ import android.widget.EditText;
 public class Login extends Activity 
 {
 	public static final String TAG = "Androkom Login";
-
+	private boolean loginFailed = false;
+	
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
@@ -58,6 +59,7 @@ public class Login extends Activity
         SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
 
         if (hasFocus && Prefs.getAutologin(getBaseContext())
+        		&& (!loginFailed)
     			&& (prefs.getString("password", "").length()>0)) {
         	doLogin();
         }    	
@@ -130,6 +132,7 @@ public class Login extends Activity
                 });
                 AlertDialog alert = builder.create();
                 alert.show();
+                loginFailed = true;
             }
             else {
 
