@@ -3,6 +3,7 @@ package org.lindev.androkom;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ActivityNotFoundException;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
@@ -15,6 +16,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.Toast;
 
 /**
  * Login dialog. Shows username and password text editors, 
@@ -45,7 +47,7 @@ public class Login extends Activity
         SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
 
         mUsername.setText(prefs.getString("username", ""));
-        mPassword.setText(prefs.getString("password", ""));
+        mPassword.setText(getPsw());
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
@@ -56,13 +58,51 @@ public class Login extends Activity
     public void onWindowFocusChanged(boolean hasFocus) {
     	super.onWindowFocusChanged(hasFocus);
         
-        SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
-
         if (hasFocus && Prefs.getAutologin(getBaseContext())
+        		&& !(Prefs.getUseOISafe(getBaseContext()))
         		&& (!loginFailed)
-    			&& (prefs.getString("password", "").length()>0)) {
+    			&& (getPsw().length()>0)) {
         	doLogin();
         }    	
+    }
+
+    private String getPsw() {
+    	String password;
+    	
+    	if(Prefs.getUseOISafe(getBaseContext())) {
+    		Intent i = new Intent();
+    		i.setAction("org.openintents.action.GET_PASSWORD");
+    		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
+    		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
+    		try {
+    			startActivityForResult(i, 17);
+    		} catch (ActivityNotFoundException e) {
+    			Toast.makeText(getBaseContext(),
+    					"OISafe not found",
+    					Toast.LENGTH_LONG).show();
+    			Log.e(TAG, "failed to store password in OISafe");
+    		}
+    		Log.d(TAG, "Finished activity for result");
+    		password = "";
+    	} else {
+    		Log.d(TAG, "GET PREFS PASSWORD");
+            SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
+
+        	password = prefs.getString("password", "");
+    	}
+    	return password;
+    }
+    
+    public void onActivityResult(int requestCode, int resultCode, Intent data) {
+    	if (resultCode != RESULT_CANCELED) {
+    		mUsername.setText(data.getStringExtra("org.openintents.extra.USERNAME"));
+    		mPassword.setText(data.getStringExtra("org.openintents.extra.PASSWORD"));
+    		if(Prefs.getAutologin(getBaseContext())) {
+    			doLogin();
+    		}
+    	} else {
+    		Log.d(TAG, "no result");
+    	}
     }
     
 	public boolean onCreateOptionsMenu(Menu menu) {
@@ -80,6 +120,9 @@ public class Login extends Activity
 		case R.id.menu_clearpsw_id :
             doClearPsw();
             return true;
+		case R.id.save_oisafe_psw_id:
+    		savePsw(mUsername.getText().toString(), mPassword.getText().toString());
+
 		default:
 				Log.d(TAG, "Unknown menu selected");
 		}
@@ -143,8 +186,13 @@ public class Login extends Activity
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("username", username);
 
+                Log.d(TAG, "will store password");
                 if(Prefs.getSavePsw(getBaseContext())) {
-                	editor.putString("password", password);
+                	if(Prefs.getUseOISafe(getBaseContext())) {
+                		//Can't work with OISafe here
+                	} else {
+                		editor.putString("password", password);
+                	}		
                 }
 
                 // Commit the edits!
@@ -162,7 +210,6 @@ public class Login extends Activity
         new LoginTask().execute();
     }
 
-
     private void doClearPsw()
     {
         SharedPreferences settings = getPreferences(MODE_PRIVATE);
@@ -172,7 +219,24 @@ public class Login extends Activity
 
         mPassword.setText("");
     }
-
+    
+    private void savePsw(String username, String password) {
+		Log.d(TAG, "Trying to store password in OISafe");
+		Intent i = new Intent();
+		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
+		i.putExtra("org.openintents.extra.USERNAME", username);
+		i.putExtra("org.openintents.extra.PASSWORD", password);
+		i.setAction("org.openintents.action.SET_PASSWORD");
+		try {
+			startActivityForResult(i, 17);
+		} catch (ActivityNotFoundException e) {
+			Toast.makeText(getBaseContext(),
+					"OISafe not found",
+					Toast.LENGTH_LONG).show();
+			Log.e(TAG, "failed to store password in OISafe");
+		}
+		Log.d(TAG, "password stored in OISafe");
+    }
 
     App getApp() 
     {

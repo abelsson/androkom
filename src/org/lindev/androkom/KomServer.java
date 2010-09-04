@@ -249,7 +249,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 if (!s.login(usernames[0].confNo, password, true)) {
                     return "Invalid password";
                 }
-                s.setClientVersion("Androkom", "0.01");
+                s.setClientVersion("Androkom", "0.02");
             }
         } catch (Exception e) {
             Log.e("androkom", "Caught " + e.getClass().getName());

@@ -6,4 +6,7 @@
 	<item android:title="@string/login_clearpsw"
 		android:alphabeticShortcut="@string/clearpsw_shortcut"
 		android:id="@+id/menu_clearpsw_id"/>
+	<item android:title="@string/login_save_oisafe_psw"
+		android:alphabeticShortcut="@string/save_oisafe_psw_id_shortcut"
+		android:id="@+id/save_oisafe_psw_id"/>
 </menu>

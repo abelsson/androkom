@@ -18,6 +18,9 @@ public class Prefs extends PreferenceActivity {
 	private static final String OPT_AUTOLOGIN = "autologin";
 	private static final Boolean OPT_AUTOLOGIN_DEF = false;
 
+	private static final String OPT_USE_OISAFE = "useoisafe";
+	private static final Boolean OPT_USE_OISAFE_DEF = false;
+
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);
@@ -37,5 +40,9 @@ public class Prefs extends PreferenceActivity {
 
 	public static Boolean getAutologin(Context context) {
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_AUTOLOGIN, OPT_AUTOLOGIN_DEF);
+	}
+
+	public static Boolean getUseOISafe(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_USE_OISAFE, OPT_USE_OISAFE_DEF);
 	}
 }

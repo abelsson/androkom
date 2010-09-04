@@ -26,6 +26,12 @@
     android:defaultValue="true"
     />
   <CheckBoxPreference
+    android:key="useoisafe"
+    android:title="@string/use_oisafe_title"
+    android:summary="@string/use_oisafe_summary"
+    android:defaultValue="false"
+    />
+  <CheckBoxPreference
     android:key="autologin"
     android:title="@string/autologin_title"
     android:summary="@string/autologin_summary"

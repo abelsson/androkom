@@ -9,6 +9,9 @@
 	<string name="login_clearpsw">Töm sparat lösenord</string>
     <string name="clearpsw_shortcut">p</string>
 
+	<string name="login_save_oisafe_psw">Spara namn/lösenord i OISafe</string>
+	<string name="save_oisafe_psw_id_shortcut">o</string>
+
 	<string name="No_server_selected">Ingen server vald, tryck på meny-knappen för att välja en i inställningarna.</string>
 
     <string name="settings_label">Inställningar</string>
@@ -27,6 +30,9 @@
 
     <string name="save_psw_title">Lösenord</string>
     <string name="save_psw_summary">Spara lösenord (i inställningar)</string>
+
+    <string name="use_oisafe_title">OISafe</string>
+    <string name="use_oisafe_summary">Läs användarnamn och lösenord från OISafe</string>
 
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>

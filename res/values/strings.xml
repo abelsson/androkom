@@ -8,6 +8,9 @@
 	<string name="login_clearpsw">Clear saved password</string>
     <string name="clearpsw_shortcut">p</string>
 
+	<string name="login_save_oisafe_psw">Save user/password to OISafe</string>
+	<string name="save_oisafe_psw_id_shortcut">o</string>
+
 	<string name="No_server_selected">No server selected, press menu key to select one in preferences.</string>
 
     <string name="settings_label">Settings</string>
@@ -28,6 +31,9 @@
     <string name="save_psw_title">Password</string>
     <string name="save_psw_summary">Save password (as preferences)</string>
     
+    <string name="use_oisafe_title">OISafe</string>
+    <string name="use_oisafe_summary">Get username and password from OISafe</string>
+
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Automaticly login if password is saved</string>
 
