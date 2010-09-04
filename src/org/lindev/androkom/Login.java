@@ -50,11 +50,19 @@ public class Login extends Activity
             public void onClick(View view) { doLogin(); }
         });
 
-        if (Prefs.getAutologin(getBaseContext())) {
-        	doLogin();
-        }
     }
 
+    public void onWindowFocusChanged(boolean hasFocus) {
+    	super.onWindowFocusChanged(hasFocus);
+        
+        SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
+
+        if (hasFocus && Prefs.getAutologin(getBaseContext())
+    			&& (prefs.getString("password", "").length()>0)) {
+        	doLogin();
+        }    	
+    }
+    
 	public boolean onCreateOptionsMenu(Menu menu) {
 		super.onCreateOptionsMenu(menu);
 		MenuInflater inflater = getMenuInflater();
