@@ -110,6 +110,9 @@ public class Login extends Activity
         protected String doInBackground(final Void... args) 
         {
         	String server = Prefs.getServer(getBaseContext());
+        	if(server.equals("@")) {
+            	server = Prefs.getOtherServer(getBaseContext());        	
+        	}
         	Log.d(TAG, "Connecting to "+server);
         	if(server.length()>0) {
         		return getApp().getKom().login(username, password, server);

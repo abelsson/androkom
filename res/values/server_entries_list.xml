@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <array name="server_entries_list">
+    <item>Other</item>
     <item>LysKOM</item>
     <item>LysCOM (LysKOM in English)</item>
     <item>LuddKOM</item>
@@ -16,6 +17,7 @@
     <item>MysKOM</item>
   </array>
   <array name="server_values_list">
+    <item>"@"</item>
     <item>kom.lysator.liu.se</item>
     <item>com.lysator.liu.se</item>
     <item>kom.ludd.luth.se</item>

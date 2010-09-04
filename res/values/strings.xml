@@ -14,14 +14,21 @@
     <string name="settings_title">Settings for Androkom</string>
     <string name="settings_shortcut">i</string>
 
+    <string name="servercat_title">Server settings</string>
+
     <string name="server_title">Server</string>
     <string name="server_summary">Select server</string>
     <string name="server_dialog_title_prefs">Server dialog title</string>
-    
+
+    <string name="otherserver_title">Other server</string>
+    <string name="otherserver_summary">Specify server</string>
+
+    <string name="othercat_title">Other settings</string>
+
     <string name="save_psw_title">Password</string>
     <string name="save_psw_summary">Save password (as preferences)</string>
     
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Automaticly login if password is saved</string>
-    
+
 </resources>

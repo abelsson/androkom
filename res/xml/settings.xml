@@ -1,6 +1,8 @@
 <?xml version="1.0" encoding="utf-8"?>
 <PreferenceScreen
   xmlns:android="http://schemas.android.com/apk/res/android">
+  <PreferenceCategory
+    android:title="@string/servercat_title">
   <ListPreference
     android:key="server"
     android:title="@string/server_title"
@@ -9,6 +11,14 @@
     android:entryValues="@array/server_values_list"
     android:dialogTitle="@string/server_dialog_title_prefs"
     />
+  <EditTextPreference
+    android:key="otherserver"
+    android:title="@string/otherserver_title"
+    android:summary="@string/otherserver_summary"
+    />
+  </PreferenceCategory>
+  <PreferenceCategory
+    android:title="@string/othercat_title">
   <CheckBoxPreference
     android:key="save_psw"
     android:title="@string/save_psw_title"
@@ -21,5 +31,6 @@
     android:summary="@string/autologin_summary"
     android:defaultValue="false"
     />
-    
+  </PreferenceCategory>
+   
 </PreferenceScreen>

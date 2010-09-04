@@ -15,8 +15,15 @@
     <string name="settings_title">Inställningar för Androkom</string>
     <string name="settings_shortcut">i</string>
 
+    <string name="servercat_title">Server inställningar</string>
+
     <string name="server_title">Server</string>
     <string name="server_summary">Välj server</string>
+
+    <string name="otherserver_title">Annan server</string>
+    <string name="otherserver_summary">Serverns adress</string>
+
+    <string name="othercat_title">Andra inställningar</string>
 
     <string name="save_psw_title">Lösenord</string>
     <string name="save_psw_summary">Spara lösenord (i inställningar)</string>

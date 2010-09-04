@@ -35,6 +35,8 @@ import android.widget.Toast;
  */
 public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver
 {
+	public static final String TAG = "Androkom KomServer";
+
 
     /**
      * Class for clients to access.  Because we assume this service always
@@ -473,7 +475,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     public void asynchMessage(AsynchMessage m) {
         // TODO Auto-generated method stub
-
+    	Log.d(TAG, "asynchMessage:"+m);
     }
 
     private HashSet<Integer> mPendingSentTexts;

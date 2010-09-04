@@ -9,6 +9,9 @@ public class Prefs extends PreferenceActivity {
 	private static final String OPT_SERVER = "server";
 	private static final String OPT_SERVER_DEF = "";
 
+	private static final String OPT_OTHER_SERVER = "otherserver";
+	private static final String OPT_OTHER_SERVER_DEF = "";
+
 	private static final String OPT_SAVEPSW = "savepsw";
 	private static final Boolean OPT_SAVEPSW_DEF = true;
 
@@ -22,6 +25,10 @@ public class Prefs extends PreferenceActivity {
 
 	public static String getServer(Context context) {
 		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_SERVER, OPT_SERVER_DEF);
+	}
+
+	public static String getOtherServer(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_OTHER_SERVER, OPT_OTHER_SERVER_DEF);
 	}
 
 	public static Boolean getSavePsw(Context context) {
