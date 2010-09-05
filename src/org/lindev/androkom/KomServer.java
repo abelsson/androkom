@@ -20,6 +20,7 @@ import org.lysator.lattekom.UserArea;
 
 import android.app.Service;
 import android.content.Intent;
+import android.content.pm.PackageInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -249,7 +250,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 if (!s.login(usernames[0].confNo, password, true)) {
                     return "Invalid password";
                 }
-                s.setClientVersion("Androkom", "0.02");
+                s.setClientVersion("Androkom", getVersionName());
             }
         } catch (Exception e) {
             Log.e("androkom", "Caught " + e.getClass().getName());
@@ -258,6 +259,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         return "";
     }
     
+    public String getVersionName() {
+    	try {
+    		PackageInfo pinfo = getBaseContext().getPackageManager().getPackageInfo("org.lindev.androkom", 0);
+    		return pinfo.versionName;
+    	} catch (android.content.pm.PackageManager.NameNotFoundException e) {
+        return "unknown";
+      }
+    }
+
     public TextInfo getParentToText(int textNo)
     {
     	try {
