@@ -4,6 +4,7 @@
     <string name="app_name">Androkom</string>
 
 	<string name="login_name">Användarnamn:</string>
+	<string name="login_id">AnvändarID: (vid behov)</string>
 	<string name="login_password">Lösenord:</string>
 	<string name="login_login">Login</string>
 	<string name="login_clearpsw">Töm sparat lösenord</string>

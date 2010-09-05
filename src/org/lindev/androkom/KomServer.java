@@ -258,7 +258,32 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
         return "";
     }
-    
+
+    /**
+     * Log in to server. 
+     * 
+     * @return Empty string on success, string describing failure otherwise
+     */
+    public String login(int userid, String password, String server) 
+    {
+        if (!s.getConnected()) {
+            if (connect(server) != 0)
+                return "Couldn't connect to server";
+        }
+
+        try {
+        	// login as hidden
+        	if (!s.login(userid, password, true)) {
+        		return "Invalid password";
+        	}
+        	s.setClientVersion("Androkom", getVersionName());
+        } catch (Exception e) {
+            Log.e("androkom", "Caught " + e.getClass().getName());
+            return "Unknown error";
+        }
+        return "";
+    }
+
     public String getVersionName() {
     	try {
     		PackageInfo pinfo = getBaseContext().getPackageManager().getPackageInfo("org.lindev.androkom", 0);

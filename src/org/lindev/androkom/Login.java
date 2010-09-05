@@ -40,6 +40,7 @@ public class Login extends Activity
         getApp().doBindService();
 
         mUsername = (EditText) findViewById(R.id.username);
+        mUserid   = (EditText) findViewById(R.id.userid);
         mPassword = (EditText) findViewById(R.id.password);
 
         Button loginButton = (Button) findViewById(R.id.login);
@@ -137,6 +138,7 @@ public class Login extends Activity
         private final ProgressDialog dialog = new ProgressDialog(Login.this);
 
         String username;
+        String userid;
         String password;
 
         protected void onPreExecute() {
@@ -146,6 +148,7 @@ public class Login extends Activity
             this.dialog.show();
 
             this.username = mUsername.getText().toString();
+            this.userid   = mUserid.getText().toString();
             this.password = mPassword.getText().toString();
 
         }
@@ -158,7 +161,11 @@ public class Login extends Activity
         	}
         	Log.d(TAG, "Connecting to "+server);
         	if(server.length()>0) {
-        		return getApp().getKom().login(username, password, server);
+        		if(userid.length()>0) {
+            		return getApp().getKom().login(Integer.parseInt(userid), password, server);
+        		} else {
+            		return getApp().getKom().login(username, password, server);
+        		}
         	}
        		return getString(R.string.No_server_selected);
         }
@@ -260,5 +267,6 @@ public class Login extends Activity
         return (App)getApplication();
     }
     private EditText mUsername;
+    private EditText mUserid;
     private EditText mPassword;
 }
