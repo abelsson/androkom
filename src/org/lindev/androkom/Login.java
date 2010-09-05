@@ -217,6 +217,23 @@ public class Login extends Activity
         editor.remove("password");
         editor.commit();
 
+        if (Prefs.getUseOISafe(getBaseContext())) {
+    		Intent i = new Intent();
+    		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
+    		i.putExtra("org.openintents.extra.USERNAME", "");
+    		i.putExtra("org.openintents.extra.PASSWORD", "");
+    		i.setAction("org.openintents.action.SET_PASSWORD");
+    		try {
+    			startActivityForResult(i, 17);
+    		} catch (ActivityNotFoundException e) {
+    			Toast.makeText(getBaseContext(),
+    					"OISafe not found",
+    					Toast.LENGTH_LONG).show();
+    			Log.e(TAG, "failed to store password in OISafe");
+    		}
+    		Log.d(TAG, "password cleared in OISafe");        	
+        }
+        
         mPassword.setText("");
     }
     
