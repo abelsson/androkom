@@ -37,5 +37,9 @@
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>
     
+    <string name="smallerfontsize_label">Mindre text</string>
+    <string name="smallerfontsize_shortcut">-</string>
+    <string name="biggerfontsize_label">Större text</string>
+    <string name="biggerfontsize_shortcut">+</string>
 
 </resources>

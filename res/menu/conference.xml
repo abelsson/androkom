@@ -4,4 +4,10 @@
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
 		android:id="@+id/menu_settings_id"/>
+	<item android:title="@string/biggerfontsize_label"
+		android:alphabeticShortcut="@string/biggerfontsize_shortcut"
+		android:id="@+id/menu_biggerfontsize_id"/>
+	<item android:title="@string/smallerfontsize_label"
+		android:alphabeticShortcut="@string/smallerfontsize_shortcut"
+		android:id="@+id/menu_smallerfontsize_id"/>
 </menu>

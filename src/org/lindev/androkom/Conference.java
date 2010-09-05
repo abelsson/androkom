@@ -9,6 +9,7 @@ import org.lindev.androkom.KomServer.TextInfo;
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.AsyncTask;
@@ -330,6 +331,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     @Override
     public boolean onOptionsItemSelected(MenuItem item) 
     {
+    	TextView t1;
+    	
     	Log.d(TAG, "onOptionsItemSelected");
         // Handle item selection
         switch (item.getItemId()) {
@@ -350,11 +353,40 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			startActivity(new Intent(this, ConferencePrefs.class));
 			return true;
 
+		case R.id.menu_biggerfontsize_id :
+			Log.d(TAG, "Change fontsize+");
+			t1 = (TextView) mSwitcher.getChildAt(0);
+			t1.setTextSize((float) (t1.getTextSize()*1.1));
+
+			storeFontSize(t1.getTextSize());
+			return true;
+
+		case R.id.menu_smallerfontsize_id :
+			Log.d(TAG, "Change fontsize-");
+			t1 = (TextView) mSwitcher.getChildAt(0);
+			t1.setTextSize((float) (t1.getTextSize()*0.9));
+
+			storeFontSize(t1.getTextSize());
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }
     }
 
+    protected void storeFontSize(float size) {
+        SharedPreferences settings = getPreferences(MODE_PRIVATE);
+        SharedPreferences.Editor editor = settings.edit();
+        editor.putFloat("conference_body_textsize", size);    	
+    }
+
+    protected void setCurrentFontSize() {
+        SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
+    	
+		TextView t1 = (TextView) mSwitcher.getChildAt(0);
+		t1.setTextSize(prefs.getFloat("conference_body_textsize", 12));
+    }
+    
     /**
      * The menu key has been pressed, instantiate the requested
      * menu.
@@ -430,7 +462,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         t.setMovementMethod(LinkMovementMethod.getInstance());
         t.setGravity(Gravity.TOP | Gravity.LEFT);
         t.setTextColor(ColorStateList.valueOf(Color.WHITE));
-   
+
         // TODO: Eh. Figure out how calculate our height properly.	
         t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
       
