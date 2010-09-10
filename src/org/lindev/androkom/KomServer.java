@@ -235,12 +235,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
      */
     public String login(String username, String password, String server) 
     {
+    	Log.d(TAG, "Trying to login username:"+username);
         if (!s.getConnected()) {
             if (connect(server) != 0)
                 return "Couldn't connect to server";
         }
 
-        ConfInfo usernames[] = new ConfInfo[0];
+        usernames = new ConfInfo[0];
         try {
             usernames = s.lookupName(username, true, false);
             if (usernames.length != 1) {            
@@ -266,6 +267,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
      */
     public String login(int userid, String password, String server) 
     {
+    	Log.d(TAG, "Trying to login userid:"+userid);
+        usernames = new ConfInfo[0];
         if (!s.getConnected()) {
             if (connect(server) != 0)
                 return "Couldn't connect to server";
@@ -513,5 +516,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	Log.d(TAG, "asynchMessage:"+m);
     }
 
+    public ConfInfo[] getUserNames() {
+    	return usernames;
+    }
+    
     private HashSet<Integer> mPendingSentTexts;
+    ConfInfo usernames[];
 }

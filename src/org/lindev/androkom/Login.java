@@ -1,5 +1,7 @@
 package org.lindev.androkom;
 
+import org.lysator.lattekom.ConfInfo;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -40,7 +42,6 @@ public class Login extends Activity
         getApp().doBindService();
 
         mUsername = (EditText) findViewById(R.id.username);
-        mUserid   = (EditText) findViewById(R.id.userid);
         mPassword = (EditText) findViewById(R.id.password);
 
         Button loginButton = (Button) findViewById(R.id.login);
@@ -138,7 +139,6 @@ public class Login extends Activity
         private final ProgressDialog dialog = new ProgressDialog(Login.this);
 
         String username;
-        String userid;
         String password;
 
         protected void onPreExecute() {
@@ -148,9 +148,7 @@ public class Login extends Activity
             this.dialog.show();
 
             this.username = mUsername.getText().toString();
-            this.userid   = mUserid.getText().toString();
             this.password = mPassword.getText().toString();
-
         }
 
         protected String doInBackground(final Void... args) 
@@ -161,8 +159,10 @@ public class Login extends Activity
         	}
         	Log.d(TAG, "Connecting to "+server);
         	if(server.length()>0) {
-        		if(userid.length()>0) {
-            		return getApp().getKom().login(Integer.parseInt(userid), password, server);
+        		if(selectedUser>0) {
+        			String msg = getApp().getKom().login(selectedUser, password, server);
+        			selectedUser=0;
+            		return msg;
         		} else {
             		return getApp().getKom().login(username, password, server);
         		}
@@ -175,20 +175,42 @@ public class Login extends Activity
             this.dialog.dismiss();
                        
             if (result.length() > 0) {
-                AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-                builder.setMessage(result)
-                .setCancelable(false)
-                .setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-                    public void onClick(DialogInterface dialog, int id) {
-                        dialog.cancel();
-                    }
-                });
-                AlertDialog alert = builder.create();
-                alert.show();
-                loginFailed = true;
+            	users = getApp().getKom().getUserNames();
+            	if (users.length > 1) {
+            		Log.d(TAG, "Ambigous name");
+            		final CharSequence[] items = new CharSequence[users.length];
+            		for(int i=0; i <users.length; i++) {
+            			items[i]=new String(users[i].confName);
+            			Log.d(TAG, "Name "+i+":"+items[i]);
+            		}
+            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+            		builder.setTitle("Pick a name");
+            		builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+            		    public void onClick(DialogInterface dialog, int item) {
+            		        Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+            				dialog.cancel();
+            				selectedUser = users[item].confNo;
+            				Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].confName));
+            				doLogin();
+            		    }
+            		});
+            		AlertDialog alert = builder.create();
+            		alert.show();
+            	} else {
+            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+            		builder.setMessage(result)
+            		.setCancelable(false)
+            		.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+            			public void onClick(DialogInterface dialog, int id) {
+            				dialog.cancel();
+            			}
+            		});
+            		AlertDialog alert = builder.create();
+            		alert.show();
+            		loginFailed = true;
+            	}
             }
             else {
-
                 SharedPreferences settings = getPreferences(MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("username", username);
@@ -266,6 +288,8 @@ public class Login extends Activity
     {
         return (App)getApplication();
     }
+    private int selectedUser=0;
+    private ConfInfo[] users;
     private EditText mUsername;
     private EditText mUserid;
     private EditText mPassword;
