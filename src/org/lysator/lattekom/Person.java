@@ -183,7 +183,7 @@ public class Person {
 		person.lastLogin = KomTime.createFrom(pcount, parameters);
 		pcount = pcount + KomTime.ITEM_SIZE;
 		person.userArea = parameters[pcount++].intValue();
-		person.totalTimePresent = parameters[pcount++].intValue();
+		person.totalTimePresent = 1; // TODO:parameters[pcount++].intValue(); crash on value like 3821863021
 		person.sessions = parameters[pcount++].intValue();
 		person.createdLines = parameters[pcount++].intValue();
 		person.createdBytes = parameters[pcount++].intValue(); // new

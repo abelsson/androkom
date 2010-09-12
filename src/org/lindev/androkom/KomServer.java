@@ -139,6 +139,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             Log.i("androkom","disconnected");           
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "onDestroy "+e);
             e.printStackTrace();
         }
 
@@ -157,6 +158,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             s.connect(server);
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "connect "+e);
+
             e.printStackTrace();
             return -1;
         }
@@ -187,6 +190,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchConferences "+e);
             e.printStackTrace();
         }
 
@@ -202,6 +206,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			return s.toString(s.getConfName(conf));
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+        	Log.d(TAG, "getConferenceName "+e);
+
 			e.printStackTrace();
 		}
 		return "";
@@ -224,6 +230,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             s.changeConference(confNo);
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "setConference "+e);
+
             e.printStackTrace();
         }
     }
@@ -251,11 +259,18 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 if (!s.login(usernames[0].confNo, password, true)) {
                     return "Invalid password";
                 }
-                s.setClientVersion("Androkom", getVersionName());
             }
         } catch (Exception e) {
-            Log.e("androkom", "Caught " + e.getClass().getName());
+            Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+            e.printStackTrace();
             return "Unknown error";
+        }
+        try {
+            s.setClientVersion("Androkom", getVersionName());        	
+        } catch (Exception e) {
+        	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+        	e.printStackTrace();
+        	return "Unknown error";
         }
         return "";
     }
@@ -281,7 +296,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         	}
         	s.setClientVersion("Androkom", getVersionName());
         } catch (Exception e) {
-            Log.e("androkom", "Caught " + e.getClass().getName());
+            Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
             return "Unknown error";
         }
         return "";
@@ -306,9 +321,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			}
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
+        	Log.d(TAG, "getParentToText "+e);
+
 			e.printStackTrace();
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
+        	Log.d(TAG, "getParentToText "+e);
+
 			e.printStackTrace();
 		}
 		
@@ -339,6 +358,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "getNextUnreadText "+e);
+
             e.printStackTrace();
         }
 
@@ -370,6 +391,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "getTextAsHTML "+e);
+
             e.printStackTrace();
         }
         return new TextInfo(-1, "", "", "", "[Error fetching text]");
@@ -420,6 +443,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             mPendingSentTexts.add(s.doCreateText(text).getId());
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
+
             e.printStackTrace();
         }
     }
@@ -472,6 +497,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
+        	Log.d(TAG, "parseElispUserArea "+e);
+
             e.printStackTrace();
         }
     }
@@ -493,10 +520,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             }
         }
     }
-    private Session s;
+    private Session s=null;
 
-    private int mLastTextNo;
-    HashMap<String, String> mUserAreaProps;
+    private int mLastTextNo=0;
+    HashMap<String, String> mUserAreaProps=null;
 
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
@@ -505,8 +532,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         if (mPendingSentTexts.contains(e.getId())) {
             Log.i("androkom", "Got reply for created text " + e.getId());
 
-            if (!e.getSuccess())
+            if (!e.getSuccess()) {
                 /* TODO: handle error here */;
+            	Log.d(TAG, "rpcEvent failed "+e);
+            }
         }
 
     }

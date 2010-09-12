@@ -11,6 +11,8 @@ import java.io.*;
 import java.util.*;
 import java.lang.ref.*;
 
+import android.util.Log;
+
 /**
  * <p>
  * This is the main interface to the LysKOM server and the LatteKOM library.
@@ -443,8 +445,8 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         try {
             shutdown();
         } catch (Throwable t1) {
-            t1.printStackTrace();
-            System.err.println("Exception in " + this + "::finalize(): "
+            Log.e("lattekom", Log.getStackTraceString(t1));
+            Log.e("lattekom", "Exception in " + this + "::finalize(): "
                     + t1.toString());
         }
         if (Debug.ENABLED)
@@ -570,6 +572,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     }
 
     public boolean login(int id, String password) throws IOException {
+        Log.d("lattekom", "Login.id1 ");
         return login(id, password, false, true);
     }
 
@@ -588,6 +591,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public boolean login(int id, String password, boolean hidden)
             throws IOException {
+        Log.d("lattekom", "Login.id2 ");
         return login(id, password, hidden, true);
     }
 
@@ -607,17 +611,35 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public boolean login(int id, String password, boolean hidden,
             boolean getMembership) throws IOException {
-        return login(id, password.getBytes(serverEncoding), hidden,
-                getMembership);
-    }
+    	boolean result = false;
+        Log.d("lattekom", "Login.id3 ");
+    	try {
+    		byte[] psw = password.getBytes(serverEncoding);
+    		result =  login(id, psw, hidden, getMembership);
+        } catch (Exception e) {
+            Log.e("lattekom", "Login.id Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+        return result;
+   }
 
     public boolean login(String name, String password, boolean hidden,
             boolean getMembership) throws IOException {
-        ConfInfo[] names = lookupName(name, true, false);
-        if (names.length != 1)
-            return false;
-
-        return login(names[0].getNo(), password, hidden, getMembership);
+    	boolean result=false;
+        Log.d("lattekom", "Login.id4 ");
+    	
+    	try {
+    		ConfInfo[] names = lookupName(name, true, false);
+    		if (names.length != 1) {
+    			result =  false;
+    		} else {
+    			result = login(names[0].getNo(), password, hidden, getMembership);
+    		}
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.Login.name Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+    	return result;
     }
 
     /**
@@ -635,28 +657,55 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public boolean login(int id, byte[] password, boolean hidden,
             boolean getMembership) throws IOException {
+    	RpcCall loginCall = null;
+        Log.d("lattekom", "Login.id5 ");
         int rpcid = count();
         if (password == null)
             throw new IOException("Null password not allowed.");
-        RpcCall loginCall = new RpcCall(rpcid, Rpc.C_login)
-                .add(new KomToken(id)).add(new Hollerith(password))
+        try {
+        	KomToken komtoken = new KomToken(id);
+        	Hollerith hollepsw = new Hollerith(password);
+        	loginCall = new RpcCall(rpcid, Rpc.C_login)
+        		.add(komtoken).add(hollepsw)
                 .add(hidden ? "1" : "0"); // invisibility
-
-        writeRpcCall(loginCall);
-
-        RpcReply reply = waitFor(rpcid);
-        loggedIn = reply.getSuccess();
-        if (loggedIn) {
-            myPerson = getPersonStat(id);
-            myPersonNo = myPerson.getNo();
-            myPerson.uconf = getUConfStat(id);
-            acceptAsynchAll();
-            if (getMembership) {
-                memberships = getMyMembershipList(false);
-            }
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.Login.bytepsw1 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
         }
-        state = STATE_LOGIN;
-        return loggedIn = reply.getSuccess();
+
+    	try {
+    		writeRpcCall(loginCall);
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.Login.bytepsw2 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+
+    	RpcReply reply = null;
+    	try {
+    		reply = waitFor(rpcid);
+    		loggedIn = reply.getSuccess();
+    		if (loggedIn) {
+    			myPerson = getPersonStat(id);
+    			myPersonNo = myPerson.getNo();
+    			myPerson.uconf = getUConfStat(id);
+    			acceptAsynchAll();
+    			if (getMembership) {
+    				memberships = getMyMembershipList(false);
+    			}
+    		}
+    		state = STATE_LOGIN;
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.Login.bytepsw3 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+    	
+    	try {
+    		loggedIn = reply.getSuccess();
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.Login.bytepsw4 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+    	return loggedIn;
     }
 
     /**
@@ -717,6 +766,8 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         Debug.println("--> updateUnreads()");
         if (memberships == null)
             getMyMembershipList(getReadTexts);
+        if (myPerson == null) 
+        	return;
         int persNo = myPerson.getNo();
         if (_unreads == null) {
             getUnreadConfsList(persNo, true);
@@ -1846,8 +1897,12 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public List<Membership> getMyMembershipList(boolean wantReadTexts)
             throws IOException {
-        return memberships = getMembershipList(myPerson.getNo(), 0,
-                myPerson.noOfConfs + 1, wantReadTexts);
+    	if (myPerson != null) {
+    		return memberships = getMembershipList(myPerson.getNo(), 0,
+    				myPerson.noOfConfs + 1, wantReadTexts);
+    	} else {
+    		return null;
+    	}
     }
 
     /**
@@ -2086,22 +2141,42 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
             throw new IllegalArgumentException(
                     "Attempt to use conference zero.");
 
-        UConference cc = refreshCache ? null : conferenceCache
-                .getUConference(confNo);
-        if (cc != null)
-            return cc;
-        RpcCall req = doGetUConfStat(confNo);
-        if (Debug.ENABLED)
-            Debug.println("uconf-stat for " + confNo
-                    + " not in cache, asking server");
-        RpcReply rep = waitFor(req.getId());
-        if (rep.getSuccess()) {
-            cc = new UConference(confNo, rep.getParameters());
-            conferenceCache.add(cc);
-            return cc;
-        } else {
-            throw rep.getException();
+    	RpcCall req = null;
+    	UConference cc = null;
+        try {
+        	cc = refreshCache ? null : conferenceCache
+        			.getUConference(confNo);
+        	if (cc != null)
+        		return cc;
+        	req = doGetUConfStat(confNo);
+        	if (Debug.ENABLED)
+        		Debug.println("uconf-stat for " + confNo
+        				+ " not in cache, asking server");
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.getUConfStat1 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
         }
+
+		RpcReply rep = null;
+    	try {
+    		rep = waitFor(req.getId());
+    	} catch (Exception e) {
+            Log.e("lattekom", "Session.getUConfStat2 Caught " + e.getClass().getName());
+            Log.e("lattekom", Log.getStackTraceString(e));
+        }
+    		
+    	if ((rep != null) && rep.getSuccess()) {
+    		try {
+    			cc = new UConference(confNo, rep.getParameters());
+    			conferenceCache.add(cc);
+        	} catch (Exception e) {
+                Log.e("lattekom", "Session.getUConfStat3 Caught " + e.getClass().getName());
+                Log.e("lattekom", Log.getStackTraceString(e));
+            }
+    		return cc;
+    	} else {
+    		throw rep.getException();
+    	}
     }
 
     /**
@@ -3403,7 +3478,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
                     IOException e = new IOException(
                             "Timeout waiting for RPC reply #" + ids + " ("
                                     + waited + " ms)");
-                    e.printStackTrace();
+                    Log.e("lattekom", Log.getStackTraceString(e));
                     throw (e);
                 }
             } else {

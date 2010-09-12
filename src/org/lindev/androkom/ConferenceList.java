@@ -5,10 +5,10 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.KomServer.ConferenceInfo;
-
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.View;
@@ -25,7 +25,9 @@ import android.widget.Toast;
  */
 public class ConferenceList extends ListActivity 
 {
-    /**
+	public static final String TAG = "Androkom ConferenceList";
+
+	/**
      * Instantiate activity.  
      */
     @Override
@@ -121,12 +123,35 @@ public class ConferenceList extends ListActivity
     {
         mAdapter.clear();
 
-        mConferences = getApp().getKom().fetchConferences();
-        for(ConferenceInfo elem : mConferences) {
-            mAdapter.add(elem);
-        }
+        mConferences = fetchConferences();
+        if (mConferences != null) {
+        	for(ConferenceInfo elem : mConferences) {
+        		mAdapter.add(elem);
+        	}
 
-        mAdapter.notifyDataSetChanged();
+        	mAdapter.notifyDataSetChanged();
+        } else {
+        	// TODO: Do something here?
+        	Log.d(TAG, "populateConferences failed, no Conferences");
+        }
+    }
+ 
+    private List<ConferenceInfo> fetchConferences() {
+    	List<ConferenceInfo> retlist = null;
+    	
+    	try {
+            App app = getApp();
+            if (app != null) {
+            	KomServer kom = app.getKom();
+            	if (kom != null) {
+            		retlist = kom.fetchConferences();
+            	}
+            }
+    	} catch (Exception e) {
+    		Log.d(TAG, "fetchConferences failed:"+e);
+    		e.printStackTrace();
+    	}
+		return retlist;
     }
     
     App getApp() 

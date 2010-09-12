@@ -54,7 +54,6 @@ public class Login extends Activity
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });
-
     }
 
     public void onWindowFocusChanged(boolean hasFocus) {
@@ -291,6 +290,5 @@ public class Login extends Activity
     private int selectedUser=0;
     private ConfInfo[] users;
     private EditText mUsername;
-    private EditText mUserid;
     private EditText mPassword;
 }

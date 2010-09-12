@@ -7,6 +7,8 @@
 
 package org.lysator.lattekom;
 
+import android.util.Log;
+
 import java.io.Serializable;
 import java.util.Arrays;
 import java.io.UnsupportedEncodingException;
@@ -16,6 +18,8 @@ import java.io.UnsupportedEncodingException;
  * server. It is generally a serie of bytes.
  */
 public class KomToken implements Serializable {
+	public static final String TAG = "Lattekom.KomToken";
+
 	private static final long serialVersionUID = -8416655390025905367L;
 	/**
 	 * A "primitive" LysKOM token, such as INT32
@@ -136,8 +140,11 @@ public class KomToken implements Serializable {
 			return Integer.parseInt(new String(contents));
 		} catch (NumberFormatException ex) {
 			// Is this a programming error or runtime error? Hmmm?
-			throw new RuntimeException("Error parsing " + new String(contents)
+			//throw new RuntimeException("Error parsing " + new String(contents)
+			//		+ " to int");
+			Log.e(TAG, "Error parsing " + new String(contents)
 					+ " to int");
+			return 0;
 		}
 	}
 
