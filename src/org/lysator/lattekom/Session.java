@@ -250,7 +250,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     String clientUser = System.getProperty("user.name", "");
 
     String latteVersion = "$Version$";
-    String latteName = "LatteKOM";
+    String latteName = "Androkom powered by LatteKOM";
 
     String serverEncoding = defaultServerEncoding;
     boolean enableBigText = defaultEnabledBigText;
