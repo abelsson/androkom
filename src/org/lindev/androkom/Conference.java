@@ -332,6 +332,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     public boolean onOptionsItemSelected(MenuItem item) 
     {
     	TextView t1;
+    	float newtextsize;
     	
     	Log.d(TAG, "onOptionsItemSelected");
         // Handle item selection
@@ -356,17 +357,29 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		case R.id.menu_biggerfontsize_id :
 			Log.d(TAG, "Change fontsize+");
 			t1 = (TextView) mSwitcher.getChildAt(0);
-			t1.setTextSize((float) (t1.getTextSize()*1.1));
+			newtextsize = (float) (t1.getTextSize()*1.1);
+			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+			t1.invalidate();
 
-			storeFontSize(t1.getTextSize());
+			t1 = (TextView) mSwitcher.getChildAt(1);
+			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+			t1.invalidate();
+			
+			storeFontSize(newtextsize);
 			return true;
 
 		case R.id.menu_smallerfontsize_id :
 			Log.d(TAG, "Change fontsize-");
 			t1 = (TextView) mSwitcher.getChildAt(0);
-			t1.setTextSize((float) (t1.getTextSize()*0.9));
+			newtextsize = (float) (t1.getTextSize()*0.9);
+			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+			t1.invalidate();
 
-			storeFontSize(t1.getTextSize());
+			t1 = (TextView) mSwitcher.getChildAt(1);
+			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+			t1.invalidate();
+			
+			storeFontSize(newtextsize);
 			return true;
 
 		default:

@@ -173,28 +173,30 @@ public class Login extends Activity
         { 
             this.dialog.dismiss();
                        
-            if (result.length() > 0) {
+            if (result.length() == 0) {
             	users = getApp().getKom().getUserNames();
-            	if (users.length > 1) {
-            		Log.d(TAG, "Ambigous name");
-            		final CharSequence[] items = new CharSequence[users.length];
-            		for(int i=0; i <users.length; i++) {
-            			items[i]=new String(users[i].confName);
-            			Log.d(TAG, "Name "+i+":"+items[i]);
+            	if (users != null) {
+            		if (users.length > 1) {
+            			Log.d(TAG, "Ambigous name");
+            			final CharSequence[] items = new CharSequence[users.length];
+            			for(int i=0; i <users.length; i++) {
+            				items[i]=new String(users[i].confName);
+            				Log.d(TAG, "Name "+i+":"+items[i]);
+            			}
+            			AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+            			builder.setTitle("Pick a name");
+            			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
+            				public void onClick(DialogInterface dialog, int item) {
+            					Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
+            					dialog.cancel();
+            					selectedUser = users[item].confNo;
+            					Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].confName));
+            					doLogin();
+            				}
+            			});
+            			AlertDialog alert = builder.create();
+            			alert.show();
             		}
-            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            		builder.setTitle("Pick a name");
-            		builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-            		    public void onClick(DialogInterface dialog, int item) {
-            		        Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-            				dialog.cancel();
-            				selectedUser = users[item].confNo;
-            				Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].confName));
-            				doLogin();
-            		    }
-            		});
-            		AlertDialog alert = builder.create();
-            		alert.show();
             	} else {
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
             		builder.setMessage(result)
