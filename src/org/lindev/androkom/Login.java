@@ -173,7 +173,8 @@ public class Login extends Activity
         { 
             this.dialog.dismiss();
                        
-            if (result.length() == 0) {
+            if (result.length() > 0) {
+            	// Login failed, check why
             	users = getApp().getKom().getUserNames();
             	if (users != null) {
             		if (users.length > 1) {
@@ -212,6 +213,7 @@ public class Login extends Activity
             	}
             }
             else {
+            	// Login succeded: Store psw, start new activity and kill this.
                 SharedPreferences settings = getPreferences(MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("username", username);

@@ -2102,11 +2102,15 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      * which the currently logged in person might have unread texts.
      */
     public Membership[] getUnreadMembership() {
-        Membership[] m = new Membership[unreadMembership.size()];
-        for (int i = 0; i < m.length; i++) {
-            m[i] = (Membership) unreadMembership.get(i);
-        }
-        return m;
+    	if (unreadMembership != null) {
+    		Membership[] m = new Membership[unreadMembership.size()];
+    		for (int i = 0; i < m.length; i++) {
+    			m[i] = (Membership) unreadMembership.get(i);
+    		}
+    		return m;
+    	} else {
+    		return new Membership[0];
+    	}
     }
 
     /**
