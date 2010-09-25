@@ -32,7 +32,7 @@ public class Login extends Activity
 {
 	public static final String TAG = "Androkom Login";
 	private boolean loginFailed = false;
-	
+
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
@@ -56,16 +56,19 @@ public class Login extends Activity
         });
     }
 
-    public void onWindowFocusChanged(boolean hasFocus) {
-    	super.onWindowFocusChanged(hasFocus);
-        
-        if (hasFocus && Prefs.getAutologin(getBaseContext())
-        		&& !(Prefs.getUseOISafe(getBaseContext()))
-        		&& (!loginFailed)
-    			&& (getPsw().length()>0)) {
-        	doLogin();
-        }    	
-    }
+	public void onWindowFocusChanged(boolean hasFocus) {
+		super.onWindowFocusChanged(hasFocus);
+
+		Log.d(TAG, "onWindowFocusChanged");
+
+		// autologin
+		if (hasFocus && Prefs.getAutologin(getBaseContext())
+				&& !(Prefs.getUseOISafe(getBaseContext()))
+				&& (!loginFailed)
+				&& (getPsw().length() > 0)) {
+			doLogin();
+		}
+	}
 
     private String getPsw() {
     	String password;
@@ -152,7 +155,7 @@ public class Login extends Activity
 
         protected String doInBackground(final Void... args) 
         {
-        	String server = Prefs.getServer(getBaseContext());
+			String server = Prefs.getServer(getBaseContext());
         	if(server.equals("@")) {
             	server = Prefs.getOtherServer(getBaseContext());        	
         	}

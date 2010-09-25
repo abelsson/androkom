@@ -26,6 +26,7 @@ import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -288,6 +289,71 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		    mSwitcher.setOutAnimation(mSlideLeftOut);	
 		}
     }
+
+	private void moveToPrevText() {
+		Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+		
+		mState.currentTextIndex--;        
+		
+		if (mState.currentTextIndex < 0) {
+		    mState.currentTextIndex = 0;
+		    return;
+		}
+		
+		mSwitcher.setInAnimation(mSlideRightIn);
+		mSwitcher.setOutAnimation(mSlideRightOut);
+		mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+	}
+
+	private void moveToNextText() {
+		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
+		
+		mState.currentTextIndex++;
+		
+		if (mState.currentTextIndex >= mState.currentText.size()) {
+		    // At end of list. load new text from server
+		    Log.i("androkom", "fetching new text");
+		    new LoadMessageTask().execute(-1);
+
+		    mSwitcher.setInAnimation(mSlideLeftIn);
+		    mSwitcher.setOutAnimation(mSlideLeftOut);			  
+		    mState.currentTextIndex = mState.currentText.size() - 1;
+		}
+		else {
+		    // Display old text, already fetched.
+		    mSwitcher.setInAnimation(mSlideLeftIn);
+		    mSwitcher.setOutAnimation(mSlideLeftOut);
+
+		    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+		}
+	}
+
+	private void moveToParentText()
+	{
+	    Log.i("androkom", "fetching parent to text " + mState.getCurrent().textNo);
+	    new LoadMessageTask().execute(mState.getCurrent().textNo);
+
+	    mSwitcher.setInAnimation(mSlideLeftIn);
+	    mSwitcher.setOutAnimation(mSlideLeftOut);	
+	}
+
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case android.view.KeyEvent.KEYCODE_B:
+			moveToPrevText();
+			return true;
+		case android.view.KeyEvent.KEYCODE_P:
+			moveToParentText();
+			return true;
+		case android.view.KeyEvent.KEYCODE_F:
+		case android.view.KeyEvent.KEYCODE_SPACE:
+			moveToNextText();
+			return true;
+		default:
+			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
+		}
+		return false;
+	}
 
     /**
      * This one is called when we, ourselves, have been touched.

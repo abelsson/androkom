@@ -125,7 +125,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
 
         // Tell the user we stopped.
-        Toast.makeText(this,"KomServer stopped", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this,"KomServer stopped (onDestroy)", Toast.LENGTH_SHORT).show();
 
 
         try {
@@ -137,14 +137,43 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 s.disconnect(false);
 
             Log.i("androkom","disconnected");           
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "onDestroy "+e);
             e.printStackTrace();
         }
 
+        s.removeRpcEventListener(this);
         s = null;
 
+    }
+
+    void reconnect() {
+    	Log.d(TAG, "KomServer trying to reconnect");
+        try {
+            if (s.getState() == Session.STATE_LOGIN)
+                s.logout(true);
+            Log.i("androkom","logged out");
+
+            if (s.getState() == Session.STATE_CONNECTED)
+                s.disconnect(false);
+
+            Log.i("androkom","disconnected");           
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "onDestroy "+e);
+            e.printStackTrace();
+        }
+
+        s.removeRpcEventListener(this);
+        s = null;
+    	
+        s = new Session();
+        s.addRpcEventListener(this);
+        //s.addAsynchMessageReceiver(this);
+
+        Log.d(TAG, "KomServer trying to login using "+re_userid+" "+re_server);
+        login(re_userid, re_password, re_server);
     }
 
     /**
@@ -158,7 +187,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             s.connect(server);
         } catch (IOException e) {
             // TODO Auto-generated catch block
-        	Log.d(TAG, "connect "+e);
+        	Log.d(TAG, "connect1 "+e);
+
+            e.printStackTrace();
+            return -1;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "connect2 "+e);
 
             e.printStackTrace();
             return -1;
@@ -167,10 +202,21 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         return 0;
     }
 
+    public void disconnect() {
+    	try {
+    		s.disconnect(true);
+		} catch (RpcFailure e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (Exception e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
     /**
      * Fetch a list of conferences with unread texts.
      */
-    public List<ConferenceInfo> fetchConferences() 
+    public List<ConferenceInfo> fetchConferences()
     {
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
         try { 
@@ -190,7 +236,12 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchConferences "+e);
+        	Log.d(TAG, "fetchConferences1 "+e);
+            e.printStackTrace();
+            reconnect();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchConferences2 "+e);
             e.printStackTrace();
         }
 
@@ -204,7 +255,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
     	try {
 			return s.toString(s.getConfName(conf));
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
         	Log.d(TAG, "getConferenceName "+e);
 
@@ -228,7 +279,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         try {
             s.changeConference(confNo);
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "setConference "+e);
 
@@ -244,9 +295,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public String login(String username, String password, String server) 
     {
     	Log.d(TAG, "Trying to login username:"+username);
-        if (!s.getConnected()) {
-            if (connect(server) != 0)
-                return "Couldn't connect to server";
+    	try {
+    		if (!s.getConnected()) {
+    			if (connect(server) != 0)
+    				return "Couldn't connect to server";
+    		}
+        } catch (Exception e) {
+            Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+            e.printStackTrace();
+            return "Unknown error";
         }
 
         usernames = new ConfInfo[0];
@@ -272,6 +329,9 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         	e.printStackTrace();
         	return "Unknown error";
         }
+        re_userid = usernames[0].confNo;
+        re_password = password;
+        re_server = server;
         return "";
     }
 
@@ -299,6 +359,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
             return "Unknown error";
         }
+        re_userid = userid;
+        re_password = password;
+        re_server = server;
+        
         return "";
     }
 
@@ -324,14 +388,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         	Log.d(TAG, "getParentToText "+e);
 
 			e.printStackTrace();
-		} catch (IOException e) {
+		} catch (Exception e) {
 			// TODO Auto-generated catch block
         	Log.d(TAG, "getParentToText "+e);
-
 			e.printStackTrace();
 		}
-		
-		return new TextInfo(-1, "", "", "", "[error fetching text]");
+    	reconnect();
+		return new TextInfo(-1, "", "", "", "[error fetching parent text]");
     }
 
     /**
@@ -356,14 +419,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             
             return getTextAsHTML(mLastTextNo);                                
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "getNextUnreadText "+e);
-
             e.printStackTrace();
         }
+    	reconnect();
 
-        return new TextInfo(-1, "", "", "", "[error fetching text]");
+        return new TextInfo(-1, "", "", "", "[error fetching unread text]");
     }
 
 
@@ -389,13 +452,13 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             return new TextInfo(textNo, username, text.getCreationTimeString(), text.getSubjectString(), text.getBodyString());
 
 
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "getTextAsHTML "+e);
 
             e.printStackTrace();
         }
-        return new TextInfo(-1, "", "", "", "[Error fetching text]");
+        return new TextInfo(-1, "", "", "", "[Error fetching HTML text]");
 
     }
 
@@ -441,7 +504,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         try {
             mPendingSentTexts.add(s.doCreateText(text).getId());
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "createText "+e);
 
@@ -495,7 +558,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 }
 
             }
-        } catch (IOException e) {
+        } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "parseElispUserArea "+e);
 
@@ -548,7 +611,17 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public ConfInfo[] getUserNames() {
     	return usernames;
     }
+
+    public boolean isConnected() {
+    	if (s==null) {
+    		return false;
+    	}
+        return s.getConnected();
+    }
     
     private HashSet<Integer> mPendingSentTexts;
     ConfInfo usernames[];
+    private int re_userid; //for reconnect
+    private String re_password; // for reconnect
+    private String re_server; // for reconnect
 }

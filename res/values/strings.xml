@@ -42,4 +42,6 @@
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Bigger fontsize</string>
     <string name="biggerfontsize_shortcut">+</string>
+    <string name="reconnect_label">Reconnect</string>
+    <string name="reconnect_shortcut">R</string>
 </resources>

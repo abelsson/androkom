@@ -42,5 +42,7 @@
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
     <string name="biggerfontsize_shortcut">+</string>
+    <string name="reconnect_label">Starta om</string>
+    <string name="reconnect_shortcut">R</string>
 
 </resources>

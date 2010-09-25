@@ -5,12 +5,16 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.KomServer.ConferenceInfo;
+
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
@@ -115,7 +119,75 @@ public class ConferenceList extends ListActivity
         inflater.inflate(R.menu.conference, menu);
         return true;
     }
-    
+ 
+    /**
+     * Called when user has selected a menu item from the 
+     * menu button popup. 
+     */
+    @Override
+	public boolean onOptionsItemSelected(MenuItem item) {
+		Log.d(TAG, "onOptionsItemSelected");
+		// Handle item selection
+		switch (item.getItemId()) {
+
+		case R.id.reply:
+			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
+					.show();
+			return true;
+
+		case R.id.menu_settings_id:
+			Log.d(TAG, "Starting menu");
+			startActivity(new Intent(this, ConferencePrefs.class));
+			return true;
+
+		case R.id.menu_biggerfontsize_id:
+			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
+					.show();
+			return true;
+
+		case R.id.menu_smallerfontsize_id:
+			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
+					.show();
+			return true;
+
+		default:
+			return super.onOptionsItemSelected(item);
+		}
+	}
+
+    /**
+     * Attempt to log in to "kom.lysator.liu.se". If unsuccessful, show an 
+     * alert. Otherwise save username and password for successive sessions.
+     */
+    private class LoginTask extends AsyncTask<Void, Integer, String> {
+        private final ProgressDialog dialog = new ProgressDialog(ConferenceList.this);
+
+        protected void onPreExecute() {
+            this.dialog.setCancelable(true);
+            this.dialog.setIndeterminate(true);
+            this.dialog.setMessage("Logging in...");
+            this.dialog.show();
+        }
+
+        protected String doInBackground(final Void... args) 
+        {
+			getApp().getKom().reconnect();
+			return "a string";
+        }
+
+        protected void onPostExecute(final String result) 
+        { 
+            this.dialog.dismiss();
+                       
+            Log.d(TAG, result);
+        }
+    }
+
+    private void doLogin()
+    {
+        new LoginTask().execute();
+    }
+
     /**
      * Refresh list of unread conferences.
      */
@@ -124,7 +196,7 @@ public class ConferenceList extends ListActivity
         mAdapter.clear();
 
         mConferences = fetchConferences();
-        if (mConferences != null) {
+        if (mConferences != null && (!mConferences.isEmpty())) {
         	for(ConferenceInfo elem : mConferences) {
         		mAdapter.add(elem);
         	}
@@ -133,6 +205,10 @@ public class ConferenceList extends ListActivity
         } else {
         	// TODO: Do something here?
         	Log.d(TAG, "populateConferences failed, no Conferences");
+        	Log.d(TAG, "mConferences is null:"+(mConferences==null));
+        	if(mConferences!=null) {
+            	Log.d(TAG, "mConferences is empty:"+mConferences.isEmpty());
+        	}
         }
     }
  
@@ -144,12 +220,19 @@ public class ConferenceList extends ListActivity
             if (app != null) {
             	KomServer kom = app.getKom();
             	if (kom != null) {
-            		retlist = kom.fetchConferences();
+            		if (kom.isConnected()) {
+            			retlist = kom.fetchConferences();
+            		} else {
+            			Log.d(TAG, "Can't fetch conferences when no connection");
+            	        Toast.makeText(getApplicationContext(), "Lost connection", Toast.LENGTH_SHORT).show();    
+            			getApp().getKom().reconnect();
+            		}
             	}
             }
     	} catch (Exception e) {
     		Log.d(TAG, "fetchConferences failed:"+e);
     		e.printStackTrace();
+	        Toast.makeText(getApplicationContext(), "fetchConferences failed, probably lost connection", Toast.LENGTH_SHORT).show();    
     	}
 		return retlist;
     }

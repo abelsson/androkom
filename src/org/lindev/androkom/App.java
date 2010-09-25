@@ -43,6 +43,10 @@ public class App extends Application
         }
     }
 
+    public boolean isBound() {
+    	return mIsBound;
+    }
+    
     private KomServer mBoundService;
     private boolean mIsBound;
 

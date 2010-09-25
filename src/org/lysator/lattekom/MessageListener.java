@@ -222,9 +222,10 @@ class MessageListener implements Runnable {
 
                     continue;
                 } else {
-                    throw new RuntimeException(
-                            "Fatal read error occured, read thread exiting",
-                            readError);
+                    disconnected = true;                	
+                    //throw new RuntimeException(
+                    //        "Fatal read error occured, read thread exiting",
+                    //        readError);
                 }
 
             }
