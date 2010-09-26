@@ -337,6 +337,42 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	    mSwitcher.setOutAnimation(mSlideLeftOut);	
 	}
 
+	private void scrollPageUp() {
+		TextView t = (TextView) mSwitcher.getCurrentView();
+
+		if ( t!= null) {
+			int visibleHeight = t.getHeight()
+			-t.getTotalPaddingBottom()
+			-t.getTotalPaddingTop()
+			-t.getCompoundPaddingBottom()
+			-t.getCompoundPaddingTop()
+			-2*t.getLineHeight();
+			int newY = t.getScrollY() - visibleHeight;
+			if(newY < 0) {
+				newY = 0;
+			}
+			t.scrollTo(0, newY);
+		}
+	}
+	
+	private void scrollPageDown() {
+		TextView t = (TextView) mSwitcher.getCurrentView();
+
+		if (t != null) {
+			int visibleHeight = t.getHeight()
+			-t.getTotalPaddingBottom()
+			-t.getTotalPaddingTop()
+			-t.getCompoundPaddingBottom()
+			-t.getCompoundPaddingTop()
+			-2*t.getLineHeight();
+			int newY = t.getScrollY() + visibleHeight;
+			if(newY > t.getLineCount()*t.getLineHeight()-visibleHeight) {
+				newY = t.getLineCount()*t.getLineHeight()-visibleHeight;
+			}
+			t.scrollTo(0, newY);
+		}
+	}
+	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch (keyCode) {
 		case android.view.KeyEvent.KEYCODE_B:
@@ -348,6 +384,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		case android.view.KeyEvent.KEYCODE_F:
 		case android.view.KeyEvent.KEYCODE_SPACE:
 			moveToNextText();
+			return true;
+		case android.view.KeyEvent.KEYCODE_U:
+		case 115: //PgUp on Toshiba AC100-10D
+			scrollPageUp();
+			return true;
+		case android.view.KeyEvent.KEYCODE_D:
+		case 116: //PgDn on Toshiba AC100-10D
+			scrollPageDown();
 			return true;
 		default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
