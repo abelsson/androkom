@@ -10,4 +10,7 @@
 	<item android:title="@string/smallerfontsize_label"
 		android:alphabeticShortcut="@string/smallerfontsize_shortcut"
 		android:id="@+id/menu_smallerfontsize_id"/>
+    <item android:title="@string/createnewtext_label"
+        android:alphabeticShortcut="@string/createnewtext_shortcut"
+        android:id="@+id/menu_createnewtext_id"/>
 </menu>

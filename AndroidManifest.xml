@@ -21,6 +21,12 @@
                    android:windowSoftInputMode="stateVisible|adjustResize">
         </activity>
         
+         <!--  Create a KOM message -->
+         <activity android:name=".CreateNewText"       
+                   android:label="CreateNewText"
+                   android:windowSoftInputMode="stateVisible|adjustResize">
+        </activity>
+        
          <!--  Login dialog -->
          <activity android:name=".Login"       
                    android:label="@string/app_name"

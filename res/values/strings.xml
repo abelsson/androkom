@@ -44,4 +44,7 @@
     <string name="biggerfontsize_shortcut">+</string>
     <string name="reconnect_label">Reconnect</string>
     <string name="reconnect_shortcut">R</string>
+
+    <string name="createnewtext_label">New text</string>
+    <string name="createnewtext_shortcut">N</string>
 </resources>

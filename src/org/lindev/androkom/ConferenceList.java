@@ -150,6 +150,15 @@ public class ConferenceList extends ListActivity
 					.show();
 			return true;
 
+		case R.id.menu_createnewtext_id:
+	        //String receipient = "Testmöte";
+	        //String subject = "Testärende";
+	        //String body = "En testkropp";
+	        //getApp().getKom().createText(receipient, subject, body);
+            Intent intent = new Intent(this, CreateNewText.class);    
+            startActivity(intent);
+			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

@@ -512,6 +512,96 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
     }
 
+    /**
+     * Create a text
+     */
+    public ConfInfo[] getConferences(String name) 
+    {
+        // find ConfNo
+        ConfInfo[] conferences=null;
+		try {
+			conferences = s.lookupName(name, false, true);
+		} catch (RpcFailure e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return conferences;
+    }
+
+    /**
+     * Create a text
+     */
+    public ConfInfo[] createText(String recipient, String subject, String body) 
+    {
+        Text text = new Text();
+
+        // find ConfNo
+        ConfInfo[] conferences=getConferences(recipient);
+		if ((conferences == null) || (conferences.length < 1)
+				|| (conferences.length > 1)) {
+        	Log.d(TAG, "Could not find uniq ConfNo");
+        	return conferences;
+        }
+    	int confno = 0;
+    	confno = conferences[0].getNo();
+    	Log.d(TAG, "creating text in confno:"+confno);
+        text.addRecipient(confno);
+
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
+
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
+
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
+
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
+
+            e.printStackTrace();
+        }
+    	return conferences;
+    }
+
+    /**
+     * Create a text
+     */
+    public void createText(int confno, String subject, String body) 
+    {
+        Text text = new Text();
+
+        text.addRecipient(confno);
+
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
+
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
+
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
+
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
+
+            e.printStackTrace();
+        }
+    }
+
     String[] getNextHollerith(String s) {
         int prefixLen = s.indexOf("H");
 
