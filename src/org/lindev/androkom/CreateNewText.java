@@ -33,6 +33,8 @@ public class CreateNewText extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.createnewtext);
 
+        recipient_type = (Integer) getIntent().getExtras().get("recipient_type");
+
         mRecipient = (EditText) findViewById(R.id.recipient);
         mSubject = (EditText) findViewById(R.id.subject);
         mBody = (EditText) findViewById(R.id.body);
@@ -48,53 +50,6 @@ public class CreateNewText extends Activity
         });
     }
 
-    /**
-     * Request a new message be posted.
-     */
-    /*
-    private void createText()
-    {
-        String recipient = mRecipient.getText().toString();
-        String subject = mSubject.getText().toString();
-        String body = mBody.getText().toString();
-        ConfInfo[] conferences = getApp().getKom().createText(recipient, subject, body);
-        if (conferences == null) {
-        	Toast.makeText(getBaseContext(),
-        			"Could not create text",
-        			Toast.LENGTH_LONG)
-        			.show();
-			Log.e(TAG, "failed to create new text (null)");
-        } else {
-        	if (conferences.length != 1) {
-    			Log.d(TAG, "Ambigous name");
-    			final CharSequence[] items = new CharSequence[conferences.length];
-    			for(int i=0; i <conferences.length; i++) {
-    				items[i]=new String(conferences[i].getNameString());
-    				Log.d(TAG, "Name "+i+":"+items[i]);
-    			}
-    			AlertDialog.Builder builder = new AlertDialog.Builder(CreateNewText.this);
-    			builder.setTitle("Pick a name");
-    			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-    				public void onClick(DialogInterface dialog, int item) {
-    					Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-    					dialog.cancel();
-    					selectedConference = conferences[item].confNo;
-    					Log.d(TAG, "Selected user:"+selectedConference+":"+new String(conferences[item].getNameString()));
-    					doLogin();
-    				}
-    			});
-    			AlertDialog alert = builder.create();
-    			alert.show();
-        	} else {
-            	Toast.makeText(getBaseContext(),
-            			"Created text",
-            			Toast.LENGTH_SHORT)
-            			.show();
-        	}
-        }
-        finish();
-    }
-*/
     /**
      * Attempt to create text
      */
@@ -122,11 +77,11 @@ public class CreateNewText extends Activity
         	Log.d(TAG, "Trying to create text ");
         	if (recipientNo == 0) {
         		Log.d(TAG, "Create text using string");
-        		conferences = getApp().getKom().createText(recipient, subject, textbody);
+        		conferences = getApp().getKom().createText(recipient_type, recipient, subject, textbody);
         		return "fail";
         	} else {
         		Log.d(TAG, "Create text using id");
-        		getApp().getKom().createText(recipientNo, subject, textbody);
+        		getApp().getKom().createText(recipient_type, recipientNo, subject, textbody);
         		return ""; //TODO: check for fail
         	}
         }
@@ -200,6 +155,7 @@ public class CreateNewText extends Activity
     private EditText mRecipient;
     private EditText mSubject;
     private EditText mBody;
+    private int recipient_type = 0;
 
     int recipientNo=0;
 

@@ -47,4 +47,7 @@
 
     <string name="createnewtext_label">New text</string>
     <string name="createnewtext_shortcut">N</string>
+
+    <string name="createnewmail_label">New mail</string>
+    <string name="createnewmail_shortcut">M</string>
 </resources>

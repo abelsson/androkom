@@ -13,4 +13,7 @@
     <item android:title="@string/createnewtext_label"
         android:alphabeticShortcut="@string/createnewtext_shortcut"
         android:id="@+id/menu_createnewtext_id"/>
+    <item android:title="@string/createnewmail_label"
+        android:alphabeticShortcut="@string/createnewmail_shortcut"
+        android:id="@+id/menu_createnewmail_id"/>
 </menu>

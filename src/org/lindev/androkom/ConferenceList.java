@@ -126,6 +126,7 @@ public class ConferenceList extends ListActivity
      */
     @Override
 	public boolean onOptionsItemSelected(MenuItem item) {
+        Intent intent;
 		Log.d(TAG, "onOptionsItemSelected");
 		// Handle item selection
 		switch (item.getItemId()) {
@@ -151,11 +152,14 @@ public class ConferenceList extends ListActivity
 			return true;
 
 		case R.id.menu_createnewtext_id:
-	        //String receipient = "Testmöte";
-	        //String subject = "Testärende";
-	        //String body = "En testkropp";
-	        //getApp().getKom().createText(receipient, subject, body);
-            Intent intent = new Intent(this, CreateNewText.class);    
+            intent = new Intent(this, CreateNewText.class);    
+            intent.putExtra("recipient_type", 1);
+            startActivity(intent);
+			return true;
+
+		case R.id.menu_createnewmail_id:
+            intent = new Intent(this, CreateNewText.class);    
+            intent.putExtra("recipient_type", 2);
             startActivity(intent);
 			return true;
 

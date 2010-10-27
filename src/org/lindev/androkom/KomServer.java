@@ -513,7 +513,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     /**
-     * Create a text
+     * Get a list of conferencenames matching a string
      */
     public ConfInfo[] getConferences(String name) 
     {
@@ -532,14 +532,44 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     /**
+     * Get a list of usernames matching a string
+     */
+    public ConfInfo[] getUsers(String name) 
+    {
+        // find ConfNo
+        ConfInfo[] conferences=null;
+		try {
+			conferences = s.lookupName(name, true, false);
+		} catch (RpcFailure e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			e1.printStackTrace();
+		}
+		return conferences;
+    }
+
+    /**
      * Create a text
      */
-    public ConfInfo[] createText(String recipient, String subject, String body) 
+    public ConfInfo[] createText(int recipient_type, String recipient, String subject, String body) 
     {
         Text text = new Text();
-
+        ConfInfo[] conferences;
+        
         // find ConfNo
-        ConfInfo[] conferences=getConferences(recipient);
+        switch(recipient_type) {
+        case 1 :
+            conferences=getConferences(recipient);
+        	break;
+        case 2 :
+            conferences=getUsers(recipient);
+        	break;
+        default:
+        	Log.d(TAG, "create text unknown recipient_type:"+recipient_type);
+        	return null;
+        }
 		if ((conferences == null) || (conferences.length < 1)
 				|| (conferences.length > 1)) {
         	Log.d(TAG, "Could not find uniq ConfNo");
@@ -575,7 +605,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     /**
      * Create a text
      */
-    public void createText(int confno, String subject, String body) 
+    public void createText(int recipient_type, int confno, String subject, String body) 
     {
         Text text = new Text();
 
