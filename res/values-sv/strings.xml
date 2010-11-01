@@ -44,5 +44,20 @@
     <string name="biggerfontsize_shortcut">+</string>
     <string name="reconnect_label">Starta om</string>
     <string name="reconnect_shortcut">R</string>
-
+    
+    <string name="createnewtext_label">Nytt inlägg</string>
+    <string name="createnewtext_shortcut">I</string>
+    <string name="createnewmail_label">Nytt brev</string>
+    <string name="createnewmail_shortcut">B</string>
+    
+    <string name="subject">Ämne:</string>
+    <string name="send">Skicka</string>
+    <string name="cancel">Avbryt</string>
+    <string name="conference_list">Möteslista</string>
+    <string name="conference">Möte</string>
+    <string name="reply">Svara</string>
+    <string name="to">Till</string>
+    <string name="create_text">Skriv svar</string>
+    <string name="create_new_text">Skriv inlägg</string>
+    
 </resources>

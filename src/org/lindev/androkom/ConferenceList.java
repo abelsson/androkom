@@ -116,7 +116,7 @@ public class ConferenceList extends ListActivity
     {
         MenuInflater inflater = getMenuInflater();
 
-        inflater.inflate(R.menu.conference, menu);
+        inflater.inflate(R.menu.conferencelist, menu);
         return true;
     }
  
@@ -131,24 +131,9 @@ public class ConferenceList extends ListActivity
 		// Handle item selection
 		switch (item.getItemId()) {
 
-		case R.id.reply:
-			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
-					.show();
-			return true;
-
 		case R.id.menu_settings_id:
 			Log.d(TAG, "Starting menu");
 			startActivity(new Intent(this, ConferencePrefs.class));
-			return true;
-
-		case R.id.menu_biggerfontsize_id:
-			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
-					.show();
-			return true;
-
-		case R.id.menu_smallerfontsize_id:
-			Toast.makeText(getApplicationContext(), "Nä!", Toast.LENGTH_SHORT)
-					.show();
 			return true;
 
 		case R.id.menu_createnewtext_id:
@@ -169,8 +154,7 @@ public class ConferenceList extends ListActivity
 	}
 
     /**
-     * Attempt to log in to "kom.lysator.liu.se". If unsuccessful, show an 
-     * alert. Otherwise save username and password for successive sessions.
+     * Attempt to reconnect to server.
      */
     private class LoginTask extends AsyncTask<Void, Integer, String> {
         private final ProgressDialog dialog = new ProgressDialog(ConferenceList.this);

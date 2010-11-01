@@ -47,7 +47,16 @@
 
     <string name="createnewtext_label">New text</string>
     <string name="createnewtext_shortcut">N</string>
-
     <string name="createnewmail_label">New mail</string>
     <string name="createnewmail_shortcut">M</string>
+    
+    <string name="subject">Subject:</string>
+    <string name="send">Send</string>
+    <string name="cancel">Cancel</string>
+    <string name="conference_list">Conference list</string>
+    <string name="conference">Conference</string>
+    <string name="reply">Reply</string>
+    <string name="to">To</string>
+    <string name="create_text">Create reply</string>
+    <string name="create_new_text">Create text</string>
 </resources>

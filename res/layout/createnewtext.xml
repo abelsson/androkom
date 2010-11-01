@@ -7,7 +7,7 @@
         android:id="@+id/label1"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="To:"/>
+        android:text="@string/to"/>
     <EditText
         android:id="@+id/recipient"
         android:layout_width="fill_parent"
@@ -18,7 +18,7 @@
         android:id="@+id/label"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:text="Subject:"/>
+        android:text="@string/subject"/>
     <EditText
         android:id="@+id/subject"
         android:layout_width="fill_parent"
@@ -46,12 +46,12 @@
 	        android:layout_below="@id/body"
 	        android:layout_alignParentRight="true"
 	        android:layout_marginLeft="10dip"
-	        android:text="Send" />
+	        android:text="@string/send" />
 	    <Button
 	        android:id="@+id/cancel"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
 	        android:layout_weight="1"
-	        android:text="Cancel" />
+	        android:text="@string/cancel" />
     </LinearLayout>    
 </LinearLayout>
