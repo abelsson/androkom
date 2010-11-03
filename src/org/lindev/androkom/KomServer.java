@@ -490,7 +490,16 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             text.addCommented(inReplyTo);
 
         text.addRecipient(s.getCurrentConference());
-
+        try {
+			if(!s.isMemberOf(s.getCurrentConference())) {
+				text.addRecipient(re_userid);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "Failed testing membership");
+			e1.printStackTrace();
+		}
+        
         final byte[] subjectBytes = subject.getBytes();
         final byte[] bodyBytes = body.getBytes();
 
@@ -579,6 +588,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	confno = conferences[0].getNo();
     	Log.d(TAG, "creating text in confno:"+confno);
         text.addRecipient(confno);
+        try {
+			if(!s.isMemberOf(confno)) {
+				text.addRecipient(re_userid);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "Failed testing membership");
+			e1.printStackTrace();
+		}
 
         final byte[] subjectBytes = subject.getBytes();
         final byte[] bodyBytes = body.getBytes();
@@ -610,6 +628,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         Text text = new Text();
 
         text.addRecipient(confno);
+        try {
+			if(!s.isMemberOf(confno)) {
+				text.addRecipient(re_userid);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "Failed testing membership");
+			e1.printStackTrace();
+		}
 
         final byte[] subjectBytes = subject.getBytes();
         final byte[] bodyBytes = body.getBytes();
