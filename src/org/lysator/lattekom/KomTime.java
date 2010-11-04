@@ -23,7 +23,7 @@ public class KomTime implements Serializable {
 
 	public String toString() {
 		return "[" + (year + 1900) + "-" + (month + 1) + "-" + mday + ", "
-				+ hours + ":" + minutes + "]";
+				+ hours + ":" + (minutes<10 ? "0" : "") + minutes + "]";
 	}
 
 	/**
