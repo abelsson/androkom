@@ -522,6 +522,76 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
 
     /**
+     * Create a text, in reply to another text.
+     */
+    public void createText(String subject, String body, int inReplyTo, boolean copyRecipients) 
+    {
+        Text text = new Text();
+
+        if (inReplyTo != -1)
+            text.addCommented(inReplyTo);
+
+        if ( (inReplyTo != -1) && (copyRecipients) ) {
+            Text orgtext=null;
+			try {
+				orgtext = s.getText(inReplyTo);
+			} catch (RpcFailure e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			if(orgtext != null) {
+				int[] receps = orgtext.getRecipients();
+				Log.d(TAG, "Found no of recipients:"+receps.length);
+				for(int i=0; i < receps.length; i++) {
+					Log.d(TAG, "adding recipient:"+receps[i]);
+					try {
+						text.addRecipient(receps[i]);
+					} catch (java.lang.IllegalArgumentException e) {
+						Log.d(TAG, "recipient already added");
+					}
+				}
+			}
+        }
+        
+        //text.addRecipient(s.getCurrentConference());
+        try {
+			if(!s.isMemberOf(s.getCurrentConference())) {
+				text.addRecipient(re_userid);
+			}
+		} catch (IOException e1) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "Failed testing membership");
+			e1.printStackTrace();
+		} catch (java.lang.IllegalArgumentException e) {
+			Log.d(TAG, "recipient already added");
+		}
+
+        
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
+
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
+
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
+
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
+
+            e.printStackTrace();
+        }
+    }
+
+    /**
      * Get a list of conferencenames matching a string
      */
     public ConfInfo[] getConferences(String name) 

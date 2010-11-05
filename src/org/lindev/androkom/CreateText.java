@@ -52,7 +52,7 @@ public class CreateText extends Activity
     {
         String subject = mSubject.getText().toString();
         String body = mBody.getText().toString();
-        getApp().getKom().createText(subject, body, inReplyTo);
+        getApp().getKom().createText(subject, body, inReplyTo, true);
         finish();
     }
 
