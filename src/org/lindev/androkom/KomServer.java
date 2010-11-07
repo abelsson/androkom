@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -556,7 +557,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			}
         }
         
-        //text.addRecipient(s.getCurrentConference());
         try {
 			if(!s.isMemberOf(s.getCurrentConference())) {
 				text.addRecipient(re_userid);
@@ -800,13 +800,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             }
         }
     }
-    private Session s=null;
-
-    private int mLastTextNo=0;
-    HashMap<String, String> mUserAreaProps=null;
-
-    // This is the object that receives interactions from clients. 
-    private final IBinder mBinder = new LocalBinder();
 
     public void rpcEvent(RpcEvent e) {
         if (mPendingSentTexts.contains(e.getId())) {
@@ -825,8 +818,31 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	Log.d(TAG, "asynchMessage:"+m);
     }
 
-    public ConfInfo[] getUserNames() {
-    	return usernames;
+    public ConferenceInfo[] getUserNames() {
+    	try {
+    		if (usernames != null && usernames.length > 1) {
+    			final ConferenceInfo[] items = new ConferenceInfo[usernames.length];
+    			Log.d(TAG, "Ambigous name");
+    			for(int i=0; i <usernames.length; i++) {   				
+    				items[i] = new ConferenceInfo();
+    				items[i].name=s.toString(s.getConfName(usernames[i].confNo));
+    				items[i].id = usernames[i].confNo;
+    				Log.d(TAG, "Name "+i+":"+items[i]);
+    			}
+    			return items;
+    		}
+
+    	} catch (UnsupportedEncodingException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	} catch (RpcFailure e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	} catch (IOException e) {
+    		// TODO Auto-generated catch block
+    		e.printStackTrace();
+    	}
+    	return null;
     }
 
     public boolean isConnected() {
@@ -836,6 +852,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         return s.getConnected();
     }
     
+    private Session s=null;
+
+    private int mLastTextNo=0;
+    HashMap<String, String> mUserAreaProps=null;
+
+    // This is the object that receives interactions from clients. 
+    private final IBinder mBinder = new LocalBinder();
+
     private HashSet<Integer> mPendingSentTexts;
     ConfInfo usernames[];
     private int re_userid; //for reconnect

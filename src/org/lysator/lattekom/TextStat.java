@@ -5,13 +5,18 @@
  */
 package org.lysator.lattekom;
 
+import java.util.Enumeration;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
+
+import javax.mail.internet.ContentType;
+import javax.mail.internet.MimeUtility;
 /**
  * <p>
  * The Text-Stat LysKOM data type (and this class) contains status information
@@ -259,29 +264,28 @@ public class TextStat implements java.io.Serializable {
      * there are probably other cases we can't handle as well
      */
     private Object[] parseContentTypeAuxItem() {
-//        String contentTypeString = getFullContentType();
-//        try {
-//            ContentType contentType = new ContentType(contentTypeString);
-//
-//            Properties ctData = new Properties();
-//            @SuppressWarnings("unchecked")
-//            Enumeration<String> pnames = (Enumeration<String>) contentType
-//                    .getParameterList().getNames();
-//            while (pnames.hasMoreElements()) {
-//                String key = (String) pnames.nextElement();
-//                String value = contentType.getParameterList().get(key);
-//                ctData.setProperty(key, value);
-//            }
-//
-//            if (contentType.match("x-kom/text"))
-//                contentTypeString = "text/x-kom-basic";
-//            contentType = new ContentType(contentTypeString);
-//            return new Object[] { contentType.toString(), ctData };
-//        } catch (javax.mail.internet.ParseException ex1) {
-//            throw new RuntimeException("Error parsing content-type \""
-//                    + contentTypeString + "\": " + ex1.toString());
-//        }
-    	return new Object[] { "", "" };
+        String contentTypeString = getFullContentType();
+        try {
+            ContentType contentType = new ContentType(contentTypeString);
+
+            Properties ctData = new Properties();
+            @SuppressWarnings("unchecked")
+            Enumeration<String> pnames = (Enumeration<String>) contentType
+                    .getParameterList().getNames();
+            while (pnames.hasMoreElements()) {
+                String key = (String) pnames.nextElement();
+                String value = contentType.getParameterList().get(key);
+                ctData.setProperty(key, value);
+            }
+
+            if (contentType.match("x-kom/text"))
+                contentTypeString = "text/x-kom-basic";
+            contentType = new ContentType(contentTypeString);
+            return new Object[] { contentType.toString(), ctData };
+        } catch (javax.mail.internet.ParseException ex1) {
+            throw new RuntimeException("Error parsing content-type \""
+                    + contentTypeString + "\": " + ex1.toString());
+        }
     }
 
     public String getFullContentType() {
@@ -308,82 +312,79 @@ public class TextStat implements java.io.Serializable {
         return (String) parseContentTypeAuxItem()[0];
     }
 
-    public boolean isMimeType(String type) {
-    	return false;
-//        try {
-//            ContentType ct = new ContentType(getFullContentType());
-//            return ct.match(type);
-//        } catch (javax.mail.internet.ParseException ex1) {
-//            throw new RuntimeException("Unable to parse text content-type.");
-//        }
+    public boolean isMimeType(String type) {   	
+        try {
+        	ContentType ct = new ContentType(getFullContentType());
+        
+            return ct.match(type);
+        } catch (javax.mail.internet.ParseException ex1) {
+            throw new RuntimeException("Unable to parse text content-type.");
+        }
     }
 
     /**
      * Returns the Java charset for this text.
      */
     public String getCharset() {
-    	return "iso-8859-1";
-//        return MimeUtility
-//                .javaCharset(((Properties) parseContentTypeAuxItem()[1])
-//                        .getProperty("charset", "iso-8859-1"));
+        return MimeUtility
+                .javaCharset(((Properties) parseContentTypeAuxItem()[1])
+                        .getProperty("charset", "iso-8859-1"));
     }
 
-    public void setContentType(String newContentTypeString) {
-    	
-//        String oldContentTypeString = getFullContentType();
-//        ContentType oldContentType = null;
-//        ContentType newContentType = null;
-//        try {
-//            oldContentType = new ContentType(oldContentTypeString);
-//            newContentType = new ContentType(newContentTypeString);
-//            // copy all content-type parameters (such as charset) to the new
-//            // content type
-//            // note that this might not always be what you want. if you want to
-//            // clear
-//            // the parameter list, you should set the tagContentType AuxItem
-//            // manually
-//            // with setAuxItem() instead.
-//            for (@SuppressWarnings("unchecked")
-//            Enumeration<String> e = oldContentType.getParameterList()
-//                    .getNames(); e.hasMoreElements();) {
-//                String name = (String) e.nextElement();
-//                String value = oldContentType.getParameterList().get(name);
-//                newContentType.getParameterList().set(name, value);
-//            }
-//            setAuxItem(new AuxItem(AuxItem.tagContentType,
-//                    newContentType.toString()));
-//        } catch (javax.mail.internet.ParseException ex) {
-//            throw new RuntimeException(
-//                    "Error parsing contents while trying to parse content-type: "
-//                            + ex.toString());
-//        }
+    public void setContentType(String newContentTypeString) {  	
+        String oldContentTypeString = getFullContentType();
+        ContentType oldContentType = null;
+        ContentType newContentType = null;
+        try {
+            oldContentType = new ContentType(oldContentTypeString);
+            newContentType = new ContentType(newContentTypeString);
+            // copy all content-type parameters (such as charset) to the new
+            // content type
+            // note that this might not always be what you want. if you want to
+            // clear
+            // the parameter list, you should set the tagContentType AuxItem
+            // manually
+            // with setAuxItem() instead.
+            for (@SuppressWarnings("unchecked")
+            Enumeration<String> e = oldContentType.getParameterList()
+                    .getNames(); e.hasMoreElements();) {
+                String name = (String) e.nextElement();
+                String value = oldContentType.getParameterList().get(name);
+                newContentType.getParameterList().set(name, value);
+            }
+            setAuxItem(new AuxItem(AuxItem.tagContentType,
+                    newContentType.toString()));
+        } catch (javax.mail.internet.ParseException ex) {
+            throw new RuntimeException(
+                    "Error parsing contents while trying to parse content-type: "
+                            + ex.toString());
+        }
     }
 
     public void setCharset(String charset) {
-//        Object[] ct = parseContentTypeAuxItem();
-//        String contentType = (String) ct[0];
-//        Properties props = (Properties) ct[1];
-//        props.setProperty("charset", MimeUtility.mimeCharset(charset));
-//        setAuxItem(new AuxItem(AuxItem.tagContentType, createContentTypeString(
-//                contentType, props)));
+        Object[] ct = parseContentTypeAuxItem();
+        String contentType = (String) ct[0];
+        Properties props = (Properties) ct[1];
+        props.setProperty("charset", MimeUtility.mimeCharset(charset));
+        setAuxItem(new AuxItem(AuxItem.tagContentType, createContentTypeString(
+                contentType, props)));
     }
 
-//    private String createContentTypeString(String contentType, Properties p) {
-//    	return "";
-//        try {
-//            ContentType ct = new ContentType(contentType);
-//            for (Iterator<Entry<Object, Object>> i = p.entrySet().iterator(); i
-//                    .hasNext();) {
-//                Entry<Object, Object> entry = i.next();
-//                ct.getParameterList().set((String) entry.getKey(),
-//                        (String) entry.getValue());
-//            }
-//            return ct.toString();
-//        } catch (javax.mail.internet.ParseException ex) {
-//            throw new IllegalArgumentException("Unable to parse content-type "
-//                    + contentType);
-//        }
-//    }
+    private String createContentTypeString(String contentType, Properties p) {
+        try {
+            ContentType ct = new ContentType(contentType);
+            for (Iterator<Entry<Object, Object>> i = p.entrySet().iterator(); i
+                    .hasNext();) {
+                Entry<Object, Object> entry = i.next();
+                ct.getParameterList().set((String) entry.getKey(),
+                        (String) entry.getValue());
+            }
+            return ct.toString();
+        } catch (javax.mail.internet.ParseException ex) {
+            throw new IllegalArgumentException("Unable to parse content-type "
+                    + contentType);
+        }
+    }
 
     public int getSize() {
         return chars;

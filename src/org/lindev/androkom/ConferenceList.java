@@ -156,7 +156,7 @@ public class ConferenceList extends ListActivity
     /**
      * Attempt to reconnect to server.
      */
-    private class LoginTask extends AsyncTask<Void, Integer, String> {
+    private class LoginTask extends AsyncTask<Void, Integer, Void> {
         private final ProgressDialog dialog = new ProgressDialog(ConferenceList.this);
 
         protected void onPreExecute() {
@@ -166,17 +166,15 @@ public class ConferenceList extends ListActivity
             this.dialog.show();
         }
 
-        protected String doInBackground(final Void... args) 
+        protected Void doInBackground(final Void... args) 
         {
 			getApp().getKom().reconnect();
-			return "a string";
+			return null;
         }
 
-        protected void onPostExecute(final String result) 
+        protected void onPostExecute(final Void result) 
         { 
-            this.dialog.dismiss();
-                       
-            Log.d(TAG, result);
+            this.dialog.dismiss();                       
         }
     }
 

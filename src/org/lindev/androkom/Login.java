@@ -1,6 +1,6 @@
 package org.lindev.androkom;
 
-import org.lysator.lattekom.ConfInfo;
+import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -178,29 +178,25 @@ public class Login extends Activity
                        
             if (result.length() > 0) {
             	// Login failed, check why
-            	users = getApp().getKom().getUserNames();
-            	if (users != null) {
-            		if (users.length > 1) {
-            			Log.d(TAG, "Ambigous name");
-            			final CharSequence[] items = new CharSequence[users.length];
-            			for(int i=0; i <users.length; i++) {
-            				items[i]=new String(users[i].confName);
-            				Log.d(TAG, "Name "+i+":"+items[i]);
+            	final ConferenceInfo[] users = getApp().getKom().getUserNames();
+            	if (users != null && users.length > 1) {
+            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+            		builder.setTitle("Pick a name");
+            		String[] vals = new String[users.length];
+            		for(int i=0;i<users.length;i++)
+            			vals[i] = users[i].name;
+             		builder.setSingleChoiceItems(vals, -1, new DialogInterface.OnClickListener() {
+            			public void onClick(DialogInterface dialog, int item) {
+            				Toast.makeText(getApplicationContext(), users[item].name, Toast.LENGTH_SHORT).show();
+            				dialog.cancel();
+            				selectedUser = users[item].id;
+            				Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].name));
+            				doLogin();
             			}
-            			AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            			builder.setTitle("Pick a name");
-            			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-            				public void onClick(DialogInterface dialog, int item) {
-            					Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-            					dialog.cancel();
-            					selectedUser = users[item].confNo;
-            					Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].confName));
-            					doLogin();
-            				}
-            			});
-            			AlertDialog alert = builder.create();
-            			alert.show();
-            		}
+            		});
+            		AlertDialog alert = builder.create();
+            		alert.show();
+
             	} else {
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
             		builder.setMessage(result)
@@ -295,7 +291,6 @@ public class Login extends Activity
         return (App)getApplication();
     }
     private int selectedUser=0;
-    private ConfInfo[] users;
     private EditText mUsername;
     private EditText mPassword;
 }
