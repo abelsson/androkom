@@ -17,6 +17,7 @@ import org.lysator.lattekom.RpcEventListener;
 import org.lysator.lattekom.RpcFailure;
 import org.lysator.lattekom.Session;
 import org.lysator.lattekom.Text;
+import org.lysator.lattekom.TextStat;
 import org.lysator.lattekom.UserArea;
 
 import android.app.Service;
@@ -437,19 +438,9 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public TextInfo getTextAsHTML(int textNo)
     {
         try {
-            Text text;
-            text = s.getText(textNo);
+            Text text = s.getText(textNo);
 
-
-            final String username = s.getConfStat(text.getAuthor()).getNameString();
-
-            // TODO: This will only mark text as read in the current conference.
-            // TODO: Should batch these up and send in a group, instead of many separate requests.
-            int confNo = s.getCurrentConference();
-            int[] localTextNo = { text.getLocal(confNo) };
-            s.doMarkAsRead(confNo, localTextNo); 
-
-          
+            final String username = s.getConfStat(text.getAuthor()).getNameString();          
             return new TextInfo(textNo, username, text.getCreationTimeString(), text.getSubjectString(), text.getBodyString());
 
 
@@ -463,6 +454,27 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     }
 
+    
+    public void markTextAsRead(int textNo)
+    {
+    	Text text;
+		try {
+			text = s.getText(textNo);
+
+			int recipents[] = text.getRecipients();
+			// TODO: This will only mark text as read in the current conference.
+			// TODO: Should batch these up and send in a group, instead of many separate requests.
+			for(int i=0;i<recipents.length;i++) {
+				int confNo = recipents[i];
+				int[] localTextNo = { text.getLocal(confNo) };
+				s.doMarkAsRead(confNo, localTextNo); 
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+	
+    }
     /**
      * Get text number of last read text in current meeting, 
      * or -1 if there is no suitable text.

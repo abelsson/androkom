@@ -142,6 +142,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             widget.scrollTo(0, 0);
             setTitle(((App)getApplication()).getKom().getConferenceName());
             this.dialog.dismiss();
+            new MarkTextReadTask().execute(text.textNo);
+        }
+    }
+
+    private class MarkTextReadTask extends AsyncTask<Integer, Integer, Void> 
+    {
+        @Override
+        protected Void doInBackground(final Integer... args) 
+        {       	
+        	((App)getApplication()).getKom().markTextAsRead(args[0]);
+			return null;  	      	
         }
     }
 
