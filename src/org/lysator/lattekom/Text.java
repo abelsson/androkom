@@ -6,17 +6,24 @@
 package org.lysator.lattekom;
 
 import java.util.Date;
+import java.util.Enumeration;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
+import java.util.StringTokenizer;
 import java.io.BufferedReader;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.OutputStream;
 import java.io.ByteArrayInputStream;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
 import java.io.StringReader;
+
+import javax.mail.Header;
+import javax.mail.internet.ContentType;
+import javax.mail.internet.InternetHeaders;
 
 /**
  * Represents a LysKOM text. An application can construct Text objects and use
@@ -140,93 +147,92 @@ public class Text extends Hollerith implements Serializable {
      * 
      */
     public String getContentType() {
-    	return "message/rfc822";
-//    	
-//        String contentTypeString = stat.getFullContentType();
-//        ContentType contentType = null;
-//        try {
-//            contentType = new ContentType(contentTypeString);
-//        } catch (javax.mail.internet.ParseException ex) {
-//            throw new RuntimeException(
-//                    "Error parsing contents while trying to parse content-type: "
-//                            + ex.toString());
-//        }
-//
-//        boolean mhtml = contentType.match("message/rfc822")
-//                && ("mhtml"
-//                        .equals(contentType.getParameterList().get("x-type")) || "rfc2557"
-//                        .equals(contentType.getParameterList().get(
-//                                "x-lyskom-variant")));
-//
-//        // hack for WinLMSG-created texts with incorrect content-type.
-//        // it checks the first row of the text to see if it contains
-//        // "mime:", and if so, it treats it as if it was an MHTML
-//        // text
-//        if (!mhtml && contentTypeString.equals("multipart/related")) {
-//            try {
-//                InputStream is = getInputStream();
-//                BufferedReader rdr = new BufferedReader(new InputStreamReader(
-//                        is, "us-ascii"));
-//                String row = rdr.readLine();
-//                if (row != null && row.equals("mime:")) {
-//                    mhtml = true;
-//                }
-//                is.close();
-//            } catch (IOException ex1) {
-//                throw new RuntimeException(
-//                        "Text.getContentType(): I/O error while examining text body.",
-//                        ex1);
-//            }
-//        }
-//
-//        if (mhtml) {
-//            try {
-//                InputStream is = getInputStream();
-//                InternetHeaders rfc822headers = new InternetHeaders();
-//                BufferedReader reader = new BufferedReader(
-//                        new InputStreamReader(is, "us-ascii"));
-//                String row;
-//                String lastRow = null;
-//                while ((row = reader.readLine()) != null && !row.equals("")) {
-//                    if (row.startsWith("\t")) {
-//                        row = lastRow + " " + row.substring(1);
-//                    }
-//                    StringTokenizer st = new StringTokenizer(row);
-//                    String name = st.nextToken();
-//                    name = name.substring(0, name.length() - 1);
-//                    String value = st.nextToken("");
-//                    rfc822headers.setHeader(name, value);
-//
-//                    lastRow = row;
-//                }
-//
-//                Debug.println("loaded RFC822 headers into " + rfc822headers);
-//                @SuppressWarnings("unchecked")
-//                Enumeration<Header> e = rfc822headers.getAllHeaders();
-//                while (e.hasMoreElements()) {
-//                    Header h = (Header) e.nextElement();
-//                    Debug.println("rfc822 header name: " + h.getName()
-//                            + ", value: " + h.getValue());
-//                }
-//
-//                ContentType preambleContentType = new ContentType(
-//                        rfc822headers.getHeader("Content-Type", null));
-//
-//                if (preambleContentType != null
-//                        && preambleContentType.match("multipart/*")) {
-//                    stat.setAuxItem(new AuxItem(AuxItem.tagContentType,
-//                            preambleContentType.toString()));
-//                    contentTypeString = preambleContentType.toString();
-//                }
-//            } catch (javax.mail.internet.ParseException ex) {
-//                throw new RuntimeException(ex.toString());
-//            } catch (IOException ex1) {
-//                ex1.printStackTrace();
-//                throw new RuntimeException(
-//                        "Error parsing contents while trying to parse MHTML message");
-//            }
-//        }
-//        return contentTypeString;
+    	
+        String contentTypeString = stat.getFullContentType();
+        ContentType contentType = null;
+        try {
+            contentType = new ContentType(contentTypeString);
+        } catch (javax.mail.internet.ParseException ex) {
+            throw new RuntimeException(
+                    "Error parsing contents while trying to parse content-type: "
+                            + ex.toString());
+        }
+
+        boolean mhtml = contentType.match("message/rfc822")
+                && ("mhtml"
+                        .equals(contentType.getParameterList().get("x-type")) || "rfc2557"
+                        .equals(contentType.getParameterList().get(
+                                "x-lyskom-variant")));
+
+        // hack for WinLMSG-created texts with incorrect content-type.
+        // it checks the first row of the text to see if it contains
+        // "mime:", and if so, it treats it as if it was an MHTML
+        // text
+        if (!mhtml && contentTypeString.equals("multipart/related")) {
+            try {
+                InputStream is = getInputStream();
+                BufferedReader rdr = new BufferedReader(new InputStreamReader(
+                        is, "us-ascii"));
+                String row = rdr.readLine();
+                if (row != null && row.equals("mime:")) {
+                    mhtml = true;
+                }
+                is.close();
+            } catch (IOException ex1) {
+                throw new RuntimeException(
+                        "Text.getContentType(): I/O error while examining text body.",
+                        ex1);
+            }
+        }
+
+        if (mhtml) {
+            try {
+                InputStream is = getInputStream();
+                InternetHeaders rfc822headers = new InternetHeaders();
+                BufferedReader reader = new BufferedReader(
+                        new InputStreamReader(is, "us-ascii"));
+                String row;
+                String lastRow = null;
+                while ((row = reader.readLine()) != null && !row.equals("")) {
+                    if (row.startsWith("\t")) {
+                        row = lastRow + " " + row.substring(1);
+                    }
+                    StringTokenizer st = new StringTokenizer(row);
+                    String name = st.nextToken();
+                    name = name.substring(0, name.length() - 1);
+                    String value = st.nextToken("");
+                    rfc822headers.setHeader(name, value);
+
+                    lastRow = row;
+                }
+
+                Debug.println("loaded RFC822 headers into " + rfc822headers);
+                @SuppressWarnings("unchecked")
+                Enumeration<Header> e = rfc822headers.getAllHeaders();
+                while (e.hasMoreElements()) {
+                    Header h = (Header) e.nextElement();
+                    Debug.println("rfc822 header name: " + h.getName()
+                            + ", value: " + h.getValue());
+                }
+
+                ContentType preambleContentType = new ContentType(
+                        rfc822headers.getHeader("Content-Type", null));
+
+                if (preambleContentType != null
+                        && preambleContentType.match("multipart/*")) {
+                    stat.setAuxItem(new AuxItem(AuxItem.tagContentType,
+                            preambleContentType.toString()));
+                    contentTypeString = preambleContentType.toString();
+                }
+            } catch (javax.mail.internet.ParseException ex) {
+                throw new RuntimeException(ex.toString());
+            } catch (IOException ex1) {
+                ex1.printStackTrace();
+                throw new RuntimeException(
+                        "Error parsing contents while trying to parse MHTML message");
+            }
+        }
+        return contentTypeString;
     }
 
     public String getName() {
