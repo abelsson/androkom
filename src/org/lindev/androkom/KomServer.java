@@ -77,18 +77,65 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     	public TextInfo(int textNo, String author, String date, String subject, String body)
     	{
-    		this.textNo = textNo;
-    		this.author = author;
-    		this.date = date;
-    		this.subject = subject;
-    		this.body = body;
+    		this.setTextNo(textNo);
+    		this.setAuthor(author);
+    		this.setDate(date);
+    		this.setSubject(subject);
+    		this.setBody(body);
+    		this.text = null;
     	}
     	
-		public int textNo;
-		public String date;
-    	public String author;
-    	public String subject;
-    	public String body;
+    	public TextInfo(Text text)
+    	{
+    		this.text = text;
+    	}
+		
+    	public void setAuthor(String author) {
+			this.author = author;
+		}
+		
+		public String getAuthor() {
+			return author;
+		}
+
+		public void setBody(String body) {
+			this.body = body;
+		}
+
+		public String getBody() {
+			return body;
+		}
+
+		public void setSubject(String subject) {
+			this.subject = subject;
+		}
+
+		public String getSubject() {
+			return subject;
+		}
+
+		public void setDate(String date) {
+			this.date = date;
+		}
+
+		public String getDate() {
+			return date;
+		}
+
+		public void setTextNo(int textNo) {
+			this.textNo = textNo;
+		}
+
+		public int getTextNo() {
+			return textNo;
+		}
+
+		private int textNo;
+		private String date;
+    	private String subject;
+    	private String body;
+    	private String author;
+    	private Text text;
     }
     
     public KomServer() {
@@ -107,7 +154,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             s = new Session();
 
             s.addRpcEventListener(this);
-            //s.addAsynchMessageReceiver(this);
         }
     }
 
@@ -127,8 +173,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
 
         // Tell the user we stopped.
-        Toast.makeText(this,"KomServer stopped (onDestroy)", Toast.LENGTH_SHORT).show();
-
+        Toast.makeText(this,"KomServer stopped", Toast.LENGTH_SHORT).show();
 
         try {
             if (s.getState() == Session.STATE_LOGIN)
@@ -145,7 +190,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             e.printStackTrace();
         }
 
-        s.removeRpcEventListener(this);
+        s.removeRpcEventListener(this);        
         s = null;
 
     }
@@ -187,6 +232,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         try {
             s.connect(server);
+            s.addAsynchMessageReceiver(this);
         } catch (IOException e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect1 "+e);
@@ -383,7 +429,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			Text t = s.getText(textNo);
 			int arr[] = t.getCommented();
 			if (arr.length > 0) {
-				return getTextAsHTML(arr[0]);
+				return getKomText(arr[0]);
 			}
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
@@ -419,7 +465,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	return new TextInfo(-1, "", "", "", "All read");
             } 
             
-            return getTextAsHTML(mLastTextNo);                                
+            return getKomText(mLastTextNo);                                
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -435,7 +481,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
-    public TextInfo getTextAsHTML(int textNo)
+    public TextInfo getKomText(int textNo)
     {
         try {
             Text text = s.getText(textNo);
@@ -450,7 +496,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
             e.printStackTrace();
         }
-        return new TextInfo(-1, "", "", "", "[Error fetching HTML text]");
+        return new TextInfo(-1, "", "", "", "[Error fetching text]");
 
     }
 
@@ -828,6 +874,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public void asynchMessage(AsynchMessage m) {
         // TODO Auto-generated method stub
     	Log.d(TAG, "asynchMessage:"+m);
+    	
     }
 
     public ConferenceInfo[] getUserNames() {

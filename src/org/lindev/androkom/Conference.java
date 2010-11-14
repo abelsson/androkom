@@ -130,9 +130,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         protected void onPostExecute(final TextInfo text) 
         {
-            if (text.textNo < 0) {
+            if (text.getTextNo() < 0) {
                 this.dialog.dismiss();
-                Toast.makeText(getApplicationContext(), text.body, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 return;
             }
             mState.currentText.push(text);            
@@ -142,7 +142,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             widget.scrollTo(0, 0);
             setTitle(((App)getApplication()).getKom().getConferenceName());
             this.dialog.dismiss();
-            new MarkTextReadTask().execute(text.textNo);
+            new MarkTextReadTask().execute(text.getTextNo());
         }
     }
 
@@ -293,8 +293,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		
 		private void moveToParentText()
 		{
-		    Log.i("androkom", "fetching parent to text " + mState.getCurrent().textNo);
-		    new LoadMessageTask().execute(mState.getCurrent().textNo);
+		    Log.i("androkom", "fetching parent to text " + mState.getCurrent().getTextNo());
+		    new LoadMessageTask().execute(mState.getCurrent().getTextNo());
 
 		    mSwitcher.setInAnimation(mSlideLeftIn);
 		    mSwitcher.setOutAnimation(mSlideLeftOut);	
@@ -341,8 +341,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 	private void moveToParentText()
 	{
-	    Log.i("androkom", "fetching parent to text " + mState.getCurrent().textNo);
-	    new LoadMessageTask().execute(mState.getCurrent().textNo);
+	    Log.i("androkom", "fetching parent to text " + mState.getCurrent().getTextNo());
+	    new LoadMessageTask().execute(mState.getCurrent().getTextNo());
 
 	    mSwitcher.setInAnimation(mSlideLeftIn);
 	    mSwitcher.setOutAnimation(mSlideLeftOut);	
@@ -465,8 +465,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
          */
         case R.id.reply:
             Intent intent = new Intent(this, CreateText.class);    
-            intent.putExtra("in-reply-to", mState.getCurrent().textNo);
-            intent.putExtra("subject-line", mState.getCurrent().subject);
+            intent.putExtra("in-reply-to", mState.getCurrent().getTextNo());
+            intent.putExtra("subject-line", mState.getCurrent().getSubject());
             startActivity(intent);
             return true;
 
@@ -537,20 +537,20 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     public static Spannable formatText(TextInfo text)
     {
-        String[] lines = text.body.split("\n");
+        String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
 
         // Some simple heuristics to reflow and htmlize KOM texts.
         // TODO: Deal with quoted blocks prefixed with '>'.
 
-        if (text.textNo > 0) {   
-        	body.append(text.textNo);       	
+        if (text.getTextNo() > 0) {   
+        	body.append(text.getTextNo());       	
             body.append(" <b>");
-            body.append(text.author);
+            body.append(text.getAuthor());
             body.append("</b> ");
-        	body.append(text.date);
+        	body.append(text.getDate());
             body.append("<br/><b>Subject: ");
-            body.append(text.subject);
+            body.append(text.getSubject());
             body.append("</b>");
         }
         
