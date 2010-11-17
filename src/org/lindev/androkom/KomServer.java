@@ -506,12 +506,17 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	Text text;
 		try {
 			text = s.getText(textNo);
-
-			int recipents[] = text.getRecipients();
-			// TODO: This will only mark text as read in the current conference.
 			// TODO: Should batch these up and send in a group, instead of many separate requests.
+			int recipents[] = text.getRecipients();						
 			for(int i=0;i<recipents.length;i++) {
 				int confNo = recipents[i];
+				int[] localTextNo = { text.getLocal(confNo) };
+				s.doMarkAsRead(confNo, localTextNo); 
+			}
+			
+			int ccrecipients[] = text.getCcRecipients();
+			for(int i=0;i<ccrecipients.length;i++) {
+				int confNo = ccrecipients[i];
 				int[] localTextNo = { text.getLocal(confNo) };
 				s.doMarkAsRead(confNo, localTextNo); 
 			}
