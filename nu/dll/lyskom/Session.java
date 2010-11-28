@@ -11,8 +11,6 @@ import java.io.*;
 import java.util.*;
 import java.lang.ref.*;
 
-import android.util.Log;
-
 /**
  * <p>
  * This is the main interface to the LysKOM server and the LatteKOM library.
@@ -184,6 +182,15 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      * Connected, and logged in as a specific user
      */
     public final static int STATE_LOGIN = 2;
+
+    static Log log = new Log() {
+	    public void debug(String s) {
+		System.out.println(s);
+	    }
+	    public void error(String s) {
+		System.out.println(s);
+	    }
+	};
 
     int loginRpcId;
     boolean loggedIn = false;
@@ -445,8 +452,8 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         try {
             shutdown();
         } catch (Throwable t1) {
-            Log.e("lattekom", Log.getStackTraceString(t1));
-            Log.e("lattekom", "Exception in " + this + "::finalize(): "
+            log.error(getStackTraceString(t1));
+            log.error("Exception in " + this + "::finalize(): "
                     + t1.toString());
         }
         if (Debug.ENABLED)
@@ -572,7 +579,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     }
 
     public boolean login(int id, String password) throws IOException {
-        Log.d("lattekom", "Login.id1 ");
+        log.debug("Login.id1 ");
         return login(id, password, false, true);
     }
 
@@ -591,7 +598,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public boolean login(int id, String password, boolean hidden)
             throws IOException {
-        Log.d("lattekom", "Login.id2 ");
+        log.debug("Login.id2 ");
         return login(id, password, hidden, true);
     }
 
@@ -612,13 +619,13 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(int id, String password, boolean hidden,
             boolean getMembership) throws IOException {
     	boolean result = false;
-        Log.d("lattekom", "Login.id3 ");
+        log.debug("Login.id3 ");
     	try {
     		byte[] psw = password.getBytes(serverEncoding);
     		result =  login(id, psw, hidden, getMembership);
         } catch (Exception e) {
-            Log.e("lattekom", "Login.id Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Login.id Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
         return result;
    }
@@ -626,7 +633,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(String name, String password, boolean hidden,
             boolean getMembership) throws IOException {
     	boolean result=false;
-        Log.d("lattekom", "Login.id4 ");
+        log.debug("Login.id4 ");
     	
     	try {
     		ConfInfo[] names = lookupName(name, true, false);
@@ -636,8 +643,8 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     			result = login(names[0].getNo(), password, hidden, getMembership);
     		}
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.Login.name Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.Login.name Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
     	return result;
     }
@@ -658,7 +665,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(int id, byte[] password, boolean hidden,
             boolean getMembership) throws IOException {
     	RpcCall loginCall = null;
-        Log.d("lattekom", "Login.id5 ");
+        log.debug("Login.id5 ");
         int rpcid = count();
         if (password == null)
             throw new IOException("Null password not allowed.");
@@ -669,15 +676,15 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         		.add(komtoken).add(hollepsw)
                 .add(hidden ? "1" : "0"); // invisibility
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.Login.bytepsw1 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.Login.bytepsw1 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
 
     	try {
     		writeRpcCall(loginCall);
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.Login.bytepsw2 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.Login.bytepsw2 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
 
     	RpcReply reply = null;
@@ -695,15 +702,15 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     		}
     		state = STATE_LOGIN;
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.Login.bytepsw3 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.Login.bytepsw3 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
     	
     	try {
     		loggedIn = reply.getSuccess();
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.Login.bytepsw4 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.Login.bytepsw4 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
     	return loggedIn;
     }
@@ -2157,16 +2164,16 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         		Debug.println("uconf-stat for " + confNo
         				+ " not in cache, asking server");
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.getUConfStat1 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.getUConfStat1 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
 
 		RpcReply rep = null;
     	try {
     		rep = waitFor(req.getId());
     	} catch (Exception e) {
-            Log.e("lattekom", "Session.getUConfStat2 Caught " + e.getClass().getName());
-            Log.e("lattekom", Log.getStackTraceString(e));
+            log.error("Session.getUConfStat2 Caught " + e.getClass().getName());
+            log.error(getStackTraceString(e));
         }
     		
     	if ((rep != null) && rep.getSuccess()) {
@@ -2174,8 +2181,8 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     			cc = new UConference(confNo, rep.getParameters());
     			conferenceCache.add(cc);
         	} catch (Exception e) {
-                Log.e("lattekom", "Session.getUConfStat3 Caught " + e.getClass().getName());
-                Log.e("lattekom", Log.getStackTraceString(e));
+                log.error("Session.getUConfStat3 Caught " + e.getClass().getName());
+                log.error(getStackTraceString(e));
             }
     		return cc;
     	} else {
@@ -3482,7 +3489,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
                     IOException e = new IOException(
                             "Timeout waiting for RPC reply #" + ids + " ("
                                     + waited + " ms)");
-                    Log.e("lattekom", Log.getStackTraceString(e));
+                    log.error(getStackTraceString(e));
                     throw (e);
                 }
             } else {
@@ -3738,5 +3745,10 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
         }
 
     }
-
+    public static String getStackTraceString(Throwable throwable) {
+	Writer writer = new StringWriter();
+	PrintWriter printWriter = new PrintWriter(writer);
+	throwable.printStackTrace(printWriter);
+	return writer.toString();
+    }
 }

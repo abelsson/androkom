@@ -7,8 +7,6 @@
 
 package nu.dll.lyskom;
 
-import android.util.Log;
-
 import java.io.Serializable;
 import java.util.Arrays;
 import java.io.UnsupportedEncodingException;
@@ -139,12 +137,12 @@ public class KomToken implements Serializable {
 		try {
 			return Integer.parseInt(new String(contents));
 		} catch (NumberFormatException ex) {
-			// Is this a programming error or runtime error? Hmmm?
-			//throw new RuntimeException("Error parsing " + new String(contents)
-			//		+ " to int");
-			Log.e(TAG, "Error parsing " + new String(contents)
-					+ " to int");
-			return 0;
+		    // Is this a programming error or runtime error? Hmmm?
+		    //throw new RuntimeException("Error parsing " + new String(contents)
+		    //		+ " to int");
+		    Session.log.error("KomToken: Error parsing " + new String(contents)
+				      + " to int");
+		    return 0;
 		}
 	}
 
