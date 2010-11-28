@@ -44,7 +44,7 @@ class ReadingPane extends Box {
     	                                    SwingConstants.LEFT);
     	add(commentPanel);
     	JPanel optionsPanel = new JPanel(new BorderLayout());
-    	reuseBox = new JCheckBox("Återanvänd inläggsfönster");
+    	reuseBox = new JCheckBox("Ã…teranvÃ¤nd inlÃ¤ggsfÃ¶nster");
     	reuseBox.setSelected(true);
     	optionsPanel.add(reuseBox, BorderLayout.WEST);
 
@@ -52,7 +52,7 @@ class ReadingPane extends Box {
 	buttonPanel.setLayout(new BoxLayout(buttonPanel, BoxLayout.X_AXIS));
     	
     	replyBtn = new JButton("Kommentera");
-	nextUnreadBtn = new JButton("Nästa olästa >>");
+	nextUnreadBtn = new JButton("NÃ¤sta olÃ¤sta >>");
 	nextUnreadBtn.setEnabled(false);
     	buttonPanel.add(replyBtn);
 	buttonPanel.add(nextUnreadBtn);
@@ -122,7 +122,7 @@ class ReadingPane extends Box {
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout(FlowLayout.LEFT));        
         subjectPanel.setBackground(parent.getBackground());
-        subjectLabel = new JLabel("Ämne: ");
+        subjectLabel = new JLabel("Ã„mne: ");
         subjectPanel.add(subjectLabel);
         headerPanel.add(subjectPanel);
         
@@ -168,7 +168,7 @@ class ReadingPane extends Box {
                 
         bodyArea.setText(new String(t.getBody()));
 
-        subjectLabel.setText("Ämne: " + new String(t.getSubject()));
+        subjectLabel.setText("Ã„mne: " + new String(t.getSubject()));
         
         final int author = t.getAuthor();
         final int[] rcpts = t.getStatInts(TextStat.miscRecpt);

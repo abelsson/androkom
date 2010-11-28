@@ -14,7 +14,7 @@ public class TabClientCommands extends AbstractCommand {
 	tabPane = tabClient.tabPane;
     }
 
-    static String COMMENT_CMD = "_gui kommentera", FOOTNOTE_CMD = "_gui fotnotera", COMPOSE_CMD = "_gui inl‰gg";
+    static String COMMENT_CMD = "_gui kommentera", FOOTNOTE_CMD = "_gui fotnotera", COMPOSE_CMD = "_gui inl√§gg";
 
     public int doCommand(String s, String parameters)
 	throws IOException, CmdErrException {
@@ -42,7 +42,7 @@ public class TabClientCommands extends AbstractCommand {
 	    }
 		    
 	    if (textNo < 1) {
-		throw new CmdErrException("Du mÂste ange ett giltigt textnummer eller l‰sa/skriva en text fˆrst");
+		throw new CmdErrException("Du m√•ste ange ett giltigt textnummer eller l√§sa/skriva en text f√∂rst");
 	    }
 
 		    
@@ -50,7 +50,7 @@ public class TabClientCommands extends AbstractCommand {
 		    
 	    if (text == null) {
 		text = session.getText(textNo);
-		if (text == null) throw new CmdErrException("Hittade inget inl‰gg");
+		if (text == null) throw new CmdErrException("Hittade inget inl√§gg");
 	    }
 
 	    TextComposer composer = new TextComposer(session, text, true, footnote);
@@ -60,7 +60,7 @@ public class TabClientCommands extends AbstractCommand {
 		tabName = "edit-" + tabClient.editCount;
 	    }
 	    int preSelectedIndex = tabPane.getSelectedIndex();
-	    application.consoleWriteLn("Editorl‰ge");
+	    application.consoleWriteLn("Editorl√§ge");
 	    tabPane.addTab(tabName, composer);
 	    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	    composer.waitForAction();
@@ -78,10 +78,10 @@ public class TabClientCommands extends AbstractCommand {
 		application.consoleWrite("%Fel: kunde inte skapa kommentar/fotnot: ");
 		switch (ex1.getError()) {
 		case Rpc.E_not_author:
-		    application.consoleWriteLn("du ‰r inte fˆrfattare till text " + ex1.getErrorStatus());
+		    application.consoleWriteLn("du √§r inte f√∂rfattare till text " + ex1.getErrorStatus());
 		    break;
 		default:
-		    throw new CmdErrException("Ok‰nt fel: " + ex1.getMessage());
+		    throw new CmdErrException("Ok√§nt fel: " + ex1.getMessage());
 		}
 		tabPane.setSelectedIndex(preSelectedIndex);
 		tabPane.remove(composer);
@@ -102,7 +102,7 @@ public class TabClientCommands extends AbstractCommand {
 	}
 	if (s.equals(COMPOSE_CMD)) {
 	    if (session.getCurrentConference() == -1) {
-		throw new CmdErrException("Du mÂste vara i ett mˆte fˆr att kunna skriva ett inl‰gg.");
+		throw new CmdErrException("Du m√•ste vara i ett m√∂te f√∂r att kunna skriva ett inl√§gg.");
 	    }
 	    
 	    Text text = new Text();
@@ -114,7 +114,7 @@ public class TabClientCommands extends AbstractCommand {
 		tabName = "edit-" + tabClient.editCount;
 	    }
 	    int preSelectedIndex = tabPane.getSelectedIndex();
-	    application.consoleWriteLn("Editorl‰ge");
+	    application.consoleWriteLn("Editorl√§ge");
 	    tabPane.addTab(tabName, composer);
 	    tabPane.setSelectedIndex(tabPane.getTabCount()-1);
 	    composer.waitForAction();
@@ -132,10 +132,10 @@ public class TabClientCommands extends AbstractCommand {
 		tabPane.setSelectedIndex(preSelectedIndex);
 		tabPane.remove(composer);
 
-		application.consoleWrite("%Fel: kunde inte skapa inl‰gg: ");
+		application.consoleWrite("%Fel: kunde inte skapa inl√§gg: ");
 		switch (ex1.getError()) {
 		default:
-		    throw new CmdErrException("Ok‰nt fel: " + ex1.getMessage());
+		    throw new CmdErrException("Ok√§nt fel: " + ex1.getMessage());
 		}
 	    }
 	    if (newTextNo > 0) {
@@ -154,10 +154,10 @@ public class TabClientCommands extends AbstractCommand {
 	return Command.ERROR;
     }
     public String[] getCommands() {
-	return new String[] { "_gui fotnotera", "_gui kommentera", "_gui inl‰gg" };
+	return new String[] { "_gui fotnotera", "_gui kommentera", "_gui inl√§gg" };
     }
     public String[] getCommandDescriptions() {
-	return new String[] { "Fotnotera [textnummer]", "Kommentera [textnummer]", "(Skriv) inl‰gg" };
+	return new String[] { "Fotnotera [textnummer]", "Kommentera [textnummer]", "(Skriv) inl√§gg" };
     }
     public String getDescription() {
 	return "Kommandon implementerade utav TabClient";

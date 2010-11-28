@@ -4,8 +4,8 @@ import nu.dll.lyskom.*;
 import java.io.IOException;
 
 public class IntCommands extends AbstractCommand {
-    String[] myCommands = { "s‰nda meddelande", "tiden" };
-    String[] myDescriptions = { "s‰nda meddelande", "(se) tiden" };
+    String[] myCommands = { "s√§nda meddelande", "tiden" };
+    String[] myDescriptions = { "s√§nda meddelande", "(se) tiden" };
     int[] commandIndices = { 0, 1 };
 
     public IntCommands() {
@@ -13,7 +13,7 @@ public class IntCommands extends AbstractCommand {
     }
 
     public String getDescription() {
-	return "Kommandon fˆr interaktivitet";
+	return "Kommandon f√∂r interaktivitet";
     }
 
     public String[] getCommandDescriptions() {
@@ -51,7 +51,7 @@ public class IntCommands extends AbstractCommand {
 	case 1:
 	    try {
 		KomTime time = session.getTime();
-		application.consoleWriteLn("Aktuell tid ‰r " +
+		application.consoleWriteLn("Aktuell tid √§r " +
 					   application.fullTimeFormat.format(time.getTime()) + " (enligt servern)");
 		return Command.OK;
 	    } catch (RpcFailure ex1) {

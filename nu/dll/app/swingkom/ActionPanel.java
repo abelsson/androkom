@@ -17,7 +17,7 @@ class ActionPanel extends JPanel {
         this.kom = _kom;
         
         setLayout(new FlowLayout(FlowLayout.LEFT));
-        add(new JLabel("Globalt inl‰ggsnummer:"));
+        add(new JLabel("Globalt inl√§ggsnummer:"));
         
         displayTextField = new JTextField(10);
         displayTextField.setText("161876");
@@ -27,8 +27,8 @@ class ActionPanel extends JPanel {
         
         Box checkBoxBox = new Box(BoxLayout.Y_AXIS);
         
-        readRecursive = new JCheckBox("Âterse rekursivt");
-        markAsRead = new JCheckBox("markera som ol‰st");
+        readRecursive = new JCheckBox("√•terse rekursivt");
+        markAsRead = new JCheckBox("markera som ol√§st");
         readRecursive.setSelected(true);
         markAsRead.setSelected(true);
         checkBoxBox.add(markAsRead);

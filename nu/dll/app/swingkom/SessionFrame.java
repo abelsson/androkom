@@ -79,9 +79,9 @@ implements Runnable, RpcEventListener {
 
 
 	mainSessionTabPane = new JTabbedPane();
-	mainSessionTabPane.addTab("Inställningar", null, setupSetupPanel(),
-				  "Sessionsinställningar");
-	mainSessionTabPane.addTab("Möten", null, setupConfSelector(),
+	mainSessionTabPane.addTab("InstÃ¤llningar", null, setupSetupPanel(),
+				  "SessionsinstÃ¤llningar");
+	mainSessionTabPane.addTab("MÃ¶ten", null, setupConfSelector(),
 				  "Medlemskapslista");
 	mainSessionTabPane.addTab("Logg", null, setupLogPanel(),
 				  "Sessionslogg");
@@ -128,7 +128,7 @@ implements Runnable, RpcEventListener {
 	JPanel panel = new JPanel();
 	panel.setLayout(new FlowLayout(FlowLayout.LEFT));
 	
-	JButton dcButton = new JButton("Nästa olästa inlägg");
+	JButton dcButton = new JButton("NÃ¤sta olÃ¤sta inlÃ¤gg");
 	dcButton.setEnabled(false);
 	dcButton.addActionListener(new ActionListener() {
 		public void actionPerformed(ActionEvent e) {
@@ -203,7 +203,7 @@ implements Runnable, RpcEventListener {
 		int nextUnreadText = kom.nextUnreadText(confNo, false);
 
                 if (nextUnreadText > 0) {
-                    TextInfoLabel t = new TextInfoLabel("nästa olästa: ", nextUnreadText,
+                    TextInfoLabel t = new TextInfoLabel("nÃ¤sta olÃ¤sta: ", nextUnreadText,
                                           kom, null, SwingConstants.LEFT);
 		    defaultCommandButton .setEnabled(true);
 		    kom.changeConference(confNo);
@@ -211,7 +211,7 @@ implements Runnable, RpcEventListener {
                     add(t);
 		    repaint();
                 } else {
-		    JLabel t = new JLabel("inga olästa inlägg");
+		    JLabel t = new JLabel("inga olÃ¤sta inlÃ¤gg");
 		    defaultCommandButton.setEnabled(false);
 		    add(t);
 		    repaint();
@@ -277,7 +277,7 @@ implements Runnable, RpcEventListener {
 
 	JPanel passwordPanel = new JPanel();
 	passwordPanel.setLayout(new FlowLayout(FlowLayout.LEFT));
-	passwordPanel.add(new JLabel("Lösenord: ", JLabel.RIGHT));
+	passwordPanel.add(new JLabel("LÃ¶senord: ", JLabel.RIGHT));
 	passwordPanel.add(passwordField);
 
 	userNameField = new JTextField(25);
@@ -327,7 +327,7 @@ implements Runnable, RpcEventListener {
 	scrollPane.getViewport().setView(confList);
 	confSel.add(scrollPane);
 
-	JButton getMembershipBtn = new JButton("Hämta medlemskapslista");
+	JButton getMembershipBtn = new JButton("HÃ¤mta medlemskapslista");
 	confSel.add(getMembershipBtn);
 
 	getMembershipBtn.addActionListener(new ActionListener() {
@@ -460,7 +460,7 @@ implements Runnable, RpcEventListener {
 		ConfInfo names[] = kom.lookupName(userNameField.getText(),
 						  true, false);
 		if (names.length > 1) {
-		    StringBuffer msg = new StringBuffer("Angett namn är flertydigt. Möjliga namn är:\n");
+		    StringBuffer msg = new StringBuffer("Angett namn Ã¤r flertydigt. MÃ¶jliga namn Ã¤r:\n");
 		    for (int i=0;i<names.length;i++) {
 			msg.append(new String(names[i].confName) + " (" + 
 					      names[i].confNo + ")\n");
@@ -480,7 +480,7 @@ implements Runnable, RpcEventListener {
 	    }
 	    if (kom.getLoggedIn()) {
 		abortButton.setText("Koppla ned");
-		connectButton.setText("Återanslut");
+		connectButton.setText("Ã…teranslut");
 		try {
 		    userNameField.setText(new String(kom.getMyPerson().
 						     getUConference().getName()));

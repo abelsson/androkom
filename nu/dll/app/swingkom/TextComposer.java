@@ -67,7 +67,7 @@ class TextComposer extends Box {
         
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout(FlowLayout.LEFT));        
-        JLabel subjectLabel = new JLabel("Ämne: ");
+        JLabel subjectLabel = new JLabel("Ã„mne: ");
         subjectPanel.add(subjectLabel);
         subjectField = new JTextField(new String(text.getSubject()), 72);
         subjectField.setFont(new Font("Courier", Font.PLAIN, 12));

@@ -60,7 +60,7 @@ public class TabClient {
 	    GridBagConstraints constr = new GridBagConstraints();
 	    setLayout(gridBag);
 
-	    JButton closeButton = new JButton("Stäng session");
+	    JButton closeButton = new JButton("StÃ¤ng session");
 	    constr.fill = GridBagConstraints.NONE;
 	    constr.gridx=0;
 	    constr.gridy=0;
@@ -147,9 +147,9 @@ public class TabClient {
 	    settingsPanel.add(new JLabel("Namn: "));
 	    nameField = new JTextField(30);
 	    settingsPanel.add(nameField);
-	    settingsPanel.add(new JLabel("Lösenord: "));
+	    settingsPanel.add(new JLabel("LÃ¶senord: "));
 	    passwordField = new JPasswordField(8);
-	    //passwordField.setEchoChar('¤');
+	    //passwordField.setEchoChar('Â¤');
 	    settingsPanel.add(passwordField);
 	    add(settingsPanel);
 
