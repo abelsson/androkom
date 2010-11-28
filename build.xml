@@ -20,7 +20,7 @@
   <target name="lattekom.compile" depends="init">
     <javac destdir="${lattekom.build}" srcdir="${src}" deprecation="on"
            includes="nu/dll/lyskom/*"
-           classpath="lib/activation.jar:lib/sun-javamail.jar" />
+           classpath="lib/activation.jar:lib/mailapi.jar" />
   </target>
 
   <target name="clean">
