@@ -14,7 +14,7 @@ import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
 
-import nu.dll.lyskom.io.SpyInputStream;
+import nu.dll.io.SpyInputStream;
 
 class KomTokenReader {
 

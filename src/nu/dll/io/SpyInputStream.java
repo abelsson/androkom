@@ -1,4 +1,4 @@
-package nu.dll.lyskom.io;
+package nu.dll.io;
 
 import java.io.*;
 import java.util.List;
