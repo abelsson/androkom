@@ -6,32 +6,32 @@
 package nu.dll.lyskom;
 
 /**
- * Exception that will be thrown by LatteKOM methods that do server I/O
- * and encounters data that it can't understand, or it seems that the
- * server can't understand what we're telling it. Might contain a nested
- * exception.
- *
+ * Exception that will be thrown by LatteKOM methods that do server I/O and
+ * encounters data that it can't understand, or it seems that the server can't
+ * understand what we're telling it. Might contain a nested exception.
+ * 
  * @see nu.dll.lyskom.KomProtocolException#getException()
  */
 public class KomProtocolException extends RuntimeException {
+	private static final long serialVersionUID = -951995264599642369L;
 
-    Exception nestedException = null;
+	Exception nestedException = null;
 
-    public KomProtocolException(String s, Exception e) {
-	super(s);
-	nestedException = e;
-    }
+	public KomProtocolException(String s, Exception e) {
+		super(s);
+		nestedException = e;
+	}
 
-    public KomProtocolException(Exception e) {
-	super(e.getMessage());
-	nestedException = e;
-    }
+	public KomProtocolException(Exception e) {
+		super(e.getMessage());
+		nestedException = e;
+	}
 
-    public KomProtocolException(String s) {
-	super(s);
-    }
+	public KomProtocolException(String s) {
+		super(s);
+	}
 
-    public Exception getException() {
-	return nestedException;
-    }
-}	
+	public Exception getException() {
+		return nestedException;
+	}
+}

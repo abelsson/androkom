@@ -7,29 +7,32 @@ package nu.dll.lyskom;
 
 /**
  * Represents a Membership-Type. TODO: document the flags.
- */ 
+ */
 public class MembershipType extends Bitstring {
-    public static final int bitcount   = 8;
-    public static final int invitation = 0;
-    public static final int passive    = 1;
-    public static final int secret     = 2;
-    public static final int reserved1  = 3;
-    public static final int reserved2  = 4;
-    public static final int reserved3  = 5;
-    public static final int reserved4  = 6;
-    public static final int reserved5  = 7;
+	private static final long serialVersionUID = 4585427743367499039L;
+	public static final int bitcount = 8;
+	public static final int invitation = 0;
+	public static final int passive = 1;
+	public static final int secret = 2;
+	public static final int reserved1 = 3;
+	public static final int reserved2 = 4;
+	public static final int reserved3 = 5;
+	public static final int reserved4 = 6;
+	public static final int reserved5 = 7;
 
-    public MembershipType(boolean[] bits) {
-	byte[] contents = new byte[bitcount];
-	for (int i=0; i < bitcount; i++) {
-	    if (i < bits.length) contents[i] = (byte) (bits[i] ? '1' : '0');
-	    else contents[i] = (byte) '0';
+	public MembershipType(boolean[] bits) {
+		byte[] contents = new byte[bitcount];
+		for (int i = 0; i < bitcount; i++) {
+			if (i < bits.length)
+				contents[i] = (byte) (bits[i] ? '1' : '0');
+			else
+				contents[i] = (byte) '0';
+		}
+		setContents(contents);
 	}
-	setContents(contents);
-    }   
 
-    public MembershipType(KomToken token) {
-	super(token);
-    }
+	public MembershipType(KomToken token) {
+		super(token);
+	}
 
 }

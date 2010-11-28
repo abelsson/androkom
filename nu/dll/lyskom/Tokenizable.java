@@ -5,5 +5,5 @@ package nu.dll.lyskom;
  * toToken() method.
  */
 public interface Tokenizable {
-    public KomToken toToken();
+	public KomToken toToken();
 }

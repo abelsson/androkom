@@ -13,23 +13,23 @@ import java.util.HashSet;
 
 /**
  * Class that can be used to check if a text has been read.
- *
+ * 
  */
 public class ReadTextsMap {
 
-    Set textNumberSet = new HashSet();
+    Set<Integer> textNumberSet = new HashSet<Integer>();
 
     public void add(int no) {
-	textNumberSet.add(new Integer(no));
-	return;
+        textNumberSet.add(new Integer(no));
+        return;
     }
 
     public int count() {
-	return textNumberSet.size();
-    }	    
+        return textNumberSet.size();
+    }
 
     public void clear() {
-	textNumberSet.clear();
+        textNumberSet.clear();
     }
 
     /**
@@ -37,14 +37,14 @@ public class ReadTextsMap {
      * @see nu.dll.lyskom.ReadTextsMap#contains(int)
      */
     public boolean exists(int no) {
-	return contains(no);
+        return contains(no);
     }
 
     public boolean contains(int no) {
-	return textNumberSet.contains(new Integer(no));
+        return textNumberSet.contains(new Integer(no));
     }
 
     public void remove(int no) {
-	textNumberSet.remove(new Integer(no));
+        textNumberSet.remove(new Integer(no));
     }
 }

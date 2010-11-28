@@ -6,14 +6,15 @@
 package nu.dll.lyskom;
 
 /**
- * Interface to be implemented by classes who wants themselves to be called
- * when asynchronous messages arrives from the server.
+ * Interface to be implemented by classes who wants themselves to be called when
+ * asynchronous messages arrives from the server.
  */
 public interface AsynchMessageReceiver {
-    /**
-     * Called when a messages has been read and parsed by LatteKOM.
-     *
-     * @param m The parsed asynch message.
-     */
-    public void asynchMessage(AsynchMessage m);
+	/**
+	 * Called when a messages has been read and parsed by LatteKOM.
+	 * 
+	 * @param m
+	 *            The parsed asynch message.
+	 */
+	public void asynchMessage(AsynchMessage m);
 }

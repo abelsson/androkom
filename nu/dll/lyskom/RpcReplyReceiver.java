@@ -7,5 +7,5 @@
 package nu.dll.lyskom;
 
 interface RpcReplyReceiver {
-    void rpcReply(RpcReply r);
+	void rpcReply(RpcReply r);
 }

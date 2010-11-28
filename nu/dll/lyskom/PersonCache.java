@@ -13,40 +13,41 @@ import java.util.Hashtable;
 
 class PersonCache {
     static int DEBUG = 0;
-    Hashtable hash;
-    
+    private Hashtable<Integer, Person> hash;
+
     public PersonCache() {
-	hash = new Hashtable();
+        hash = new Hashtable<Integer, Person>();
     }
 
     public void remove(int persNo) {
-	hash.remove(new Integer(persNo));
+        hash.remove(new Integer(persNo));
     }
 
     public void clear() {
-	hash.clear();
+        hash.clear();
     }
 
     public void add(Person p) {
-	if (p.getNo() == -1)
-	    return; // throw(new PersonNumberException("Person has no number"));
+        if (p.getNo() == -1)
+            return;
 
-	if (DEBUG > 0) Debug.println("PersonCache: adding "+p.getNo());
+        if (DEBUG > 0)
+            Debug.println("PersonCache: adding " + p.getNo());
 
-	if (hash.put((Object) new Integer(p.getNo()), (Object) p)!=null) {
-	    if (DEBUG > 0) Debug.println("PersonCache: " +
-					      "replacing Person #" +
-					      p.getNo()+" in cache");
-	}
+        if (hash.put(new Integer(p.getNo()), p) != null) {
+            if (DEBUG > 0)
+                Debug.println("PersonCache: " + "replacing Person #"
+                        + p.getNo() + " in cache");
+        }
     }
 
     public Person get(int personNo) {
-	Person p = (Person) hash.get(new Integer(personNo));
-	if (p != null) {
-	    if (DEBUG > 0) {
-		Debug.println("PersonCache: returning "+personNo);
-	    }
-	} 
-	return p;
+        Person p = (Person) hash.get(new Integer(personNo));
+        if (p != null) {
+            if (DEBUG > 0) {
+                Debug.println("PersonCache: returning " + personNo);
+            }
+        }
+        return p;
     }
 }

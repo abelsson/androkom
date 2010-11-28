@@ -5,8 +5,8 @@
  */
 package nu.dll.lyskom;
 
-interface CacheListener {   
-    public void itemAdded(Object o);
-    public void itemUpdated(Object o);
-    public void itemRemoved(Object o);
+interface CacheListener {
+	public void itemAdded(Object o);
+	public void itemUpdated(Object o);
+	public void itemRemoved(Object o);
 }

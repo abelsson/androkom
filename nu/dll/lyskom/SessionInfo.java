@@ -6,33 +6,33 @@
 package nu.dll.lyskom;
 
 public class SessionInfo {
-    byte[] username;
-    byte[] hostname;
-    byte[] identUser;
-    KomTime connectionTime;
+	byte[] username;
+	byte[] hostname;
+	byte[] identUser;
+	KomTime connectionTime;
 
-    public SessionInfo(int offset, KomToken[] data) {
-	int i=offset;
-	username = data[i++].getContents();
-	hostname = data[i++].getContents();
-	identUser = data[i++].getContents();
-	connectionTime = KomTime.createFrom(i, data);
-    }
+	public SessionInfo(int offset, KomToken[] data) {
+		int i = offset;
+		username = data[i++].getContents();
+		hostname = data[i++].getContents();
+		identUser = data[i++].getContents();
+		connectionTime = KomTime.createFrom(i, data);
+	}
 
-    public byte[] getUsername() {
-	return username;
-    }
+	public byte[] getUsername() {
+		return username;
+	}
 
-    public byte[] getHostname() {
-	return hostname;
-    }
+	public byte[] getHostname() {
+		return hostname;
+	}
 
-    public byte[] getIdentUser() {
-	return identUser;
-    }
+	public byte[] getIdentUser() {
+		return identUser;
+	}
 
-    public KomTime getConnectionTime() {
-	return connectionTime;
-    }
+	public KomTime getConnectionTime() {
+		return connectionTime;
+	}
 
 }

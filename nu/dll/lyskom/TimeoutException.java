@@ -6,4 +6,5 @@
 package nu.dll.lyskom;
 
 class TimeoutException extends Exception {
-}	
+	private static final long serialVersionUID = -727499388002749004L;
+}
