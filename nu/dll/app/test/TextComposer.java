@@ -108,7 +108,7 @@ class TextComposer extends Box {
         
         JPanel subjectPanel = new JPanel();
         subjectPanel.setLayout(new FlowLayout(FlowLayout.LEFT));        
-        JLabel subjectLabel = new JLabel("Ämne: ");
+        JLabel subjectLabel = new JLabel("Ã„mne: ");
         subjectPanel.add(subjectLabel);
 	try {
 	    subjectField = new JTextField(new String(text.getSubject(), kom.getServerEncoding()), 72);

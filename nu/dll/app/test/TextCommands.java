@@ -15,20 +15,20 @@ import nu.dll.lyskom.*;
 
 public class TextCommands extends AbstractCommand {
 
-    // "Âterse" renamed to "Âterse text" due to a conflict
-    String[] myCommands = { "Âterse text", "}terse text", "fotnotera", "kommentera", "inl‰gg", "radera text",
-			    "markera text", "lista markerade texter", "Âterse urinkl‰gg", "}terse urinl{gg",
+    // "√•terse" renamed to "√•terse text" due to a conflict
+    String[] myCommands = { "√•terse text", "}terse text", "fotnotera", "kommentera", "inl√§gg", "radera text",
+			    "markera text", "lista markerade texter", "√•terse urinkl√§gg", "}terse urinl{gg",
 			    "spara text" };
     int[] commandIndices = { 0, 0, 1, 2, 3, 4, 5, 6, 7, 7, 8 };
     String[] myDescriptions = {
-	"Âterse text <textnummer>", // 0
+	"√•terse text <textnummer>", // 0
 	"fotnotera (text) [textnummer]", // 1
 	"kommentera (text)", // 2
-	"(skriv) inl‰gg", // 3
+	"(skriv) inl√§gg", // 3
 	"radera text", // 4
 	"markera text [textnummer] [markeringstyp]", // 5
 	"lista markerade texter", // 6
-	"Âterse urinl‰gg [textnummer]", // 7
+	"√•terse urinl√§gg [textnummer]", // 7
 	"spara text (till fil) [textnummer]" // 8
     };
 
@@ -37,7 +37,7 @@ public class TextCommands extends AbstractCommand {
     }
 
     public String getDescription() {
-	return "Kommandon fˆr l‰sning, skrivning och annan texthantering";
+	return "Kommandon f√∂r l√§sning, skrivning och annan texthantering";
     }
 
     public String getCommandDescription(int i) {
@@ -75,7 +75,7 @@ public class TextCommands extends AbstractCommand {
 
 	switch (getCommandIndex(s)) {
 	case 0: // review text
-	    if (textNo < 1) throw new CmdErrException("Du mÂste ange ett textnummer");
+	    if (textNo < 1) throw new CmdErrException("Du m√•ste ange ett textnummer");
 	    text = session.getText(textNo, true);
 	    application.displayText(textNo);
 	    application.setLastText(text);
@@ -93,16 +93,16 @@ public class TextCommands extends AbstractCommand {
 	    }
 
 	    if (textNo < 1) {
-		throw new CmdErrException("Du mÂste ange ett giltigt " +
-					  "textnummer eller l‰sa/skriva " +
-					  "en text fˆrst");
+		throw new CmdErrException("Du m√•ste ange ett giltigt " +
+					  "textnummer eller l√§sa/skriva " +
+					  "en text f√∂rst");
 	    }
 
 	    text = session.getText(textNo);
 	    
 	    if (text == null) {
 		text = session.getText(textNo);
-		if (text == null) throw new CmdErrException("Hittade inget inl‰gg");
+		if (text == null) throw new CmdErrException("Hittade inget inl√§gg");
 	    }
 	    commentOrFootnote(text, footnote);
 	    break;
@@ -112,7 +112,7 @@ public class TextCommands extends AbstractCommand {
 	    break;
 	case 4:
 	    if (parameters == null || textNo < 1)
-		throw new CmdErrException("Du mÂste ange ett giltigt textnummer");
+		throw new CmdErrException("Du m√•ste ange ett giltigt textnummer");
 	    deleteText(textNo);
 	    break;
 	case 5:
@@ -132,7 +132,7 @@ public class TextCommands extends AbstractCommand {
 		    }
 		}
 	    }
-	    if (textNo < 1) throw new CmdErrException("Du mÂste ange ett giltigt textnummer");
+	    if (textNo < 1) throw new CmdErrException("Du m√•ste ange ett giltigt textnummer");
 	    markText(textNo, markType > 0 ? markType : 100);
 	    break;
 	case 6: // list marked texts
@@ -146,7 +146,7 @@ public class TextCommands extends AbstractCommand {
 		textNo = application.getLastText().getNo();	    saveText(textNo);
 	    break;
 	default:
-	    throw new CmdErrException("Internfel: ok‰nt kommando \"" + s + "\".");
+	    throw new CmdErrException("Internfel: ok√§nt kommando \"" + s + "\".");
 	}
 
 	return Command.OK;
@@ -201,10 +201,10 @@ public class TextCommands extends AbstractCommand {
 	    t = session.getText(textNo); 
 	}
 	if (t == null) {
-	    throw new CmdErrException("Du mÂste ha en text att bˆrja med.");
+	    throw new CmdErrException("Du m√•ste ha en text att b√∂rja med.");
 	}
 
-	application.consoleWrite("Sˆker efter urinl‰gg fˆr text " + t.getNo() + "... ");
+	application.consoleWrite("S√∂ker efter urinl√§gg f√∂r text " + t.getNo() + "... ");
 	TextStat ts = session.getTextStat(t.getNo());
 	while (ts.getStatInts(TextStat.miscCommTo).length > 0) {
 	    ts = session.getTextStat(ts.getStatInts(TextStat.miscCommTo)[0]);
@@ -216,7 +216,7 @@ public class TextCommands extends AbstractCommand {
     }
 
     public void listMarkedTexts() throws IOException, CmdErrException {
-	application.consoleWriteLn("Markerade inl‰gg:");
+	application.consoleWriteLn("Markerade inl√§gg:");
 	Mark[] marks = session.getMarks();
 	for (int i=0; i < marks.length; i++) {
 	    application.consoleWrite("Markering " + (i+1) + ": " + marks[i].getText() + " (" + marks[i].getType() + ")");
@@ -233,7 +233,7 @@ public class TextCommands extends AbstractCommand {
     public void markText(int textNo, int markType) throws IOException, CmdErrException {
 	try {
 	    session.markText(textNo, markType);
-	    application.consoleWriteLn("OK, text " + textNo + " ‰r markerad");
+	    application.consoleWriteLn("OK, text " + textNo + " √§r markerad");
 	} catch (RpcFailure ex1) {
 	    throw new CmdErrException(ex1.getMessage());
 	}
@@ -250,10 +250,10 @@ public class TextCommands extends AbstractCommand {
 		application.consoleWriteLn("det finns ingen text med nummer " + textNo);
 		break;
 	    case Rpc.E_not_author:
-		application.consoleWriteLn("du har inte r‰tt att ta bort text " + textNo);
+		application.consoleWriteLn("du har inte r√§tt att ta bort text " + textNo);
 		break;
 	    default:
-		application.consoleWriteLn("ok‰nt fel: " + ex1.getMessage());
+		application.consoleWriteLn("ok√§nt fel: " + ex1.getMessage());
 		break;
 	    }
 	}
@@ -261,12 +261,12 @@ public class TextCommands extends AbstractCommand {
 
     public void writeText() throws IOException, CmdErrException {
 	if (session.getCurrentConference() == -1) {
-	    throw new CmdErrException("Du mÂste vara i ett mˆte fˆr att kunna skriva ett inl‰gg.");
+	    throw new CmdErrException("Du m√•ste vara i ett m√∂te f√∂r att kunna skriva ett inl√§gg.");
 	}
-	application.setStatus("Skriver ett inl‰gg");
+	application.setStatus("Skriver ett inl√§gg");
 	StringBuffer textb = new StringBuffer();
-	application.consoleWriteLn("-- Inl‰gg i mˆte " + application.confNoToName(session.getCurrentConference()));
-	application.consoleWriteLn("Avsluta med \".\" pÂ tom rad.");
+	application.consoleWriteLn("-- Inl√§gg i m√∂te " + application.confNoToName(session.getCurrentConference()));
+	application.consoleWriteLn("Avsluta med \".\" p√• tom rad.");
 	Text nText = new Text();
 	nText.addRecipient(session.getCurrentConference());
 	nText = application.editText(nText);
@@ -279,7 +279,7 @@ public class TextCommands extends AbstractCommand {
 	    application.consoleWriteLn("text nummer " + newText + " skapad.");
 	    application.setLastSavedText(session.getText(newText));
 	    if (!application.dontMarkOwnTextsAsRead) application.markAsRead(newText);
-	} else application.consoleWriteLn("misslyckades att skapa inl‰gg.");
+	} else application.consoleWriteLn("misslyckades att skapa inl√§gg.");
 
     }
     
@@ -287,7 +287,7 @@ public class TextCommands extends AbstractCommand {
 	application.setStatus("Skriver en " + (footnote ? "fotnot" : "kommentar"));
 	application.consoleWriteLn("-- " + (footnote ? "Fotnot" : "Kommentar") + " till text " + text.getNo() + ".");
 	application.consoleWriteLn("-- Skriv din " + (footnote ? "fotnot" : "kommentar") + 
-				   ", avsluta med \".\" pÂ tom rad.");
+				   ", avsluta med \".\" p√• tom rad.");
 	Text nText = new Text(application.bytesToString(text.getSubject()), "");
 
 	if (!footnote)
@@ -303,7 +303,7 @@ public class TextCommands extends AbstractCommand {
 		if (superconf > 0) {
 		    nText.addRecipient(superconf);
 		} else {
-		    application.consoleWriteLn("Du fÂr inte skriva kommentarer i " +
+		    application.consoleWriteLn("Du f√•r inte skriva kommentarer i " +
 					       conf.getNameString());
 		}
 	    } else {
@@ -329,10 +329,10 @@ public class TextCommands extends AbstractCommand {
 	    application.consoleWrite("%Fel: kunde inte skapa kommentar/fotnot: ");
 	    switch (ex1.getError()) {
 	    case Rpc.E_not_author:
-		application.consoleWriteLn("du ‰r inte fˆrfattare till text " + ex1.getErrorStatus());
+		application.consoleWriteLn("du √§r inte f√∂rfattare till text " + ex1.getErrorStatus());
 		break;
 	    default:
-		throw new CmdErrException("Ok‰nt fel: " + ex1.getMessage());
+		throw new CmdErrException("Ok√§nt fel: " + ex1.getMessage());
 	    }
 	    return;
 	}
