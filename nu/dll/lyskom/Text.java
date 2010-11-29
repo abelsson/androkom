@@ -24,6 +24,7 @@ import java.io.StringReader;
 import javax.mail.Header;
 import javax.mail.internet.ContentType;
 import javax.mail.internet.InternetHeaders;
+import javax.activation.DataSource;
 
 /**
  * Represents a LysKOM text. An application can construct Text objects and use
@@ -37,7 +38,7 @@ import javax.mail.internet.InternetHeaders;
  * @see nu.dll.lyskom.Session#getText(int)
  * @see nu.dll.lyskom.Session#createText(Text)
  */
-public class Text extends Hollerith implements Serializable {
+public class Text extends Hollerith implements Serializable, DataSource {
 	private static final long serialVersionUID = -7201392864569389382L;
 
 	boolean cached = false;
