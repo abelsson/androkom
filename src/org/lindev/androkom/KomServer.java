@@ -36,10 +36,9 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver
+public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver, nu.dll.lyskom.Log
 {
 	public static final String TAG = "Androkom KomServer";
-
 
     /**
      * Class for clients to access.  Because we assume this service always
@@ -140,6 +139,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     
     public KomServer() {
         System.setProperty("lattekom.enable-prefetch", "true"); 
+        Session.setLog(this);
         mLastTextNo = -1;
         mPendingSentTexts = new HashSet<Integer>();
     }
@@ -914,6 +914,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     		return false;
     	}
         return s.getConnected();
+    }
+    
+    public void error(String s) {
+    	Log.e("androkom", s);
+    }
+    
+    public void debug(String s) {
+    	Log.d("androkom", s);
     }
     
     private Session s=null;
