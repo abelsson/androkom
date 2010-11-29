@@ -192,6 +192,10 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
 	    }
 	};
 
+    public static void setLog(Log l) {
+	log = l;
+    }
+
     int loginRpcId;
     boolean loggedIn = false;
     String server = null;
