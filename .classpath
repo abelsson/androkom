@@ -9,6 +9,5 @@
 	<classpathentry kind="lib" path="jars/smtp.jar"/>
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
-	<classpathentry kind="lib" path="jars/lattekom.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
