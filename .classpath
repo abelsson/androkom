@@ -8,6 +8,7 @@
 	<classpathentry kind="lib" path="jars/pop3.jar"/>
 	<classpathentry kind="lib" path="jars/smtp.jar"/>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry including="nu/dll/io/*.java|nu/dll/lyskom/*.java" kind="src" path="lattekom"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
