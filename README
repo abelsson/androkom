@@ -13,7 +13,7 @@ relatively new approach to the old-fashioned KOM system, where the
 communication is client-server based rather than terminal-based. The
 most widely used client today[2] is written in Elisp and run inside
 Emacs. LysKOM was created at the Lysator Academic Computer Society[3]
-at Linköpings Universitet[4].
+at LinkÃ¶pings Universitet[4].
 
 This project aims to implement all features of the latest LysKOM
 protocol A specification[5].
