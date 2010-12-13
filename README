@@ -1,0 +1,66 @@
+CHECKING OUT WITH SUBMODULE
+---------------------------
+
+You need to run the following to get the submodule subtrees into your
+working tree:
+
+  git submodule init
+  git submodule update
+
+Note that a git submodule refers to a specific revision of the
+submodule project.
+
+BUILDING USING ECLIPSE
+----------------------
+
+After checking out Androkom and the required submodule (above), you
+can import it into Eclipse with the following steps:
+
+1. Create a new project (e.g. "Androkom"): File -> New -> Project ->
+   General/Project
+2. Right-click on the project in Eclipse's Package Explorer and select
+   "Import". Select "File System" as import source, click Next.
+3. Click "Browse" and locate the folder where you checked out the
+   Androkom tree.
+4. Check the "androkom" folder and make sure it has some subfolders
+   and and that they also are checked. Check "Overwrite existing
+   resources without warning". Finish the import.
+
+If Eclipse complains about a missing required source folder "gen"
+and/or reports that the a file "R.java" is missing, restart Eclipse.
+
+You should now be able to build and run Androkom by selecting the
+project in Package Explorer and clicking "Run".
+
+MAKING CHANGES TO A SUBMODULE
+-----------------------------
+
+See https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial for
+instructions on how to work with git submodules. The basic idea is
+that a submodule is a reference to a specific commit level in an
+external project. If you want to make changes in the submodule, you
+need to first commit it to the submodule, then update the parent
+project with the new commit. Example:
+
+karin:Androkom rasmus$ cd lattekom
+karin:lattekom rasmus$ git checkout master
+Already on 'master'
+
+*hacking away*
+
+karin:lattekom rasmus$ git commit -am "hacked away"
+karin:lattekom rasmus$ git push
+karin:lattekom rasmus$ cd ..
+karin:Androkom rasmus$ git add lattekom
+karin:Androkom rasmus$ git commit -m "updated lattekom"
+karin:Androkom rasmus$ git push
+
+
+The 'lattekom' submodule has now been updated, and androkom has been
+updated to point to the new lattekom revision.
+
+If the submodule has been updated by someone else, do `git pull' and
+then `git submodule update' in the androkom tree.
+
+NOTE: if you run `git submodule update', it will overwrite any changed
+you have made within that submodule.
