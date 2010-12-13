@@ -35,6 +35,10 @@ project in Package Explorer and clicking "Run".
 MAKING CHANGES TO A SUBMODULE
 -----------------------------
 
+The lattekom submodule is by default cloned from a read-only URL,
+which means you can't push changes directly to it without
+changing the submodule URL to one which has write access.
+
 See https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial for
 instructions on how to work with git submodules. The basic idea is
 that a submodule is a reference to a specific commit level in an
@@ -64,3 +68,4 @@ then `git submodule update' in the androkom tree.
 
 NOTE: if you run `git submodule update', it will overwrite any changed
 you have made within that submodule.
+
