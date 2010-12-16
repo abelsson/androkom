@@ -36,27 +36,36 @@ MAKING CHANGES TO A SUBMODULE
 -----------------------------
 
 The lattekom submodule is by default cloned from a read-only URL,
-which means you can't push changes directly to it without
-changing the submodule URL to one which has write access.
+which means you can't push changes directly. However, you can push
+changes to a different repository URL to which you have write access.
 
 See https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial for
 instructions on how to work with git submodules. The basic idea is
 that a submodule is a reference to a specific commit level in an
 external project. If you want to make changes in the submodule, you
 need to first commit it to the submodule, then update the parent
-project with the new commit. Example:
+project with the new commit. Example (Androkom being a clone of an
+androkom repository where you have write access):
 
 karin:Androkom rasmus$ cd lattekom
+
+# check out the master branch
 karin:lattekom rasmus$ git checkout master
-Already on 'master'
 
-*hacking away*
+# hack away
 
+# commit your changes to your local master branch
 karin:lattekom rasmus$ git commit -am "hacked away"
-karin:lattekom rasmus$ git push
+
+# push your commit(s) to a repo where you have write access
+karin:lattekom rasmus$ git push git@github.com:pajp/lattekom.git
+
+# now update the submodule to point to your latest commit
 karin:lattekom rasmus$ cd ..
 karin:Androkom rasmus$ git add lattekom
 karin:Androkom rasmus$ git commit -m "updated lattekom"
+
+# push the updated submodule ref to the androkom repository
 karin:Androkom rasmus$ git push
 
 
