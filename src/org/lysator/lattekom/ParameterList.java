@@ -1,29 +1,44 @@
 package org.lysator.lattekom;
 
 import java.util.Enumeration;
+import java.util.HashMap;
 import java.util.Map;
+import java.util.Set;
+import java.util.Vector;
+
+import android.util.Log;
 
 public class ParameterList {
 
-    private final Map<String, String> list;
+    private static final String TAG = "parameterlist";
+	private final Map<String, String> list;
 
     public ParameterList() {
-    	list = null;
+    	list = new HashMap<String, String>();
     }
     
 	public void set(String key, String value) {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "set: "+key+" : "+value);
 		list.put(key, value);
 	}
 
 	public String get(String key) {
 		// TODO Auto-generated method stub
+		Log.d(TAG, "get: "+key);
 		return list.get(key);
 	}
 
 	public Enumeration<String> getNames() {
+		Enumeration<String> retVals = null;
+		Set<String> keys = list.keySet();
 		// TODO Auto-generated method stub
-		return null;
+		Log.d(TAG, "getNames: ");
+		Vector<String> v = new Vector();
+		v.add("charset");
+		retVals = v.elements();
+		
+		return retVals;
 	}
 
 }

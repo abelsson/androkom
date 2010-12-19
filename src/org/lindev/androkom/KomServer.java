@@ -11,6 +11,7 @@ import org.lysator.lattekom.AsynchMessage;
 import org.lysator.lattekom.AsynchMessageReceiver;
 import org.lysator.lattekom.AuxItem;
 import org.lysator.lattekom.ConfInfo;
+import org.lysator.lattekom.Conference;
 import org.lysator.lattekom.Membership;
 import org.lysator.lattekom.RpcEvent;
 import org.lysator.lattekom.RpcEventListener;
@@ -485,11 +486,31 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         try {
             Text text = s.getText(textNo);
-
-            final String username = s.getConfStat(text.getAuthor()).getNameString();          
-            return new TextInfo(textNo, username, text.getCreationTimeString(), text.getSubjectString(), text.getBodyString());
-
-
+            final String username;
+            int authorid = text.getAuthor();
+            if (authorid > 0) {
+            	Conference confStat = s.getConfStat(authorid);
+            	username = confStat.getNameString();
+            } else {
+            	username = "anonymous";
+            }
+            String CreationTimeString = text.getCreationTimeString();
+            String SubjectString = null;
+            try {
+            	SubjectString = text.getSubjectString();
+            } catch (UnsupportedEncodingException e) {
+            	Log.d(TAG, "UnsupportedEncodingException"+e);
+            	SubjectString = text.getSubjectString8();
+            }
+            String BodyString = null;
+            try {
+            	BodyString = text.getBodyString();
+            } catch (UnsupportedEncodingException e) {
+            	Log.d(TAG, "UnsupportedEncodingException"+e);
+            	BodyString = text.getBodyString8();
+            }
+            	
+            return new TextInfo(textNo, username, CreationTimeString, SubjectString, BodyString);
         } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "getTextAsHTML "+e);

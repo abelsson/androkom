@@ -3,11 +3,5 @@
 	<classpathentry kind="src" path="src"/>
 	<classpathentry kind="src" path="gen"/>
 	<classpathentry kind="con" path="com.android.ide.eclipse.adt.ANDROID_FRAMEWORK"/>
-	<classpathentry kind="lib" path="jars/activation.jar"/>
-	<classpathentry kind="lib" path="jars/dsn.jar"/>
-	<classpathentry kind="lib" path="jars/imap.jar"/>
-	<classpathentry kind="lib" path="jars/mailapi.jar"/>
-	<classpathentry kind="lib" path="jars/pop3.jar"/>
-	<classpathentry kind="lib" path="jars/smtp.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
