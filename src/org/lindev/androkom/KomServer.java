@@ -7,19 +7,18 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import org.lysator.lattekom.AsynchMessage;
-import org.lysator.lattekom.AsynchMessageReceiver;
-import org.lysator.lattekom.AuxItem;
-import org.lysator.lattekom.ConfInfo;
-import org.lysator.lattekom.Conference;
-import org.lysator.lattekom.Membership;
-import org.lysator.lattekom.RpcEvent;
-import org.lysator.lattekom.RpcEventListener;
-import org.lysator.lattekom.RpcFailure;
-import org.lysator.lattekom.Session;
-import org.lysator.lattekom.Text;
-import org.lysator.lattekom.TextStat;
-import org.lysator.lattekom.UserArea;
+import nu.dll.lyskom.AsynchMessage;
+import nu.dll.lyskom.AsynchMessageReceiver;
+import nu.dll.lyskom.AuxItem;
+import nu.dll.lyskom.ConfInfo;
+import nu.dll.lyskom.Membership;
+import nu.dll.lyskom.RpcEvent;
+import nu.dll.lyskom.RpcEventListener;
+import nu.dll.lyskom.RpcFailure;
+import nu.dll.lyskom.Session;
+import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextStat;
+import nu.dll.lyskom.UserArea;
 
 import android.app.Service;
 import android.content.Intent;
@@ -37,10 +36,9 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver
+public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver, nu.dll.lyskom.Log
 {
 	public static final String TAG = "Androkom KomServer";
-
 
     /**
      * Class for clients to access.  Because we assume this service always
@@ -141,6 +139,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     
     public KomServer() {
         System.setProperty("lattekom.enable-prefetch", "true"); 
+        Session.setLog(this);
         mLastTextNo = -1;
         mPendingSentTexts = new HashSet<Integer>();
     }
@@ -489,7 +488,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             final String username;
             int authorid = text.getAuthor();
             if (authorid > 0) {
-            	Conference confStat = s.getConfStat(authorid);
+            	nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
             	username = confStat.getNameString();
             } else {
             	username = "anonymous";
@@ -935,6 +934,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     		return false;
     	}
         return s.getConnected();
+    }
+    
+    public void error(String s) {
+    	Log.e("androkom", s);
+    }
+    
+    public void debug(String s) {
+    	Log.d("androkom", s);
     }
     
     private Session s=null;

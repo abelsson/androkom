@@ -1,6 +1,6 @@
 package org.lindev.androkom;
 
-import org.lysator.lattekom.ConfInfo;
+import nu.dll.lyskom.ConfInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
