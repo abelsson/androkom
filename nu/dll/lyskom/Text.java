@@ -21,10 +21,7 @@ import java.io.UnsupportedEncodingException;
 import java.io.Serializable;
 import java.io.StringReader;
 
-import javax.mail.Header;
-import javax.mail.internet.ContentType;
-import javax.mail.internet.InternetHeaders;
-import javax.activation.DataSource;
+
 
 /**
  * Represents a LysKOM text. An application can construct Text objects and use
@@ -38,7 +35,7 @@ import javax.activation.DataSource;
  * @see nu.dll.lyskom.Session#getText(int)
  * @see nu.dll.lyskom.Session#createText(Text)
  */
-public class Text extends Hollerith implements Serializable, DataSource {
+public class Text extends Hollerith implements Serializable {
 	private static final long serialVersionUID = -7201392864569389382L;
 
 	boolean cached = false;
@@ -153,7 +150,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
         ContentType contentType = null;
         try {
             contentType = new ContentType(contentTypeString);
-        } catch (javax.mail.internet.ParseException ex) {
+        } catch (MimeUtility.ParseException ex) {
             throw new RuntimeException(
                     "Error parsing contents while trying to parse content-type: "
                             + ex.toString());
@@ -225,7 +222,7 @@ public class Text extends Hollerith implements Serializable, DataSource {
                             preambleContentType.toString()));
                     contentTypeString = preambleContentType.toString();
                 }
-            } catch (javax.mail.internet.ParseException ex) {
+            } catch (MimeUtility.ParseException ex) {
                 throw new RuntimeException(ex.toString());
             } catch (IOException ex1) {
                 ex1.printStackTrace();
@@ -445,9 +442,33 @@ public class Text extends Hollerith implements Serializable, DataSource {
     public String getSubjectString() throws UnsupportedEncodingException {
         return new String(getSubject(), getCharset());
     }
+    
+    public String getSubjectString8() {
+    	String value = "SubjectString";
+    	try {
+			value = new String(getSubject(), "iso-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return value;
+    }
+
 
     public String getBodyString() throws UnsupportedEncodingException {
         return new String(getBody(), getCharset());
+    }
+
+    public String getBodyString8() {
+    	String value = "BodyString";
+    	
+        try {
+			value = new String(getBody(), "iso-8859-1");
+		} catch (UnsupportedEncodingException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		return value;
     }
 
     /**

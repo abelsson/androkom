@@ -15,8 +15,8 @@ import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
 
-import javax.mail.internet.ContentType;
-import javax.mail.internet.MimeUtility;
+
+import android.util.Log;
 /**
  * <p>
  * The Text-Stat LysKOM data type (and this class) contains status information
@@ -140,6 +140,8 @@ public class TextStat implements java.io.Serializable {
     public final static int MISC_INFO_COUNT = 16;
 
     final static int INITIAL_AUX_LENGTH = 0;
+
+	private static final String TAG = "Androkom TextStat";
 
     static int DEBUG = 1;
 
@@ -282,7 +284,7 @@ public class TextStat implements java.io.Serializable {
                 contentTypeString = "text/x-kom-basic";
             contentType = new ContentType(contentTypeString);
             return new Object[] { contentType.toString(), ctData };
-        } catch (javax.mail.internet.ParseException ex1) {
+        } catch (MimeUtility.ParseException ex1) {
             throw new RuntimeException("Error parsing content-type \""
                     + contentTypeString + "\": " + ex1.toString());
         }
@@ -317,7 +319,7 @@ public class TextStat implements java.io.Serializable {
         	ContentType ct = new ContentType(getFullContentType());
         
             return ct.match(type);
-        } catch (javax.mail.internet.ParseException ex1) {
+        } catch (MimeUtility.ParseException ex1) {
             throw new RuntimeException("Unable to parse text content-type.");
         }
     }
@@ -326,9 +328,17 @@ public class TextStat implements java.io.Serializable {
      * Returns the Java charset for this text.
      */
     public String getCharset() {
-        return MimeUtility
-                .javaCharset(((Properties) parseContentTypeAuxItem()[1])
-                        .getProperty("charset", "iso-8859-1"));
+    	String retVal = "iso-8859-1";
+    	try {
+    		retVal = MimeUtility
+    		.javaCharset(((Properties) parseContentTypeAuxItem()[1])
+    				.getProperty("charset", "iso-8859-1"));
+    	} catch (Exception e) {
+    		Log.d(TAG, "getCharset "+e);
+
+            e.printStackTrace();    		
+    	}
+    	return retVal;
     }
 
     public void setContentType(String newContentTypeString) {  	
@@ -354,7 +364,7 @@ public class TextStat implements java.io.Serializable {
             }
             setAuxItem(new AuxItem(AuxItem.tagContentType,
                     newContentType.toString()));
-        } catch (javax.mail.internet.ParseException ex) {
+        } catch (MimeUtility.ParseException ex) {
             throw new RuntimeException(
                     "Error parsing contents while trying to parse content-type: "
                             + ex.toString());
@@ -380,7 +390,7 @@ public class TextStat implements java.io.Serializable {
                         (String) entry.getValue());
             }
             return ct.toString();
-        } catch (javax.mail.internet.ParseException ex) {
+        } catch (MimeUtility.ParseException ex) {
             throw new IllegalArgumentException("Unable to parse content-type "
                     + contentType);
         }
