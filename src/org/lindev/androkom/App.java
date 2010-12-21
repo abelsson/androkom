@@ -5,7 +5,9 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.widget.Toast;
 
 /**
@@ -78,5 +80,27 @@ public class App extends Application
             Toast.makeText(App.this, "KomServer disconnected",
                     Toast.LENGTH_SHORT).show();
         }
+    };
+    
+    public Handler getasynchandler() {
+    	return asyncHandler;
+    }
+    
+    private Handler asyncHandler = new Handler() {
+    	public void handleMessage(Message msg) {
+    		switch (msg.what) {
+    		case nu.dll.lyskom.Asynch.login:
+    			//remove SplashScreen from view
+                Toast.makeText(App.this, ""+msg.getData().getString("name")+" logged in",
+                        Toast.LENGTH_SHORT).show();
+    			break;
+    		case nu.dll.lyskom.Asynch.send_message:
+    			//remove SplashScreen from view
+                Toast.makeText(App.this, ""+msg.getData().getString("name")+" says "+msg.getData().getString("msg"),
+                        Toast.LENGTH_SHORT).show();
+    			break;
+    		}
+    		super.handleMessage(msg);
+    	}
     };
 }

@@ -11,6 +11,8 @@ import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
+import nu.dll.lyskom.Hollerith;
+import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
@@ -24,7 +26,10 @@ import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Binder;
+import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -899,9 +904,42 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public void asynchMessage(AsynchMessage m) {
         // TODO Auto-generated method stub
     	Log.d(TAG, "asynchMessage:"+m);
+
+    	KomToken[] params = m.getParameters();
     	
+    	if (asyncHandler != null) {
+        	int confno;
+        	String name;
+
+        	Message msg = new Message();
+    		msg.what = m.getNumber();
+    		Bundle b = new Bundle();
+            switch(msg.what) {
+            case nu.dll.lyskom.Asynch.login :
+            	confno = params[0].intValue();
+            	name = getConferenceName(confno);
+                b.putString("name", ""+name);
+            	break;
+            case nu.dll.lyskom.Asynch.send_message :
+            	confno = params[0].intValue();
+            	name = getConferenceName(confno);
+                b.putString("name", ""+name);
+                Hollerith msgH = (Hollerith) params[2];
+                b.putString("msg", ""+msgH.getContentString());
+            	break;
+            default:
+            }
+            msg.setData(b);
+    		asyncHandler.sendMessage(msg);
+    	} else {
+    		Log.d(TAG, "got async but no asyncHandler");
+    	}
     }
 
+    public void setasynchandler(Handler h) {
+    	asyncHandler = h;
+    }
+    
     public ConferenceInfo[] getUserNames() {
     	try {
     		if (usernames != null && usernames.length > 1) {
@@ -957,4 +995,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     private int re_userid; //for reconnect
     private String re_password; // for reconnect
     private String re_server; // for reconnect
+
+	Handler asyncHandler=null;
 }

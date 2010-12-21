@@ -229,6 +229,8 @@ public class Login extends Activity
                 // Commit the edits!
                 editor.commit();
 
+                getApp().getKom().setasynchandler(getApp().getasynchandler());
+                
                 Intent intent = new Intent(Login.this, ConferenceList.class);
                 startActivity(intent);
                 finish();
