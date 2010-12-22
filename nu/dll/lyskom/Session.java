@@ -583,7 +583,6 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     }
 
     public boolean login(int id, String password) throws IOException {
-        log.debug("Login.id1 ");
         return login(id, password, false, true);
     }
 
@@ -602,7 +601,6 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      */
     public boolean login(int id, String password, boolean hidden)
             throws IOException {
-        log.debug("Login.id2 ");
         return login(id, password, hidden, true);
     }
 
@@ -623,7 +621,6 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(int id, String password, boolean hidden,
             boolean getMembership) throws IOException {
     	boolean result = false;
-        log.debug("Login.id3 ");
     	try {
     		byte[] psw = password.getBytes(serverEncoding);
     		result =  login(id, psw, hidden, getMembership);
@@ -637,7 +634,6 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(String name, String password, boolean hidden,
             boolean getMembership) throws IOException {
     	boolean result=false;
-        log.debug("Login.id4 ");
     	
     	try {
     		ConfInfo[] names = lookupName(name, true, false);
@@ -669,7 +665,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public boolean login(int id, byte[] password, boolean hidden,
             boolean getMembership) throws IOException {
     	RpcCall loginCall = null;
-        log.debug("Login.id5 ");
+
         int rpcid = count();
         if (password == null)
             throw new IOException("Null password not allowed.");
