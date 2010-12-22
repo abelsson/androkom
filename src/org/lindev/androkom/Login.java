@@ -134,7 +134,7 @@ public class Login extends Activity
 	}
 
     /**
-     * Attempt to log in to "kom.lysator.liu.se". If unsuccessful, show an 
+     * Attempt to log in to server. If unsuccessful, show an 
      * alert. Otherwise save username and password for successive sessions.
      */
     private class LoginTask extends AsyncTask<Void, Integer, String> {

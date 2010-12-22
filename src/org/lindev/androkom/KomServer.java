@@ -22,9 +22,14 @@ import nu.dll.lyskom.Text;
 import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
 
+import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.app.Service;
+import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.Bundle;
 import android.os.Handler;
@@ -904,33 +909,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public void asynchMessage(AsynchMessage m) {
         // TODO Auto-generated method stub
     	Log.d(TAG, "asynchMessage:"+m);
-
-    	KomToken[] params = m.getParameters();
     	
     	if (asyncHandler != null) {
-        	int confno;
-        	String name;
-
-        	Message msg = new Message();
-    		msg.what = m.getNumber();
-    		Bundle b = new Bundle();
-            switch(msg.what) {
-            case nu.dll.lyskom.Asynch.login :
-            	confno = params[0].intValue();
-            	name = getConferenceName(confno);
-                b.putString("name", ""+name);
-            	break;
-            case nu.dll.lyskom.Asynch.send_message :
-            	confno = params[0].intValue();
-            	name = getConferenceName(confno);
-                b.putString("name", ""+name);
-                Hollerith msgH = (Hollerith) params[2];
-                b.putString("msg", ""+msgH.getContentString());
-            	break;
-            default:
-            }
-            msg.setData(b);
-    		asyncHandler.sendMessage(msg);
+    		mMessage = m;
+    		doGetMessage();
     	} else {
     		Log.d(TAG, "got async but no asyncHandler");
     	}
@@ -939,7 +921,74 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public void setasynchandler(Handler h) {
     	asyncHandler = h;
     }
-    
+
+    /**
+     * Attempt to receive async message to user.
+     */
+    private class getMessageTask extends AsyncTask<Void, Integer, String> {
+    	AsynchMessage message;
+
+        protected void onPreExecute() {
+            this.message = mMessage;
+        }
+
+        protected String doInBackground(final Void... args) 
+        {
+            	int confno;
+            	String name;
+            	Hollerith msgH;
+
+            	KomToken[] params = message.getParameters();
+            	
+            	Message msg = new Message();
+        		msg.what = message.getNumber();
+        		Bundle b = new Bundle();
+                switch(msg.what) {
+                case nu.dll.lyskom.Asynch.login :
+                	confno = params[0].intValue();
+                	name = getConferenceName(confno);
+                    b.putString("name", ""+name);
+                	break;
+                case nu.dll.lyskom.Asynch.logout :
+                	confno = params[0].intValue();
+                	name = getConferenceName(confno);
+                    b.putString("name", ""+name);
+                	break;
+                case nu.dll.lyskom.Asynch.new_name :
+                    msgH = (Hollerith) params[1];
+                    b.putString("oldname", ""+msgH.getContentString());
+                    msgH = (Hollerith) params[2];
+                    b.putString("newname", ""+msgH.getContentString());
+                	break;
+                case nu.dll.lyskom.Asynch.send_message :
+                	confno = params[1].intValue();
+                	name = getConferenceName(confno);
+                    b.putString("from", ""+name);
+                	confno = params[0].intValue();
+                	name = getConferenceName(confno);
+                    b.putString("to", ""+name);
+                    msgH = (Hollerith) params[2];
+                    b.putString("msg", ""+msgH.getContentString());
+                	break;
+                default:
+                }
+                msg.setData(b);
+        		asyncHandler.sendMessage(msg);
+
+        		return getString(R.string.No_server_selected);
+        }
+
+        protected void onPostExecute(final String result) 
+        { 
+
+        }
+    }
+
+    private void doGetMessage()
+    {
+        new getMessageTask().execute();
+    }
+
     public ConferenceInfo[] getUserNames() {
     	try {
     		if (usernames != null && usernames.length > 1) {
@@ -987,6 +1036,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     private int mLastTextNo=0;
     HashMap<String, String> mUserAreaProps=null;
 
+    AsynchMessage mMessage; // temp storage for async message
+    
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
 

@@ -90,14 +90,24 @@ public class App extends Application
     	public void handleMessage(Message msg) {
     		switch (msg.what) {
     		case nu.dll.lyskom.Asynch.login:
-    			//remove SplashScreen from view
                 Toast.makeText(App.this, ""+msg.getData().getString("name")+" logged in",
                         Toast.LENGTH_SHORT).show();
     			break;
-    		case nu.dll.lyskom.Asynch.send_message:
-    			//remove SplashScreen from view
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+" says "+msg.getData().getString("msg"),
+    		case nu.dll.lyskom.Asynch.logout:
+                Toast.makeText(App.this, ""+msg.getData().getString("name")+" logged out",
                         Toast.LENGTH_SHORT).show();
+    			break;
+    		case nu.dll.lyskom.Asynch.new_name:
+                Toast.makeText(App.this, ""+msg.getData().getString("oldname")+
+                		" changed to "+
+                		msg.getData().getString("newname"),
+                        Toast.LENGTH_SHORT).show();
+    			break;
+    		case nu.dll.lyskom.Asynch.send_message:
+                Toast.makeText(App.this, ""+msg.getData().getString("from")+" says "+
+                		msg.getData().getString("msg")+" to "
+                		+msg.getData().getString("to"),
+                        Toast.LENGTH_LONG).show();
     			break;
     		}
     		super.handleMessage(msg);
