@@ -109,6 +109,10 @@ public class App extends Application
                 		+msg.getData().getString("to"),
                         Toast.LENGTH_LONG).show();
     			break;
+            case nu.dll.lyskom.Asynch.rejected_connection:
+                Toast.makeText(App.this, "Lyskom is full, please make space",
+                        Toast.LENGTH_SHORT).show();
+    			break;
     		}
     		super.handleMessage(msg);
     	}

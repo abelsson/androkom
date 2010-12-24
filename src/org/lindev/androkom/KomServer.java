@@ -970,7 +970,39 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                     msgH = (Hollerith) params[2];
                     b.putString("msg", ""+msgH.getContentString());
                 	break;
+                case nu.dll.lyskom.Asynch.new_text_old : 
+                	confno = params[0].intValue();
+                	Log.d(TAG, "New text created:"+confno);
+                	break;
+                case nu.dll.lyskom.Asynch.i_am_on:
+                	Log.d(TAG, "Should probably update cached data (i_am_on).");
+                	break;
+                case nu.dll.lyskom.Asynch.sync_db:
+                	Log.d(TAG, "Database sync. Tell user about service interruption?");
+                	break;
+                case nu.dll.lyskom.Asynch.leave_conf:
+                	Log.d(TAG, "No longer member of a conference.");
+                	break;
+                case nu.dll.lyskom.Asynch.rejected_connection:
+                	Log.d(TAG, "Lyskom is full, please make space.");
+                	break;
+                case nu.dll.lyskom.Asynch.deleted_text:
+                	Log.d(TAG, "Text deleted.");
+                	break;
+                case nu.dll.lyskom.Asynch.new_text:
+                	Log.d(TAG, "New text created.");
+                	break;
+                case nu.dll.lyskom.Asynch.new_recipient:
+                	Log.d(TAG, "New recipient added to text.");
+                	break;
+                case nu.dll.lyskom.Asynch.sub_recipient:
+                	Log.d(TAG, "Recipient removed from text.");
+                	break;
+                case nu.dll.lyskom.Asynch.new_membership:
+                	Log.d(TAG, "New recipient added to text.");
+                	break;
                 default:
+                	Log.d(TAG, "Added conference membership.");
                 }
                 msg.setData(b);
         		asyncHandler.sendMessage(msg);
