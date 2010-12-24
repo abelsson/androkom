@@ -1002,7 +1002,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	Log.d(TAG, "New recipient added to text.");
                 	break;
                 default:
-                	Log.d(TAG, "Added conference membership.");
+                	Log.d(TAG, "Unknown async message received#"+msg.what);
                 }
                 msg.setData(b);
         		asyncHandler.sendMessage(msg);
