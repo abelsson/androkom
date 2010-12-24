@@ -2,8 +2,6 @@ package nu.dll.lyskom;
 
 import java.util.Hashtable;
 
-import android.util.Log;
-
 public class ContentType {
 
 	private static final String TAG = "ContentType";
@@ -11,7 +9,7 @@ public class ContentType {
 	
 	public ContentType(String contentTypeString) throws MimeUtility.ParseException {
 		// TODO Auto-generated constructor stub
-		Log.d(TAG, "ContentType constr:"+contentTypeString);
+		//Log.d(TAG, "ContentType constr:"+contentTypeString);
 		contents = new ParameterList();
 		//contents.set("charset", "utf-8");
 		if (contentTypeString.endsWith("utf-8")) {
@@ -27,13 +25,13 @@ public class ContentType {
 
 	public ParameterList getParameterList() {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "getParameterList");
+		//Log.d(TAG, "getParameterList");
 		return contents;
 	}
 
 	public boolean match(String string) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "match:"+string);
+		//Log.d(TAG, "match:"+string);
 		return false;
 	}
 

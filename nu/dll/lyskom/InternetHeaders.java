@@ -2,7 +2,7 @@ package nu.dll.lyskom;
 
 import java.util.Enumeration;
 
-import android.util.Log;
+//import android.util.Log;
 
 public class InternetHeaders {
 
@@ -10,18 +10,18 @@ public class InternetHeaders {
 
 	public void setHeader(String name, String value) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "setHeader:"+name+" : "+value);
+//		Log.d(TAG, "setHeader:"+name+" : "+value);
 	}
 
 	public String getHeader(String string, Object object) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "getHeader: "+string+" : "+object);
+//		Log.d(TAG, "getHeader: "+string+" : "+object);
 		return null;
 	}
 
 	public Enumeration<Header> getAllHeaders() {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "getAllHeaders: ");
+//		Log.d(TAG, "getAllHeaders: ");
 		return null;
 	}
 

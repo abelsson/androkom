@@ -6,7 +6,7 @@ import java.util.Map;
 import java.util.Set;
 import java.util.Vector;
 
-import android.util.Log;
+//import android.util.Log;
 
 public class ParameterList {
 
@@ -19,13 +19,13 @@ public class ParameterList {
     
 	public void set(String key, String value) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "set: "+key+" : "+value);
+//		Log.d(TAG, "set: "+key+" : "+value);
 		list.put(key, value);
 	}
 
 	public String get(String key) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "get: "+key);
+//		Log.d(TAG, "get: "+key);
 		return list.get(key);
 	}
 
@@ -33,7 +33,7 @@ public class ParameterList {
 		Enumeration<String> retVals = null;
 		Set<String> keys = list.keySet();
 		// TODO Auto-generated method stub
-		Log.d(TAG, "getNames: ");
+//		Log.d(TAG, "getNames: ");
 		Vector<String> v = new Vector();
 		v.add("charset");
 		retVals = v.elements();

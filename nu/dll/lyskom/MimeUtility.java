@@ -1,6 +1,6 @@
 package nu.dll.lyskom;
 
-import android.util.Log;
+//import android.util.Log;
 
 public class MimeUtility {
 
@@ -16,7 +16,7 @@ public class MimeUtility {
 
 	public static String mimeCharset(String charset) {
 		// TODO Auto-generated method stub
-		Log.d(TAG, "mimeCharset: Now what to do?"+charset);
+//		Log.d(TAG, "mimeCharset: Now what to do?"+charset);
 		return null;
 	}
 
