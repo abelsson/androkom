@@ -12,4 +12,7 @@
     <item android:title="@string/createnewmail_label"
         android:alphabeticShortcut="@string/createnewmail_shortcut"
         android:id="@+id/menu_createnewmail_id"/>
+    <item android:title="@string/createnewIM_label"
+        android:alphabeticShortcut="@string/createnewIM_shortcut"
+        android:id="@+id/menu_createnewIM_id"/>
 </menu>

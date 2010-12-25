@@ -148,6 +148,11 @@ public class ConferenceList extends ListActivity
             startActivity(intent);
 			return true;
 
+		case R.id.menu_createnewIM_id:
+            intent = new Intent(this, CreateNewIM.class);    
+            startActivity(intent);
+			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

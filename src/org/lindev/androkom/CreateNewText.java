@@ -16,8 +16,7 @@ import android.widget.Toast;
 
 /**
  * Activity showing a dialog in which the user can create 
- * new texts. Currently assumes that each text is in reply 
- * to another text.
+ * new texts.
  * 
  */
 public class CreateNewText extends Activity 
@@ -25,7 +24,7 @@ public class CreateNewText extends Activity
 
     /**
      * Create activity. Just a plain old dialog with
-     * a subject, body and cancel and post buttons.
+     * a recipient, subject, body and cancel and post buttons.
      */
     @Override
     public void onCreate(Bundle savedInstanceState) 

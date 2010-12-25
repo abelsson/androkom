@@ -1021,6 +1021,11 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         new getMessageTask().execute();
     }
 
+    public boolean sendMessage(int recipient, String message, boolean block)
+    throws IOException, RpcFailure {
+    	return s.sendMessage(recipient, message, block);
+    }
+    
     public ConferenceInfo[] getUserNames() {
     	try {
     		if (usernames != null && usernames.length > 1) {
