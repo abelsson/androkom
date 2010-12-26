@@ -12,6 +12,7 @@ import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
+import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -157,6 +158,19 @@ public class ConferenceList extends ListActivity
 			return super.onOptionsItemSelected(item);
 		}
 	}
+
+	public boolean onKeyUp(int keyCode, KeyEvent event) {
+		switch (keyCode) {
+		case android.view.KeyEvent.KEYCODE_X:
+			XDialog dialog = new XDialog(this);
+			dialog.show();
+			return true;
+		default:
+			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
+		}
+		return false;
+	}
+
 
     /**
      * Attempt to reconnect to server.

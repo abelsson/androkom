@@ -404,6 +404,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		case 116: //PgDn on Toshiba AC100-10D
 			scrollPageDown();
 			return true;
+		case android.view.KeyEvent.KEYCODE_X:
+			XDialog dialog = new XDialog(this);
+			dialog.show();
 		default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}

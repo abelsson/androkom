@@ -62,4 +62,8 @@
     <string name="create_text">Create reply</string>
     <string name="create_new_text">Create text</string>
     <string name="create_new_IM">Create IM</string>
+    
+    <string name="positiveButton">Do</string>
+    <string name="cancelButton">Cancel</string>
+    <string name="lyskomPrompt">Lyskom:</string>
 </resources>
