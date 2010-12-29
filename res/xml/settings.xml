@@ -37,6 +37,12 @@
     android:summary="@string/autologin_summary"
     android:defaultValue="false"
     />
+  <CheckBoxPreference
+    android:key="keepscreenon"
+    android:title="@string/keepscreenon_title"
+    android:summary="@string/keepscreenon_summary"
+    android:defaultValue="false"
+    />
   </PreferenceCategory>
    
 </PreferenceScreen>

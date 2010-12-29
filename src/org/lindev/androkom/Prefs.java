@@ -21,6 +21,9 @@ public class Prefs extends PreferenceActivity {
 	private static final String OPT_USE_OISAFE = "useoisafe";
 	private static final Boolean OPT_USE_OISAFE_DEF = false;
 
+	private static final String OPT_KEEPSCREENON = "keepscreenon";
+	private static final Boolean OPT_KEEPSCREENON_DEF = false;
+
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.settings);

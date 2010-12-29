@@ -5,9 +5,13 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.PowerManager;
+import android.preference.PreferenceManager;
+import android.util.Log;
 import android.widget.Toast;
 
 /**
@@ -20,7 +24,11 @@ import android.widget.Toast;
  */
 public class App extends Application 
 {
-    /**
+	private static final String OPT_KEEPSCREENON = "keepscreenon";
+	private static final Boolean OPT_KEEPSCREENON_DEF = false;
+	private static final String TAG = "Androkom App";
+
+	/**
      * Return a reference to the KomServer instance.
      */
     public KomServer getKom() { return mBoundService; }
@@ -34,11 +42,26 @@ public class App extends Application
         // supporting component replacement by other applications).
         bindService(new Intent(App.this, KomServer.class), mConnection, Context.BIND_AUTO_CREATE);
         mIsBound = true;
+
+        // keep screen on, depending on preferences
+        boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
+		Log.d(TAG, "keepscreenon="+keepScreenOn);
+
+		if (keepScreenOn) {
+			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
+			wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+			wl.acquire();
+		}
     }
 
     public void doUnbindService()
     {
-        if (mIsBound) {
+    	if(wl != null) {
+    		wl.release();
+    		wl = null;
+    	}
+
+    	if (mIsBound) {
             // Detach our existing connection.
             unbindService(mConnection);
             mIsBound = false;
@@ -117,4 +140,6 @@ public class App extends Application
     		super.handleMessage(msg);
     	}
     };
+    
+    PowerManager.WakeLock wl = null;
 }

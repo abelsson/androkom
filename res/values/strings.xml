@@ -38,6 +38,9 @@
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Automaticly login if password is saved</string>
 
+    <string name="keepscreenon_title">Keep screen on</string>
+    <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
+
     <string name="smallerfontsize_label">Smaller fontsize</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Bigger fontsize</string>

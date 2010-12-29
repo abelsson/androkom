@@ -46,7 +46,7 @@ public class Login extends Activity
 
         Button loginButton = (Button) findViewById(R.id.login);
 
-        SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
+        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
 
         mUsername.setText(prefs.getString("username", ""));
         mPassword.setText(getPsw());
@@ -90,7 +90,7 @@ public class Login extends Activity
     		password = "";
     	} else {
     		Log.d(TAG, "GET PREFS PASSWORD");
-            SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
+            SharedPreferences prefs = getPreferences(MODE_PRIVATE);
 
         	password = prefs.getString("password", "");
     	}

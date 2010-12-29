@@ -79,6 +79,9 @@ public class XDialog extends Dialog
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
 		switch(keyCode) {
 		case KeyEvent.KEYCODE_DEL :
+		case KeyEvent.KEYCODE_BACK :
+		case KeyEvent.KEYCODE_CLEAR :
+		case KeyEvent.KEYCODE_SOFT_LEFT :
 			if (keyBuffer.length()>0) {
 				keyBuffer = (String) keyBuffer.subSequence(0, keyBuffer.length()-1);
 			}

@@ -135,7 +135,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 return;
             }
-            mState.currentText.push(text);            
+            mState.currentText.push(text);
             mState.currentTextIndex = mState.currentText.size() - 1;
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
             TextView widget = (TextView)mSwitcher.getCurrentView();
