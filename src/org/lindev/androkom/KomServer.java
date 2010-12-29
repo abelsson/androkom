@@ -495,11 +495,15 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         try {
             Text text = s.getText(textNo);
-            final String username;
+            String username;
             int authorid = text.getAuthor();
             if (authorid > 0) {
-            	nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
-            	username = confStat.getNameString();
+            	try {
+            		nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
+            		username = confStat.getNameString();
+                } catch (Exception e) {
+                	username = "Person "+authorid+" finns inte";
+                }
             } else {
             	username = "anonymous";
             }
