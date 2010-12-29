@@ -2335,7 +2335,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      * Sends the RPC call get-conf-stat to the server.
      * 
      * @param confNo
-     *            The conference to retreive conf-stat information about
+     *            The conference to retrieve conf-stat information about
      * @return An RpcCall object representing this specific RPC call
      */
     public RpcCall doGetConfStat(int confNo) throws IOException {
@@ -2352,7 +2352,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      * will be returned.
      * 
      * @param confNo
-     *            The confernece to retreive information about
+     *            The conference to retrieve information about
      * @see nu.dll.lyskom.Session
      */
     public Conference getConfStat(int confNo) throws IOException, RpcFailure {
@@ -2364,7 +2364,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
      * conference.
      * 
      * @param confNo
-     *            The confernece to retreive information about
+     *            The conference to retrieve information about
      * @param refreshCache
      *            If <tt>true</tt>, don't go look into the cache before asking
      *            server
