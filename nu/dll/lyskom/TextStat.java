@@ -15,8 +15,6 @@ import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
 
-
-import android.util.Log;
 /**
  * <p>
  * The Text-Stat LysKOM data type (and this class) contains status information
@@ -334,7 +332,7 @@ public class TextStat implements java.io.Serializable {
     		.javaCharset(((Properties) parseContentTypeAuxItem()[1])
     				.getProperty("charset", "iso-8859-1"));
     	} catch (Exception e) {
-    		Log.d(TAG, "getCharset "+e);
+    		Session.log.debug("getCharset "+e);
 
             e.printStackTrace();    		
     	}
