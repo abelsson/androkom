@@ -19,16 +19,31 @@
 
   <target name="lattekom.compile" depends="init">
     <javac destdir="${lattekom.build}" srcdir="${src}" deprecation="on"
-           includes="nu/dll/lyskom/*"
-           classpath="lib/activation.jar:lib/mailapi.jar" />
+           includes="nu/dll/lyskom/**" />
+
   </target>
 
   <target name="clean">
     <delete dir="${build}"/>
+    <delete file="lattekom.jar"/>
   </target>
 
   <target name="lattekom.jar" depends="lattekom.compile">
     <jar destfile="lattekom.jar" basedir="${lattekom.build}"/>
+  </target>
+
+  <target name="lattekom-unittest" depends="lattekom.jar">
+    <junit printsummary="withOutAndErr" fork="yes">
+      <!-- sysproperty key="lattekom.debug" value="true"/ -->
+      <formatter type="plain"/>
+      <classpath>
+	<pathelement path="${lattekom.build}"/>
+      </classpath>
+      <test name="nu.dll.lyskom.test.LatteTest">
+	<formatter type="xml"/>
+      </test>
+      
+    </junit>
   </target>
 
   <target name="all" depends="clean,lattekom.jar,swingkom.jar"/>
