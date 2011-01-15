@@ -282,7 +282,7 @@ public class TextStat implements java.io.Serializable {
     public String getContentType() {
 	String c = getFullContentType();
 	int n = c.indexOf(";");
-	return c.substring(0, n);
+	return n == -1 ? c : c.substring(0, n);
     }
 
     /**
