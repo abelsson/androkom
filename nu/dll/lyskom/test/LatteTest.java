@@ -16,9 +16,9 @@ import java.util.GregorianCalendar;
 import nu.dll.lyskom.*;
 
 public class LatteTest extends TestCase {
-    String testServer = "halosm025";
-    int testUser = 27;
-    String testPassword = "seven11";
+    String testServer = "localhost";
+    int testUser = 28;
+    String testPassword = "rantapallo6012";
     int testText = 100;
     Random random = new Random();
 	
@@ -56,7 +56,7 @@ public class LatteTest extends TestCase {
     public void testChangeName() {
 	try {
 	    byte[] myname = session.getMyPerson().getUConference().getName();
-	    String newName = "LatteTest (Ã¥Ã¤Ã¶) " + random.nextInt(99999);
+	    String newName = "LatteTest (åäö) " + random.nextInt(99999);
 	    session.changeName(session.getMyPerson().getNo(), newName);
 	    assertTrue("ChangeName", Arrays.equals(newName.getBytes(), session.getMyPerson().getUConference().getName()));
 	    session.changeName(session.getMyPerson().getNo(), new String(myname));
