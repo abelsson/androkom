@@ -73,6 +73,7 @@
 	if (request.getParameter("forceContentType") != null)
 	    contentType = request.getParameter("forceContentType");
 
+	if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
 	ContentType contentTypeObj = new ContentType(contentType);
 
 	Hollerith[] ctdata = text.getStat().getAuxData(AuxItem.tagContentType);
@@ -80,7 +81,6 @@
 	String charset = text.getCharset();
 	if (charset == null) charset = "iso-8859-1";
 	if (charset.equals("us-ascii")) charset = "iso-8859-1"; // some broken elisp clients lie...
-	if (contentType.equals("x-kom/text")) contentType = "text/x-kom-basic";
 	byte[] subjectBytes = text.getSubject();
 	// a bit clumsy but it allows us to always fallback on the default
 	// system encoding, and if neither iso-8859-1 nor the text-specifies
