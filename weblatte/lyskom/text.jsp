@@ -27,10 +27,10 @@
 	log("text.jsp text number: " + textNumber);	
         out.println("<a name=\"text" + textNumber + "\"></a>");
 
-	Text text = null;
+	MimeText text = null;
 
 	try {
-	    text = lyskom.getText(textNumber);
+	    text = new MimeText(lyskom.getText(textNumber));
 	} catch (RpcFailure ex1) {
 	    if (ex1.getError() == Rpc.E_no_such_text) {
 		out.println("<p class=\"statusError\">Fel: text " + 

@@ -14,6 +14,7 @@ import java.util.Properties;
 import java.util.Stack;
 import java.util.Map;
 import java.util.HashMap;
+import java.util.StringTokenizer;
 
 /**
  * <p>
@@ -254,39 +255,7 @@ public class TextStat implements java.io.Serializable {
         return false;
     }
 
-    /**
-     * Splits the content-type aux item into content type and auxillary
-     * content-type information such as the charset. Returns an array in which
-     * the first element is a String with the actual content-type, and the
-     * second element is a java.util.Properties containing any other data
-     * trailing the content-type (eg. "charset"). TODO: this should only need to
-     * be done once. TODO: does not correctly parse values containing "=" TODO:
-     * there are probably other cases we can't handle as well
-     */
-    private Object[] parseContentTypeAuxItem() {
-        String contentTypeString = getFullContentType();
-        try {
-            ContentType contentType = new ContentType(contentTypeString);
 
-            Properties ctData = new Properties();
-            @SuppressWarnings("unchecked")
-            Enumeration<String> pnames = (Enumeration<String>) contentType
-                    .getParameterList().getNames();
-            while (pnames.hasMoreElements()) {
-                String key = (String) pnames.nextElement();
-                String value = contentType.getParameterList().get(key);
-                ctData.setProperty(key, value);
-            }
-
-            if (contentType.match("x-kom/text"))
-                contentTypeString = "text/x-kom-basic";
-            contentType = new ContentType(contentTypeString);
-            return new Object[] { contentType.toString(), ctData };
-        } catch (MimeUtility.ParseException ex1) {
-            throw new RuntimeException("Error parsing content-type \""
-                    + contentTypeString + "\": " + ex1.toString());
-        }
-    }
 
     public String getFullContentType() {
         Hollerith[] _data = getAuxData(AuxItem.tagContentType);
@@ -299,7 +268,9 @@ public class TextStat implements java.io.Serializable {
     }
 
     public Properties getContentTypeParameters() {
-        return (Properties) parseContentTypeAuxItem()[1];
+	Properties p = new Properties();
+	p.putAll(parseContentTypeParameters(getFullContentType()));
+	return p;
     }
 
     /**
@@ -309,89 +280,68 @@ public class TextStat implements java.io.Serializable {
      * Use getFullContentType() to retreive the entire content-type value.
      */
     public String getContentType() {
-        return (String) parseContentTypeAuxItem()[0];
-    }
-
-    public boolean isMimeType(String type) {   	
-        try {
-        	ContentType ct = new ContentType(getFullContentType());
-        
-            return ct.match(type);
-        } catch (MimeUtility.ParseException ex1) {
-            throw new RuntimeException("Unable to parse text content-type.");
-        }
+	String c = getFullContentType();
+	int n = c.indexOf(";");
+	return c.substring(0, n);
     }
 
     /**
-     * Returns the Java charset for this text.
+     * Returns the MIME charset for this text.
      */
     public String getCharset() {
-    	String retVal = "iso-8859-1";
-    	try {
-    		retVal = MimeUtility
-    		.javaCharset(((Properties) parseContentTypeAuxItem()[1])
-    				.getProperty("charset", "iso-8859-1"));
-    	} catch (Exception e) {
-    		Session.log.debug("getCharset "+e);
+    	String defaultCharset = "iso-8859-1";
+	String ctCharset = parseContentTypeParameters(getFullContentType()).get("charset");
+	return ctCharset != null ? ctCharset : defaultCharset;
+    }
 
-            e.printStackTrace();    		
-    	}
-    	return retVal;
+    static Map<String,String> parseContentTypeParameters(String contentType) {
+	Map<String,String> m = new HashMap<String,String>();
+	StringTokenizer st = new StringTokenizer(contentType, ";");
+	st.nextToken(); // discard the content-type itself
+
+	while (st.hasMoreTokens()) {
+	    String parameters = st.nextToken();
+
+	    StringTokenizer pst = new StringTokenizer(parameters, "=");
+	    String key = pst.nextToken().trim();
+	    if (pst.hasMoreTokens()) {
+		m.put(key, pst.nextToken());
+	    }
+	}
+	return m;
+    }
+    
+    static String addParametersToContentType(String contentType, Map<String,String> parameters) {
+	if (parameters.size() == 0) return contentType;
+	StringBuffer b = new StringBuffer();
+	b.append(contentType);
+	b.append("; ");
+	for (Iterator<Map.Entry<String,String>> i = parameters.entrySet().iterator(); i.hasNext();) {
+	    Map.Entry entry = i.next();
+	    b.append(entry.getKey());
+	    b.append("=");
+	    b.append(entry.getValue());
+	    if (i.hasNext()) b.append("; ");
+	}
+	return b.toString();
     }
 
     public void setContentType(String newContentTypeString) {  	
         String oldContentTypeString = getFullContentType();
-        ContentType oldContentType = null;
-        ContentType newContentType = null;
-        try {
-            oldContentType = new ContentType(oldContentTypeString);
-            newContentType = new ContentType(newContentTypeString);
-            // copy all content-type parameters (such as charset) to the new
-            // content type
-            // note that this might not always be what you want. if you want to
-            // clear
-            // the parameter list, you should set the tagContentType AuxItem
-            // manually
-            // with setAuxItem() instead.
-            for (@SuppressWarnings("unchecked")
-            Enumeration<String> e = oldContentType.getParameterList()
-                    .getNames(); e.hasMoreElements();) {
-                String name = (String) e.nextElement();
-                String value = oldContentType.getParameterList().get(name);
-                newContentType.getParameterList().set(name, value);
-            }
-            setAuxItem(new AuxItem(AuxItem.tagContentType,
-                    newContentType.toString()));
-        } catch (MimeUtility.ParseException ex) {
-            throw new RuntimeException(
-                    "Error parsing contents while trying to parse content-type: "
-                            + ex.toString());
-        }
+	Map<String,String> parameters = parseContentTypeParameters(oldContentTypeString);
+	parameters.putAll(parseContentTypeParameters(newContentTypeString));
+
+	if (newContentTypeString.indexOf(";") >= 0) {
+	    newContentTypeString = newContentTypeString.substring(0, newContentTypeString.indexOf(";"));
+	}
+	newContentTypeString = addParametersToContentType(newContentTypeString, parameters);
+	setAuxItem(new AuxItem(AuxItem.tagContentType, newContentTypeString));
     }
 
     public void setCharset(String charset) {
-        Object[] ct = parseContentTypeAuxItem();
-        String contentType = (String) ct[0];
-        Properties props = (Properties) ct[1];
-        props.setProperty("charset", MimeUtility.mimeCharset(charset));
-        setAuxItem(new AuxItem(AuxItem.tagContentType, createContentTypeString(
-                contentType, props)));
-    }
-
-    private String createContentTypeString(String contentType, Properties p) {
-        try {
-            ContentType ct = new ContentType(contentType);
-            for (Iterator<Entry<Object, Object>> i = p.entrySet().iterator(); i
-                    .hasNext();) {
-                Entry<Object, Object> entry = i.next();
-                ct.getParameterList().set((String) entry.getKey(),
-                        (String) entry.getValue());
-            }
-            return ct.toString();
-        } catch (MimeUtility.ParseException ex) {
-            throw new IllegalArgumentException("Unable to parse content-type "
-                    + contentType);
-        }
+	Map<String,String> parameters = parseContentTypeParameters(getFullContentType());
+	parameters.put("charset", charset);
+	setAuxItem(new AuxItem(AuxItem.tagContentType, addParametersToContentType(getContentType(), parameters)));
     }
 
     public int getSize() {
