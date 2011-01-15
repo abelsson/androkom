@@ -33,7 +33,7 @@
   </target>
 
   <target name="lattekom-unittest" depends="lattekom.jar">
-    <junit printsummary="withOutAndErr" fork="yes">
+    <junit printsummary="withOutAndErr" fork="yes" haltonerror="on">
       <!-- sysproperty key="lattekom.debug" value="true"/ -->
       <formatter type="plain"/>
       <classpath>
