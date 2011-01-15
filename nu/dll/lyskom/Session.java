@@ -260,7 +260,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     String clientHost = null;
     String clientUser = System.getProperty("user.name", "");
 
-    String latteVersion = "$Version$";
+    String latteVersion = "0";
     String latteName = "LatteKOM";
 
     String serverEncoding = defaultServerEncoding;
