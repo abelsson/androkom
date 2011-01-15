@@ -19,6 +19,7 @@ public class Servers {
 	if (Boolean.getBoolean("weblatte.debug")) list.add(new KomServer("localhost", "RasmusKOM"));
 	//list.add(new KomServer("kom.sno.pp.se", "SnoppKOM"));
 	list.add(new KomServer("kom.lysator.liu.se", "LysLysKOM"));
+	list.add(new KomServer("city.dll.nu", "SnoppKOM"));
 	list.add(new KomServer("myskom.kfib.org", "MysKOM"));
 	list.add(new KomServer("plutten.dnsalias.org", "PluttenKOM"));
 	list.add(new KomServer("kom.stacken.kth.se", "TokKOM"));

@@ -58,6 +58,13 @@ public class KomToken implements Serializable {
 	 * representation of its value, is equal to this object's contents.
 	 */
 	public boolean equals(Object o) {
+	    if (o instanceof String) {
+		try {
+		    return Arrays.equals(((String) o).getBytes(Session.defaultServerEncoding), getContents());
+		} catch (UnsupportedEncodingException ex1) {
+		    throw new RuntimeException("Default server encoding " + Session.defaultServerEncoding + " not supported by JVM");
+		}
+	    }
 	    return Arrays.equals(((KomToken) o).getContents(), getContents());
 	}
 
