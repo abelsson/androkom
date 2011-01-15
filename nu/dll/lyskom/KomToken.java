@@ -57,29 +57,8 @@ public class KomToken implements Serializable {
 	 * <i>or</i> if it is an Integer, which, when converted to a Protocol A
 	 * representation of its value, is equal to this object's contents.
 	 */
-	// FIXME: untested
 	public boolean equals(Object o) {
-		try {
-			String charset = Session.defaultServerEncoding;
-			if (this instanceof Hollerith) {
-				charset = ((Hollerith) this).getCharset();
-			}
-			if (o instanceof String || o instanceof KomToken) {
-				byte[] theirdata;
-				if (o instanceof String)
-					theirdata = ((String) o).getBytes(charset);
-				else
-					theirdata = ((KomToken) o).getContents();
-
-				return Arrays.equals(contents, theirdata);
-			}
-			if (o instanceof Integer) {
-				return equals(new Hollerith(o.toString()));
-			}
-			return super.equals(o);
-		} catch (UnsupportedEncodingException ex1) {
-			throw new RuntimeException("Unsupported encoding", ex1);
-		}
+	    return Arrays.equals(((KomToken) o).getContents(), getContents());
 	}
 
 	/**
@@ -152,8 +131,14 @@ public class KomToken implements Serializable {
 			return ((Hollerith) this).toString();
 		else if (type == COMPL)
 			ktype = "COMPL";
-		return ktype + ":\"" + new String(getContents()) + "\""
-				+ (isEol() ? "(EOL)" : "");
+		
+		try {
+		    return ktype + ":\"" + new String(getContents(), Session.defaultServerEncoding) + "\""
+			+ (isEol() ? "(EOL)" : "");
+		} catch (UnsupportedEncodingException ex) {
+		    throw new RuntimeException("Default server encoding is not supported: " + Session.defaultServerEncoding);
+		}
+
 	}
 
 	/**
