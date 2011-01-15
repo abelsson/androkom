@@ -80,6 +80,24 @@ public class LatteTest extends TestCase {
 	}	
     }
 
+    public void testTextStatContentType() {
+	TextStat ts = new TextStat();
+	assertEquals("text/x-kom-basic", ts.getContentType());
+	ts.setContentType("text/plain");
+	assertEquals("text/plain", ts.getFullContentType());
+	ts.setContentType("text/x-kom-basic; charset=jp-4711");
+	assertEquals("text/x-kom-basic", ts.getContentType());
+	assertEquals("jp-4711", ts.getCharset());
+	ts.setContentType("text/plain");
+	assertEquals("jp-4711", ts.getCharset()); // parameters should remain
+	assertEquals("text/plain; charset=jp-4711", ts.getFullContentType());
+	ts.setContentType("x-test/x-foo; charset=testcharset; parameter=testparameter");
+	assertEquals("testcharset", ts.getCharset());
+	assertEquals("testparameter", ts.getContentTypeParameters().getProperty("parameter"));
+	assertEquals("x-test/x-foo", ts.getContentType());
+
+    }
+
     public void testMiscInfo() {
 	TextStat ts = text.getStat();
 	assertNotNull("TextNotNull", text);
