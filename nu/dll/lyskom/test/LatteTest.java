@@ -19,7 +19,7 @@ public class LatteTest extends TestCase {
     String testServer = "localhost";
     int testUser = 28;
     String testPassword = "rantapallo6012";
-    int testText = 100;
+    int testText = 3262421;
     Random random = new Random();
 	
 
@@ -55,12 +55,14 @@ public class LatteTest extends TestCase {
 
     public void testChangeName() {
 	try {
-	    byte[] myname = session.getMyPerson().getUConference().getName();
-	    String newName = "LatteTest (åäö) " + random.nextInt(99999);
+	    String myname = session.getMyPerson().getUConference().getNameString();
+	    String newName = "LatteTest (Ã¥Ã¤Ã¶) " + random.nextInt(99999);
 	    session.changeName(session.getMyPerson().getNo(), newName);
-	    assertTrue("ChangeName", Arrays.equals(newName.getBytes(), session.getMyPerson().getUConference().getName()));
-	    session.changeName(session.getMyPerson().getNo(), new String(myname));
-	    assertTrue("ChangeNameBack", Arrays.equals(myname, session.getMyPerson().getUConference().getName()));
+	    byte[] intendedName = newName.getBytes(session.getServerEncoding());
+	    byte[] actualName = session.getMyPerson().getUConference().getName();
+	    assertTrue("ChangeName", Arrays.equals(intendedName, actualName));
+	    session.changeName(session.getMyPerson().getNo(), myname);
+	    assertEquals("ChangeNameBack", myname, session.getMyPerson().getUConference().getNameString());
 	} catch (IOException ex1) {
 	    throw new RuntimeException(ex1.getMessage());
 	}	
@@ -69,9 +71,9 @@ public class LatteTest extends TestCase {
     public void testGetText() {
 	try {
 	    text = session.getText(testText, true);
-	    assertEquals(42, text.getLocal(14));
-	    assertEquals(-1, text.getLocal(0));
 	    assertNotNull("TextNotNull", text);
+	    assertEquals(7, text.getLocal(1320));
+	    assertEquals(-1, text.getLocal(0));
 	    assertEquals("TextNumber", testText, text.getNo());
 	} catch (IOException ex1) {
 	    throw new RuntimeException(ex1.getMessage());
@@ -176,10 +178,10 @@ public class LatteTest extends TestCase {
 			    if (sid > sessions.length) sid = 0;
 			    Session s = sessions[sid];
 			    s.changeWhatIAmDoing("Test [s[" + sid + "] " + s + "] " + random.nextInt(99999));
-			    assertEquals(100, s.getText(100, true).getNo());
-			    s.getConfStat(19, true);
-			    s.getPersonStat(19, true);
-			    s.getUConfStat(19, true);
+			    assertEquals(testText, s.getText(testText, true).getNo());
+			    s.getConfStat(testUser, true);
+			    s.getPersonStat(testUser, true);
+			    s.getUConfStat(testUser, true);
 			} catch (IOException ex1) {
 			    exception = ex1;
 			}
@@ -197,10 +199,10 @@ public class LatteTest extends TestCase {
 			    if (sid > sessions.length) sid = 0;
 			    Session s = sessions[sid];
 			    s.changeWhatIAmDoing("Test [s[" + sid + "] " + s + "] " + random.nextInt(99999));
-			    s.getPersonStat(19, true);
-			    s.getConfStat(19, true);
-			    s.getUConfStat(19, true);			    
-			    assertEquals(100, s.getText(100, true).getNo());
+			    s.getPersonStat(testUser, true);
+			    s.getConfStat(testUser, true);
+			    s.getUConfStat(testUser, true);			    
+			    assertEquals(testText, s.getText(testText, true).getNo());
 			} catch (IOException ex1) {
 			    exception=ex1;
 			}
