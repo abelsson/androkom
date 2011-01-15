@@ -28,6 +28,13 @@ public class Hollerith extends KomToken implements Serializable {
 		this(s, Session.defaultServerEncoding);
 	}
 
+        /**
+	 * Creates a new Hollerith using the session server encoding
+	 */
+        public Hollerith(String string, Session session) {
+	        this(string, session.getServerEncoding());
+        }
+
 	public Hollerith(byte[] buf, String charset) {
 		setCharset(charset);
 		setContents(buf);
