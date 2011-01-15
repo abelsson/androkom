@@ -75,6 +75,6 @@ updated to point to the new lattekom revision.
 If the submodule has been updated by someone else, do `git pull' and
 then `git submodule update' in the androkom tree.
 
-NOTE: if you run `git submodule update', it will overwrite any changed
+NOTE: if you run `git submodule update', it will overwrite any changes
 you have made within that submodule.
 
