@@ -140,8 +140,6 @@ public class TextStat implements java.io.Serializable {
 
     final static int INITIAL_AUX_LENGTH = 0;
 
-	private static final String TAG = "Androkom TextStat";
-
     static int DEBUG = 1;
 
     AuxItem[] auxItems = new AuxItem[INITIAL_AUX_LENGTH];
