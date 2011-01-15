@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="UTF-8"?>
 <project name="androkom" default="help">
 
+    <target name="copy-lattekom-sources">
+      <copy todir="src/nu/dll/lyskom">
+	<fileset dir="lattekom/nu/dll/lyskom"/>
+      </copy>
+      <copy todir="src/nu/dll/io">
+	<fileset dir="lattekom/nu/dll/io"/>
+      </copy>
+
+    </target>
 <!-- The local.properties file is created and updated by the 'android'
      tool.
      It contains the path to the SDK. It should *NOT* be checked into
