@@ -2548,7 +2548,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public RpcCall doChangeName(int confNo, String newName) throws IOException {
         RpcCall req = new RpcCall(count(), Rpc.C_change_name);
         req.add(new KomToken(confNo));
-        req.add(new Hollerith(newName));
+        req.add(new Hollerith(newName, this));
         writeRpcCall(req);
         return req;
     }
