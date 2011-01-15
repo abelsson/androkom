@@ -381,7 +381,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             return "Unknown error";
         }
         try {
-            s.setClientVersion("Androkom", getVersionName());        	
+            s.setClientVersion("Androkom", getVersionName());
+            s.setLatteName("AndroKOM");
         } catch (Exception e) {
         	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
         	e.printStackTrace();
@@ -390,6 +391,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         re_userid = usernames[0].confNo;
         re_password = password;
         re_server = server;
+
         return "";
     }
 
