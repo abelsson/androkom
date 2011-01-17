@@ -382,7 +382,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
         try {
             s.setClientVersion("Androkom", getVersionName());
-            s.setLatteName("AndroKOM");
+            s.setLatteName("AndroKOM " + getVersionName());
         } catch (Exception e) {
         	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
         	e.printStackTrace();
