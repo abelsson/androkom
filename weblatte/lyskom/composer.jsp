@@ -28,7 +28,7 @@
     request.setCharacterEncoding("utf-8");
     StringBuffer metadata = new StringBuffer();
     if (lyskom == null || !lyskom.getConnected() || !lyskom.getLoggedIn()) {
-	response.sendRedirect("/lyskom/");
+	response.sendRedirect(basePath);
 	return;
     }
     int conferenceNumber = 0;
