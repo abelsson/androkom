@@ -127,8 +127,8 @@ public class XDialog extends Dialog
 	TextView mContent;
 	String keyBuffer="";
 	
-	String[] keycommands = {"Sända meddelande",
-			"Skriva ett inlägg",
+	String[] keycommands = {"S√§nda meddelande",
+			"Skriva ett inl√§gg",
 			"Skicka brev"
 			};
 }
