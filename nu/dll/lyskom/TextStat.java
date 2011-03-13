@@ -8,7 +8,6 @@ package nu.dll.lyskom;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
-import java.util.Map.Entry;
 import java.util.Properties;
 import java.util.Stack;
 import java.util.Map;
