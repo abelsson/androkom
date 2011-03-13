@@ -5,7 +5,6 @@
  */
 package nu.dll.lyskom;
 
-import java.util.Enumeration;
 import java.util.List;
 import java.util.LinkedList;
 import java.util.Iterator;
@@ -315,7 +314,7 @@ public class TextStat implements java.io.Serializable {
 	b.append(contentType);
 	b.append("; ");
 	for (Iterator<Map.Entry<String,String>> i = parameters.entrySet().iterator(); i.hasNext();) {
-	    Map.Entry entry = i.next();
+	    Map.Entry<String,String> entry = i.next();
 	    b.append(entry.getKey());
 	    b.append("=");
 	    b.append(entry.getValue());
