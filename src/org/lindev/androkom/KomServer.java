@@ -19,7 +19,6 @@ import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
-import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
 
 import android.app.AlertDialog;
@@ -91,14 +90,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     		this.setDate(date);
     		this.setSubject(subject);
     		this.setBody(body);
-    		this.text = null;
     	}
     	
-    	public TextInfo(Text text)
-    	{
-    		this.text = text;
-    	}
-		
     	public void setAuthor(String author) {
 			this.author = author;
 		}
@@ -144,7 +137,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	private String subject;
     	private String body;
     	private String author;
-    	private Text text;
     }
     
     public KomServer() {

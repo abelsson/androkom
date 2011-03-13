@@ -55,9 +55,7 @@ public class CreateNewIM extends Activity
     private class CreateTextTask extends AsyncTask<Void, Integer, String> {
         private final ProgressDialog dialog = new ProgressDialog(CreateNewIM.this);
 
-        String recipient;
         String textbody;
-        ConfInfo[] conferences = null;
         
         protected void onPreExecute() {
             this.dialog.setCancelable(true);
@@ -65,7 +63,6 @@ public class CreateNewIM extends Activity
             this.dialog.setMessage("Creating text...");
             this.dialog.show();
 
-            this.recipient = mRecipient.getText().toString();
             this.textbody = mBody.getText().toString();
         }
 
@@ -163,7 +160,6 @@ public class CreateNewIM extends Activity
 
     private EditText mRecipient;
     private EditText mBody;
-    private int recipient_type = 0;
 
     int recipientNo=0;
 

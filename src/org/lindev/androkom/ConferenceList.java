@@ -197,11 +197,6 @@ public class ConferenceList extends ListActivity
         }
     }
 
-    private void doLogin()
-    {
-        new LoginTask().execute();
-    }
-
     /**
      * Refresh list of unread conferences.
      */
