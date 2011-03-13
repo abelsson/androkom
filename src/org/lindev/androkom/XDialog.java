@@ -71,7 +71,7 @@ public class XDialog extends Dialog
 		//Log.d(TAG, "onStop");		
 	}
 	
-	void onBackPressed() {
+	public void onBackPressed() {
 		//Log.d(TAG, "back pressed");
 	}
 	
