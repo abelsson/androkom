@@ -13,41 +13,6 @@ http://www.sonatype.com/books/mvnref-book/reference/android-dev.html
 	<packaging>apk</packaging>
 	<name>Androkom</name>
 	<dependencies>
-                <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>javax.activation</artifactId>
-                        <version>1.0</version>
-                        <scope>system</scope>
-                        <systemPath>${basedir}/jars/activation.jar</systemPath>
-                </dependency>
-                <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>mail.dsn</artifactId>
-                        <version>1.0</version>
-                        <scope>system</scope>
-                        <systemPath>${basedir}/jars/dsn.jar</systemPath>
-                </dependency>
-                <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>mail.api</artifactId>
-                        <version>1.0</version>
-                        <scope>system</scope>
-                        <systemPath>${basedir}/jars/mailapi.jar</systemPath>
-                </dependency>
-                <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>mail.pop3</artifactId>
-                        <version>1.0</version>
-                        <scope>system</scope>
-                        <systemPath>${basedir}/jars/pop3.jar</systemPath>
-                </dependency>
-                <dependency>
-                        <groupId>com.oracle</groupId>
-                        <artifactId>mail.smtp</artifactId>
-                        <version>1.0</version>
-                        <scope>system</scope>
-                        <systemPath>${basedir}/jars/smtp.jar</systemPath>
-                </dependency>
 		<dependency>
 			<groupId>com.google.android</groupId>
 			<artifactId>android</artifactId>
@@ -73,7 +38,7 @@ http://www.sonatype.com/books/mvnref-book/reference/android-dev.html
 				<version>2.5.2</version>
 				<configuration>
 					<sdk>
-						<platform>8</platform>
+						<platform>7</platform>
 					</sdk>
 					<emulator>
 						<avd>22</avd>
