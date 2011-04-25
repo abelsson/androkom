@@ -405,8 +405,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			scrollPageDown();
 			return true;
 		case android.view.KeyEvent.KEYCODE_X:
+			// skicka med mState.getCurrent().getTextNo() ?
 			XDialog dialog = new XDialog(this);
 			dialog.show();
+		case android.view.KeyEvent.KEYCODE_Q:
+		case 4: // back in emulator
+			finish();
 		default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}

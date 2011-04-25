@@ -140,6 +140,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
     
     public KomServer() {
+    	//System.setProperty("lattekom.debug", "true");
         System.setProperty("lattekom.enable-prefetch", "true"); 
         Session.setLog(this);
         mLastTextNo = -1;
@@ -516,7 +517,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             	Log.d(TAG, "UnsupportedEncodingException"+e);
             	BodyString = text.getBodyString8();
             }
-            	
+            
+            docacheAllComments(text);
             return new TextInfo(textNo, username, CreationTimeString, SubjectString, BodyString);
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -528,8 +530,52 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     }
 
-    
-    public void markTextAsRead(int textNo)
+    /**
+     * Attempt to retrieve all comments for a text.
+     */
+    private class cacheAllCommentsTask extends AsyncTask<Text, Integer, Void> {
+        protected void onPreExecute() {
+
+        }
+
+        protected Void doInBackground(Text... text) 
+        {
+        		int[] comments = text[0].getComments();
+        		if (comments.length>0) {
+        			Log.d(TAG, "Text#"+text[0].getNo()+" has "+comments.length+" comments");
+        			for(int i=0; i<comments.length; i++) {
+        				try {
+        					Log.d(TAG, "Trying to cache text "+comments[i]);
+        					s.getText(comments[i]);
+        				} catch (RpcFailure e) {
+        					// TODO Auto-generated catch block
+        					e.printStackTrace();
+        				} catch (IOException e) {
+        					// TODO Auto-generated catch block
+        					e.printStackTrace();
+        				}
+        			}
+        		} else {
+        			Log.d(TAG, "No comments to cache on text#"+text[0].getNo());
+        		}
+				return null;
+        }
+
+        @SuppressWarnings("unused")
+		protected void onPostExecute(final String result) 
+        { 
+
+        }
+
+    }
+
+    private void docacheAllComments(Text text)
+    {
+        new cacheAllCommentsTask().execute(text);
+    }
+     
+
+	public void markTextAsRead(int textNo)
     {
     	Text text;
 		try {

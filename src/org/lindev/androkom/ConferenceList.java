@@ -165,6 +165,9 @@ public class ConferenceList extends ListActivity
 			XDialog dialog = new XDialog(this);
 			dialog.show();
 			return true;
+		case android.view.KeyEvent.KEYCODE_Q:
+		case 4: // back in emulator
+			finish();
 		default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}
