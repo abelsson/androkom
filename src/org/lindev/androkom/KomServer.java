@@ -1055,7 +1055,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	break;
                 case nu.dll.lyskom.Asynch.new_text:
                 	Log.d(TAG, "New text created.");
-                	textno = params[1].intValue();
+                	textno = params[0].intValue();
                 	Log.d(TAG, "Trying to cache text "+textno);
 					try {
 						s.getText(textno);
