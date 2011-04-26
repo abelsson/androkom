@@ -557,6 +557,25 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         			}
         		} else {
         			Log.d(TAG, "No comments to cache on text#"+text[0].getNo());
+        			try {
+        				int[] recipients = text[0].getRecipients();
+        				if (recipients.length > 0) {
+        					List<Integer> list = s.nextUnreadTexts(recipients[0], false, 3);
+        					if (list.size()>0) {
+        						for (int i=0; i<list.size(); i++) {
+                					Log.d(TAG, "Trying to cache text "+list.get(i));
+                					s.getText(list.get(i));
+        						}
+        					} else {
+        						Log.d(TAG, "No more unread in conf"+recipients[0]);
+        					}
+						} else {
+							Log.d(TAG, "No recipients");
+						}
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
         		}
 				return null;
         }
@@ -987,7 +1006,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             	Message msg = new Message();
         		msg.what = message.getNumber();
         		Bundle b = new Bundle();
-                switch(msg.what) {
+                int textno;
+				switch(msg.what) {
                 case nu.dll.lyskom.Asynch.login :
                 	confno = params[0].intValue();
                 	name = getConferenceName(confno);
@@ -1035,6 +1055,17 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	break;
                 case nu.dll.lyskom.Asynch.new_text:
                 	Log.d(TAG, "New text created.");
+                	textno = params[1].intValue();
+                	Log.d(TAG, "Trying to cache text "+textno);
+					try {
+						s.getText(textno);
+					} catch (RpcFailure e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IOException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
                 	break;
                 case nu.dll.lyskom.Asynch.new_recipient:
                 	Log.d(TAG, "New recipient added to text.");
