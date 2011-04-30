@@ -48,6 +48,7 @@
     <string name="reconnect_label">Starta om</string>
     <string name="reconnect_shortcut">R</string>
     
+    <string name="title_submenu_create">Skriv...</string>
     <string name="createnewtext_label">Nytt inlägg</string>
     <string name="createnewtext_shortcut">I</string>
     <string name="createnewmail_label">Nytt brev</string>
