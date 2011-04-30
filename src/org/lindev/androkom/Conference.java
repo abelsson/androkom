@@ -510,6 +510,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			storeFontSize(newtextsize);
 			return true;
 
+		case R.id.menu_createnewtext_id:
+            intent = new Intent(this, CreateNewText.class);    
+            intent.putExtra("recipient_type", 1);
+            startActivity(intent);
+			return true;
+
+		case R.id.menu_createnewmail_id:
+            intent = new Intent(this, CreateNewText.class);    
+            intent.putExtra("recipient_type", 2);
+            startActivity(intent);
+			return true;
+
+		case R.id.menu_createnewIM_id:
+            intent = new Intent(this, CreateNewIM.class);    
+            startActivity(intent);
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }

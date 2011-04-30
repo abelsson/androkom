@@ -38,6 +38,9 @@
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>
     
+    <string name="keepscreenon_title">Håll skärmen aktiv</string>
+    <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
+
     <string name="smallerfontsize_label">Mindre text</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
@@ -49,6 +52,8 @@
     <string name="createnewtext_shortcut">I</string>
     <string name="createnewmail_label">Nytt brev</string>
     <string name="createnewmail_shortcut">B</string>
+    <string name="createnewIM_label">Nytt meddelande</string>
+    <string name="createnewIM_shortcut">M</string>
     
     <string name="subject">Ämne:</string>
     <string name="send">Skicka</string>
@@ -59,5 +64,11 @@
     <string name="to">Till</string>
     <string name="create_text">Skriv svar</string>
     <string name="create_new_text">Skriv inlägg</string>
+    <string name="create_new_mail">Skriv brev</string>
+    <string name="create_new_IM">Skapa meddelande</string>
     
+    <string name="positiveButton">Utför</string>
+    <string name="cancelButton">Avbryt</string>
+    <string name="lyskomPrompt">Lyskom:</string>
+
 </resources>

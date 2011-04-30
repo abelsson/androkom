@@ -33,6 +33,15 @@ public class CreateNewText extends Activity
         setContentView(R.layout.createnewtext);
 
         recipient_type = (Integer) getIntent().getExtras().get("recipient_type");
+        
+        // Set Window Title
+        switch(recipient_type) {
+        	case 1 : setTitle(getString(R.string.create_new_text));
+        	         break;
+        	case 2 : setTitle(getString(R.string.create_new_mail));
+        	         break;
+        	default: setTitle("Title of window");
+        }
 
         mRecipient = (EditText) findViewById(R.id.recipient);
         mSubject = (EditText) findViewById(R.id.subject);
@@ -154,7 +163,7 @@ public class CreateNewText extends Activity
     private EditText mRecipient;
     private EditText mSubject;
     private EditText mBody;
-    private int recipient_type = 0;
+    private int recipient_type = 0; // type 1 = text/inlägg, type 2 = brev/mail
 
     int recipientNo=0;
 

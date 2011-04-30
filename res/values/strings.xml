@@ -64,6 +64,7 @@
     <string name="to">To</string>
     <string name="create_text">Create reply</string>
     <string name="create_new_text">Create text</string>
+    <string name="create_new_mail">Create mail</string>
     <string name="create_new_IM">Create IM</string>
     
     <string name="positiveButton">Do</string>
