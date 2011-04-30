@@ -527,6 +527,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
 			return true;
 
+		case R.id.menu_marktext_id:
+            markCurrentText();
+			return true;
+
+		case R.id.menu_unmarktext_id:
+            unmarkCurrentText();
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }
@@ -544,7 +552,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		TextView t1 = (TextView) mSwitcher.getChildAt(0);
 		t1.setTextSize(prefs.getFloat("conference_body_textsize", 12));
     }
+
+    protected void markCurrentText() {
+    	int CurrentTextNo = mState.getCurrent().getTextNo();
+    	((App)getApplication()).getKom().markText(CurrentTextNo);
+    }
     
+    protected void unmarkCurrentText() {
+    	int CurrentTextNo = mState.getCurrent().getTextNo();
+    	((App)getApplication()).getKom().unmarkText(CurrentTextNo);
+    }
+
     /**
      * The menu key has been pressed, instantiate the requested
      * menu.

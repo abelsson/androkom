@@ -25,5 +25,17 @@
                 android:id="@+id/menu_createnewIM_id"/>
           </menu>
     </item>
+    <item android:id="@+id/menu_submenu_setmark"
+          android:title="@string/title_submenu_mark" >
+          <!-- "setmark" submenu -->
+          <menu>
+          <item android:title="@string/marktext_label"
+                android:alphabeticShortcut="@string/marktext_shortcut"
+                android:id="@+id/menu_marktext_id"/>
+          <item android:title="@string/unmarktext_label"
+                android:alphabeticShortcut="@string/unmarktext_shortcut"
+                android:id="@+id/menu_unmarktext_id"/>
+          </menu>
+    </item>
         
 </menu>

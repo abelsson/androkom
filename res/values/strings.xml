@@ -55,6 +55,12 @@
     <string name="createnewmail_shortcut">M</string>
     <string name="createnewIM_label">New IM</string>
     <string name="createnewIM_shortcut">I</string>
+
+    <string name="title_submenu_mark">Mark...</string>
+    <string name="marktext_label">Mark text</string>
+    <string name="marktext_shortcut">M</string>
+    <string name="unmarktext_label">Unmark text</string>
+    <string name="unmarktext_shortcut">U</string>
     
     <string name="subject">Subject:</string>
     <string name="send">Send</string>

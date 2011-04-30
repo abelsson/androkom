@@ -593,6 +593,31 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         new cacheAllCommentsTask().execute(text);
     }
      
+    public void markText(int textNo)
+    {
+    	try {
+			s.markText(textNo, 100);
+		} catch (RpcFailure e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+
+    public void unmarkText(int textNo)
+    {
+    	try {
+			s.unmarkText(textNo);
+		} catch (RpcFailure e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
 
 	public void markTextAsRead(int textNo)
     {
