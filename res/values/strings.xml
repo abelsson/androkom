@@ -2,6 +2,25 @@
 <resources>
 	<string name="app_name">Androkom</string>
 
+    <string name="pick_a_name">Pick a name</string>
+    <string name="komserver_connected">KomServer connected</string>
+    <string name="komserver_disconnected">KomServer disconnected</string>
+    <string name="komserver_stopped">KomServer stopped</string>
+    <string name="x_logged_in"> logged in</string>
+    <string name="x_logged_out"> logged out</string>
+    <string name="x_changed_to_y"> changed to </string>
+    <string name="x_says_y"> says </string>
+    <string name="x_to_y"> to </string>
+    <string name="lyskom_full">Lyskom is full, please make space</string>
+    <string name="loading_text">Loading text..</string>
+    <string name="loading">Loading...</string>
+    <string name="all_read">All read</string>
+    <string name="error_fetching_unread_text">[error fetching unread text]</string>
+    <string name="error_fetching_text">[error fetching text]</string>
+    <string name="anonymous">anonymous</string>
+    <string name="person">Person </string>
+    <string name="does_not_exist"> does not exist</string>
+    
 	<string name="login_name">Username:</string>
 	<string name="login_id">UserID: (optional)</string>
 	<string name="login_password">Password:</string>

@@ -90,7 +90,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             getApp().getKom().setConference(confNo);
             new LoadMessageTask().execute();
             
-            mSwitcher.setText(formatText("Loading text.."));
+            mSwitcher.setText(formatText(getString(R.string.loading_text)));
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
@@ -113,7 +113,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         {
             this.dialog.setCancelable(true);
             this.dialog.setIndeterminate(true);
-            this.dialog.setMessage("Loading...");
+            this.dialog.setMessage(getString(R.string.loading));
             this.dialog.show();
         }
 

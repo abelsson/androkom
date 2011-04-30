@@ -87,7 +87,7 @@ public class App extends Application
             mBoundService = ((KomServer.LocalBinder)service).getService();
 
             // Tell the user about it.
-            Toast.makeText(App.this, "KomServer connected",
+            Toast.makeText(App.this, getString(R.string.komserver_connected),
                     Toast.LENGTH_SHORT).show();
 
         }
@@ -99,7 +99,7 @@ public class App extends Application
             // Because it is running in our same process, we should never
             // see this happen.
             mBoundService = null;
-            Toast.makeText(App.this, "KomServer disconnected",
+            Toast.makeText(App.this, getString(R.string.komserver_disconnected),
                     Toast.LENGTH_SHORT).show();
         }
     };
@@ -112,27 +112,31 @@ public class App extends Application
     	public void handleMessage(Message msg) {
     		switch (msg.what) {
     		case nu.dll.lyskom.Asynch.login:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+" logged in",
+                Toast.makeText(App.this, ""+msg.getData().getString("name")+
+                		getString(R.string.x_logged_in),
                         Toast.LENGTH_SHORT).show();
     			break;
     		case nu.dll.lyskom.Asynch.logout:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+" logged out",
+                Toast.makeText(App.this, ""+msg.getData().getString("name")+
+                		getString(R.string.x_logged_out),
                         Toast.LENGTH_SHORT).show();
     			break;
     		case nu.dll.lyskom.Asynch.new_name:
                 Toast.makeText(App.this, ""+msg.getData().getString("oldname")+
-                		" changed to "+
+                		getString(R.string.x_changed_to_y)+
                 		msg.getData().getString("newname"),
                         Toast.LENGTH_SHORT).show();
     			break;
     		case nu.dll.lyskom.Asynch.send_message:
-                Toast.makeText(App.this, ""+msg.getData().getString("from")+" says "+
-                		msg.getData().getString("msg")+" to "
+                Toast.makeText(App.this, ""+msg.getData().getString("from")+
+                		getString(R.string.x_says_y)+
+                		msg.getData().getString("msg")+
+                		getString(R.string.x_to_y)
                 		+msg.getData().getString("to"),
                         Toast.LENGTH_LONG).show();
     			break;
             case nu.dll.lyskom.Asynch.rejected_connection:
-                Toast.makeText(App.this, "Lyskom is full, please make space",
+                Toast.makeText(App.this, getString(R.string.lyskom_full),
                         Toast.LENGTH_SHORT).show();
     			break;
     		}

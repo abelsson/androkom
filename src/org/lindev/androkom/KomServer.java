@@ -176,7 +176,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
 
         // Tell the user we stopped.
-        Toast.makeText(this,"KomServer stopped", Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
 
         try {
             if (s.getState() == Session.STATE_LOGIN)
@@ -467,7 +467,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                                
                 mLastTextNo = s.nextUnreadText(false);
                 if (mLastTextNo < 0)
-                	return new TextInfo(-1, "", "", "", "All read");
+                	return new TextInfo(-1, "", "", "", getString(R.string.all_read));
             } 
             
             return getKomText(mLastTextNo);                                
@@ -479,7 +479,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
     	reconnect();
 
-        return new TextInfo(-1, "", "", "", "[error fetching unread text]");
+        return new TextInfo(-1, "", "", "", getString(R.string.error_fetching_unread_text));
     }
 
 
@@ -497,10 +497,11 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             		nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
             		username = confStat.getNameString();
                 } catch (Exception e) {
-                	username = "Person "+authorid+" finns inte";
+                	username = getString(R.string.person)+authorid+
+                	getString(R.string.does_not_exist);
                 }
             } else {
-            	username = "anonymous";
+            	username = getString(R.string.anonymous);
             }
             String CreationTimeString = text.getCreationTimeString();
             String SubjectString = null;
@@ -526,7 +527,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
             e.printStackTrace();
         }
-        return new TextInfo(-1, "", "", "", "[Error fetching text]");
+        return new TextInfo(-1, "", "", "", getString(R.string.error_fetching_text));
 
     }
 

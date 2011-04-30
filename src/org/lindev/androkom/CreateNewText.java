@@ -109,7 +109,7 @@ public class CreateNewText extends Activity
             				Log.d(TAG, "Name "+i+":"+items[i]);
             			}
             			AlertDialog.Builder builder = new AlertDialog.Builder(CreateNewText.this);
-            			builder.setTitle("Pick a name");
+            			builder.setTitle(getString(R.string.pick_a_name));
             			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
             				public void onClick(DialogInterface dialog, int item) {
             					Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();

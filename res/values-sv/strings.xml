@@ -1,8 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
-    <string name="hello">Hello, Android! I am a string resource!</string>
     <string name="app_name">Androkom</string>
 
+    <string name="pick_a_name">Välj namn</string>
+    <string name="komserver_connected">KomServer ansluten</string>
+    <string name="komserver_disconnected">KomServer ej ansluten</string>
+    <string name="komserver_stopped">KomServer stoppad</string>
+    <string name="x_logged_in"> loggat in</string>
+    <string name="x_logged_out"> loggat ut</string>
+    <string name="x_changed_to_y"> bytt till </string>
+    <string name="x_says_y"> säger </string>
+    <string name="x_to_y"> till </string>
+    <string name="lyskom_full">Lyskom är fullt, lämna plats</string>
+    <string name="loading_text">Laddar text..</string>
+    <string name="loading">Laddar...</string>
+    <string name="all_read">All läst</string>
+    <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
+    <string name="error_fetching_text">[problem att hämta text]</string>
+    <string name="anonymous">anonym</string>
+    <string name="person">Person </string>
+    <string name="does_not_exist"> finns inte</string>
+    
 	<string name="login_name">Användarnamn:</string>
 	<string name="login_id">AnvändarID: (vid behov)</string>
 	<string name="login_password">Lösenord:</string>

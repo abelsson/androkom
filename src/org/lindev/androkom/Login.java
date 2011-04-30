@@ -181,7 +181,7 @@ public class Login extends Activity
             	final ConferenceInfo[] users = getApp().getKom().getUserNames();
             	if (users != null && users.length > 1) {
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            		builder.setTitle("Pick a name");
+            		builder.setTitle(getString(R.string.pick_a_name));
             		String[] vals = new String[users.length];
             		for(int i=0;i<users.length;i++)
             			vals[i] = users[i].name;
