@@ -4,12 +4,18 @@
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
 		android:id="@+id/menu_settings_id"/>
-	<item android:title="@string/biggerfontsize_label"
-		android:alphabeticShortcut="@string/biggerfontsize_shortcut"
-		android:id="@+id/menu_biggerfontsize_id"/>
-	<item android:title="@string/smallerfontsize_label"
-		android:alphabeticShortcut="@string/smallerfontsize_shortcut"
-		android:id="@+id/menu_smallerfontsize_id"/>
+    <item android:id="@+id/menu_submenu_textsize"
+          android:title="@string/title_submenu_textsize" >
+          <!-- "textsize" submenu -->
+          <menu>
+            <item android:title="@string/biggerfontsize_label"
+		          android:alphabeticShortcut="@string/biggerfontsize_shortcut"
+		          android:id="@+id/menu_biggerfontsize_id"/>
+	        <item android:title="@string/smallerfontsize_label"
+		          android:alphabeticShortcut="@string/smallerfontsize_shortcut"
+		          android:id="@+id/menu_smallerfontsize_id"/>
+          </menu>
+    </item>
 	<item android:id="@+id/menu_submenu_create"
 	      android:title="@string/title_submenu_create" >
 	      <!-- "create" submenu -->
@@ -35,6 +41,15 @@
           <item android:title="@string/unmarktext_label"
                 android:alphabeticShortcut="@string/unmarktext_shortcut"
                 android:id="@+id/menu_unmarktext_id"/>
+          </menu>
+    </item>
+    <item android:id="@+id/menu_submenu_seeagain"
+          android:title="@string/title_submenu_seeagain" >
+          <!-- "seeagain" submenu -->
+          <menu>
+          <item android:title="@string/seetextagain_label"
+                android:alphabeticShortcut="@string/seetextagain_shortcut"
+                android:id="@+id/menu_seetextagain_id"/>
           </menu>
     </item>
         

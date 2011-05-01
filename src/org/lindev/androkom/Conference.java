@@ -7,13 +7,17 @@ import java.util.regex.Pattern;
 import org.lindev.androkom.KomServer.TextInfo;
 
 import android.app.Activity;
+import android.app.AlertDialog;
+import android.app.Dialog;
 import android.app.ProgressDialog;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -27,6 +31,7 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
+import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -35,6 +40,7 @@ import android.view.View;
 import android.view.View.OnTouchListener;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.EditText;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -120,8 +126,19 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         // worker thread (separate from UI thread)
         protected TextInfo doInBackground(final Integer... args) 
         {
-        	if (args.length == 1 && args[0] > 0) 
-        		return ((App)getApplication()).getKom().getParentToText(args[0]);    
+        	if (args.length == 2 && args[0] > 0) {
+        		switch (args[0]) {
+        		case MESSAGE_TYPE_PARENT_TO:
+        			Log.d(TAG, "Trying to get parent text of"+args[1]);
+            		return ((App)getApplication()).getKom().getParentToText(args[1]);    
+        		case MESSAGE_TYPE_TEXTNO: 
+        			Log.d(TAG, "Trying to get text "+args[1]);
+            		return ((App)getApplication()).getKom().getKomText(args[1]);
+        		default:
+        			Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
+        			return null;
+        		}
+        	}
         	else
         		return ((App)getApplication()).getKom().getNextUnreadText();    
         	
@@ -294,7 +311,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		private void moveToParentText()
 		{
 		    Log.i("androkom", "fetching parent to text " + mState.getCurrent().getTextNo());
-		    new LoadMessageTask().execute(mState.getCurrent().getTextNo());
+		    new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, mState.getCurrent().getTextNo());
 
 		    mSwitcher.setInAnimation(mSlideLeftIn);
 		    mSwitcher.setOutAnimation(mSlideLeftOut);	
@@ -342,7 +359,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	private void moveToParentText()
 	{
 	    Log.i("androkom", "fetching parent to text " + mState.getCurrent().getTextNo());
-	    new LoadMessageTask().execute(mState.getCurrent().getTextNo());
+	    new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, mState.getCurrent().getTextNo());
 
 	    mSwitcher.setInAnimation(mSlideLeftIn);
 	    mSwitcher.setOutAnimation(mSlideLeftOut);	
@@ -535,6 +552,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             unmarkCurrentText();
 			return true;
 
+		case R.id.menu_seetextagain_id:
+			seetextagain();
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }
@@ -563,6 +584,41 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	((App)getApplication()).getKom().unmarkText(CurrentTextNo);
     }
 
+    protected void seetextagain() {
+    	showDialog(DIALOG_NUMBER_ENTRY);
+    }
+
+    protected Dialog onCreateDialog(int id) {
+    	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+
+    	alert.setTitle(getString(R.string.seetextagain_label));
+    	alert.setMessage(getString(R.string.alert_dialog_text_entry));
+
+    	// Set an EditText view to get user input 
+    	final EditText input = new EditText(this);
+    	alert.setView(input);
+
+    	alert.setPositiveButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
+    	public void onClick(DialogInterface dialog, int whichButton) {
+    	  String textvalue = input.getText().toString();
+  		  Log.i(TAG, "trying to parse " + textvalue);
+		  int textNo = Integer.parseInt(textvalue);
+		  Log.i(TAG, "fetching text " + textNo);
+		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+
+		  mSwitcher.setInAnimation(mSlideLeftIn);
+		  mSwitcher.setOutAnimation(mSlideLeftOut);
+    	  }
+    	});
+
+    	alert.setNegativeButton(getString(R.string.alert_dialog_cancel), new DialogInterface.OnClickListener() {
+    	  public void onClick(DialogInterface dialog, int whichButton) {
+    	    // Canceled.
+    	  }
+    	});
+
+    	return alert.create();
+    }
     /**
      * The menu key has been pressed, instantiate the requested
      * menu.
@@ -668,6 +724,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private Animation mSlideRightOut;
     private TextSwitcher mSwitcher;
 
-
-
+    private static final int DIALOG_NUMBER_ENTRY = 7;
+    private static final int MESSAGE_TYPE_PARENT_TO = 1;
+    private static final int MESSAGE_TYPE_TEXTNO = 2;
 }

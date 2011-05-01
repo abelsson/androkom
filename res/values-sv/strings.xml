@@ -14,7 +14,7 @@
     <string name="lyskom_full">Lyskom är fullt, lämna plats</string>
     <string name="loading_text">Laddar text..</string>
     <string name="loading">Laddar...</string>
-    <string name="all_read">All läst</string>
+    <string name="all_read">Allt läst</string>
     <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
     <string name="error_fetching_text">[problem att hämta text]</string>
     <string name="anonymous">anonym</string>
@@ -79,6 +79,13 @@
     <string name="marktext_shortcut">M</string>
     <string name="unmarktext_label">Avmarkera text</string>
     <string name="unmarktext_shortcut">A</string>
+    
+    <string name="title_submenu_seeagain">Återse...</string>
+    <string name="seetextagain_label">Återse text</string>
+    <string name="seetextagain_shortcut">T</string>
+    <string name="alert_dialog_text_entry">Textnummer</string>
+    <string name="alert_dialog_ok">OK</string>
+    <string name="alert_dialog_cancel">Avbryt</string>
     
     <string name="subject">Ämne:</string>
     <string name="send">Skicka</string>
