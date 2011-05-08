@@ -140,7 +140,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
     
     public KomServer() {
-    	//System.setProperty("lattekom.debug", "true");
+    	System.setProperty("lattekom.debug", "true");
         System.setProperty("lattekom.enable-prefetch", "true"); 
         Session.setLog(this);
         mLastTextNo = -1;
@@ -551,9 +551,11 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         				} catch (RpcFailure e) {
         					// TODO Auto-generated catch block
         					e.printStackTrace();
+    						Log.e(TAG, "RpcFailure:"+e.toString());
         				} catch (IOException e) {
         					// TODO Auto-generated catch block
         					e.printStackTrace();
+    						Log.e(TAG, "IOexception:"+e.toString());
         				}
         			}
         		} else {
@@ -573,9 +575,11 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 						} else {
 							Log.d(TAG, "No recipients");
 						}
-					} catch (IOException e) {
+					} catch (Exception e) {
 						// TODO Auto-generated catch block
 						e.printStackTrace();
+						Log.e(TAG, "cacheallcomments encountered an error");
+						Log.e(TAG, e.toString());
 					}
         		}
 				return null;
