@@ -159,7 +159,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             widget.scrollTo(0, 0);
             setTitle(((App)getApplication()).getKom().getConferenceName());
             this.dialog.dismiss();
-            new MarkTextReadTask().execute(text.getTextNo());
         }
     }
 
@@ -287,7 +286,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 		private void moveToNextText() {
 			Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
-			
+
+			new MarkTextReadTask().execute(mState.getCurrent().getTextNo());
+
 			mState.currentTextIndex++;
 			
 			if (mState.currentTextIndex >= mState.currentText.size()) {
@@ -336,6 +337,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	private void moveToNextText() {
 		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
 		
+        new MarkTextReadTask().execute(mState.getCurrent().getTextNo());
+
 		mState.currentTextIndex++;
 		
 		if (mState.currentTextIndex >= mState.currentText.size()) {
