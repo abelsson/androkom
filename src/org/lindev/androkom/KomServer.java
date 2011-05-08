@@ -676,9 +676,27 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         if (inReplyTo != -1)
             text.addCommented(inReplyTo);
 
-        text.addRecipient(s.getCurrentConference());
+        int currConf = s.getCurrentConference();
         try {
-			if(!s.isMemberOf(s.getCurrentConference())) {
+        	// only add current Conf if comments are allowed
+			if(s.getConfStat(currConf).getConfInfo().confType.original()) {
+				Log.d(TAG, "Conf is original, add super conf instead");
+				text.addRecipient(s.getConfStat(currConf).getSuperConf());
+			} else {
+				Log.d(TAG, "Conf is not original, ok to add");
+				text.addRecipient(currConf);
+			}
+		} catch (RpcFailure e2) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "createText failed to add conf");
+			e2.printStackTrace();
+		} catch (IOException e2) {
+			// TODO Auto-generated catch block
+			Log.d(TAG, "createText failed to add conf");
+			e2.printStackTrace();
+		}
+        try {
+			if(!s.isMemberOf(currConf)) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
@@ -735,7 +753,24 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 				for(int i=0; i < receps.length; i++) {
 					Log.d(TAG, "adding recipient:"+receps[i]);
 					try {
-						text.addRecipient(receps[i]);
+				        try {
+				        	// only add Conf if comments are allowed
+							if(s.getConfStat(receps[i]).getConfInfo().confType.original()) {
+								Log.d(TAG, "Conf is original, add super conf instead");
+								text.addRecipient(s.getConfStat(receps[i]).getSuperConf());
+							} else {
+								Log.d(TAG, "Conf is not original, ok to add");
+								text.addRecipient(receps[i]);
+							}
+						} catch (RpcFailure e2) {
+							// TODO Auto-generated catch block
+							Log.d(TAG, "createText failed to add conf");
+							e2.printStackTrace();
+						} catch (IOException e2) {
+							// TODO Auto-generated catch block
+							Log.d(TAG, "createText failed to add conf");
+							e2.printStackTrace();
+						}
 					} catch (java.lang.IllegalArgumentException e) {
 						Log.d(TAG, "recipient already added");
 					}
@@ -744,7 +779,14 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
         
         try {
-			if(!s.isMemberOf(s.getCurrentConference())) {
+			int[] receps = text.getRecipients();
+			boolean userIsMemberOfSomeConf = false;
+			for(int i=0; i < receps.length; i++) {
+				if(s.isMemberOf(receps[i])) {
+					userIsMemberOfSomeConf = true;
+				}
+			}
+			if(!userIsMemberOfSomeConf) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
