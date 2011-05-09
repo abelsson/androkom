@@ -6,11 +6,11 @@
     <string name="komserver_connected">KomServer ansluten</string>
     <string name="komserver_disconnected">KomServer ej ansluten</string>
     <string name="komserver_stopped">KomServer stoppad</string>
-    <string name="x_logged_in"> loggat in</string>
-    <string name="x_logged_out"> loggat ut</string>
-    <string name="x_changed_to_y"> bytt till </string>
-    <string name="x_says_y"> säger </string>
-    <string name="x_to_y"> till </string>
+    <string name="x_logged_in">" har loggat in"</string>
+    <string name="x_logged_out">" har loggat ut"</string>
+    <string name="x_changed_to_y">" har bytt till "</string>
+    <string name="x_says_y">" säger "</string>
+    <string name="x_to_y">" till "</string>
     <string name="lyskom_full">Lyskom är fullt, lämna plats</string>
     <string name="loading_text">Laddar text..</string>
     <string name="loading">Laddar...</string>
@@ -18,8 +18,8 @@
     <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
     <string name="error_fetching_text">[problem att hämta text]</string>
     <string name="anonymous">anonym</string>
-    <string name="person">Person </string>
-    <string name="does_not_exist"> finns inte</string>
+    <string name="person">"Person "</string>
+    <string name="does_not_exist">" finns inte"</string>
     
 	<string name="login_name">Användarnamn:</string>
 	<string name="login_id">AnvändarID: (vid behov)</string>
