@@ -83,11 +83,12 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
     	public TextInfo() { }
 
-    	public TextInfo(int textNo, String author, String date, String subject, String body)
+    	public TextInfo(int textNo, String author, String date, String headers, String subject, String body)
     	{
     		this.setTextNo(textNo);
     		this.setAuthor(author);
     		this.setDate(date);
+    		this.setHeaders(headers);
     		this.setSubject(subject);
     		this.setBody(body);
     	}
@@ -100,12 +101,20 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			return author;
 		}
 
+		public void setHeaders(String headers) {
+			this.headers = headers;
+		}
+
 		public void setBody(String body) {
 			this.body = body;
 		}
 
 		public String getBody() {
 			return body;
+		}
+
+		public String getHeaders() {
+			return headers;
 		}
 
 		public void setSubject(String subject) {
@@ -135,6 +144,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 		private int textNo;
 		private String date;
     	private String subject;
+    	private String headers;
     	private String body;
     	private String author;
     }
@@ -447,7 +457,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			e.printStackTrace();
 		}
     	reconnect();
-		return new TextInfo(-1, "", "", "", "[error fetching parent text]");
+		return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
     }
 
     /**
@@ -467,7 +477,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                                
                 mLastTextNo = s.nextUnreadText(false);
                 if (mLastTextNo < 0)
-                	return new TextInfo(-1, "", "", "", getString(R.string.all_read));
+                	return new TextInfo(-1, "", "", "", "", getString(R.string.all_read));
             } 
             
             return getKomText(mLastTextNo);                                
@@ -479,7 +489,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         }
     	reconnect();
 
-        return new TextInfo(-1, "", "", "", getString(R.string.error_fetching_unread_text));
+        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_unread_text));
     }
 
 
@@ -519,15 +529,70 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
             	BodyString = text.getBodyString8();
             }
             
+            String HeadersString = "";
+            int[] items;
+            items = text.getRecipients();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Mottagare: ";
+                	try {
+                		nu.dll.lyskom.Conference confStat = s.getConfStat(items[i]);
+                		HeadersString += confStat.getNameString();
+                    } catch (Exception e) {
+                    	username = getString(R.string.person)+authorid+
+                    	getString(R.string.does_not_exist);
+                    }
+                    HeadersString += "\n";
+            	}
+            }
+            items = text.getCcRecipients();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Kopiemottagare: ";
+                	try {
+                		nu.dll.lyskom.Conference confStat = s.getConfStat(items[i]);
+                		HeadersString += confStat.getNameString();
+                    } catch (Exception e) {
+                    	username = getString(R.string.person)+authorid+
+                    	getString(R.string.does_not_exist);
+                    }
+                    HeadersString += "\n";
+            	}
+            }
+            items = text.getCommented();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Kommentar till: "+items[i]+"\n";
+            	}
+            }
+            items = text.getComments();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Kommentar i: "+items[i]+"\n";
+            	}
+            }
+            items = text.getFootnotes();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Fotnot i: "+items[i]+"\n";
+            	}
+            }
+            items = text.getFootnoted();
+            if(items.length>0) {
+            	for(int i=0; i<items.length; i++) {
+            		HeadersString += "Fotnot till: "+items[i]+"\n";
+            	}
+            }
+            
             docacheAllComments(text);
-            return new TextInfo(textNo, username, CreationTimeString, SubjectString, BodyString);
+            return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
         } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "getTextAsHTML "+e);
 
             e.printStackTrace();
         }
-        return new TextInfo(-1, "", "", "", getString(R.string.error_fetching_text));
+        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_text));
 
     }
 

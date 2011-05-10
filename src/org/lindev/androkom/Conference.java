@@ -1,5 +1,6 @@
 package org.lindev.androkom;
 
+import java.io.UnsupportedEncodingException;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -672,8 +673,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
         body.append("</p>");
 
-        Log.i("androkom", body.toString());
+        body.append("Headers:<br/>");
+        String[] headerlines = text.getHeaders().split("\n");
+        for(String line : headerlines) {
+            body.append(line);
+            body.append("<br/>");
+        }
         
+        Log.i("androkom", body.toString());
+
         SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(body.toString());       
         Linkify.addLinks(spannedText, Linkify.ALL);
         
