@@ -56,6 +56,9 @@
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>
     
+    <string name="showfullheaders_title">Visa text info</string>
+    <string name="showfullheaders_summary">Visa text info som kommentarer</string>
+
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 

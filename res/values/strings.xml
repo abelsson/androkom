@@ -57,6 +57,9 @@
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Automaticly login if password is saved</string>
 
+    <string name="showfullheaders_title">Show full headers</string>
+    <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
+
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
 

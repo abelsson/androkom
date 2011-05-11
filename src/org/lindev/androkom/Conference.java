@@ -1,6 +1,5 @@
 package org.lindev.androkom;
 
-import java.io.UnsupportedEncodingException;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,7 +17,6 @@ import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.Editable;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -32,7 +30,6 @@ import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
 import android.view.Gravity;
 import android.view.KeyEvent;
-import android.view.LayoutInflater;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
@@ -86,14 +83,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         Log.i("androkom", "Got passed conference id: " + confNo);
 
-
         if (data != null) {      	
             mState = (State)data;
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
-        } else {    
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+        } else {
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
             mState.currentTextIndex = 0;
+            mState.ShowFullHeaders = ConferencePrefs.getShowFullHeaders(getBaseContext());
+            getApp().getKom().setShowFullHeaders(mState.ShowFullHeaders);
             getApp().getKom().setConference(confNo);
             new LoadMessageTask().execute();
             
@@ -155,7 +153,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             }
             mState.currentText.push(text);
             mState.currentTextIndex = mState.currentText.size() - 1;
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
             setTitle(((App)getApplication()).getKom().getConferenceName());
@@ -191,6 +189,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         @Override  
         public void onClick(View widget) {  
             // TODO Conference.this.onKomLinkClicked(mLinkText);
+        	Log.d(TAG, "ClickableSpan onClick");
         }  
     }  
     
@@ -282,7 +281,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			
 			mSwitcher.setInAnimation(mSlideRightIn);
 			mSwitcher.setOutAnimation(mSlideRightOut);
-			mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+			mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
 		}
 
 		private void moveToNextText() {
@@ -306,7 +305,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			    mSwitcher.setInAnimation(mSlideLeftIn);
 			    mSwitcher.setOutAnimation(mSlideLeftOut);
 
-			    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+			    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
 			}
 		}
 		
@@ -332,7 +331,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		
 		mSwitcher.setInAnimation(mSlideRightIn);
 		mSwitcher.setOutAnimation(mSlideRightOut);
-		mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+		mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
 	}
 
 	private void moveToNextText() {
@@ -356,7 +355,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		    mSwitcher.setInAnimation(mSlideLeftIn);
 		    mSwitcher.setOutAnimation(mSlideLeftOut);
 
-		    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex)));
+		    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
 		}
 	}
 
@@ -637,7 +636,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
 
-    public static Spannable formatText(TextInfo text)
+    public static Spannable formatText(TextInfo text, boolean ShowFullHeaders)
     {
         String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
@@ -651,7 +650,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             body.append(text.getAuthor());
             body.append("</b> ");
         	body.append(text.getDate());
-            body.append("<br/><b>Subject: ");
+            body.append("<br/>");
+
+			if (ShowFullHeaders) {
+				String[] headerlines = text.getHeaders().split("\n");
+				for (String line : headerlines) {
+					body.append(line);
+					body.append("<br/>");
+				}
+			}
+            
+            body.append("<b>Subject: ");
             body.append(text.getSubject());
             body.append("</b>");
         }
@@ -673,13 +682,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
         body.append("</p>");
 
-        body.append("Headers:<br/>");
-        String[] headerlines = text.getHeaders().split("\n");
-        for(String line : headerlines) {
-            body.append(line);
-            body.append("<br/>");
-        }
-        
         Log.i("androkom", body.toString());
 
         SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(body.toString());       
@@ -696,6 +698,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         
         return spannedText;
     }
+
     /**
      * Return TextViews for switcher.
      */
@@ -721,6 +724,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         int currentTextIndex;
         Stack<TextInfo> currentText;   
         TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
+        boolean ShowFullHeaders;
     };
     
     State mState;

@@ -15,6 +15,9 @@ public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_AUTOLOGIN = "autologin";
 	private static final Boolean OPT_AUTOLOGIN_DEF = false;
 
+	private static final String OPT_SHOWFULLHEADERS = "showfullheaders";
+	private static final Boolean OPT_SHOWFULLHEADERS_DEF = false;
+
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
@@ -30,5 +33,9 @@ public class ConferencePrefs extends PreferenceActivity {
 
 	public static Boolean getAutologin(Context context) {
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_AUTOLOGIN, OPT_AUTOLOGIN_DEF);
+	}
+
+	public static Boolean getShowFullHeaders(Context context) {
+		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_SHOWFULLHEADERS, OPT_SHOWFULLHEADERS_DEF);
 	}
 }

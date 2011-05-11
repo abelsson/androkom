@@ -7,4 +7,10 @@
     android:summary="@string/autologin_summary"
     android:defaultValue="false"
     />
+  <CheckBoxPreference
+    android:key="showfullheaders"
+    android:title="@string/showfullheaders_title"
+    android:summary="@string/showfullheaders_summary"
+    android:defaultValue="false"
+    />
 </PreferenceScreen>
