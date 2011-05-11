@@ -21,12 +21,8 @@ import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
 import nu.dll.lyskom.UserArea;
 
-import android.app.AlertDialog;
-import android.app.ProgressDialog;
 import android.app.Service;
-import android.content.DialogInterface;
 import android.content.Intent;
-import android.content.SharedPreferences;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Binder;
@@ -374,7 +370,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 return "Invalid/ambigious username";
             } else {
                 // login as hidden
-                if (!s.login(usernames[0].confNo, password, true)) {
+                if (!s.login(usernames[0].confNo, password, hidden_session)) {
                     return "Invalid password";
                 }
             }
@@ -414,7 +410,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         try {
         	// login as hidden
-        	if (!s.login(userid, password, true)) {
+        	if (!s.login(userid, password, hidden_session)) {
         		return "Invalid password";
         	}
         	s.setClientVersion("Androkom", getVersionName());
@@ -1306,5 +1302,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     private String re_password; // for reconnect
     private String re_server; // for reconnect
 
+    private boolean hidden_session = true;
+    
 	Handler asyncHandler=null;
 }

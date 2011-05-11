@@ -1,0 +1,3 @@
+- Bump versionName and versionCode in AndroidManifest.xml
+- set lattekom.debug to false in KomServer.java
+- set hidden_session to false in KomServer.java
