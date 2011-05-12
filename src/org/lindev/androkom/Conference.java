@@ -161,17 +161,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
     }
 
-    private class MarkTextReadTask extends AsyncTask<Integer, Integer, Void> 
-    {
-        @Override
-        protected Void doInBackground(final Integer... args) 
-        {       	
-        	((App)getApplication()).getKom().markTextAsRead(args[0]);
-			return null;  	      	
-        }
-    }
-
-
     /**
      * Class for handling internal text number links. 
      * Only a skeleton for now. 
@@ -287,7 +276,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		private void moveToNextText() {
 			Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
 
-			new MarkTextReadTask().execute(mState.getCurrent().getTextNo());
+			((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
 
 			mState.currentTextIndex++;
 			
@@ -337,7 +326,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	private void moveToNextText() {
 		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
 		
-        new MarkTextReadTask().execute(mState.getCurrent().getTextNo());
+		((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
 
 		mState.currentTextIndex++;
 		
