@@ -20,6 +20,7 @@
     <string name="anonymous">anonymous</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" does not exist"</string>
+    <string name="no_presentation_error">Presentation missing</string>
     
 	<string name="login_name">Username:</string>
 	<string name="login_id">UserID: (optional)</string>
@@ -88,6 +89,8 @@
     <string name="title_submenu_seeagain">See again...</string>
     <string name="seetextagain_label">See text</string>
     <string name="seetextagain_shortcut">T</string>
+    <string name="seepresentation_label">See presentation</string>
+    <string name="seepresentation_shortcut">P</string>
     <string name="alert_dialog_text_entry">Enter text number</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Cancel</string>

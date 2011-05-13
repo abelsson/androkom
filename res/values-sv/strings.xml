@@ -20,6 +20,7 @@
     <string name="anonymous">anonym</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" finns inte"</string>
+    <string name="no_presentation_error">Presentation saknas</string>
     
 	<string name="login_name">Användarnamn:</string>
 	<string name="login_id">AnvändarID: (vid behov)</string>
@@ -85,6 +86,8 @@
     
     <string name="title_submenu_seeagain">Återse...</string>
     <string name="seetextagain_label">Återse text</string>
+    <string name="seepresentation_label">Återse presentation</string>
+    <string name="seepresentation_shortcut">P</string>
     <string name="seetextagain_shortcut">T</string>
     <string name="alert_dialog_text_entry">Textnummer</string>
     <string name="alert_dialog_ok">OK</string>

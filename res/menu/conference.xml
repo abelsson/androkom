@@ -50,6 +50,9 @@
           <item android:title="@string/seetextagain_label"
                 android:alphabeticShortcut="@string/seetextagain_shortcut"
                 android:id="@+id/menu_seetextagain_id"/>
+          <item android:title="@string/seepresentation_label"
+                android:alphabeticShortcut="@string/seepresentation_shortcut"
+                android:id="@+id/menu_seepresentation_id"/>
           </menu>
     </item>
         

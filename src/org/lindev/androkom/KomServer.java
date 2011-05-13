@@ -329,6 +329,26 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
     	return getConferenceName(s.getCurrentConference());
     }
+
+    /**
+     * Return presentation text number for current conference.
+     */
+	public int getConferencePres() {
+		int confNo = s.getCurrentConference();
+		if (confNo > 0) {
+			try {
+				return s.getConfStat(confNo).getPresentation();
+			} catch (RpcFailure e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		}
+		return 0;
+	}
+
     /**
      * Set currently active conference.
      */

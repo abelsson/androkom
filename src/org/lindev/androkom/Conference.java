@@ -548,6 +548,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			seetextagain();
 			return true;
 
+		case R.id.menu_seepresentation_id:
+			seepresentation();
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }
@@ -579,6 +583,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     protected void seetextagain() {
     	showDialog(DIALOG_NUMBER_ENTRY);
     }
+
+	protected void seepresentation() {
+		int textNo = getApp().getKom().getConferencePres();
+		if (textNo > 0) {
+			Log.i(TAG, "fetching text " + textNo);
+			new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+		} else {
+			Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
+					Toast.LENGTH_SHORT).show();
+		}
+	}
 
     protected Dialog onCreateDialog(int id) {
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
