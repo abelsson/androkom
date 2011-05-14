@@ -46,11 +46,7 @@ public class WhoIsOn extends ListActivity
 	public void onResume() {
 		super.onResume();
 
-		// mAdapter.clear();
-		// update list?
-
 		new populatePersonsTask().execute();
-		//populatePersons();
 	}
     
     /**
@@ -85,35 +81,36 @@ public class WhoIsOn extends ListActivity
     /**
      * Attempt to get all persons online.
      */
-    private class populatePersonsTask extends AsyncTask<Void, Integer, Integer> {
+    public class populatePersonsTask extends AsyncTask<Void, Integer, Integer> {
         private final ProgressDialog dialog = new ProgressDialog(WhoIsOn.this);
 
         protected void onPreExecute() {
-        	Log.d(TAG, "populatePersonsTask:onPreExecute start");
+			this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
             this.dialog.setCancelable(true);
-            this.dialog.setIndeterminate(true);
+            this.dialog.setIndeterminate(false);
             this.dialog.setMessage(getString(R.string.loading));
+            this.dialog.setMax(100);
             this.dialog.show();
-        	Log.d(TAG, "populatePersonsTask:onPreExecute slut");
         }
 
 		protected Integer doInBackground(Void... param) {
-        	Log.d(TAG, "populatePersonsTask:doInBackground start");
-			//populatePersons();
-	        tPersons = fetchPersons();
-			
-        	Log.d(TAG, "populatePersonsTask:doInBackground slut");
+	        tPersons = fetchPersons(this);
 			return 1;
 		}
 
-		@SuppressWarnings("unused")
+		void updateProgress(int percent) {
+			publishProgress(percent);
+		}
+		
+		protected void onProgressUpdate(Integer... i) {
+			this.dialog.setProgress(i[0]);
+		}
+
 		protected void onPostExecute(final Integer result) 
         { 
-        	Log.d(TAG, "populatePersonsTask:onPostExecute start");
             this.dialog.dismiss();
             mPersons = tPersons;
             populatePersons();
-        	Log.d(TAG, "populatePersonsTask:onPostExecute slut");
         }
 
     }
@@ -142,7 +139,7 @@ public class WhoIsOn extends ListActivity
         }
     }
  
-    private List<ConferenceInfo> fetchPersons() {
+    private List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT) {
     	List<ConferenceInfo> retlist = null;
     	
     	try {
@@ -151,7 +148,7 @@ public class WhoIsOn extends ListActivity
             	KomServer kom = app.getKom();
             	if (kom != null) {
             		if (kom.isConnected()) {
-            			retlist = kom.fetchPersons();
+            			retlist = kom.fetchPersons(populatePersonsT);
             		} else {
             			Log.d(TAG, "Can't fetch persons when no connection");
             	        Toast.makeText(getApplicationContext(), "Lost connection", Toast.LENGTH_SHORT).show();

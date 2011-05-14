@@ -7,6 +7,8 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
+import org.lindev.androkom.WhoIsOn.populatePersonsTask;
+
 import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.AuxItem;
@@ -15,7 +17,6 @@ import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.Membership;
-import nu.dll.lyskom.Person;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -275,8 +276,9 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     /**
      * Fetch a list of persons online
+     * @param populatePersonsTask 
      */
-    public List<ConferenceInfo> fetchPersons()
+    public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT)
     {
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
         try {
@@ -289,6 +291,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	try {
                 		nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
                 		username = confStat.getNameString();
+                		populatePersonsT.updateProgress((int) ((i / (float) persons.length) * 100));
                     } catch (Exception e) {
                     	username = getString(R.string.person)+persNo+
                     	getString(R.string.does_not_exist);
