@@ -7,9 +7,7 @@ import java.util.TimerTask;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.Intent;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -58,6 +56,8 @@ public class ConferenceList extends ListActivity
     {
         super.onResume();
                
+        mAdapter.clear();
+        
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -174,31 +174,6 @@ public class ConferenceList extends ListActivity
 		return false;
 	}
 
-
-    /**
-     * Attempt to reconnect to server.
-     */
-    private class LoginTask extends AsyncTask<Void, Integer, Void> {
-        private final ProgressDialog dialog = new ProgressDialog(ConferenceList.this);
-
-        protected void onPreExecute() {
-            this.dialog.setCancelable(true);
-            this.dialog.setIndeterminate(true);
-            this.dialog.setMessage("Logging in...");
-            this.dialog.show();
-        }
-
-        protected Void doInBackground(final Void... args) 
-        {
-			getApp().getKom().reconnect();
-			return null;
-        }
-
-        protected void onPostExecute(final Void result) 
-        { 
-            this.dialog.dismiss();                       
-        }
-    }
 
     /**
      * Refresh list of unread conferences.
