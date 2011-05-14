@@ -11,9 +11,11 @@ import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
+import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.Membership;
+import nu.dll.lyskom.Person;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -270,6 +272,52 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			e.printStackTrace();
 		}
     }
+
+    /**
+     * Fetch a list of persons online
+     */
+    public List<ConferenceInfo> fetchPersons()
+    {
+        ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
+        try {
+            DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
+
+            for (int i = 0; i < persons.length; i++) {
+                int persNo = persons[i].getPerson();
+                String username;
+                if (persNo > 0) {
+                	try {
+                		nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
+                		username = confStat.getNameString();
+                    } catch (Exception e) {
+                    	username = getString(R.string.person)+persNo+
+                    	getString(R.string.does_not_exist);
+                    }
+                } else {
+                	username = getString(R.string.anonymous);
+                }
+                Log.i("androkom", username + " <" + persNo + ">");
+
+                ConferenceInfo info = new ConferenceInfo();
+                info.id = persNo;
+                info.name = username;
+
+                arr.add(info);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchPersons1 "+e);
+            e.printStackTrace();
+            reconnect();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchPersons2 "+e);
+            e.printStackTrace();
+        }
+
+        return arr;
+    }
+    
     /**
      * Fetch a list of conferences with unread texts.
      */

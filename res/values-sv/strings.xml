@@ -89,6 +89,8 @@
     <string name="seepresentation_label">Återse presentation</string>
     <string name="seepresentation_shortcut">P</string>
     <string name="seetextagain_shortcut">T</string>
+    <string name="seewhoison_label">Vilka</string>
+    <string name="seewhoison_shortcut">V</string>
     <string name="alert_dialog_text_entry">Textnummer</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Avbryt</string>

@@ -4,8 +4,6 @@
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
 		android:id="@+id/menu_settings_id"/>
-	
-	
     <item android:title="@string/createnewtext_label"
         android:alphabeticShortcut="@string/createnewtext_shortcut"
         android:id="@+id/menu_createnewtext_id"/>
@@ -15,4 +13,7 @@
     <item android:title="@string/createnewIM_label"
         android:alphabeticShortcut="@string/createnewIM_shortcut"
         android:id="@+id/menu_createnewIM_id"/>
+    <item android:title="@string/seewhoison_label"
+        android:alphabeticShortcut="@string/seewhoison_shortcut"
+        android:id="@+id/menu_seewhoison_id"/>
 </menu>

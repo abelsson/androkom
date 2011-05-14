@@ -552,6 +552,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			seepresentation();
 			return true;
 
+		case R.id.menu_seewhoison_id:
+			seewhoison();
+			return true;
+
 		default:
             return super.onOptionsItemSelected(item);
         }
@@ -595,6 +599,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		}
 	}
 
+	protected void seewhoison() {
+        Intent intent = new Intent(this, WhoIsOn.class);    
+        startActivity(intent);
+	}
+	
     protected Dialog onCreateDialog(int id) {
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 

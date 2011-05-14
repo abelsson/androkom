@@ -32,6 +32,12 @@
                    android:windowSoftInputMode="stateVisible|adjustResize">
         </activity>
         
+         <!--  Who Is On -->
+         <activity android:name=".WhoIsOn"       
+                   android:label="@string/seewhoison_label"
+                   android:windowSoftInputMode="stateVisible|adjustResize">
+        </activity>
+        
          <!--  Login dialog -->
          <activity android:name=".Login"       
                    android:label="@string/app_name"

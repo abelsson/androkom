@@ -154,6 +154,11 @@ public class ConferenceList extends ListActivity
             startActivity(intent);
 			return true;
 
+		case R.id.menu_seewhoison_id:
+			seewhoison();
+			return true;
+
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -174,7 +179,11 @@ public class ConferenceList extends ListActivity
 		return false;
 	}
 
-
+	protected void seewhoison() {
+        Intent intent = new Intent(this, WhoIsOn.class);    
+        startActivity(intent);
+	}
+	
     /**
      * Refresh list of unread conferences.
      */
