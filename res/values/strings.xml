@@ -22,7 +22,8 @@
     <string name="person">"Person "</string>
     <string name="does_not_exist">" does not exist"</string>
     <string name="no_presentation_error">Presentation missing</string>
-    
+    <string name="no_recipient_error">No such recipient</string>
+
 	<string name="login_name">Username:</string>
 	<string name="login_id">UserID: (optional)</string>
 	<string name="login_password">Password:</string>

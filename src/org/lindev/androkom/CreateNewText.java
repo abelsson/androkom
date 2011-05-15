@@ -94,53 +94,75 @@ public class CreateNewText extends Activity
         	}
         }
 
-        protected void onPostExecute(final String result) 
-        { 
-            this.dialog.dismiss();
+		protected void onPostExecute(final String result) {
+			this.dialog.dismiss();
 
-            if (result.length() > 0) {
-            	// Login failed, check why
-            	if (conferences != null) {
-            		if (conferences.length > 1) {
-            			Log.d(TAG, "Ambigous name");
-            			final CharSequence[] items = new CharSequence[conferences.length];
-            			for(int i=0; i <conferences.length; i++) {
-            				items[i]=new String(conferences[i].getNameString());
-            				Log.d(TAG, "Name "+i+":"+items[i]);
-            			}
-            			AlertDialog.Builder builder = new AlertDialog.Builder(CreateNewText.this);
-            			builder.setTitle(getString(R.string.pick_a_name));
-            			builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-            				public void onClick(DialogInterface dialog, int item) {
-            					Toast.makeText(getApplicationContext(), items[item], Toast.LENGTH_SHORT).show();
-            					dialog.cancel();
-            					recipientNo = conferences[item].confNo;
-            					Log.d(TAG, "Selected confNo:"+recipientNo+":"+new String(conferences[item].getNameString()));
-            					doCreateText();
-            				}
-            			});
-            			AlertDialog alert = builder.create();
-            			alert.show();
-            		}
-            	} else {
-            		AlertDialog.Builder builder = new AlertDialog.Builder(CreateNewText.this);
-            		builder.setMessage(result)
-            		.setCancelable(false)
-            		.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
-            			public void onClick(DialogInterface dialog, int id) {
-            				dialog.cancel();
-            			}
-            		});
-            		AlertDialog alert = builder.create();
-            		alert.show();
-            	}
-            }
-            else {
-            	// Create succeeded, just die
-                finish();
-            }
-        }
-    }
+			if (result.length() > 0) {
+				// Login failed, check why
+				if (conferences != null) {
+					if (conferences.length > 1) {
+						Log.d(TAG, "Ambigous name");
+						final CharSequence[] items = new CharSequence[conferences.length];
+						for (int i = 0; i < conferences.length; i++) {
+							items[i] = new String(conferences[i]
+									.getNameString());
+							Log.d(TAG, "Name " + i + ":" + items[i]);
+						}
+						AlertDialog.Builder builder = new AlertDialog.Builder(
+								CreateNewText.this);
+						builder.setTitle(getString(R.string.pick_a_name));
+						builder.setSingleChoiceItems(items, -1,
+								new DialogInterface.OnClickListener() {
+									public void onClick(DialogInterface dialog,
+											int item) {
+										Toast
+												.makeText(
+														getApplicationContext(),
+														items[item],
+														Toast.LENGTH_SHORT)
+												.show();
+										dialog.cancel();
+										recipientNo = conferences[item].confNo;
+										Log.d(TAG, "Selected confNo:"
+												+ recipientNo
+												+ ":"
+												+ new String(conferences[item]
+														.getNameString()));
+										doCreateText();
+									}
+								});
+						AlertDialog alert = builder.create();
+						alert.show();
+					} else if (conferences.length == 1) {
+						// Create succeeded, just die
+						finish();
+					} else {
+						Toast.makeText(getApplicationContext(),
+								getString(R.string.no_recipient_error),
+								Toast.LENGTH_SHORT).show();
+					}
+				} else {
+					AlertDialog.Builder builder = new AlertDialog.Builder(
+							CreateNewText.this);
+					builder.setMessage(result).setCancelable(false)
+							.setNegativeButton("Ok",
+									new DialogInterface.OnClickListener() {
+										public void onClick(
+												DialogInterface dialog, int id) {
+											dialog.cancel();
+										}
+									});
+					AlertDialog alert = builder.create();
+					alert.show();
+					// Create succeeded, just die
+					finish();
+				}
+			} else {
+				// Create succeeded, just die
+				finish();
+			}
+		}
+	}
 
     /**
      * New text canceled. Just finish up and die.

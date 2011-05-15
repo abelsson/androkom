@@ -22,6 +22,7 @@
     <string name="person">"Person "</string>
     <string name="does_not_exist">" finns inte"</string>
     <string name="no_presentation_error">Presentation saknas</string>
+    <string name="no_recipient_error">Ingen mottagare</string>
     
 	<string name="login_name">Användarnamn:</string>
 	<string name="login_id">AnvändarID: (vid behov)</string>
