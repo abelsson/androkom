@@ -34,8 +34,7 @@
         
          <!--  Who Is On -->
          <activity android:name=".WhoIsOn"       
-                   android:label="@string/seewhoison_label"
-                   android:windowSoftInputMode="stateVisible|adjustResize">
+                   android:label="@string/seewhoison_label">
         </activity>
         
          <!--  Login dialog -->

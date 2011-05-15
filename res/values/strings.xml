@@ -12,6 +12,7 @@
     <string name="x_says_y">" says "</string>
     <string name="x_to_y">" to "</string>
     <string name="lyskom_full">Lyskom is full, please make space</string>
+    <string name="sync_db_msg">Syncing database</string>
     <string name="loading_text">Loading text..</string>
     <string name="loading">Loading...</string>
     <string name="all_read">All read</string>

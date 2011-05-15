@@ -139,6 +139,10 @@ public class App extends Application
                 Toast.makeText(App.this, getString(R.string.lyskom_full),
                         Toast.LENGTH_SHORT).show();
     			break;
+            case nu.dll.lyskom.Asynch.sync_db:
+                Toast.makeText(App.this, getString(R.string.sync_db_msg),
+                        Toast.LENGTH_SHORT).show();
+    			break;
     		}
     		super.handleMessage(msg);
     	}
