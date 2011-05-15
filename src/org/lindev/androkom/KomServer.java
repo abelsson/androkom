@@ -505,6 +505,18 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
       }
     }
 
+    public void endast(int confNo, int no) {
+    	try {
+			s.endast(confNo, no);
+		} catch (RpcFailure e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+    }
+    
     public TextInfo getParentToText(int textNo)
     {
     	try {

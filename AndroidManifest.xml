@@ -36,6 +36,11 @@
          <activity android:name=".WhoIsOn"       
                    android:label="@string/seewhoison_label">
         </activity>
+
+         <!--  Endast -->
+         <activity android:name=".Endast"       
+                   android:label="@string/endast_label">
+        </activity>
         
          <!--  Login dialog -->
          <activity android:name=".Login"       

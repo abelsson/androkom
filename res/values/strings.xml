@@ -23,6 +23,7 @@
     <string name="does_not_exist">" does not exist"</string>
     <string name="no_presentation_error">Presentation missing</string>
     <string name="no_recipient_error">No such recipient</string>
+    <string name="no_conference_error">No such conference</string>
     <string name="no_unreads">Nothing to read</string>
     <string name="local_time">(local)</string>
     
@@ -116,4 +117,10 @@
     <string name="positiveButton">Do</string>
     <string name="cancelButton">Cancel</string>
     <string name="lyskomPrompt">Lyskom:</string>
+    
+    <string name="conf_name">Conference:</string>
+    <string name="num_texts">Number of texts:</string>
+    <string name="do_endast">Endast!</string>
+    <string name="endast_label">Endast</string>
+    <string name="endast_shortcut">E</string>
 </resources>

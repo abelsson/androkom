@@ -23,6 +23,7 @@
     <string name="does_not_exist">" finns inte"</string>
     <string name="no_presentation_error">Presentation saknas</string>
     <string name="no_recipient_error">Ingen mottagare</string>
+    <string name="no_conference_error">Inget sådant möte</string>
     <string name="no_unreads">Inga olästa</string>
     <string name="local_time">(lokal)</string>
     
@@ -115,4 +116,9 @@
     <string name="cancelButton">Avbryt</string>
     <string name="lyskomPrompt">Lyskom:</string>
 
+    <string name="conf_name">Möte:</string>
+    <string name="num_texts">Antal texter:</string>
+    <string name="do_endast">Endast!</string>
+    <string name="endast_label">Endast</string>
+    <string name="endast_shortcut">E</string>
 </resources>

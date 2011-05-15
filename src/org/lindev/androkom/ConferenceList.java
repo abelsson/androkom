@@ -165,6 +165,10 @@ public class ConferenceList extends ListActivity
 			seewhoison();
 			return true;
 
+		case R.id.menu_endast_id:
+            intent = new Intent(this, Endast.class);    
+            startActivity(intent);
+			return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
