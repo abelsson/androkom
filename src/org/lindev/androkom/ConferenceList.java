@@ -1,5 +1,6 @@
 package org.lindev.androkom;
 
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -9,6 +10,7 @@ import org.lindev.androkom.KomServer.ConferenceInfo;
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.Bundle;
+import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -37,10 +39,15 @@ public class ConferenceList extends ListActivity
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-                
+        
+        // Use a custom layout file
+        setContentView(R.layout.main);
+
+        emptyview = (TextView) findViewById(android.R.id.empty);
+
         mTimer = new Timer();
     
-        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.main);
+        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.conflistconf);
         setListAdapter(mAdapter);
         
         ListView lv = getListView();
@@ -205,6 +212,11 @@ public class ConferenceList extends ListActivity
         	if(mConferences!=null) {
             	Log.d(TAG, "mConferences is empty:"+mConferences.isEmpty());
         	}
+        	String currentDateTimeString = new Date().toLocaleString();
+        	emptyview.setText(getString(R.string.no_unreads)+"\n"+
+        			currentDateTimeString+"\n"+
+        			getString(R.string.local_time)
+        			);
         }
     }
  
@@ -242,4 +254,5 @@ public class ConferenceList extends ListActivity
     private List<ConferenceInfo> mConferences;
     private ArrayAdapter<ConferenceInfo> mAdapter;
     private Timer mTimer;
+    TextView emptyview;
  }
