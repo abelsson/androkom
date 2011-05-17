@@ -47,6 +47,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver, nu.dll.lyskom.Log
 {
 	public static final String TAG = "Androkom KomServer";
+	public static boolean RELEASE_BUILD = true;
 
     /**
      * Class for clients to access.  Because we assume this service always
@@ -149,7 +150,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
     
     public KomServer() {
-    	System.setProperty("lattekom.debug", "true");
+    	if (!RELEASE_BUILD)
+    		System.setProperty("lattekom.debug", "true");
         System.setProperty("lattekom.enable-prefetch", "true"); 
         Session.setLog(this);
         mLastTextNo = -1;
@@ -1385,7 +1387,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     private String re_password; // for reconnect
     private String re_server; // for reconnect
 
-    private boolean hidden_session = true;
+    private boolean hidden_session = !RELEASE_BUILD;
     
 	Handler asyncHandler=null;
 }
