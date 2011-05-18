@@ -36,6 +36,7 @@ import android.view.MenuItem;
 import android.view.MotionEvent;
 import android.view.View;
 import android.view.View.OnTouchListener;
+import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.EditText;
@@ -66,6 +67,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
+    	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+    	
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.conference);
@@ -112,14 +115,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     private class LoadMessageTask extends AsyncTask<Integer, Integer, TextInfo> 
     {
-        private final ProgressDialog dialog = new ProgressDialog(Conference.this);
-
         protected void onPreExecute() 
         {
-            this.dialog.setCancelable(true);
-            this.dialog.setIndeterminate(true);
-            this.dialog.setMessage(getString(R.string.loading));
-            this.dialog.show();
+        	setProgressBarIndeterminateVisibility(true);
         }
 
         // worker thread (separate from UI thread)
@@ -146,8 +144,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         protected void onPostExecute(final TextInfo text) 
         {
+        	setProgressBarIndeterminateVisibility(false);
             if (text.getTextNo() < 0) {
-                this.dialog.dismiss();
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 return;
             }
@@ -157,7 +155,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
             setTitle(((App)getApplication()).getKom().getConferenceName());
-            this.dialog.dismiss();
         }
     }
 
@@ -678,6 +675,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             body.append("</b>");
         }
         
+        /*
         body.append("<p>");
         for(String line : lines) {
             if (line.startsWith(" ") || line.startsWith("\t"))
@@ -687,13 +685,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             if (line.trim().length() == 0)
                 body.append("</p><p>");
 
-            line = line.replaceAll("&", "&amp;");
-            line = line.replaceAll("<", "&lt;");
-            line = line.replaceAll(">", "&gt;");
+            
             body.append(line);
             body.append(" ");
         }
         body.append("</p>");
+        */
+        FillMessage fm = new FillMessage(text.getBody());
+        body.append(fm.run());
 
         Log.i("androkom", body.toString());
 
