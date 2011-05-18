@@ -121,10 +121,8 @@ class FillMessage {
 		Paragraph p = new Paragraph();
 
 		for(String line : lines) {          
-			System.out.println(line);
 			if (line.trim().length() == 0) {
 				paragraphs.add(p);
-				System.out.println("---------");
 				p = new Paragraph();
 			} else {    
 				p.lines.add(line);
@@ -135,13 +133,6 @@ class FillMessage {
 
 		for(Paragraph pp : paragraphs) {
 			ret += pp.format() + "\n";
-			System.out.println("-----------");
-
-			System.out.println(pp.format());
-
-			System.out.println("-----------");
-
-			System.out.println();
 		}
 
 		return ret;
