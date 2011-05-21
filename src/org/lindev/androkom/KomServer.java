@@ -68,11 +68,12 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         public int id;
         public String name;
+        public int numUnread;
 
         @Override
         public String toString() 
         {
-            return name + " <" + id + ">";
+        	return "(" + numUnread + ") " + name;
         }
     }
 
@@ -341,6 +342,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 ConferenceInfo info = new ConferenceInfo();
                 info.id = conf;
                 info.name = name;
+                info.numUnread = s.getUnreadCount(conf);
 
                 arr.add(info);
             }
