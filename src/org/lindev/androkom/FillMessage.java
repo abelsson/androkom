@@ -112,7 +112,7 @@ class FillMessage {
 	}
 
 	String run()
-	{   
+	{
 		String ret = new String();
 
 		String lines[] = data.split("\\n");
@@ -120,12 +120,14 @@ class FillMessage {
 
 		Paragraph p = new Paragraph();
 
-		for(String line : lines) {          
+		for(String line : lines) {
 			if (line.trim().length() == 0) {
-				paragraphs.add(p);
-				p = new Paragraph();
-			} else {    
-				p.lines.add(line);
+			    if (!p.lines.isEmpty()) {
+			        paragraphs.add(p);
+			    }
+			    p = new Paragraph();
+			} else {
+			    p.lines.add(line);
 			}
 
 		}
@@ -137,5 +139,4 @@ class FillMessage {
 
 		return ret;
 	}
-
 }
