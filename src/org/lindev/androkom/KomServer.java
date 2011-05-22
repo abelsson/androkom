@@ -73,7 +73,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         @Override
         public String toString() 
         {
-        	return "(" + numUnread + ") " + name;
+            return name + " <" + id + ">";
         }
     }
 
