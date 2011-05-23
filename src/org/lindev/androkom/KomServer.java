@@ -5,6 +5,8 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
+import java.util.LinkedList;
 import java.util.List;
 
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
@@ -20,8 +22,10 @@ import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
+import nu.dll.lyskom.Selection;
 import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
 
 import android.app.Service;
@@ -526,6 +530,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			int arr[] = t.getCommented();
 			if (arr.length > 0) {
 				return getKomText(arr[0]);
+			} else {
+				return new TextInfo(-1, "", "", "", "", "Text has no parent");
 			}
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
@@ -776,23 +782,33 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
 	public void markTextAsRead(int textNo)
     {
-    	Text text;
 		try {
-			text = s.getText(textNo);
-			// TODO: Should batch these up and send in a group, instead of many separate requests.
-			int recipents[] = text.getRecipients();						
-			for(int i=0;i<recipents.length;i++) {
-				int confNo = recipents[i];
-				int[] localTextNo = { text.getLocal(confNo) };
-				s.doMarkAsRead(confNo, localTextNo); 
-			}
-			
-			int ccrecipients[] = text.getCcRecipients();
-			for(int i=0;i<ccrecipients.length;i++) {
-				int confNo = ccrecipients[i];
-				int[] localTextNo = { text.getLocal(confNo) };
-				s.doMarkAsRead(confNo, localTextNo); 
-			}
+			// Code from Session.markAsRead(), except the final MarkAsRead call
+			// is asynchronous instead of synchronous. 
+			TextStat stat = s.getTextStat(textNo, true);
+	        
+	        List<Selection> recipientSelections = new LinkedList<Selection>();
+	        int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt,
+	                TextStat.miscBccRecpt };
+	        for (int i = 0; i < tags.length; i++) {
+	            recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
+	        }
+
+	        Iterator<?> recipientIterator = recipientSelections.iterator();
+	        while (recipientIterator.hasNext()) {
+	            Selection selection = (Selection) recipientIterator.next();
+	            int rcpt = 0;
+	            for (int i = 0; i < tags.length; i++) {
+	                if (selection.contains(tags[i]))
+	                    rcpt = selection.getIntValue(tags[i]);
+	            }
+	            if (rcpt > 0 && s.isMemberOf(rcpt)) {
+	                int local = selection.getIntValue(TextStat.miscLocNo);
+	                Log.d(TAG,"markAsRead: global " + textNo + " rcpt " + rcpt
+	                        + " local " + local);
+	                s.doMarkAsRead(rcpt, new int[] { local });
+	            }
+	        }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
