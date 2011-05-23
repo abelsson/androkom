@@ -6,9 +6,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.KomServer.TextInfo;
 
 import android.app.ListActivity;
 import android.content.Intent;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.text.format.DateFormat;
 import android.util.Log;
@@ -17,6 +19,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.Window;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
@@ -39,6 +42,7 @@ public class ConferenceList extends ListActivity
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         
         // Use a custom layout file
         setContentView(R.layout.main);
@@ -63,17 +67,17 @@ public class ConferenceList extends ListActivity
     {
         super.onResume();
                
-        mAdapter.clear();
-        
+              
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
 
             @Override
             public void run() {
-                // Must populate list in UI thread.
+            	 
+				// Must populate list in UI thread.
                 runOnUiThread(new Runnable() {
                     public void run() {                     
-                        populateConferences();      
+                    	 new PopulateConferenceTask().execute();      
                     }
                     
                 });                     
@@ -195,34 +199,54 @@ public class ConferenceList extends ListActivity
         startActivity(intent);
 	}
 	
-    /**
-     * Refresh list of unread conferences.
-     */
-    private void populateConferences() 
+	
+	
+	private class PopulateConferenceTask extends AsyncTask<Void, Void, List<ConferenceInfo> > 
     {
-        mAdapter.clear();
-
-        mConferences = fetchConferences();
-        if (mConferences != null && (!mConferences.isEmpty())) {
-        	for(ConferenceInfo elem : mConferences) {
-        		mAdapter.add(elem);
-        	}
-
-        	mAdapter.notifyDataSetChanged();
-        } else {
-        	// TODO: Do something here?
-        	Log.d(TAG, "populateConferences failed, no Conferences");
-        	Log.d(TAG, "mConferences is null:"+(mConferences==null));
-        	if(mConferences!=null) {
-            	Log.d(TAG, "mConferences is empty:"+mConferences.isEmpty());
-        	}
-        	String currentDateTimeString = new Date().toLocaleString();
-        	emptyview.setText(getString(R.string.no_unreads)+"\n"+
-        			currentDateTimeString+"\n"+
-        			getString(R.string.local_time)
-        			);
+		@Override
+        protected void onPreExecute() 
+        {
+        	setProgressBarIndeterminateVisibility(true);
         }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected List<ConferenceInfo> doInBackground(final Void... args) 
+        {
+        	return fetchConferences();        	       	
+        }
+
+        @Override
+        protected void onPostExecute(final List<ConferenceInfo> fetched) 
+        {
+        	setProgressBarIndeterminateVisibility(false);
+
+            mAdapter.clear();
+            mConferences = fetched;
+            
+            if (mConferences != null && (!mConferences.isEmpty())) {
+            	for(ConferenceInfo elem : mConferences) {
+            		mAdapter.add(elem);
+            	}
+
+            	mAdapter.notifyDataSetChanged();
+            } else {
+            	// TODO: Do something here?
+            	Log.d(TAG, "populateConferences failed, no Conferences");
+            	Log.d(TAG, "mConferences is null:"+(mConferences==null));
+            	if(mConferences!=null) {
+                	Log.d(TAG, "mConferences is empty:"+mConferences.isEmpty());
+            	}
+            	String currentDateTimeString = new Date().toLocaleString();
+            	emptyview.setText(getString(R.string.no_unreads)+"\n"+
+            			currentDateTimeString+"\n"+
+            			getString(R.string.local_time)
+            			);
+            }
+        }
+
     }
+
  
     private List<ConferenceInfo> fetchConferences() {
     	List<ConferenceInfo> retlist = null;
