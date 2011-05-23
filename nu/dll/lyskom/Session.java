@@ -901,7 +901,7 @@ public class Session implements AsynchMessageReceiver, RpcReplyReceiver,
     public int nextUnreadConference(boolean change) throws IOException {
         int oldCurrent = currentConference;
 
-        if (unreadsConferences.size() == 0)
+        if (unreadsConferences == null || unreadsConferences.size() == 0)
             return -1;
         Iterator<Integer> iter = unreadsConferences.iterator();
         while (iter.hasNext()) {
