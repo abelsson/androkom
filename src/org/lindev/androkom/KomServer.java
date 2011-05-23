@@ -778,6 +778,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
 	public void markTextAsRead(int textNo)
     {
+	    Log.i(TAG, "Mark as read: " + textNo);
     	Text text;
 		try {
 			text = s.getText(textNo);

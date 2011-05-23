@@ -91,7 +91,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } else {
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
-            mState.currentTextIndex = 0;
+            mState.currentTextIndex = -1;
             mState.ShowFullHeaders = ConferencePrefs.getShowFullHeaders(getBaseContext());
             getApp().getKom().setShowFullHeaders(mState.ShowFullHeaders);
             getApp().getKom().setConference(confNo);
@@ -126,7 +126,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         		switch (args[0]) {
         		case MESSAGE_TYPE_PARENT_TO:
         			Log.d(TAG, "Trying to get parent text of"+args[1]);
-            		return ((App)getApplication()).getKom().getParentToText(args[1]);    
+            		return ((App)getApplication()).getKom().getParentToText(args[1]);
         		case MESSAGE_TYPE_TEXTNO: 
         			Log.d(TAG, "Trying to get text "+args[1]);
             		return ((App)getApplication()).getKom().getKomText(args[1]);
@@ -136,9 +136,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         		}
         	}
         	else
-        		return ((App)getApplication()).getKom().getNextUnreadText();    
-        	
-        	
+        		return ((App)getApplication()).getKom().getNextUnreadText();
         }
 
         protected void onPostExecute(final TextInfo text) 
@@ -148,8 +146,16 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 return;
             }
+            
+            // Mark current text as read
+            if (mState.hasCurrent())
+            {
+                ((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
+            }
+            
             mState.currentText.push(text);
             mState.currentTextIndex = mState.currentText.size() - 1;
+            Log.i(TAG, stackAsString());
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
@@ -264,14 +270,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 	private void moveToPrevText() {
 		Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
-		
-		mState.currentTextIndex--;        
+
+        ((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
+
+		mState.currentTextIndex--;
 		
 		if (mState.currentTextIndex < 0) {
 		    mState.currentTextIndex = 0;
 		    return;
 		}
-		
+
+		Log.i(TAG, stackAsString());
 		mSwitcher.setInAnimation(mSlideRightIn);
 		mSwitcher.setOutAnimation(mSlideRightOut);
 		mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
@@ -279,7 +288,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 	private void moveToNextText() {
 		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
-		
+
 		((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
 
 		mState.currentTextIndex++;
@@ -298,6 +307,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		    mSwitcher.setInAnimation(mSlideLeftIn);
 		    mSwitcher.setOutAnimation(mSlideLeftOut);
 
+	        Log.i(TAG, stackAsString());
 		    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
 		}
 	}
@@ -702,12 +712,31 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     private class State {
         int currentTextIndex;
-        Stack<TextInfo> currentText;   
+        Stack<TextInfo> currentText;
+        boolean hasCurrent() { return currentTextIndex > 0; }
         TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
         boolean ShowFullHeaders;
     };
     
     State mState;
+
+    private String stackAsString()
+    {
+        String str = "STACK: ";
+        for (int i = 0; i < mState.currentText.size(); ++i)
+        {
+            int textNo = mState.currentText.elementAt(i).getTextNo();
+            if (i == mState.currentTextIndex)
+            {
+                str += " [" + textNo + "]";
+            }
+            else
+            {
+                str += " " + textNo;
+            }
+        }
+        return str;
+    }
 
     // For gestures and animations
 
