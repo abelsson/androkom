@@ -153,15 +153,16 @@ class FillMessage {
 	{   
 		StringBuilder ret = new StringBuilder();
 
+
 		String lines[] = data.split("\\n");
 		ArrayList<Paragraph> paragraphs = new ArrayList<Paragraph>();
 
 		Paragraph p = new Paragraph();
 
-		for(String line : lines) {          
+		for(String line : lines) {
 			if (line.trim().length() == 0) {
 				// don't add empty paragraphs.
-				if (p.lines.size() == 0)
+				if (p.lines.isEmpty())
 					continue;
 				paragraphs.add(p);
 				p = new Paragraph();
@@ -178,5 +179,4 @@ class FillMessage {
 
 		return ret.toString();
 	}
-
 }

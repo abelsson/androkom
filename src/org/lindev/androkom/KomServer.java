@@ -72,6 +72,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         public int id;
         public String name;
+        public int numUnread;
 
         @Override
         public String toString() 
@@ -345,6 +346,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 ConferenceInfo info = new ConferenceInfo();
                 info.id = conf;
                 info.name = name;
+                info.numUnread = s.getUnreadCount(conf);
 
                 arr.add(info);
             }
@@ -782,6 +784,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
 	public void markTextAsRead(int textNo)
     {
+	    Log.i(TAG, "Mark as read: " + textNo);
+
 		try {
 			// Code from Session.markAsRead(), except the final MarkAsRead call
 			// is asynchronous instead of synchronous. 

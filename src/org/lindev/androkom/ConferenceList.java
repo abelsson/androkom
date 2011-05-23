@@ -51,7 +51,7 @@ public class ConferenceList extends ListActivity
 
         mTimer = new Timer();
     
-        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.conflistconf);
+        mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
         setListAdapter(mAdapter);
         
         ListView lv = getListView();
@@ -226,7 +226,8 @@ public class ConferenceList extends ListActivity
             
             if (mConferences != null && (!mConferences.isEmpty())) {
             	for(ConferenceInfo elem : mConferences) {
-            		mAdapter.add(elem);
+            		String str = "(" + elem.numUnread + ") " + elem.name;            	
+            		mAdapter.add(str);
             	}
 
             	mAdapter.notifyDataSetChanged();
@@ -280,7 +281,7 @@ public class ConferenceList extends ListActivity
     
  
     private List<ConferenceInfo> mConferences;
-    private ArrayAdapter<ConferenceInfo> mAdapter;
+    private ArrayAdapter<String> mAdapter;
     private Timer mTimer;
     TextView emptyview;
  }
