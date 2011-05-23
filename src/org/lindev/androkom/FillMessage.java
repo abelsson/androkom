@@ -50,9 +50,27 @@ class Paragraph {
     	}
     	return any;
     }
+    
+    boolean isPointList()
+    {
+    	float characters = 0;
+    	float charactersPerFullLine = 76;
+    	  	
+    	for(String line : lines) {
+    		characters += line.length();
+    	}
+    	float maxCharacters = charactersPerFullLine * lines.size();
+    	float fillRatio = characters/maxCharacters;
+    	
+    	System.out.println("Fillratio = " + fillRatio);
+    	return fillRatio < 0.55;
+    	
+    }
 
     String formatQuote() {
-    	String ret = "<blockquote>";
+    	StringBuilder ret = new StringBuilder();
+    	
+    	ret.append("<blockquote>");
     	
     	StringBuilder body = new StringBuilder();
     	  	
@@ -60,29 +78,46 @@ class Paragraph {
     		body.append(line.substring(1).trim() + "\n");
     	
     	FillMessage fm = new FillMessage(body.toString());
-        ret += fm.run();
+    	ret.append(fm.run());
         
-    	ret += "</blockquote>";
-    	return ret;
+    	ret.append("</blockquote>");
+    	return ret.toString();
     }
 
     String formatBulletList() {
-    	String ret = "<ul>";
+    	/*
+    	TODO - enable when we can display html lists.
+    	StringBuilder ret = new StringBuilder();
+    	ret.append("<ul>");
     	for(String line : lines) 
-    		ret += "<li>" + escape(line.substring(1)) + "</li>\n";
-    	ret += "</ul>";
-    	return ret;
+    		ret.append("<li>" + escape(line.substring(1)) + "</li>\n");
+    	ret.append("</ul>");
+    	return ret.toString();
+    	*/
+    	
+    	StringBuilder ret = new StringBuilder();
+    	
+    	ret.append("<p>");
+    	for(String line : lines) 
+    		ret.append(escape(line) + "<br />\n");
+    	ret.append("</p>");
+    	
+    	return ret.toString();
     }
 
     String formatPreformatted() {
-    	String ret = "<p>";
+    	StringBuilder ret = new StringBuilder();
+    	ret.append("<p>");
     	for(String line : lines) 
-    		ret += escape(line).replaceAll(" ", "&nbsp;") + "<br />\n";
-    	ret += "</p>";
-    	return ret;
+    		ret.append(escape(line).replaceAll(" ", "&nbsp;") + "<br />\n");
+    	ret.append("</p>");
+    	return ret.toString();
     }
     
     String format() {
+    	if (lines.size() == 0 || (lines.size() == 1 && lines.get(0).trim().length() == 0))
+    			return "";
+    	
     	if (isQuote()) {
     		return formatQuote();
     	}
@@ -91,6 +126,9 @@ class Paragraph {
     	} 
     	if (isPreformatted()) {
     		return formatPreformatted();
+    	}
+    	if (isPointList()) {
+    		return formatBulletList();
     	} else {
     		String ret = "<p>";
     		for(String line : lines) 
@@ -113,7 +151,7 @@ class FillMessage {
 
 	String run()
 	{   
-		String ret = new String();
+		StringBuilder ret = new StringBuilder();
 
 		String lines[] = data.split("\\n");
 		ArrayList<Paragraph> paragraphs = new ArrayList<Paragraph>();
@@ -122,6 +160,9 @@ class FillMessage {
 
 		for(String line : lines) {          
 			if (line.trim().length() == 0) {
+				// don't add empty paragraphs.
+				if (p.lines.size() == 0)
+					continue;
 				paragraphs.add(p);
 				p = new Paragraph();
 			} else {    
@@ -131,11 +172,11 @@ class FillMessage {
 		}
 		paragraphs.add(p);
 
-		for(Paragraph pp : paragraphs) {
-			ret += pp.format() + "\n";
+		for(Paragraph pp : paragraphs) {			
+			ret.append(pp.format() + "\n");
 		}
 
-		return ret;
+		return ret.toString();
 	}
 
 }
