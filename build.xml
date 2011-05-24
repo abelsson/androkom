@@ -19,7 +19,7 @@
 
   <target name="lattekom.compile" depends="init">
     <javac destdir="${lattekom.build}" srcdir="${src}" deprecation="on"
-           includes="nu/dll/lyskom/**" />
+           includes="nu/dll/lyskom/**" encoding="utf-8" />
 
   </target>
 
