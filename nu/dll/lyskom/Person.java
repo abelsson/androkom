@@ -184,6 +184,7 @@ public class Person {
 		pcount = pcount + KomTime.ITEM_SIZE;
 		person.userArea = parameters[pcount++].intValue();
 		person.totalTimePresent = 1; // TODO:parameters[pcount++].intValue(); crash on value like 3821863021
+		pcount++;
 		person.sessions = parameters[pcount++].intValue();
 		person.createdLines = parameters[pcount++].intValue();
 		person.createdBytes = parameters[pcount++].intValue(); // new
