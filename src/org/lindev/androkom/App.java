@@ -5,9 +5,7 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -102,50 +100,6 @@ public class App extends Application
             Toast.makeText(App.this, getString(R.string.komserver_disconnected),
                     Toast.LENGTH_SHORT).show();
         }
-    };
-    
-    public Handler getasynchandler() {
-    	return asyncHandler;
-    }
-    
-    private Handler asyncHandler = new Handler() {
-    	public void handleMessage(Message msg) {
-    		switch (msg.what) {
-    		case nu.dll.lyskom.Asynch.login:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+
-                		getString(R.string.x_logged_in),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.logout:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+
-                		getString(R.string.x_logged_out),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.new_name:
-                Toast.makeText(App.this, ""+msg.getData().getString("oldname")+
-                		getString(R.string.x_changed_to_y)+
-                		msg.getData().getString("newname"),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.send_message:
-                Toast.makeText(App.this, ""+msg.getData().getString("from")+
-                		getString(R.string.x_says_y)+
-                		msg.getData().getString("msg")+
-                		getString(R.string.x_to_y)
-                		+msg.getData().getString("to"),
-                        Toast.LENGTH_LONG).show();
-    			break;
-            case nu.dll.lyskom.Asynch.rejected_connection:
-                Toast.makeText(App.this, getString(R.string.lyskom_full),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-            case nu.dll.lyskom.Asynch.sync_db:
-                Toast.makeText(App.this, getString(R.string.sync_db_msg),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		}
-    		super.handleMessage(msg);
-    	}
     };
     
     PowerManager.WakeLock wl = null;
