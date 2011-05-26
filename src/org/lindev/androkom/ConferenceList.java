@@ -6,13 +6,11 @@ import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.KomServer.ConferenceInfo;
-import org.lindev.androkom.KomServer.TextInfo;
 
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
-import android.text.format.DateFormat;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -173,6 +171,11 @@ public class ConferenceList extends ListActivity
             intent = new Intent(this, Endast.class);    
             startActivity(intent);
 			return true;
+			
+		case R.id.menu_message_log_id:
+		    intent = new Intent(this, MessageLog.class);
+		    startActivity(intent);
+		    return true;
 
 		default:
 			return super.onOptionsItemSelected(item);
