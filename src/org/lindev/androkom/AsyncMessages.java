@@ -4,11 +4,14 @@ import java.io.IOException;
 import java.util.HashSet;
 import java.util.Set;
 
+import org.lindev.androkom.KomServer.TextInfo;
+
 import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
+import nu.dll.lyskom.TextStat;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
@@ -17,7 +20,7 @@ import android.widget.Toast;
 
 public class AsyncMessages implements AsynchMessageReceiver
 {
-    private static final String TAG = "Androkom AsyncMessages";
+    private static final String TAG = "Androkom";
     
     private final App app;
     private final Set<AsyncMessageSubscriber> subscribers;
@@ -141,6 +144,7 @@ public class AsyncMessages implements AsynchMessageReceiver
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
             Log.d(TAG, "Trying to cache text " + params[0].intValue());
+            TextStat foo = new TextStat();
             try {
                 kom.getSession().getText(params[0].intValue());
             } catch (RpcFailure e) {
@@ -195,6 +199,7 @@ public class AsyncMessages implements AsynchMessageReceiver
         @Override
         protected void onPostExecute(final Message msg)
         {
+        	Log.d(TAG, "Number of async subscribers: " + subscribers.size());
             for (AsyncMessageSubscriber subscriber : subscribers)
             {
                 subscriber.asyncMessage(msg);
