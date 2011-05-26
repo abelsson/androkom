@@ -50,7 +50,7 @@ import android.widget.Toast;
  */
 public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver, nu.dll.lyskom.Log
 {
-	public static final String TAG = "Androkom KomServer";
+	public static final String TAG = "Androkom";
 	public static boolean RELEASE_BUILD = true;
 
     /**

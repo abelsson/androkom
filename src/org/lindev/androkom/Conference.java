@@ -52,7 +52,7 @@ import android.widget.ViewSwitcher;
  */
 public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener
 {
-	public static final String TAG = "Androkom Conference";
+	public static final String TAG = "Androkom";
 
     private static final int SWIPE_MIN_DISTANCE = 150;
     private static final int SWIPE_MAX_OFF_PATH = 250;

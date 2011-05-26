@@ -33,7 +33,7 @@ import android.widget.Toast;
  */
 public class ConferenceList extends ListActivity 
 {
-	public static final String TAG = "Androkom ConferenceList";
+	public static final String TAG = "Androkom";
 
 	/**
      * Instantiate activity.  

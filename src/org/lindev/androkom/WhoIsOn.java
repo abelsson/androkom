@@ -22,7 +22,7 @@ import android.widget.Toast;
  */
 public class WhoIsOn extends ListActivity 
 {
-	public static final String TAG = "Androkom WhoIsOn";
+	public static final String TAG = "Androkom";
 
 	/**
      * Instantiate activity.  
