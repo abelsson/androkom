@@ -22,6 +22,7 @@ import nu.dll.lyskom.Text;
 import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
 
+import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 
 import android.app.Service;
@@ -43,8 +44,8 @@ import android.widget.Toast;
  */
 public class KomServer extends Service implements RpcEventListener, nu.dll.lyskom.Log
 {
-	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static final String TAG = "Androkom";
+	public static boolean RELEASE_BUILD = false;
 
     /**
      * Class for clients to access.  Because we assume this service always
@@ -327,6 +328,23 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     }
     
     /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void addAsyncSubscriber(AsyncMessageSubscriber sub)
+    {
+    	asyncMessagesHandler.subscribe(sub);
+    }
+    
+    /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void removeAsyncSubscriber(AsyncMessageSubscriber sub)
+    {
+    	asyncMessagesHandler.unsubscribe(sub);
+    }
+      
+    
+    /**
      * Fetch a list of conferences with unread texts.
      */
     public List<ConferenceInfo> fetchConferences()
@@ -447,7 +465,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
                 return "Invalid/ambigious username";
             } else {
                 // login as hidden
-                if (!s.login(usernames[0].confNo, password, hidden_session)) {
+                if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
                     return "Invalid password";
                 }
             }
@@ -487,7 +505,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 
         try {
         	// login as hidden
-        	if (!s.login(userid, password, hidden_session)) {
+        	if (!s.login(userid, password, hidden_session, false)) {
         		return "Invalid password";
         	}
         	s.setClientVersion("Androkom", getVersionName());

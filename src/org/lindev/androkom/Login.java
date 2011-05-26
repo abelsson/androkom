@@ -30,7 +30,7 @@ import android.widget.Toast;
  */
 public class Login extends Activity 
 {
-	public static final String TAG = "Androkom Login";
+	public static final String TAG = "Androkom";
 	private boolean loginFailed = false;
 
     @Override

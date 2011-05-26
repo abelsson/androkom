@@ -5,12 +5,14 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.ListActivity;
 import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -27,116 +29,112 @@ import android.widget.Toast;
  * Show a list of all conferences with unread texts.
  * 
  * @author henrik
- *
+ * 
  */
-public class ConferenceList extends ListActivity 
-{
-	public static final String TAG = "Androkom ConferenceList";
+public class ConferenceList extends ListActivity implements AsyncMessageSubscriber {
+	public static final String TAG = "Androkom";
 
 	/**
-     * Instantiate activity.  
-     */
-    @Override
-    public void onCreate(Bundle savedInstanceState) 
-    {
-        super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        
-        // Use a custom layout file
-        setContentView(R.layout.main);
+	 * Instantiate activity.
+	 */
+	@Override
+	public void onCreate(Bundle savedInstanceState) {
+		super.onCreate(savedInstanceState);
+		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
-        emptyview = (TextView) findViewById(android.R.id.empty);
+		// Use a custom layout file
+		setContentView(R.layout.main);
 
-        mTimer = new Timer();
-    
-        mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
-        setListAdapter(mAdapter);
-        
-        ListView lv = getListView();
-        lv.setTextFilterEnabled(true);   
-    }
-    
-    /**
-     * While activity is active, keep a timer running to periodically refresh
-     * the list of conferences with unread messages.
-     */
-    @Override
-    public void onResume()
-    {
-        super.onResume();
-               
-              
-        mTimer = new Timer();
-        mTimer.scheduleAtFixedRate(new TimerTask() {
+		mEmptyView = (TextView) findViewById(android.R.id.empty);
 
-            @Override
-            public void run() {
-            	 
+		mTimer = new Timer();
+
+		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
+		setListAdapter(mAdapter);
+
+		ListView lv = getListView();
+		lv.setTextFilterEnabled(true);
+		
+		getApp().getKom().addAsyncSubscriber(this);				
+				
+	}
+
+	/**
+	 * While activity is active, keep a timer running to periodically refresh
+	 * the list of conferences with unread messages.
+	 */
+	@Override
+	public void onResume() {
+		super.onResume();
+
+		mTimer = new Timer();
+		mTimer.scheduleAtFixedRate(new TimerTask() {
+
+			@Override
+			public void run() {
+
 				// Must populate list in UI thread.
-                runOnUiThread(new Runnable() {
-                    public void run() {                     
-                    	 new PopulateConferenceTask().execute();      
-                    }
-                    
-                });                     
-            }
-            
-        }, 500, 10000);
-        
-    }
-    
-    /**
-     * If activity is no longer active, cancel periodic updates.
-     */
-    @Override
-    public void onPause()
-    {
-        super.onPause();
-        mTimer.cancel();
-    }
-    
-    @Override
-    protected void onDestroy() 
-    {
-        super.onDestroy();
-        if (isFinishing())
-            getApp().doUnbindService();
-    }
-    
-    /**
-     * Called when a conference has been clicked. Switch to Conference activity, 
-     * passing the ID along.
-     */
-    @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) 
-    {
-        Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();    
-        
-        Intent intent = new Intent(this, Conference.class);
-        intent.putExtra("conference-id", mConferences.get((int)id).id);
-        startActivity(intent);
+				runOnUiThread(new Runnable() {
+					public void run() {
+						new PopulateConferenceTask().execute();
+					}
 
-    }
-    
-    /**
-     * Show options menu. Currently does nothing useful.
-     */
-    @Override 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater = getMenuInflater();
+				});
+			}
 
-        inflater.inflate(R.menu.conferencelist, menu);
-        return true;
-    }
- 
-    /**
-     * Called when user has selected a menu item from the 
-     * menu button popup. 
-     */
-    @Override
+		}, 500, 60000);
+
+	}
+
+	/**
+	 * If activity is no longer active, cancel periodic updates.
+	 */
+	@Override
+	public void onPause() {
+		super.onPause();
+		mTimer.cancel();
+	}
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getApp().getKom().removeAsyncSubscriber(this);		
+		if (isFinishing())
+			getApp().doUnbindService();
+	}
+
+	/**
+	 * Called when a conference has been clicked. Switch to Conference activity,
+	 * passing the ID along.
+	 */
+	@Override
+	protected void onListItemClick(ListView l, View v, int position, long id) {
+		Toast.makeText(getApplicationContext(), ((TextView) v).getText(),
+				Toast.LENGTH_SHORT).show();
+
+		Intent intent = new Intent(this, Conference.class);
+		intent.putExtra("conference-id", mConferences.get((int) id).id);
+		startActivity(intent);
+
+	}
+
+	/**
+	 * Show options menu. Currently does nothing useful.
+	 */
+	@Override
+	public boolean onCreateOptionsMenu(Menu menu) {
+		MenuInflater inflater = getMenuInflater();
+
+		inflater.inflate(R.menu.conferencelist, menu);
+		return true;
+	}
+
+	/**
+	 * Called when user has selected a menu item from the menu button popup.
+	 */
+	@Override
 	public boolean onOptionsItemSelected(MenuItem item) {
-        Intent intent;
+		Intent intent;
 		Log.d(TAG, "onOptionsItemSelected");
 		// Handle item selection
 		switch (item.getItemId()) {
@@ -147,20 +145,20 @@ public class ConferenceList extends ListActivity
 			return true;
 
 		case R.id.menu_createnewtext_id:
-            intent = new Intent(this, CreateNewText.class);    
-            intent.putExtra("recipient_type", 1);
-            startActivity(intent);
+			intent = new Intent(this, CreateNewText.class);
+			intent.putExtra("recipient_type", 1);
+			startActivity(intent);
 			return true;
 
 		case R.id.menu_createnewmail_id:
-            intent = new Intent(this, CreateNewText.class);    
-            intent.putExtra("recipient_type", 2);
-            startActivity(intent);
+			intent = new Intent(this, CreateNewText.class);
+			intent.putExtra("recipient_type", 2);
+			startActivity(intent);
 			return true;
 
 		case R.id.menu_createnewIM_id:
-            intent = new Intent(this, CreateNewIM.class);    
-            startActivity(intent);
+			intent = new Intent(this, CreateNewIM.class);
+			startActivity(intent);
 			return true;
 
 		case R.id.menu_seewhoison_id:
@@ -168,8 +166,8 @@ public class ConferenceList extends ListActivity
 			return true;
 
 		case R.id.menu_endast_id:
-            intent = new Intent(this, Endast.class);    
-            startActivity(intent);
+			intent = new Intent(this, Endast.class);
+			startActivity(intent);
 			return true;
 			
 		case R.id.menu_message_log_id:
@@ -198,93 +196,102 @@ public class ConferenceList extends ListActivity
 	}
 
 	protected void seewhoison() {
-        Intent intent = new Intent(this, WhoIsOn.class);    
-        startActivity(intent);
+		Intent intent = new Intent(this, WhoIsOn.class);
+		startActivity(intent);
 	}
-	
-	
-	
-	private class PopulateConferenceTask extends AsyncTask<Void, Void, List<ConferenceInfo> > 
-    {
+
+	private class PopulateConferenceTask extends
+			AsyncTask<Void, Void, List<ConferenceInfo>> {
 		@Override
-        protected void onPreExecute() 
-        {
-        	setProgressBarIndeterminateVisibility(true);
-        }
+		protected void onPreExecute() {
+			setProgressBarIndeterminateVisibility(true);
+		}
 
-        // worker thread (separate from UI thread)
-        @Override
-        protected List<ConferenceInfo> doInBackground(final Void... args) 
-        {
-        	return fetchConferences();        	       	
-        }
+		// worker thread (separate from UI thread)
+		@Override
+		protected List<ConferenceInfo> doInBackground(final Void... args) {
+			return fetchConferences();
+		}
 
-        @Override
-        protected void onPostExecute(final List<ConferenceInfo> fetched) 
-        {
-        	setProgressBarIndeterminateVisibility(false);
+		@Override
+		protected void onPostExecute(final List<ConferenceInfo> fetched) {
+			setProgressBarIndeterminateVisibility(false);
 
-            mAdapter.clear();
-            mConferences = fetched;
-            
-            if (mConferences != null && (!mConferences.isEmpty())) {
-            	for(ConferenceInfo elem : mConferences) {
-            		String str = "(" + elem.numUnread + ") " + elem.name;            	
-            		mAdapter.add(str);
-            	}
+			mAdapter.clear();
+			mConferences = fetched;
 
-            	mAdapter.notifyDataSetChanged();
-            } else {
-            	// TODO: Do something here?
-            	Log.d(TAG, "populateConferences failed, no Conferences");
-            	Log.d(TAG, "mConferences is null:"+(mConferences==null));
-            	if(mConferences!=null) {
-                	Log.d(TAG, "mConferences is empty:"+mConferences.isEmpty());
-            	}
-            	String currentDateTimeString = new Date().toLocaleString();
-            	emptyview.setText(getString(R.string.no_unreads)+"\n"+
-            			currentDateTimeString+"\n"+
-            			getString(R.string.local_time)
-            			);
-            }
-        }
+			if (mConferences != null && (!mConferences.isEmpty())) {
+				for (ConferenceInfo elem : mConferences) {
+					String str = "(" + elem.numUnread + ") " + elem.name;
+					mAdapter.add(str);
+				}
 
-    }
+				mAdapter.notifyDataSetChanged();
+			} else {
+				// TODO: Do something here?
+				Log.d(TAG, "populateConferences failed, no Conferences");
+				Log.d(TAG, "mConferences is null:" + (mConferences == null));
+				if (mConferences != null) {
+					Log.d(TAG,
+							"mConferences is empty:" + mConferences.isEmpty());
+				}
+				String currentDateTimeString = new Date().toLocaleString();
+				mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+						+ currentDateTimeString + "\n"
+						+ getString(R.string.local_time));
+			}
+		}
 
- 
-    private List<ConferenceInfo> fetchConferences() {
-    	List<ConferenceInfo> retlist = null;
-    	
-    	try {
-            App app = getApp();
-            if (app != null) {
-            	KomServer kom = app.getKom();
-            	if (kom != null) {
-            		if (kom.isConnected()) {
-            			retlist = kom.fetchConferences();
-            		} else {
-            			Log.d(TAG, "Can't fetch conferences when no connection");
-            	        Toast.makeText(getApplicationContext(), "Lost connection", Toast.LENGTH_SHORT).show();    
-            			getApp().getKom().reconnect();
-            		}
-            	}
-            }
-    	} catch (Exception e) {
-    		Log.d(TAG, "fetchConferences failed:"+e);
-    		e.printStackTrace();
-	        Toast.makeText(getApplicationContext(), "fetchConferences failed, probably lost connection", Toast.LENGTH_SHORT).show();    
-    	}
+	}
+
+	private List<ConferenceInfo> fetchConferences() {
+		List<ConferenceInfo> retlist = null;
+
+		try {
+			App app = getApp();
+			if (app != null) {
+				KomServer kom = app.getKom();
+				if (kom != null) {
+					if (kom.isConnected()) {
+						retlist = kom.fetchConferences();
+					} else {
+						Log.d(TAG, "Can't fetch conferences when no connection");
+						Toast.makeText(getApplicationContext(),
+								"Lost connection", Toast.LENGTH_SHORT).show();
+						getApp().getKom().reconnect();
+					}
+				}
+			}
+		} catch (Exception e) {
+			Log.d(TAG, "fetchConferences failed:" + e);
+			e.printStackTrace();
+			Toast.makeText(getApplicationContext(),
+					"fetchConferences failed, probably lost connection",
+					Toast.LENGTH_SHORT).show();
+		}
 		return retlist;
-    }
-    
-    App getApp() 
-    {
-        return (App)getApplication();
-    }
-    
- 
-    private List<ConferenceInfo> mConferences;
-    private ArrayAdapter<String> mAdapter;
-    private Timer mTimer;
-    TextView emptyview;
- }
+	}
+
+	App getApp() {
+		return (App) getApplication();
+	}
+
+	private List<ConferenceInfo> mConferences;
+	private ArrayAdapter<String> mAdapter;
+	private Timer mTimer;
+	TextView mEmptyView;
+
+	public void asyncMessage(Message msg) {
+		// TODO Auto-generated method stub
+		if (msg.what == nu.dll.lyskom.Asynch.new_text) {
+			Log.d(TAG, "New text created, update unread list");
+		
+			runOnUiThread(new Runnable() {
+				public void run() {					
+					new PopulateConferenceTask().execute();
+				}
+			});
+		}
+		
+	}
+}

@@ -41,10 +41,10 @@ class Paragraph {
     	boolean any = false;
     	for(String line : lines) {
     		any |= line.startsWith(" ");
-    		any |= line.startsWith("+");
-    		any |= line.startsWith("-");
+    		any |= line.startsWith("+ ");
+    		any |= line.startsWith("- ");
     		any |= line.startsWith("\t");
-    		any |= line.contains("   ");
+    		any |= line.contains("    ");
     		any |= line.contains(" \t");
     		any |= line.contains("\t ");
     	}
@@ -63,7 +63,7 @@ class Paragraph {
     	float fillRatio = characters/maxCharacters;
     	
     	System.out.println("Fillratio = " + fillRatio);
-    	return fillRatio < 0.55;
+    	return fillRatio < 0.45;
     	
     }
 

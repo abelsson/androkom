@@ -30,7 +30,7 @@ import android.widget.Toast;
  */
 public class Endast extends Activity 
 {
-	public static final String TAG = "Androkom Endast";
+	public static final String TAG = "Androkom";
 
     @Override
     public void onCreate(Bundle savedInstanceState) 

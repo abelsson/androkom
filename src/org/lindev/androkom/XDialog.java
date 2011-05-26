@@ -18,7 +18,7 @@ import android.widget.TextView;
 public class XDialog extends Dialog 
 {
 
-	private static final String TAG = "Androkom XDialog";
+	private static final String TAG = "Androkom";
 	
 	public XDialog(Context context) {
 		super(context);
