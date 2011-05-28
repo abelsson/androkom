@@ -25,7 +25,8 @@
     <string name="no_recipient_error">No such recipient</string>
     <string name="no_conference_error">No such conference</string>
     <string name="no_unreads">Nothing to read</string>
-    <string name="fetching_conferences">Loading unreads..</string>
+    <string name="fetching_conferences">Loading unreads ...</string>
+    <string name="no_messages">No messages</string>
     <string name="local_time">(local)</string>
     
 	<string name="login_name">Username:</string>

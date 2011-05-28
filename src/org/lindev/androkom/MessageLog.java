@@ -9,22 +9,24 @@ import android.widget.ArrayAdapter;
 
 public class MessageLog extends ListActivity implements AsyncMessageSubscriber
 {
-    public static final String TAG = "Androkom MessageLog";
-    
+    public static final String TAG = "Androkom";
+
     private ArrayAdapter<String> mAdapter;
     private AsyncMessages asyncMessages;
-    
+    private int logIndex;
+
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
-        
-        setContentView(R.layout.main);
+
+        setContentView(R.layout.message_main);
         mAdapter = new ArrayAdapter<String>(this, R.layout.message_log);
         setListAdapter(mAdapter);
         asyncMessages = ((App) getApplication()).getKom().asyncMessagesHandler;
+        logIndex = 0;
     }
-    
+
     @Override
     public void onResume()
     {
@@ -32,35 +34,27 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber
         asyncMessages.subscribe(this);
         update();
     }
-    
+
     @Override
     public void onPause()
     {
         asyncMessages.unsubscribe(this);
         super.onPause();
     }
-    
+
     private void update()
     {
-        int numLogMessages = asyncMessages.getLog().size();
-        int numInView = mAdapter.getCount();
-        
-        if (numLogMessages == numInView)
+        while (logIndex < asyncMessages.getLog().size())
         {
-            return;
-        }
-        
-        for (int i = numInView; i < numLogMessages; ++i)
-        {
-            final Message msg = asyncMessages.getLog().get(i);
+            final Message msg = asyncMessages.getLog().get(logIndex++);
             String msgStr = asyncMessages.messageAsString(msg);
             mAdapter.add(msgStr);
         }
-        
+
         mAdapter.notifyDataSetChanged();
         getListView().smoothScrollToPosition(getListView().getCount() - 1);
     }
-    
+
     public void asyncMessage(Message msg)
     {
         update();
