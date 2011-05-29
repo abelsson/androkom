@@ -3,8 +3,11 @@ package org.lindev.androkom;
 import nu.dll.lyskom.ConfInfo;
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -17,27 +20,36 @@ import android.widget.Toast;
  * @author jonas
  *
  */
-public class Endast extends Activity 
+public class Endast extends Activity implements ServiceConnection
 {
 	public static final String TAG = "Androkom";
+	private KomServer mKom;
 
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.endast);
+        getApp().doBindService(this);
         
         Button endastButton = (Button) findViewById(R.id.do_endast);
         endastButton.setOnClickListener(new View.OnClickListener() {
-            public void onClick(View view) { doendast(); }
+            public void onClick(View view) { doEndast(); }
         });
 
     }
+    
+    @Override
+    public void onDestroy()
+    {
+    	getApp().doUnbindService(this);
+    	super.onDestroy();
+    }
 
-	void doendast() {
+	void doEndast() {
 		EditText confNameView = (EditText) findViewById(R.id.confname);
 		String confName = confNameView.getText().toString();
-		final ConfInfo[] confs = getApp().getKom().getConferences(confName);
+		final ConfInfo[] confs = mKom.getConferences(confName);
 
 		EditText numTextsView = (EditText) findViewById(R.id.num_texts);
 		String textString = numTextsView.getText().toString();
@@ -47,7 +59,7 @@ public class Endast extends Activity
 			if (confs.length == 1) {
 				Log.d(TAG, "doendast confname=" + confName);
 				Log.d(TAG, "doendast texts=" + texts);
-				getApp().getKom().endast(confs[0].getNo(), texts);
+				mKom.endast(confs[0].getNo(), texts);
 				finish();
 			} else if (confs.length > 1) {
 				AlertDialog.Builder builder = new AlertDialog.Builder(
@@ -69,7 +81,7 @@ public class Endast extends Activity
 										+ ":"
 										+ new String(confs[item]
 												.getNameString()));
-								getApp().getKom().endast(selectedConf, texts);
+								mKom.endast(selectedConf, texts);
 								finish();
 							}
 						});
@@ -90,6 +102,15 @@ public class Endast extends Activity
         return (App)getApplication();
     }
     
+
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
+	
     private int selectedUser=0;
     private EditText mConfName;
     private EditText mTexts;

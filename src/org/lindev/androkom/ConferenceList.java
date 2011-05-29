@@ -9,9 +9,12 @@ import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.ListActivity;
+import android.content.ComponentName;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
@@ -31,7 +34,7 @@ import android.widget.Toast;
  * @author henrik
  * 
  */
-public class ConferenceList extends ListActivity implements AsyncMessageSubscriber {
+public class ConferenceList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
 	public static final String TAG = "Androkom";
 
 	/**
@@ -41,21 +44,18 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
+		getApp().doBindService(this);
+		
 		mEmptyView = (TextView) findViewById(android.R.id.empty);
-
-		mTimer = new Timer();
-
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
 		setListAdapter(mAdapter);
 
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
-		
-		getApp().getKom().addAsyncSubscriber(this);				
+				
 				
 	}
 
@@ -82,7 +82,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 				});
 			}
 
-		}, 500, 60000);
+		}, 0, 60000);
 
 	}
 
@@ -98,9 +98,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
-		getApp().getKom().removeAsyncSubscriber(this);		
-		if (isFinishing())
-			getApp().doUnbindService();
+		mKom.removeAsyncSubscriber(this);
+		getApp().doUnbindService(this);
 	}
 
 	/**
@@ -250,15 +249,14 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		try {
 			App app = getApp();
 			if (app != null) {
-				KomServer kom = app.getKom();
-				if (kom != null) {
-					if (kom.isConnected()) {
-						retlist = kom.fetchConferences();
+				if (mKom != null) {
+					if (mKom.isConnected()) {
+						retlist = mKom.fetchConferences();
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 						Toast.makeText(getApplicationContext(),
 								"Lost connection", Toast.LENGTH_SHORT).show();
-						getApp().getKom().reconnect();
+						mKom.reconnect();
 					}
 				}
 			}
@@ -276,10 +274,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		return (App) getApplication();
 	}
 
-	private List<ConferenceInfo> mConferences;
-	private ArrayAdapter<String> mAdapter;
-	private Timer mTimer;
-	TextView mEmptyView;
+
 
 	public void asyncMessage(Message msg) {
 		// TODO Auto-generated method stub
@@ -294,4 +289,20 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		}
 		
 	}
+
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();
+		mKom.addAsyncSubscriber(this);		
+		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
+	
+	private List<ConferenceInfo> mConferences;
+	private ArrayAdapter<String> mAdapter;
+	private Timer mTimer;
+	TextView mEmptyView;
+	KomServer mKom;
 }

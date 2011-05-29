@@ -12,7 +12,6 @@ import java.util.List;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
-import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -163,7 +162,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
         super.onCreate();
         
-        asyncMessagesHandler = new AsyncMessages(getApp());
+        asyncMessagesHandler = new AsyncMessages(getApp(), this);
         asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
         
         if (s == null) {
@@ -212,6 +211,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         s.removeRpcEventListener(this);        
         s = null;
 
+        super.onDestroy();
     }
 
     void reconnect() {
@@ -342,38 +342,31 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
     	asyncMessagesHandler.unsubscribe(sub);
     }
-      
-    
+
     /**
      * Fetch a list of conferences with unread texts.
      */
     public List<ConferenceInfo> fetchConferences()
     {
-        ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-        try { 
-            s.updateUnreads();
+        List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
 
-            Membership[] m = s.getUnreadMembership();
-            for (int i = 0; i < m.length; i++) {
-                int conf = m[i].getConference();
-                String name = s.toString(s.getConfName(conf));
-                Log.i("androkom", name + " <" + conf + ">");
+        try
+        {
+            for (int conf : s.getMyUnreadConfsList(true))
+            {
+                  String name = s.toString(s.getConfName(conf));
+                  Log.i(TAG, name + " <" + conf + ">");
 
-                ConferenceInfo info = new ConferenceInfo();
-                info.id = conf;
-                info.name = name;
-                info.numUnread = s.getUnreadCount(conf);
+                  ConferenceInfo info = new ConferenceInfo();
+                  info.id = conf;
+                  info.name = name;
+                  info.numUnread = s.getUnreadCount(conf);
 
-                arr.add(info);
+                  arr.add(info);
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchConferences1 "+e);
-            e.printStackTrace();
-            reconnect();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchConferences2 "+e);
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
@@ -827,12 +820,10 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 	                if (selection.contains(tags[i]))
 	                    rcpt = selection.getIntValue(tags[i]);
 	            }
-	            if (rcpt > 0 && s.isMemberOf(rcpt)) {
-	                int local = selection.getIntValue(TextStat.miscLocNo);
-	                Log.d(TAG,"markAsRead: global " + textNo + " rcpt " + rcpt
-	                        + " local " + local);
-	                s.doMarkAsRead(rcpt, new int[] { local });
-	            }
+	            int local = selection.getIntValue(TextStat.miscLocNo);
+	            Log.d(TAG,"markAsRead: global " + textNo + " rcpt " + rcpt
+	                    + " local " + local);
+	            s.doMarkAsRead(rcpt, new int[] { local });
 	        }
 		} catch (IOException e) {
 			// TODO Auto-generated catch block

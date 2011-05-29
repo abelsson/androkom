@@ -1,7 +1,10 @@
 package org.lindev.androkom;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
@@ -14,10 +17,11 @@ import android.widget.EditText;
  * @author henrik
  *
  */
-public class CreateText extends Activity 
+public class CreateText extends Activity implements ServiceConnection
 {
 
-    /**
+    private KomServer mKom;
+	/**
      * Create activity. Just a plain old dialog with
      * a subject, body and cancel and post buttons.
      */
@@ -26,6 +30,8 @@ public class CreateText extends Activity
     {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.createtext);
+        
+        getApp().doBindService(this);
 
         inReplyTo = (Integer) getIntent().getExtras().get("in-reply-to");
         String subject = (String)  getIntent().getExtras().get("subject-line");
@@ -44,6 +50,13 @@ public class CreateText extends Activity
             public void onClick(View view) { cancelText(); }
         });
     }
+    
+    @Override
+    public void onDestroy()
+    {
+    	super.onDestroy();
+    	getApp().doUnbindService(this);
+    }
 
     /**
      * Request a new message be posted.
@@ -52,7 +65,7 @@ public class CreateText extends Activity
     {
         String subject = mSubject.getText().toString();
         String body = mBody.getText().toString();
-        getApp().getKom().createText(subject, body, inReplyTo, true);
+        mKom.createText(subject, body, inReplyTo, true);
         finish();
     }
 
@@ -69,6 +82,13 @@ public class CreateText extends Activity
         return (App)getApplication();
     }
 
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}   
     private int inReplyTo;
     private EditText mSubject;
     private EditText mBody;
