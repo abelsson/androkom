@@ -17,36 +17,28 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
     private ArrayAdapter<String> mAdapter;
     private AsyncMessages mAsyncMessages;
     private int mLogIndex;
-	private KomServer mKom;
-	
+    private KomServer mKom;
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
-        getApp().doBindService(this);
         setContentView(R.layout.message_main);
+        getApp().doBindService(this);
         mAdapter = new ArrayAdapter<String>(this, R.layout.message_log);
         setListAdapter(mAdapter);
-        
         mLogIndex = 0;
     }
 
     @Override
-    public void onDestroy()
-    {
-    	getApp().doUnbindService(this);
-    	super.onDestroy();
-    }
-    
-    @Override
     public void onResume()
     {
         super.onResume();
-        if (mAsyncMessages != null) {
-        	mAsyncMessages.subscribe(this);
-        	update();
+        if (mAsyncMessages != null)
+        {
+            mAsyncMessages.subscribe(this);
+            update();
         }
     }
 
@@ -55,6 +47,13 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
     {
         mAsyncMessages.unsubscribe(this);
         super.onPause();
+    }
+
+    @Override
+    public void onDestroy()
+    {
+        getApp().doUnbindService(this);
+        super.onDestroy();
     }
 
     private void update()
@@ -66,29 +65,35 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
             mAdapter.add(msgStr);
         }
 
-        mAdapter.notifyDataSetChanged();
-        getListView().smoothScrollToPosition(getListView().getCount() - 1);
+        int count = getListView().getCount();
+
+        if (count > 0)
+        {
+            mAdapter.notifyDataSetChanged();
+            getListView().smoothScrollToPosition(getListView().getCount() - 1);
+        }
     }
 
     public void asyncMessage(Message msg)
     {
         update();
     }
-    
-    App getApp() 
-    {
-        return (App)getApplication();
-    }
-        
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();		
-		mAsyncMessages = mKom.asyncMessagesHandler;
-        mAsyncMessages.subscribe(this);
-    	update();
-	}
 
-	public void onServiceDisconnected(ComponentName name) {
-		mKom = null;		
-	}
-	
+    App getApp()
+    {
+        return (App) getApplication();
+    }
+
+    public void onServiceConnected(ComponentName name, IBinder service)
+    {
+        mKom = ((KomServer.LocalBinder) service).getService();
+        mAsyncMessages = mKom.asyncMessagesHandler;
+        mAsyncMessages.subscribe(this);
+        update();
+    }
+
+    public void onServiceDisconnected(ComponentName name)
+    {
+        mKom = null;
+    }
 }

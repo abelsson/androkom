@@ -796,55 +796,47 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 		}
     }
 
-    private class MarkAsReadTask extends AsyncTask<Integer, Void, Void>
-    {
-        @Override
-        protected Void doInBackground(final Integer... params)
-        {
-            final int textNo = params[0];
-            Log.i(TAG, "Mark as read: " + textNo);
-
-            try
-            {
-                final TextStat stat = s.getTextStat(textNo, true);
-                final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
-                List<Selection> recipientSelections = new ArrayList<Selection>();
-
-                for (final int tag : tags)
-                {
-                    recipientSelections.addAll(stat.getMiscInfoSelections(tag));
-                }
-
-                for (final Selection selection : recipientSelections)
-                {
-                    int rcpt = 0;
-
-                    for (int tag : tags)
-                    {
-                        if (selection.contains(tag))
-                        {
-                            rcpt = selection.getIntValue(tag);
-                        }
-                    }
-
-                    int local = selection.getIntValue(TextStat.miscLocNo);
-                    Log.d(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-                    s.markAsRead(rcpt, new int[] { local });
-                }
-            }
-            catch (final IOException e)
-            {
-                e.printStackTrace();
-            }
-
-            Log.i(TAG, "Mark as read finished: " + textNo);
-            return null;
-        }
-    }
-
     public void markTextAsRead(int textNo)
     {
-        new MarkAsReadTask().execute(textNo);
+        Log.i(TAG, "Mark as read: " + textNo);
+
+        try
+        {
+            final TextStat stat = s.getTextStat(textNo, true);
+            final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
+            List<Selection> recipientSelections = new ArrayList<Selection>();
+
+            for (final int tag : tags)
+            {
+                recipientSelections.addAll(stat.getMiscInfoSelections(tag));
+            }
+
+            for (final Selection selection : recipientSelections)
+            {
+                int rcpt = 0;
+
+                for (int tag : tags)
+                {
+                    if (selection.contains(tag))
+                    {
+                        rcpt = selection.getIntValue(tag);
+                    }
+                }
+
+                if (rcpt > 0)
+                {
+                    int local = selection.getIntValue(TextStat.miscLocNo);
+                    Log.d(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+                    s.doMarkAsRead(rcpt, new int[] { local });
+                }
+            }
+        }
+        catch (final IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "Mark as read finished: " + textNo);
     }
 
     /**

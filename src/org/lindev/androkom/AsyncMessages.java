@@ -28,7 +28,7 @@ public class AsyncMessages implements AsynchMessageReceiver
     private final List<Message> messageLog;
     private final List<Message> publicLog;
 
-	private KomServer mKom;
+    private KomServer mKom;
 
     public static interface AsyncMessageSubscriber
     {
@@ -102,9 +102,9 @@ public class AsyncMessages implements AsynchMessageReceiver
 
     public AsyncMessages(final App app, final KomServer kom)
     {
-    	mKom = kom;
-    	this.app = app;
-    	this.subscribers = new HashSet<AsyncMessageSubscriber>();
+        mKom = kom;
+        this.app = app;
+        this.subscribers = new HashSet<AsyncMessageSubscriber>();
         this.messageLog = new ArrayList<Message>();
         this.publicLog = Collections.unmodifiableList(this.messageLog);
     }
@@ -223,10 +223,11 @@ public class AsyncMessages implements AsynchMessageReceiver
         protected void onPostExecute(final Message msg)
         {
 
-        	Log.d(TAG, "Number of async subscribers: " + subscribers.size());
+            Log.d(TAG, "Number of async subscribers: " + subscribers.size());
             messageLog.add(msg);
-            
-            for (AsyncMessageSubscriber subscriber : subscribers) {
+
+            for (AsyncMessageSubscriber subscriber : subscribers)
+            {
                 subscriber.asyncMessage(msg);
             }
         }
@@ -242,6 +243,4 @@ public class AsyncMessages implements AsynchMessageReceiver
     {
         new AsyncHandlerTask().execute(m);
     }
-    
-	
 }
