@@ -5,8 +5,6 @@ import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
-import java.util.LinkedList;
 import java.util.List;
 
 import nu.dll.lyskom.AuxItem;
@@ -473,7 +471,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         } catch (Exception e) {
         	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
         	e.printStackTrace();
-        	return "Unknown error";
         }
         re_userid = usernames[0].confNo;
         re_password = password;
