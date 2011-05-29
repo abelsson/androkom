@@ -1,12 +1,9 @@
 package org.lindev.androkom;
 
-import java.util.List;
 import java.util.Stack;
-import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
-import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.KomServer.TextInfo;
 
 import android.app.Activity;
@@ -44,7 +41,6 @@ import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
-import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -133,6 +129,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         // worker thread (separate from UI thread)
         protected TextInfo doInBackground(final Integer... args) 
         {
+            Log.i(TAG, "LoadMessageTask doInBackground BEGIN");
         	if (args.length == 2 && args[0] > 0) {
         		switch (args[0]) {
         		case MESSAGE_TYPE_PARENT_TO:
@@ -147,21 +144,21 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         		}
         	}
         	else
-        		return mKom.getNextUnreadText();
+            {
+                TextInfo ti = mKom.getNextUnreadText();
+                Log.i(TAG, "LoadMessageTask doInBackground END");
+                return ti;
+            }
         }
 
         protected void onPostExecute(final TextInfo text) 
         {
+            Log.i(TAG, "LoadMessageTask onPostExecute BEGIN");
         	setProgressBarIndeterminateVisibility(false);
             if (text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
+                Log.i(TAG, "LoadMessageTask onPostExecute TOAST end");
                 return;
-            }
-            
-            // Mark current text as read
-            if (mState.hasCurrent())
-            {
-                mKom.markTextAsRead(mState.getCurrent().getTextNo());
             }
             
             mState.currentText.push(text);
@@ -171,6 +168,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
             setTitle(mKom.getConferenceName());
+            Log.i(TAG, "LoadMessageTask onPostExecute END");
         }
     }
 
@@ -280,7 +278,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
 	private void moveToPrevText() {
-		Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+		Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
 
         mKom.markTextAsRead(mState.getCurrent().getTextNo());
 
@@ -298,15 +296,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	}
 
 	private void moveToNextText() {
-		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
-
+		Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
 		mKom.markTextAsRead(mState.getCurrent().getTextNo());
 
 		mState.currentTextIndex++;
 		
 		if (mState.currentTextIndex >= mState.currentText.size()) {
 		    // At end of list. load new text from server
-		    Log.i("androkom", "fetching new text");
+		    Log.i(TAG, "fetching new text");
 		    new LoadMessageTask().execute(-1);
 
 		    mSwitcher.setInAnimation(mSlideLeftIn);
@@ -325,7 +322,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 	private void moveToParentText()
 	{
-	    Log.i("androkom", "fetching parent to text " + mState.getCurrent().getTextNo());
+	    Log.i(TAG, "fetching parent to text " + mState.getCurrent().getTextNo());
+        mKom.markTextAsRead(mState.getCurrent().getTextNo());
+
 	    new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, mState.getCurrent().getTextNo());
 
 	    mSwitcher.setInAnimation(mSlideLeftIn);
@@ -334,7 +333,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 	private void moveToText(int textNo)
 	{
-	    Log.i("androkom", "fetching text " + textNo);
+	    Log.i(TAG, "fetching text " + textNo);
+        mKom.markTextAsRead(mState.getCurrent().getTextNo());
+
 	    new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
 
 	    mSwitcher.setInAnimation(mSlideLeftIn);

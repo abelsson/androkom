@@ -65,12 +65,11 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
             mAdapter.add(msgStr);
         }
 
-        int count = getListView().getCount();
-
+        final int count = getListView().getCount();
         if (count > 0)
         {
             mAdapter.notifyDataSetChanged();
-            getListView().smoothScrollToPosition(getListView().getCount() - 1);
+            getListView().smoothScrollToPosition(count - 1);
         }
     }
 

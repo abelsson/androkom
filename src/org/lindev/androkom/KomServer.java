@@ -826,7 +826,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
                 if (rcpt > 0)
                 {
                     int local = selection.getIntValue(TextStat.miscLocNo);
-                    Log.d(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+                    Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
                     s.doMarkAsRead(rcpt, new int[] { local });
                 }
             }
