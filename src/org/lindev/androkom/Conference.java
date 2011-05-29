@@ -1,21 +1,27 @@
 package org.lindev.androkom;
 
+import java.util.List;
 import java.util.Stack;
+import java.util.Timer;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.KomServer.TextInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -38,6 +44,7 @@ import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.ArrayAdapter;
 import android.widget.EditText;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
@@ -50,7 +57,7 @@ import android.widget.ViewSwitcher;
  * @author henrik
  *
  */
-public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener
+public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener, ServiceConnection
 {
 	public static final String TAG = "Androkom";
 
@@ -69,6 +76,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
     	
         super.onCreate(savedInstanceState);
+        getApp().doBindService(this);
 
         setContentView(R.layout.conference);
 
@@ -92,19 +100,22 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
             mState.currentTextIndex = -1;
-            mState.ShowFullHeaders = ConferencePrefs.getShowFullHeaders(getBaseContext());
-            getApp().getKom().setShowFullHeaders(mState.ShowFullHeaders);
-            getApp().getKom().setConference(confNo);
-            new LoadMessageTask().execute();
-            
+            mState.ShowFullHeaders = ConferencePrefs.getShowFullHeaders(getBaseContext());        
+            mState.conferenceNo = confNo;
             mSwitcher.setText(formatText(getString(R.string.loading_text)));
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
        
-
     }
     
+
+	@Override
+	protected void onDestroy() {
+		super.onDestroy();
+		getApp().doUnbindService(this);
+	}
+  
     /**
      * Fetch new texts asynchronously, and show a progress spinner
      * while the user is waiting.
@@ -126,17 +137,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         		switch (args[0]) {
         		case MESSAGE_TYPE_PARENT_TO:
         			Log.d(TAG, "Trying to get parent text of"+args[1]);
-            		return ((App)getApplication()).getKom().getParentToText(args[1]);
+            		return mKom.getParentToText(args[1]);
         		case MESSAGE_TYPE_TEXTNO: 
         			Log.d(TAG, "Trying to get text "+args[1]);
-            		return ((App)getApplication()).getKom().getKomText(args[1]);
+            		return mKom.getKomText(args[1]);
         		default:
         			Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
         			return null;
         		}
         	}
         	else
-        		return ((App)getApplication()).getKom().getNextUnreadText();
+        		return mKom.getNextUnreadText();
         }
 
         protected void onPostExecute(final TextInfo text) 
@@ -150,7 +161,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             // Mark current text as read
             if (mState.hasCurrent())
             {
-                ((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
+                mKom.markTextAsRead(mState.getCurrent().getTextNo());
             }
             
             mState.currentText.push(text);
@@ -159,7 +170,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
             TextView widget = (TextView)mSwitcher.getCurrentView();
             widget.scrollTo(0, 0);
-            setTitle(((App)getApplication()).getKom().getConferenceName());
+            setTitle(mKom.getConferenceName());
         }
     }
 
@@ -271,7 +282,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	private void moveToPrevText() {
 		Log.i("androkom","moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
 
-        ((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
+        mKom.markTextAsRead(mState.getCurrent().getTextNo());
 
 		mState.currentTextIndex--;
 		
@@ -289,7 +300,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	private void moveToNextText() {
 		Log.i("androkom","moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
 
-		((App)getApplication()).getKom().markTextAsRead(mState.getCurrent().getTextNo());
+		mKom.markTextAsRead(mState.getCurrent().getTextNo());
 
 		mState.currentTextIndex++;
 		
@@ -554,12 +565,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     protected void markCurrentText() {
     	int CurrentTextNo = mState.getCurrent().getTextNo();
-    	((App)getApplication()).getKom().markText(CurrentTextNo);
+    	mKom.markText(CurrentTextNo);
     }
     
     protected void unmarkCurrentText() {
     	int CurrentTextNo = mState.getCurrent().getTextNo();
-    	((App)getApplication()).getKom().unmarkText(CurrentTextNo);
+    	mKom.unmarkText(CurrentTextNo);
     }
 
     protected void seetextagain() {
@@ -567,7 +578,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
 	protected void seepresentation() {
-		int textNo = getApp().getKom().getConferencePres();
+		int textNo = mKom.getConferencePres();
 		if (textNo > 0) {
 			Log.i(TAG, "fetching text " + textNo);
 			new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
@@ -716,7 +727,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private class State {
-        int currentTextIndex;
+        public int conferenceNo;
+		int currentTextIndex;
         Stack<TextInfo> currentText;
         boolean hasCurrent() { return currentTextIndex > 0; }
         TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
@@ -743,6 +755,21 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         return str;
     }
 
+
+
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+        mKom.setShowFullHeaders(mState.ShowFullHeaders);
+        mKom.setConference(mState.conferenceNo);
+        new LoadMessageTask().execute();
+
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
+	
+	KomServer mKom;   
     // For gestures and animations
 
     private GestureDetector mGestureDetector;

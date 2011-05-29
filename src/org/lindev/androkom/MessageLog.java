@@ -3,51 +3,66 @@ package org.lindev.androkom;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 
 import android.app.ListActivity;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.os.Message;
 import android.widget.ArrayAdapter;
 
-public class MessageLog extends ListActivity implements AsyncMessageSubscriber
+public class MessageLog extends ListActivity implements AsyncMessageSubscriber, ServiceConnection
 {
     public static final String TAG = "Androkom";
 
     private ArrayAdapter<String> mAdapter;
-    private AsyncMessages asyncMessages;
-    private int logIndex;
+    private AsyncMessages mAsyncMessages;
+    private int mLogIndex;
+	private KomServer mKom;
+	
 
     @Override
     public void onCreate(Bundle savedInstanceState)
     {
         super.onCreate(savedInstanceState);
 
+        getApp().doBindService(this);
         setContentView(R.layout.message_main);
         mAdapter = new ArrayAdapter<String>(this, R.layout.message_log);
         setListAdapter(mAdapter);
-        asyncMessages = ((App) getApplication()).getKom().asyncMessagesHandler;
-        logIndex = 0;
+        
+        mLogIndex = 0;
     }
 
+    @Override
+    public void onDestroy()
+    {
+    	getApp().doUnbindService(this);
+    	super.onDestroy();
+    }
+    
     @Override
     public void onResume()
     {
         super.onResume();
-        asyncMessages.subscribe(this);
-        update();
+        if (mAsyncMessages != null) {
+        	mAsyncMessages.subscribe(this);
+        	update();
+        }
     }
 
     @Override
     public void onPause()
     {
-        asyncMessages.unsubscribe(this);
+        mAsyncMessages.unsubscribe(this);
         super.onPause();
     }
 
     private void update()
     {
-        while (logIndex < asyncMessages.getLog().size())
+        while (mLogIndex < mAsyncMessages.getLog().size())
         {
-            final Message msg = asyncMessages.getLog().get(logIndex++);
-            String msgStr = asyncMessages.messageAsString(msg);
+            final Message msg = mAsyncMessages.getLog().get(mLogIndex++);
+            String msgStr = mAsyncMessages.messageAsString(msg);
             mAdapter.add(msgStr);
         }
 
@@ -59,4 +74,21 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber
     {
         update();
     }
+    
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+        
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+		mAsyncMessages = mKom.asyncMessagesHandler;
+        mAsyncMessages.subscribe(this);
+    	update();
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
+	
 }

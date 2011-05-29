@@ -28,6 +28,8 @@ public class AsyncMessages implements AsynchMessageReceiver
     private final List<Message> messageLog;
     private final List<Message> publicLog;
 
+	private KomServer mKom;
+
     public static interface AsyncMessageSubscriber
     {
         public void asyncMessage(Message msg);
@@ -98,10 +100,11 @@ public class AsyncMessages implements AsynchMessageReceiver
         return publicLog;
     }
 
-    public AsyncMessages(final App app)
+    public AsyncMessages(final App app, final KomServer kom)
     {
-        this.app = app;
-        this.subscribers = new HashSet<AsyncMessageSubscriber>();
+    	mKom = kom;
+    	this.app = app;
+    	this.subscribers = new HashSet<AsyncMessageSubscriber>();
         this.messageLog = new ArrayList<Message>();
         this.publicLog = Collections.unmodifiableList(this.messageLog);
     }
@@ -111,18 +114,17 @@ public class AsyncMessages implements AsynchMessageReceiver
         final Message msg = new Message();
         final Bundle b = new Bundle();
         final KomToken[] params = asynchMessage.getParameters();
-        final KomServer kom = app.getKom();
 
         msg.what = asynchMessage.getNumber();
 
         switch (msg.what)
         {
         case nu.dll.lyskom.Asynch.login:
-            b.putString("name", kom.getConferenceName(params[0].intValue()));
+            b.putString("name", mKom.getConferenceName(params[0].intValue()));
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-            b.putString("name", kom.getConferenceName(params[0].intValue()));
+            b.putString("name", mKom.getConferenceName(params[0].intValue()));
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
@@ -131,8 +133,8 @@ public class AsyncMessages implements AsynchMessageReceiver
             break;
 
         case nu.dll.lyskom.Asynch.send_message:
-            b.putString("from", kom.getConferenceName(params[1].intValue()));
-            b.putString("to", kom.getConferenceName(params[0].intValue()));
+            b.putString("from", mKom.getConferenceName(params[1].intValue()));
+            b.putString("to", mKom.getConferenceName(params[0].intValue()));
             b.putString("msg", ((Hollerith) params[2]).getContentString());
             break;
 
@@ -165,7 +167,7 @@ public class AsyncMessages implements AsynchMessageReceiver
             Log.d(TAG, "Trying to cache text " + params[0].intValue());
             try
             {
-                kom.getSession().getText(params[0].intValue());
+                mKom.getSession().getText(params[0].intValue());
             } catch (RpcFailure e)
             {
                 e.printStackTrace();
@@ -220,11 +222,11 @@ public class AsyncMessages implements AsynchMessageReceiver
         @Override
         protected void onPostExecute(final Message msg)
         {
-            messageLog.add(msg);
-            Log.d(TAG, "Number of async subscribers: " + subscribers.size());
 
-            for (AsyncMessageSubscriber subscriber : subscribers)
-            {
+        	Log.d(TAG, "Number of async subscribers: " + subscribers.size());
+            messageLog.add(msg);
+            
+            for (AsyncMessageSubscriber subscriber : subscribers) {
                 subscriber.asyncMessage(msg);
             }
         }
@@ -240,4 +242,6 @@ public class AsyncMessages implements AsynchMessageReceiver
     {
         new AsyncHandlerTask().execute(m);
     }
+    
+	
 }

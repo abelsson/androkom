@@ -12,7 +12,6 @@ import java.util.List;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
-import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -163,7 +162,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
         super.onCreate();
         
-        asyncMessagesHandler = new AsyncMessages(getApp());
+        asyncMessagesHandler = new AsyncMessages(getApp(), this);
         asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
         
         if (s == null) {
@@ -212,6 +211,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         s.removeRpcEventListener(this);        
         s = null;
 
+        super.onDestroy();
     }
 
     void reconnect() {

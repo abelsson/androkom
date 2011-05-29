@@ -5,9 +5,12 @@ import nu.dll.lyskom.ConfInfo;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -19,10 +22,12 @@ import android.widget.Toast;
  * new texts.
  * 
  */
-public class CreateNewText extends Activity 
+public class CreateNewText extends Activity implements ServiceConnection
 {
 
-    /**
+    private KomServer mKom;
+
+	/**
      * Create activity. Just a plain old dialog with
      * a recipient, subject, body and cancel and post buttons.
      */
@@ -32,6 +37,7 @@ public class CreateNewText extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.createnewtext);
 
+        getApp().doBindService(this);
         recipient_type = (Integer) getIntent().getExtras().get("recipient_type");
         
         // Set Window Title
@@ -58,6 +64,13 @@ public class CreateNewText extends Activity
         });
     }
 
+    @Override
+    public void onDestroy()
+    {
+    	super.onDestroy();
+    	getApp().doUnbindService(this);
+    }
+    
     /**
      * Attempt to create text
      */
@@ -85,11 +98,11 @@ public class CreateNewText extends Activity
         	Log.d(TAG, "Trying to create text ");
         	if (recipientNo == 0) {
         		Log.d(TAG, "Create text using string");
-        		conferences = getApp().getKom().createText(recipient_type, recipient, subject, textbody);
+        		conferences = mKom.createText(recipient_type, recipient, subject, textbody);
         		return "fail";
         	} else {
         		Log.d(TAG, "Create text using id");
-        		getApp().getKom().createText(recipient_type, recipientNo, subject, textbody);
+        		mKom.createText(recipient_type, recipientNo, subject, textbody);
         		return ""; //TODO: check for fail
         	}
         }
@@ -181,6 +194,14 @@ public class CreateNewText extends Activity
     {
         return (App)getApplication();
     }
+    
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}   
 
     private EditText mRecipient;
     private EditText mSubject;
