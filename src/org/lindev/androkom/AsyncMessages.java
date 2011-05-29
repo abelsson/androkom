@@ -1,7 +1,10 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Set;
 
 import org.lindev.androkom.KomServer.TextInfo;
@@ -25,66 +28,86 @@ public class AsyncMessages implements AsynchMessageReceiver
     private final App app;
     private final Set<AsyncMessageSubscriber> subscribers;
     
+    private final List<Message> messageLog;
+    private final List<Message> publicLog;
+    
     public static interface AsyncMessageSubscriber
     {
         public void asyncMessage(Message msg);
     }
     
-    public static class MessageToaster implements AsyncMessageSubscriber
+    public String messageAsString(Message msg)
     {
-        private final App app;
+        String str = null;
         
-        public MessageToaster(App app)
+        switch (msg.what)
         {
-            this.app = app;
+        case nu.dll.lyskom.Asynch.login:
+            str = msg.getData().getString("name") + app.getString(R.string.x_logged_in);
+            break;
+            
+        case nu.dll.lyskom.Asynch.logout:
+            str = msg.getData().getString("name") + app.getString(R.string.x_logged_out);
+            break;
+            
+        case nu.dll.lyskom.Asynch.new_name:
+            str = msg.getData().getString("oldname") + app.getString(R.string.x_changed_to_y);
+            break;
+            
+        case nu.dll.lyskom.Asynch.send_message:
+            str = msg.getData().getString("from") + app.getString(R.string.x_says_y)
+                    + msg.getData().getString("msg") + app.getString(R.string.x_to_y)
+                    + msg.getData().getString("to");
+            break;
+            
+        case nu.dll.lyskom.Asynch.rejected_connection:
+            str = app.getString(R.string.lyskom_full);
+            break;
+            
+        case nu.dll.lyskom.Asynch.sync_db:
+            str = app.getString(R.string.sync_db_msg);
+            break;
         }
         
+        return str;
+    }
+    
+    /**
+     * Displays incoming messages as Toast events
+     */
+    public class MessageToaster implements AsyncMessageSubscriber
+    {
         public void asyncMessage(Message msg)
         {
-            String str = null;
+            final String str = messageAsString(msg);
+            
+            if (str == null)
+            {
+                return;
+            }
+            
             int length = Toast.LENGTH_SHORT;
             
-            switch (msg.what)
+            if (msg.what == nu.dll.lyskom.Asynch.send_message)
             {
-            case nu.dll.lyskom.Asynch.login:
-                str = msg.getData().getString("name") + app.getString(R.string.x_logged_in);
-                break;
-                
-            case nu.dll.lyskom.Asynch.logout:
-                str = msg.getData().getString("name") + app.getString(R.string.x_logged_out);
-                break;
-                
-            case nu.dll.lyskom.Asynch.new_name:
-                str = msg.getData().getString("oldname") + app.getString(R.string.x_changed_to_y);
-                break;
-                
-            case nu.dll.lyskom.Asynch.send_message:
-                str = msg.getData().getString("from") + app.getString(R.string.x_says_y)
-                        + msg.getData().getString("msg") + app.getString(R.string.x_to_y)
-                        + msg.getData().getString("to");
                 length = Toast.LENGTH_LONG;
-                break;
-                
-            case nu.dll.lyskom.Asynch.rejected_connection:
-                str = app.getString(R.string.lyskom_full);
-                break;
-                
-            case nu.dll.lyskom.Asynch.sync_db:
-                str = app.getString(R.string.sync_db_msg);
-                break;
             }
             
-            if (str != null)
-            {
-                Toast.makeText(app, str, length).show();
-            }
+            Toast.makeText(app, str, length).show();
         }
     };
+    
+    public List<Message> getLog()
+    {
+        return publicLog;
+    }
     
     public AsyncMessages(final App app)
     {
         this.app = app;
         this.subscribers = new HashSet<AsyncMessageSubscriber>();
+        this.messageLog = new ArrayList<Message>();
+        this.publicLog = Collections.unmodifiableList(this.messageLog);
     }
     
     private Message processMessage(final AsynchMessage asynchMessage)
@@ -200,6 +223,8 @@ public class AsyncMessages implements AsynchMessageReceiver
         protected void onPostExecute(final Message msg)
         {
         	Log.d(TAG, "Number of async subscribers: " + subscribers.size());
+            messageLog.add(msg);
+            
             for (AsyncMessageSubscriber subscriber : subscribers)
             {
                 subscriber.asyncMessage(msg);

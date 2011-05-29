@@ -164,7 +164,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         super.onCreate();
         
         asyncMessagesHandler = new AsyncMessages(getApp());
-        asyncMessagesHandler.subscribe(new AsyncMessages.MessageToaster(getApp()));
+        asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
         
         if (s == null) {
             s = new Session();

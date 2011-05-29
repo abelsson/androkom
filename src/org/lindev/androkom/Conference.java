@@ -529,6 +529,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			seewhoison();
 			return true;
 
+        case R.id.menu_message_log_id:
+            intent = new Intent(this, MessageLog.class);
+            startActivity(intent);
+            return true;
+            
 		default:
             return super.onOptionsItemSelected(item);
         }
