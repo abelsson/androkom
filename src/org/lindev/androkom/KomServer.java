@@ -583,7 +583,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
                 	return new TextInfo(-1, "", "", "", "", getString(R.string.all_read));
             } 
             
-            return getKomText(mLastTextNo);                                
+            return getKomText(mLastTextNo);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -796,41 +796,57 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 		}
     }
 
-	public void markTextAsRead(int textNo)
+    private class MarkAsReadTask extends AsyncTask<Integer, Void, Void>
     {
-	    Log.i(TAG, "Mark as read: " + textNo);
+        @Override
+        protected Void doInBackground(final Integer... params)
+        {
+            final int textNo = params[0];
+            Log.i(TAG, "Mark as read: " + textNo);
 
-		try {
-			// Code from Session.markAsRead(), except the final MarkAsRead call
-			// is asynchronous instead of synchronous. 
-			TextStat stat = s.getTextStat(textNo, true);
-	        
-	        List<Selection> recipientSelections = new LinkedList<Selection>();
-	        int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt,
-	                TextStat.miscBccRecpt };
-	        for (int i = 0; i < tags.length; i++) {
-	            recipientSelections.addAll(stat.getMiscInfoSelections(tags[i]));
-	        }
+            try
+            {
+                final TextStat stat = s.getTextStat(textNo, true);
+                final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
+                List<Selection> recipientSelections = new ArrayList<Selection>();
 
-	        Iterator<?> recipientIterator = recipientSelections.iterator();
-	        while (recipientIterator.hasNext()) {
-	            Selection selection = (Selection) recipientIterator.next();
-	            int rcpt = 0;
-	            for (int i = 0; i < tags.length; i++) {
-	                if (selection.contains(tags[i]))
-	                    rcpt = selection.getIntValue(tags[i]);
-	            }
-	            int local = selection.getIntValue(TextStat.miscLocNo);
-	            Log.d(TAG,"markAsRead: global " + textNo + " rcpt " + rcpt
-	                    + " local " + local);
-	            s.doMarkAsRead(rcpt, new int[] { local });
-	        }
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
+                for (final int tag : tags)
+                {
+                    recipientSelections.addAll(stat.getMiscInfoSelections(tag));
+                }
+
+                for (final Selection selection : recipientSelections)
+                {
+                    int rcpt = 0;
+
+                    for (int tag : tags)
+                    {
+                        if (selection.contains(tag))
+                        {
+                            rcpt = selection.getIntValue(tag);
+                        }
+                    }
+
+                    int local = selection.getIntValue(TextStat.miscLocNo);
+                    Log.d(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+                    s.markAsRead(rcpt, new int[] { local });
+                }
+            }
+            catch (final IOException e)
+            {
+                e.printStackTrace();
+            }
+
+            Log.i(TAG, "Mark as read finished: " + textNo);
+            return null;
+        }
     }
+
+    public void markTextAsRead(int textNo)
+    {
+        new MarkAsReadTask().execute(textNo);
+    }
+
     /**
      * Get text number of last read text in current meeting, 
      * or -1 if there is no suitable text.
