@@ -75,33 +75,24 @@ public class AsyncMessages implements AsynchMessageReceiver
      */
     public class MessageToaster implements AsyncMessageSubscriber
     {
-        public void asyncMessage(Message msg)
-        {
+        public void asyncMessage(Message msg) {
             final String str = messageAsString(msg);
 
-            if (str == null)
-            {
-                return;
+            if (str != null) {
+                int length = Toast.LENGTH_SHORT;
+                if (msg.what == nu.dll.lyskom.Asynch.send_message) {
+                    length = Toast.LENGTH_LONG;
+                }
+                Toast.makeText(app, str, length).show();
             }
-
-            int length = Toast.LENGTH_SHORT;
-
-            if (msg.what == nu.dll.lyskom.Asynch.send_message)
-            {
-                length = Toast.LENGTH_LONG;
-            }
-
-            Toast.makeText(app, str, length).show();
         }
     };
 
-    public List<Message> getLog()
-    {
+    public List<Message> getLog() {
         return publicLog;
     }
 
-    public AsyncMessages(final App app, final KomServer kom)
-    {
+    public AsyncMessages(final App app, final KomServer kom) {
         mKom = kom;
         this.app = app;
         this.subscribers = new HashSet<AsyncMessageSubscriber>();
@@ -109,16 +100,14 @@ public class AsyncMessages implements AsynchMessageReceiver
         this.publicLog = Collections.unmodifiableList(this.messageLog);
     }
 
-    private Message processMessage(final AsynchMessage asynchMessage)
-    {
+    private Message processMessage(final AsynchMessage asynchMessage) {
         final Message msg = new Message();
         final Bundle b = new Bundle();
         final KomToken[] params = asynchMessage.getParameters();
 
         msg.what = asynchMessage.getNumber();
 
-        switch (msg.what)
-        {
+        switch (msg.what) {
         case nu.dll.lyskom.Asynch.login:
             b.putString("name", mKom.getConferenceName(params[0].intValue()));
             break;
@@ -165,14 +154,13 @@ public class AsyncMessages implements AsynchMessageReceiver
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
             Log.d(TAG, "Trying to cache text " + params[0].intValue());
-            try
-            {
+            try {
                 mKom.getSession().getText(params[0].intValue());
-            } catch (RpcFailure e)
-            {
+            }
+            catch (RpcFailure e) {
                 e.printStackTrace();
-            } catch (IOException e)
-            {
+            }
+            catch (IOException e) {
                 e.printStackTrace();
             }
             break;
@@ -198,21 +186,18 @@ public class AsyncMessages implements AsynchMessageReceiver
         return msg;
     }
 
-    public void subscribe(AsyncMessageSubscriber sub)
-    {
+    public void subscribe(AsyncMessageSubscriber sub) {
         subscribers.add(sub);
     }
 
-    public void unsubscribe(AsyncMessageSubscriber sub)
-    {
+    public void unsubscribe(AsyncMessageSubscriber sub) {
         subscribers.remove(sub);
     }
 
     private class AsyncHandlerTask extends AsyncTask<AsynchMessage, Void, Message>
     {
         @Override
-        protected Message doInBackground(final AsynchMessage... message)
-        {
+        protected Message doInBackground(final AsynchMessage... message) {
             return processMessage(message[0]);
         }
 
@@ -220,14 +205,10 @@ public class AsyncMessages implements AsynchMessageReceiver
          * Send the processed message to all subscribers.
          */
         @Override
-        protected void onPostExecute(final Message msg)
-        {
-
+        protected void onPostExecute(final Message msg) {
             Log.d(TAG, "Number of async subscribers: " + subscribers.size());
             messageLog.add(msg);
-
-            for (AsyncMessageSubscriber subscriber : subscribers)
-            {
+            for (AsyncMessageSubscriber subscriber : subscribers) {
                 subscriber.asyncMessage(msg);
             }
         }
@@ -239,8 +220,7 @@ public class AsyncMessages implements AsynchMessageReceiver
      * in the textual representation, so we spawn a background task to process
      * the message.
      */
-    public void asynchMessage(final AsynchMessage m)
-    {
+    public void asynchMessage(final AsynchMessage m) {
         new AsyncHandlerTask().execute(m);
     }
 }
