@@ -117,57 +117,67 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      * while the user is waiting.
      * 
      * @author henrik
-     *
      */
-    private class LoadMessageTask extends AsyncTask<Integer, Integer, TextInfo> 
+    private class LoadMessageTask extends AsyncTask<Integer, Void, TextInfo>
     {
-        protected void onPreExecute() 
-        {
-        	setProgressBarIndeterminateVisibility(true);
+        protected void onPreExecute() {
+            setProgressBarIndeterminateVisibility(true);
         }
 
         // worker thread (separate from UI thread)
-        protected TextInfo doInBackground(final Integer... args) 
-        {
+        protected TextInfo doInBackground(final Integer... args) {
             Log.i(TAG, "LoadMessageTask doInBackground BEGIN");
-        	if (args.length == 2 && args[0] > 0) {
-        		switch (args[0]) {
-        		case MESSAGE_TYPE_PARENT_TO:
-        			Log.d(TAG, "Trying to get parent text of"+args[1]);
-            		return mKom.getParentToText(args[1]);
-        		case MESSAGE_TYPE_TEXTNO: 
-        			Log.d(TAG, "Trying to get text "+args[1]);
-            		return mKom.getKomText(args[1]);
-        		default:
-        			Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
-        			return null;
-        		}
-        	}
-        	else
-            {
-                TextInfo ti = mKom.getNextUnreadText();
-                Log.i(TAG, "LoadMessageTask doInBackground END");
-                return ti;
+            TextInfo text;
+
+            if (mState.hasCurrent()) {
+                mKom.markTextAsRead(mState.getCurrent().getTextNo());
             }
+
+            switch (args[0]) {
+            case MESSAGE_TYPE_PARENT_TO:
+                Log.d(TAG, "Trying to get parent text of" + args[1]);
+                text = mKom.getParentToText(args[1]);
+                break;
+
+            case MESSAGE_TYPE_TEXTNO: 
+                Log.d(TAG, "Trying to get text " + args[1]);
+                text = mKom.getKomText(args[1]);
+                break;
+
+            case MESSAGE_TYPE_NEXT:
+                Log.d(TAG, "Trying to get next unread text");
+                text = mKom.getNextUnreadText();
+                break;
+
+            default:
+                Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
+                return null;
+            }
+
+            if (text.getTextNo() < 0) {
+                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
+                return null;
+            }
+
+            Log.i(TAG, "LoadMessageTask doInBackground END");
+            return text;
         }
 
         protected void onPostExecute(final TextInfo text) 
         {
             Log.i(TAG, "LoadMessageTask onPostExecute BEGIN");
-        	setProgressBarIndeterminateVisibility(false);
-            if (text.getTextNo() < 0) {
-                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
-                Log.i(TAG, "LoadMessageTask onPostExecute TOAST end");
-                return;
+
+            if (text != null) {
+                mState.currentText.push(text);
+                mState.currentTextIndex = mState.currentText.size() - 1;
+                Log.i(TAG, stackAsString());
+                mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+                TextView widget = (TextView) mSwitcher.getCurrentView();
+                widget.scrollTo(0, 0);
+                setTitle(mKom.getConferenceName());
             }
-            
-            mState.currentText.push(text);
-            mState.currentTextIndex = mState.currentText.size() - 1;
-            Log.i(TAG, stackAsString());
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
-            TextView widget = (TextView)mSwitcher.getCurrentView();
-            widget.scrollTo(0, 0);
-            setTitle(mKom.getConferenceName());
+
+            setProgressBarIndeterminateVisibility(false);
             Log.i(TAG, "LoadMessageTask onPostExecute END");
         }
     }
@@ -277,70 +287,55 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
     }
 
-	private void moveToPrevText() {
-		Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+    private void moveToPrevText() {
+        Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
 
-        mKom.markTextAsRead(mState.getCurrent().getTextNo());
+        mState.currentTextIndex--;
 
-		mState.currentTextIndex--;
-		
-		if (mState.currentTextIndex < 0) {
-		    mState.currentTextIndex = 0;
-		    return;
-		}
+        if (mState.currentTextIndex < 0) {
+            mState.currentTextIndex = 0;
+            return;
+        }
 
-		Log.i(TAG, stackAsString());
-		mSwitcher.setInAnimation(mSlideRightIn);
-		mSwitcher.setOutAnimation(mSlideRightOut);
-		mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
-	}
+        Log.i(TAG, stackAsString());
+        mSwitcher.setInAnimation(mSlideRightIn);
+        mSwitcher.setOutAnimation(mSlideRightOut);
+        mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+    }
 
-	private void moveToNextText() {
-		Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size()); 
-		mKom.markTextAsRead(mState.getCurrent().getTextNo());
+    private void moveToNextText() {
+        Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size());
 
-		mState.currentTextIndex++;
-		
-		if (mState.currentTextIndex >= mState.currentText.size()) {
-		    // At end of list. load new text from server
-		    Log.i(TAG, "fetching new text");
-		    new LoadMessageTask().execute(-1);
+        if ((mState.currentTextIndex + 1) >= mState.currentText.size()) {
+            // At end of list. load new text from server
+            Log.i(TAG, "fetching new text");
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+            mSwitcher.setInAnimation(mSlideLeftIn);
+            mSwitcher.setOutAnimation(mSlideLeftOut);
+        }
+        else {
+            // Display old text, already fetched.
+            mState.currentTextIndex++;
+            mSwitcher.setInAnimation(mSlideLeftIn);
+            mSwitcher.setOutAnimation(mSlideLeftOut);
+            Log.i(TAG, stackAsString());
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+        }
+    }
 
-		    mSwitcher.setInAnimation(mSlideLeftIn);
-		    mSwitcher.setOutAnimation(mSlideLeftOut);			  
-		    mState.currentTextIndex = mState.currentText.size() - 1;
-		}
-		else {
-		    // Display old text, already fetched.
-		    mSwitcher.setInAnimation(mSlideLeftIn);
-		    mSwitcher.setOutAnimation(mSlideLeftOut);
+    private void moveToParentText() {
+        Log.i(TAG, "fetching parent to text " + mState.getCurrent().getTextNo());
+        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO);
+        mSwitcher.setInAnimation(mSlideLeftIn);
+        mSwitcher.setOutAnimation(mSlideLeftOut);
+    }
 
-	        Log.i(TAG, stackAsString());
-		    mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
-		}
-	}
-
-	private void moveToParentText()
-	{
-	    Log.i(TAG, "fetching parent to text " + mState.getCurrent().getTextNo());
-        mKom.markTextAsRead(mState.getCurrent().getTextNo());
-
-	    new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, mState.getCurrent().getTextNo());
-
-	    mSwitcher.setInAnimation(mSlideLeftIn);
-	    mSwitcher.setOutAnimation(mSlideLeftOut);	
-	}
-
-	private void moveToText(int textNo)
-	{
-	    Log.i(TAG, "fetching text " + textNo);
-        mKom.markTextAsRead(mState.getCurrent().getTextNo());
-
-	    new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
-
-	    mSwitcher.setInAnimation(mSlideLeftIn);
-	    mSwitcher.setOutAnimation(mSlideLeftOut);
-	}
+    private void moveToText(final int textNo) {
+        Log.i(TAG, "fetching text " + textNo);
+        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+        mSwitcher.setInAnimation(mSlideLeftIn);
+        mSwitcher.setOutAnimation(mSlideLeftOut);
+    }
 
 	private void scrollPageUp() {
 		TextView t = (TextView) mSwitcher.getCurrentView();
@@ -578,16 +573,16 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	showDialog(DIALOG_NUMBER_ENTRY);
     }
 
-	protected void seepresentation() {
-		int textNo = mKom.getConferencePres();
-		if (textNo > 0) {
-			Log.i(TAG, "fetching text " + textNo);
-			new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
-		} else {
-			Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
-					Toast.LENGTH_SHORT).show();
-		}
-	}
+    protected void seepresentation() {
+        int textNo = mKom.getConferencePres();
+        if (textNo > 0) {
+            Log.i(TAG, "fetching text " + textNo);
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
 
 	protected void seewhoison() {
         Intent intent = new Intent(this, WhoIsOn.class);    
@@ -756,15 +751,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         return str;
     }
 
-
-
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();		
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        mKom = ((KomServer.LocalBinder)service).getService();
         mKom.setShowFullHeaders(mState.ShowFullHeaders);
         mKom.setConference(mState.conferenceNo);
-        new LoadMessageTask().execute();
-
-	}
+        new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+    }
 
 	public void onServiceDisconnected(ComponentName name) {
 		mKom = null;		
@@ -784,4 +776,5 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private static final int DIALOG_NUMBER_ENTRY = 7;
     private static final int MESSAGE_TYPE_PARENT_TO = 1;
     private static final int MESSAGE_TYPE_TEXTNO = 2;
+    private static final int MESSAGE_TYPE_NEXT = 3;
 }
