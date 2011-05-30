@@ -15,84 +15,82 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
     public static final String TAG = "Androkom";
 
     private ArrayAdapter<String> mAdapter;
-    private AsyncMessages mAsyncMessages;
     private int mLogIndex;
     private KomServer mKom;
 
     @Override
-    public void onCreate(Bundle savedInstanceState)
-    {
+    public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
         setContentView(R.layout.message_main);
-        getApp().doBindService(this);
         mAdapter = new ArrayAdapter<String>(this, R.layout.message_log);
         setListAdapter(mAdapter);
         mLogIndex = 0;
+
+        getApp().doBindService(this);
     }
 
     @Override
-    public void onResume()
-    {
+    public void onResume() {
         super.onResume();
-        if (mAsyncMessages != null)
-        {
-            mAsyncMessages.subscribe(this);
+
+        if (mKom != null) {
+            mKom.addAsyncSubscriber(this);
             update();
         }
     }
 
     @Override
-    public void onPause()
-    {
-        mAsyncMessages.unsubscribe(this);
+    public void onPause() {
+        if (mKom != null) {
+            mKom.removeAsyncSubscriber(this);
+        }
+
         super.onPause();
     }
 
     @Override
-    public void onDestroy()
-    {
+    public void onDestroy() {
         getApp().doUnbindService(this);
         super.onDestroy();
     }
 
-    private void update()
-    {
-        while (mLogIndex < mAsyncMessages.getLog().size())
-        {
-            final Message msg = mAsyncMessages.getLog().get(mLogIndex++);
-            String msgStr = mAsyncMessages.messageAsString(msg);
-            mAdapter.add(msgStr);
-        }
+    private void update() {
+        if (mKom != null) {
+            final AsyncMessages am = mKom.asyncMessagesHandler;
 
-        final int count = getListView().getCount();
-        if (count > 0)
-        {
-            mAdapter.notifyDataSetChanged();
-            getListView().smoothScrollToPosition(count - 1);
+            while (mLogIndex < am.getLog().size()) {
+                final Message msg = am.getLog().get(mLogIndex++);
+                String msgStr = am.messageAsString(msg);
+                mAdapter.add(msgStr);
+            }
+
+            final int count = getListView().getCount();
+            if (count > 0) {
+                mAdapter.notifyDataSetChanged();
+                getListView().setSelection(count - 1);
+            }
         }
     }
 
-    public void asyncMessage(Message msg)
-    {
+    public void asyncMessage(final Message msg) {
         update();
     }
 
-    App getApp()
-    {
+    App getApp() {
         return (App) getApplication();
     }
 
-    public void onServiceConnected(ComponentName name, IBinder service)
-    {
+    public void onServiceConnected(final ComponentName name, final IBinder service) {
         mKom = ((KomServer.LocalBinder) service).getService();
-        mAsyncMessages = mKom.asyncMessagesHandler;
-        mAsyncMessages.subscribe(this);
+        mKom.addAsyncSubscriber(this);
         update();
     }
 
-    public void onServiceDisconnected(ComponentName name)
-    {
+    public void onServiceDisconnected(final ComponentName name) {
         mKom = null;
+        mLogIndex = 0;
+        mAdapter.clear();
+        mAdapter.notifyDataSetChanged();
     }
 }
