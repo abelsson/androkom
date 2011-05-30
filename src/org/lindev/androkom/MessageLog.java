@@ -62,7 +62,9 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
             while (mLogIndex < am.getLog().size()) {
                 final Message msg = am.getLog().get(mLogIndex++);
                 String msgStr = am.messageAsString(msg);
-                mAdapter.add(msgStr);
+                if (msgStr != null) {
+                    mAdapter.add(msgStr);
+                }
             }
 
             final int count = getListView().getCount();
