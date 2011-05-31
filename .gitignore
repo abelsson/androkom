@@ -1,2 +1,5 @@
-*.class
-*~
+bin/*
+gen/*
+target/*
+Androkom.iml
+.idea

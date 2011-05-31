@@ -1,47 +1,80 @@
-** LatteKOM README
-** -*- Mode: auto-fill -*-
+CHECKING OUT WITH SUBMODULE
+---------------------------
 
-* Brief description:
+You need to run the following to get the submodule subtrees into your
+working tree:
 
-This is a Java-based LysKOM[1] client library. The project focuses on
-creating a useful class library making it easy for developers to
-create new LysKOM clients in Java.
+  git submodule init
+  git submodule update
 
-LysKOM is a conference system with ancient roots. LysKOM is a
-relatively new approach to the old-fashioned KOM system, where the
-communication is client-server based rather than terminal-based. The
-most widely used client today[2] is written in Elisp and run inside
-Emacs. LysKOM was created at the Lysator Academic Computer Society[3]
-at Linköpings Universitet[4].
+Note that a git submodule refers to a specific revision of the
+submodule project.
 
-This project aims to implement all features of the latest LysKOM
-protocol A specification[5].
+BUILDING USING ECLIPSE
+----------------------
 
-References:
+After checking out Androkom and the required submodule (above), you
+can import it into Eclipse with the following steps:
 
-1: http://www.lysator.liu.se/lyskom/
-2: http://www.lysator.liu.se/lyskom/klienter/emacslisp/
-3: http://www.lysator.liu.se/
-4: http://www.liu.se/
-5: ftp://ftp.lysator.liu.se/pub/lyskom/draft/Protocol-A.texi
+1. Create a new project (e.g. "Androkom"): File -> New -> Project ->
+   General/Project
+2. Right-click on the project in Eclipse's Package Explorer and select
+   "Import". Select "File System" as import source, click Next.
+3. Click "Browse" and locate the folder where you checked out the
+   Androkom tree.
+4. Check the "androkom" folder and make sure it has some subfolders
+   and and that they also are checked. Check "Overwrite existing
+   resources without warning". Finish the import.
+
+If Eclipse complains about a missing required source folder "gen"
+and/or reports that the a file "R.java" is missing, restart Eclipse.
+
+You should now be able to build and run Androkom by selecting the
+project in Package Explorer and clicking "Run".
+
+MAKING CHANGES TO A SUBMODULE
+-----------------------------
+
+The lattekom submodule is by default cloned from a read-only URL,
+which means you can't push changes directly. However, you can push
+changes to a different repository URL to which you have write access.
+
+See https://git.wiki.kernel.org/index.php/GitSubmoduleTutorial for
+instructions on how to work with git submodules. The basic idea is
+that a submodule is a reference to a specific commit level in an
+external project. If you want to make changes in the submodule, you
+need to first commit it to the submodule, then update the parent
+project with the new commit. Example (Androkom being a clone of an
+androkom repository where you have write access):
+
+karin:Androkom rasmus$ cd lattekom
+
+# check out the master branch
+karin:lattekom rasmus$ git checkout master
+
+# hack away
+
+# commit your changes to your local master branch
+karin:lattekom rasmus$ git commit -am "hacked away"
+
+# push your commit(s) to a repo where you have write access
+karin:lattekom rasmus$ git push git@github.com:pajp/lattekom.git
+
+# now update the submodule to point to your latest commit
+karin:lattekom rasmus$ cd ..
+karin:Androkom rasmus$ git add lattekom
+karin:Androkom rasmus$ git commit -m "updated lattekom"
+
+# push the updated submodule ref to the androkom repository
+karin:Androkom rasmus$ git push
 
 
-* About the code
+The 'lattekom' submodule has now been updated, and androkom has been
+updated to point to the new lattekom revision.
 
-Much of this code was written in 1998, and there are some less
-successful design choices in it, as well as bad practices and
-references to deprecated APIs. My apologies.
+If the submodule has been updated by someone else, do `git pull' and
+then `git submodule update' in the androkom tree.
 
-* Authors:
+NOTE: if you run `git submodule update', it will overwrite any changes
+you have made within that submodule.
 
-The original author of this code is Rasmus Sten
-<rasmus@dll.nu>. Staffan Malmgren <staffan@ehand.se> was the first
-person to see the code, and has provided bug fixes, features, test
-implementations, documentation and more.
-
-
-* License
-
-The license of this the "MIT License". Put shortly, you can do
-anything you want with this code, but don't blame its authors. See the
-file "LICENSE".
