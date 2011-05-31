@@ -154,11 +154,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 return null;
             }
 
-            if (text.getTextNo() < 0) {
-                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
-                return null;
-            }
-
             Log.i(TAG, "LoadMessageTask doInBackground END");
             return text;
         }
@@ -167,7 +162,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         {
             Log.i(TAG, "LoadMessageTask onPostExecute BEGIN");
 
-            if (text != null) {
+            if (text != null && text.getTextNo() < 0) {
+                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
+                startActivity(new Intent(Conference.this, ConferenceList.class));
+            }
+            else if (text != null) {
                 mState.currentText.push(text);
                 mState.currentTextIndex = mState.currentText.size() - 1;
                 Log.i(TAG, stackAsString());
@@ -290,17 +289,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private void moveToPrevText() {
         Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
 
-        mState.currentTextIndex--;
-
-        if (mState.currentTextIndex < 0) {
-            mState.currentTextIndex = 0;
-            return;
+        if (mState.currentTextIndex > 0) {
+            mState.currentTextIndex--;
+            Log.i(TAG, stackAsString());
+            mSwitcher.setInAnimation(mSlideRightIn);
+            mSwitcher.setOutAnimation(mSlideRightOut);
+            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
         }
-
-        Log.i(TAG, stackAsString());
-        mSwitcher.setInAnimation(mSlideRightIn);
-        mSwitcher.setOutAnimation(mSlideRightOut);
-        mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
     }
 
     private void moveToNextText() {
@@ -726,7 +721,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         public int conferenceNo;
 		int currentTextIndex;
         Stack<TextInfo> currentText;
-        boolean hasCurrent() { return currentTextIndex > 0; }
+        boolean hasCurrent() { return currentTextIndex >= 0; }
         TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
         boolean ShowFullHeaders;
     };
