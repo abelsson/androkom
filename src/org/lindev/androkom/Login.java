@@ -1,23 +1,31 @@
 package org.lindev.androkom;
 
+import java.util.List;
+import java.util.Timer;
+
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
+import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -28,9 +36,9 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class Login extends Activity 
+public class Login extends Activity implements ServiceConnection
 {
-	public static final String TAG = "Androkom Login";
+	public static final String TAG = "Androkom";
 	private boolean loginFailed = false;
 
     @Override
@@ -39,7 +47,7 @@ public class Login extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        getApp().doBindService();
+        getApp().doBindService(this);
 
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
@@ -56,6 +64,12 @@ public class Login extends Activity
         });
     }
 
+	@Override
+	protected void onDestroy() {
+		getApp().doUnbindService(this);
+		super.onDestroy();
+	}
+   
 	public void onWindowFocusChanged(boolean hasFocus) {
 		super.onWindowFocusChanged(hasFocus);
 
@@ -162,11 +176,11 @@ public class Login extends Activity
         	Log.d(TAG, "Connecting to "+server);
         	if(server.length()>0) {
         		if(selectedUser>0) {
-        			String msg = getApp().getKom().login(selectedUser, password, server);
+        			String msg = mKom.login(selectedUser, password, server);
         			selectedUser=0;
             		return msg;
         		} else {
-            		return getApp().getKom().login(username, password, server);
+            		return mKom.login(username, password, server);
         		}
         	}
        		return getString(R.string.No_server_selected);
@@ -178,7 +192,7 @@ public class Login extends Activity
                        
             if (result.length() > 0) {
             	// Login failed, check why
-            	final ConferenceInfo[] users = getApp().getKom().getUserNames();
+            	final ConferenceInfo[] users = mKom.getUserNames();
             	if (users != null && users.length > 1) {
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
             		builder.setTitle(getString(R.string.pick_a_name));
@@ -229,8 +243,6 @@ public class Login extends Activity
                 // Commit the edits!
                 editor.commit();
 
-                getApp().getKom().setasynchandler(getApp().getasynchandler());
-                
                 Intent intent = new Intent(Login.this, ConferenceList.class);
                 startActivity(intent);
                 finish();
@@ -292,7 +304,17 @@ public class Login extends Activity
     {
         return (App)getApplication();
     }
+
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
+	
     private int selectedUser=0;
     private EditText mUsername;
-    private EditText mPassword;
+    private EditText mPassword;	
+	private KomServer mKom;	
 }

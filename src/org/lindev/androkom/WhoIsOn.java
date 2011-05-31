@@ -5,8 +5,11 @@ import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.ListActivity;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
@@ -20,9 +23,10 @@ import android.widget.Toast;
  * @author jonas
  *
  */
-public class WhoIsOn extends ListActivity 
+public class WhoIsOn extends ListActivity implements ServiceConnection
 {
-	public static final String TAG = "Androkom WhoIsOn";
+	public static final String TAG = "Androkom";
+	private KomServer mKom;
 
 	/**
      * Instantiate activity.  
@@ -32,6 +36,7 @@ public class WhoIsOn extends ListActivity
     {
         super.onCreate(savedInstanceState);
                 
+        getApp().doBindService(this);
         mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison);
         setListAdapter(mAdapter);
         
@@ -61,6 +66,7 @@ public class WhoIsOn extends ListActivity
     @Override
     protected void onDestroy() 
     {
+        getApp().doUnbindService(this);
         super.onDestroy();
     }
     
@@ -145,14 +151,13 @@ public class WhoIsOn extends ListActivity
     	try {
             App app = getApp();
             if (app != null) {
-            	KomServer kom = app.getKom();
-            	if (kom != null) {
-            		if (kom.isConnected()) {
-            			retlist = kom.fetchPersons(populatePersonsT);
+            	if (mKom != null) {
+            		if (mKom.isConnected()) {
+            			retlist = mKom.fetchPersons(populatePersonsT);
             		} else {
             			Log.d(TAG, "Can't fetch persons when no connection");
             	        Toast.makeText(getApplicationContext(), "Lost connection", Toast.LENGTH_SHORT).show();
-            			getApp().getKom().reconnect();
+            			mKom.reconnect();
             		}
             	}
             }
@@ -169,7 +174,13 @@ public class WhoIsOn extends ListActivity
         return (App)getApplication();
     }
     
- 
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
     private List<ConferenceInfo> tPersons;
     private List<ConferenceInfo> mPersons;
     private ArrayAdapter<ConferenceInfo> mAdapter;

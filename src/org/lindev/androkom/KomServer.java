@@ -7,32 +7,27 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 
-import org.lindev.androkom.WhoIsOn.populatePersonsTask;
-
-import nu.dll.lyskom.AsynchMessage;
-import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
-import nu.dll.lyskom.Hollerith;
-import nu.dll.lyskom.KomToken;
-import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
+import nu.dll.lyskom.Selection;
 import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
+
+import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
+import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.AsyncTask;
 import android.os.Binder;
-import android.os.Bundle;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -44,7 +39,7 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class KomServer extends Service implements RpcEventListener, AsynchMessageReceiver, nu.dll.lyskom.Log
+public class KomServer extends Service implements RpcEventListener, nu.dll.lyskom.Log
 {
 	public static final String TAG = "Androkom KomServer";
 	public static boolean RELEASE_BUILD = false;
@@ -68,6 +63,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         public int id;
         public String name;
+        public int numUnread;
 
         @Override
         public String toString() 
@@ -163,10 +159,12 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     public void onCreate() 
     {
         super.onCreate();
-
+        
+        asyncMessagesHandler = new AsyncMessages(getApp(), this);
+        asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
+        
         if (s == null) {
             s = new Session();
-
             s.addRpcEventListener(this);
         }
     }
@@ -177,6 +175,10 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         return mBinder;
     }
 
+    App getApp() 
+    {
+        return (App) getApplication();
+    }
 
     /**
      * Called upon destruction of the service. If we're logged in,
@@ -207,6 +209,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         s.removeRpcEventListener(this);        
         s = null;
 
+        super.onDestroy();
     }
 
     void reconnect() {
@@ -231,7 +234,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     	
         s = new Session();
         s.addRpcEventListener(this);
-        //s.addAsynchMessageReceiver(this);
 
         Log.d(TAG, "KomServer trying to login using "+re_userid+" "+re_server);
         login(re_userid, re_password, re_server);
@@ -246,7 +248,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     {
         try {
             s.connect(server);
-            s.addAsynchMessageReceiver(this);
+            s.addAsynchMessageReceiver(asyncMessagesHandler);
         } catch (IOException e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect1 "+e);
@@ -324,34 +326,45 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     }
     
     /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void addAsyncSubscriber(AsyncMessageSubscriber sub)
+    {
+    	asyncMessagesHandler.subscribe(sub);
+    }
+    
+    /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void removeAsyncSubscriber(AsyncMessageSubscriber sub)
+    {
+    	asyncMessagesHandler.unsubscribe(sub);
+    }
+
+    /**
      * Fetch a list of conferences with unread texts.
      */
     public List<ConferenceInfo> fetchConferences()
     {
-        ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-        try { 
-            s.updateUnreads();
+        List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
 
-            Membership[] m = s.getUnreadMembership();
-            for (int i = 0; i < m.length; i++) {
-                int conf = m[i].getConference();
-                String name = s.toString(s.getConfName(conf));
-                Log.i("androkom", name + " <" + conf + ">");
+        try
+        {
+            for (int conf : s.getMyUnreadConfsList(true))
+            {
+                  String name = s.toString(s.getConfName(conf));
+                  Log.i(TAG, name + " <" + conf + ">");
 
-                ConferenceInfo info = new ConferenceInfo();
-                info.id = conf;
-                info.name = name;
+                  ConferenceInfo info = new ConferenceInfo();
+                  info.id = conf;
+                  info.name = name;
+                  info.numUnread = s.getUnreadCount(conf);
 
-                arr.add(info);
+                  arr.add(info);
             }
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchConferences1 "+e);
-            e.printStackTrace();
-            reconnect();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchConferences2 "+e);
+        }
+        catch (IOException e)
+        {
             e.printStackTrace();
         }
 
@@ -443,7 +456,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 return "Invalid/ambigious username";
             } else {
                 // login as hidden
-                if (!s.login(usernames[0].confNo, password, hidden_session)) {
+                if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
                     return "Invalid password";
                 }
             }
@@ -458,7 +471,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
         } catch (Exception e) {
         	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
         	e.printStackTrace();
-        	return "Unknown error";
         }
         re_userid = usernames[0].confNo;
         re_password = password;
@@ -483,7 +495,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
         try {
         	// login as hidden
-        	if (!s.login(userid, password, hidden_session)) {
+        	if (!s.login(userid, password, hidden_session, false)) {
         		return "Invalid password";
         	}
         	s.setClientVersion("Androkom", getVersionName());
@@ -519,6 +531,11 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 		}
     }
     
+    public Session getSession()
+    {
+        return s;
+    }
+    
     public TextInfo getParentToText(int textNo)
     {
     	try {
@@ -526,6 +543,8 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 			int arr[] = t.getCommented();
 			if (arr.length > 0) {
 				return getKomText(arr[0]);
+			} else {
+				return new TextInfo(-1, "", "", "", "", "Text has no parent");
 			}
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
@@ -561,7 +580,7 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
                 	return new TextInfo(-1, "", "", "", "", getString(R.string.all_read));
             } 
             
-            return getKomText(mLastTextNo);                                
+            return getKomText(mLastTextNo);
 
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -774,31 +793,49 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 		}
     }
 
-	public void markTextAsRead(int textNo)
+    public void markTextAsRead(int textNo)
     {
-    	Text text;
-		try {
-			text = s.getText(textNo);
-			// TODO: Should batch these up and send in a group, instead of many separate requests.
-			int recipents[] = text.getRecipients();						
-			for(int i=0;i<recipents.length;i++) {
-				int confNo = recipents[i];
-				int[] localTextNo = { text.getLocal(confNo) };
-				s.doMarkAsRead(confNo, localTextNo); 
-			}
-			
-			int ccrecipients[] = text.getCcRecipients();
-			for(int i=0;i<ccrecipients.length;i++) {
-				int confNo = ccrecipients[i];
-				int[] localTextNo = { text.getLocal(confNo) };
-				s.doMarkAsRead(confNo, localTextNo); 
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		}
-	
+        Log.i(TAG, "Mark as read: " + textNo);
+
+        try
+        {
+            final TextStat stat = s.getTextStat(textNo, true);
+            final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
+            List<Selection> recipientSelections = new ArrayList<Selection>();
+
+            for (final int tag : tags)
+            {
+                recipientSelections.addAll(stat.getMiscInfoSelections(tag));
+            }
+
+            for (final Selection selection : recipientSelections)
+            {
+                int rcpt = 0;
+
+                for (int tag : tags)
+                {
+                    if (selection.contains(tag))
+                    {
+                        rcpt = selection.getIntValue(tag);
+                    }
+                }
+
+                if (rcpt > 0)
+                {
+                    int local = selection.getIntValue(TextStat.miscLocNo);
+                    Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
+                    s.doMarkAsRead(rcpt, new int[] { local });
+                }
+            }
+        }
+        catch (final IOException e)
+        {
+            e.printStackTrace();
+        }
+
+        Log.i(TAG, "Mark as read finished: " + textNo);
     }
+
     /**
      * Get text number of last read text in current meeting, 
      * or -1 if there is no suitable text.
@@ -1191,133 +1228,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     }
 
-    public void asynchMessage(AsynchMessage m) {
-        // TODO Auto-generated method stub
-    	Log.d(TAG, "asynchMessage:"+m);
-    	
-    	if (asyncHandler != null) {
-    		mMessage = m;
-    		doGetMessage();
-    	} else {
-    		Log.d(TAG, "got async but no asyncHandler");
-    	}
-    }
-
-    public void setasynchandler(Handler h) {
-    	asyncHandler = h;
-    }
-
-    /**
-     * Attempt to receive async message to user.
-     */
-    private class getMessageTask extends AsyncTask<Void, Integer, String> {
-    	AsynchMessage message;
-
-        protected void onPreExecute() {
-            this.message = mMessage;
-        }
-
-        protected String doInBackground(final Void... args) 
-        {
-            	int confno;
-            	String name;
-            	Hollerith msgH;
-
-            	KomToken[] params = message.getParameters();
-            	
-            	Message msg = new Message();
-        		msg.what = message.getNumber();
-        		Bundle b = new Bundle();
-                int textno;
-				switch(msg.what) {
-                case nu.dll.lyskom.Asynch.login :
-                	confno = params[0].intValue();
-                	name = getConferenceName(confno);
-                    b.putString("name", ""+name);
-                	break;
-                case nu.dll.lyskom.Asynch.logout :
-                	confno = params[0].intValue();
-                	name = getConferenceName(confno);
-                    b.putString("name", ""+name);
-                	break;
-                case nu.dll.lyskom.Asynch.new_name :
-                    msgH = (Hollerith) params[1];
-                    b.putString("oldname", ""+msgH.getContentString());
-                    msgH = (Hollerith) params[2];
-                    b.putString("newname", ""+msgH.getContentString());
-                	break;
-                case nu.dll.lyskom.Asynch.send_message :
-                	confno = params[1].intValue();
-                	name = getConferenceName(confno);
-                    b.putString("from", ""+name);
-                	confno = params[0].intValue();
-                	name = getConferenceName(confno);
-                    b.putString("to", ""+name);
-                    msgH = (Hollerith) params[2];
-                    b.putString("msg", ""+msgH.getContentString());
-                	break;
-                case nu.dll.lyskom.Asynch.new_text_old : 
-                	confno = params[0].intValue();
-                	Log.d(TAG, "New text created:"+confno);
-                	break;
-                case nu.dll.lyskom.Asynch.i_am_on:
-                	Log.d(TAG, "Should probably update cached data (i_am_on).");
-                	break;
-                case nu.dll.lyskom.Asynch.sync_db:
-                	Log.d(TAG, "Database sync. Tell user about service interruption?");
-                	break;
-                case nu.dll.lyskom.Asynch.leave_conf:
-                	Log.d(TAG, "No longer member of a conference.");
-                	break;
-                case nu.dll.lyskom.Asynch.rejected_connection:
-                	Log.d(TAG, "Lyskom is full, please make space.");
-                	break;
-                case nu.dll.lyskom.Asynch.deleted_text:
-                	Log.d(TAG, "Text deleted.");
-                	break;
-                case nu.dll.lyskom.Asynch.new_text:
-                	Log.d(TAG, "New text created.");
-                	textno = params[0].intValue();
-                	Log.d(TAG, "Trying to cache text "+textno);
-					try {
-						s.getText(textno);
-					} catch (RpcFailure e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IOException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-                	break;
-                case nu.dll.lyskom.Asynch.new_recipient:
-                	Log.d(TAG, "New recipient added to text.");
-                	break;
-                case nu.dll.lyskom.Asynch.sub_recipient:
-                	Log.d(TAG, "Recipient removed from text.");
-                	break;
-                case nu.dll.lyskom.Asynch.new_membership:
-                	Log.d(TAG, "New recipient added to text.");
-                	break;
-                default:
-                	Log.d(TAG, "Unknown async message received#"+msg.what);
-                }
-                msg.setData(b);
-        		asyncHandler.sendMessage(msg);
-
-        		return getString(R.string.No_server_selected);
-        }
-
-        protected void onPostExecute(final String result) 
-        { 
-
-        }
-    }
-
-    private void doGetMessage()
-    {
-        new getMessageTask().execute();
-    }
-
     public boolean sendMessage(int recipient, String message, boolean block)
     throws IOException, RpcFailure {
     	return s.sendMessage(recipient, message, block);
@@ -1376,8 +1286,6 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
     private int mLastTextNo=0;
     HashMap<String, String> mUserAreaProps=null;
 
-    AsynchMessage mMessage; // temp storage for async message
-    
     // This is the object that receives interactions from clients. 
     private final IBinder mBinder = new LocalBinder();
 
@@ -1389,5 +1297,5 @@ public class KomServer extends Service implements RpcEventListener, AsynchMessag
 
     private boolean hidden_session = !RELEASE_BUILD;
     
-	Handler asyncHandler=null;
+    AsyncMessages asyncMessagesHandler;
 }

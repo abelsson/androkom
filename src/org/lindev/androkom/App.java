@@ -5,13 +5,10 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.os.Handler;
 import android.os.IBinder;
-import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
-import android.widget.Toast;
 
 /**
  * Common application class shared among all the activities. It's 
@@ -21,132 +18,59 @@ import android.widget.Toast;
  * @author henrik
  *
  */
-public class App extends Application 
+public class App extends Application implements ServiceConnection
 {
 	private static final String OPT_KEEPSCREENON = "keepscreenon";
 	private static final Boolean OPT_KEEPSCREENON_DEF = false;
-	private static final String TAG = "Androkom App";
-
-	/**
-     * Return a reference to the KomServer instance.
-     */
-    public KomServer getKom() { return mBoundService; }
-
-
-    public void doBindService() 
-    {
-        // Establish a connection with the service.  We use an explicit
-        // class name because we want a specific service implementation that
-        // we know will be running in our own process (and thus won't be
-        // supporting component replacement by other applications).
-        bindService(new Intent(App.this, KomServer.class), mConnection, Context.BIND_AUTO_CREATE);
-        mIsBound = true;
-
+	private static final String TAG = "Androkom";
+	
+	@Override
+	public void onCreate()
+	{
+		super.onCreate();
+		doBindService(this);
+		
         // keep screen on, depending on preferences
         boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
 		Log.d(TAG, "keepscreenon="+keepScreenOn);
 
 		if (keepScreenOn) {
 			PowerManager pm = (PowerManager) getSystemService(Context.POWER_SERVICE);
-			wl = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
-			wl.acquire();
+			mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
+			mWakeLock.acquire();
 		}
-    }
-
-    public void doUnbindService()
-    {
-    	if(wl != null) {
-    		wl.release();
-    		wl = null;
+	}
+	
+	@Override
+	public void onTerminate()
+	{
+	 	if(mWakeLock != null) {
+    		mWakeLock.release();
+    		mWakeLock = null;
     	}
+	 	doUnbindService(this);
+	 	super.onTerminate();
+	}
 
-    	if (mIsBound) {
-            // Detach our existing connection.
-            unbindService(mConnection);
-            mIsBound = false;
-        }
-    }
-
-    public boolean isBound() {
-    	return mIsBound;
-    }
-    
-    private KomServer mBoundService;
-    private boolean mIsBound;
-
-
-    private ServiceConnection mConnection = new ServiceConnection() 
+    public void doBindService(ServiceConnection connection) 
     {
-        public void onServiceConnected(ComponentName className, IBinder service)
-        {
-            // This is called when the connection with the service has been
-            // established, giving us the service object we can use to
-            // interact with the service.  Because we have bound to a explicit
-            // service that we know is running in our own process, we can
-            // cast its IBinder to a concrete class and directly access it.
-            mBoundService = ((KomServer.LocalBinder)service).getService();
-
-            // Tell the user about it.
-            Toast.makeText(App.this, getString(R.string.komserver_connected),
-                    Toast.LENGTH_SHORT).show();
-
-        }
-
-        public void onServiceDisconnected(ComponentName className) 
-        {
-            // This is called when the connection with the service has been
-            // unexpectedly disconnected -- that is, its process crashed.
-            // Because it is running in our same process, we should never
-            // see this happen.
-            mBoundService = null;
-            Toast.makeText(App.this, getString(R.string.komserver_disconnected),
-                    Toast.LENGTH_SHORT).show();
-        }
-    };
-    
-    public Handler getasynchandler() {
-    	return asyncHandler;
+    	bindService(new Intent(App.this, KomServer.class), connection, Context.BIND_AUTO_CREATE);
     }
     
-    private Handler asyncHandler = new Handler() {
-    	public void handleMessage(Message msg) {
-    		switch (msg.what) {
-    		case nu.dll.lyskom.Asynch.login:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+
-                		getString(R.string.x_logged_in),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.logout:
-                Toast.makeText(App.this, ""+msg.getData().getString("name")+
-                		getString(R.string.x_logged_out),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.new_name:
-                Toast.makeText(App.this, ""+msg.getData().getString("oldname")+
-                		getString(R.string.x_changed_to_y)+
-                		msg.getData().getString("newname"),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		case nu.dll.lyskom.Asynch.send_message:
-                Toast.makeText(App.this, ""+msg.getData().getString("from")+
-                		getString(R.string.x_says_y)+
-                		msg.getData().getString("msg")+
-                		getString(R.string.x_to_y)
-                		+msg.getData().getString("to"),
-                        Toast.LENGTH_LONG).show();
-    			break;
-            case nu.dll.lyskom.Asynch.rejected_connection:
-                Toast.makeText(App.this, getString(R.string.lyskom_full),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-            case nu.dll.lyskom.Asynch.sync_db:
-                Toast.makeText(App.this, getString(R.string.sync_db_msg),
-                        Toast.LENGTH_SHORT).show();
-    			break;
-    		}
-    		super.handleMessage(msg);
-    	}
-    };
-    
-    PowerManager.WakeLock wl = null;
+    public void doUnbindService(ServiceConnection connection)
+    {
+    	unbindService(connection);
+    }
+      
+    private PowerManager.WakeLock mWakeLock = null;
+
+	public void onServiceConnected(ComponentName name, IBinder service)
+	{
+		
+	}
+
+	public void onServiceDisconnected(ComponentName name) 
+	{
+		
+	}
 }

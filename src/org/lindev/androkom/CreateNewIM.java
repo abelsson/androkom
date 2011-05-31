@@ -8,9 +8,12 @@ import nu.dll.lyskom.RpcFailure;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
+import android.content.ComponentName;
 import android.content.DialogInterface;
+import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.View;
 import android.widget.Button;
@@ -22,10 +25,12 @@ import android.widget.Toast;
  * new IM.
  * 
  */
-public class CreateNewIM extends Activity 
+public class CreateNewIM extends Activity implements ServiceConnection
 {
 
-    /**
+    private KomServer mKom;
+
+	/**
      * Create activity. Just a plain old dialog with
      * a recipient, body and cancel and post buttons.
      */
@@ -35,6 +40,8 @@ public class CreateNewIM extends Activity
         super.onCreate(savedInstanceState);
         setContentView(R.layout.createnew_im);
 
+        getApp().doBindService(this);
+        
         mRecipient = (EditText) findViewById(R.id.recipient);
         mBody = (EditText) findViewById(R.id.body);
 
@@ -49,6 +56,13 @@ public class CreateNewIM extends Activity
         });
     }
 
+    @Override
+    public void onDestroy()
+    {
+    	super.onDestroy();
+    	getApp().doUnbindService(this);
+    }
+    
     /**
      * Attempt to create text
      */
@@ -70,7 +84,7 @@ public class CreateNewIM extends Activity
         {
         	Log.d(TAG, "Trying to create IM ");
         	try {
-				return ((Boolean)getApp().getKom().sendMessage(recipientNo, textbody, true)).toString();
+				return ((Boolean)mKom.sendMessage(recipientNo, textbody, true)).toString();
 			} catch (RpcFailure e) {
 				// TODO Auto-generated catch block
 				Log.e(TAG, "RpcFailure");
@@ -109,8 +123,8 @@ public class CreateNewIM extends Activity
     	if (recipientNo != 0) {
         	new CreateTextTask().execute();
     	} else {
-    		ConfInfo[] users = getApp().getKom().getUsers(mRecipient.getText().toString());
-    		ConfInfo[] confs = getApp().getKom().getConferences(mRecipient.getText().toString());
+    		ConfInfo[] users = mKom.getUsers(mRecipient.getText().toString());
+    		ConfInfo[] confs = mKom.getConferences(mRecipient.getText().toString());
     		final ConfInfo[] conferences = new ConfInfo[users.length + confs.length];
     		if(users.length>0) {
     			for(int i=0; i<users.length; i++) {
@@ -158,6 +172,13 @@ public class CreateNewIM extends Activity
         return (App)getApplication();
     }
 
+	public void onServiceConnected(ComponentName name, IBinder service) {
+		mKom = ((KomServer.LocalBinder)service).getService();		
+	}
+
+	public void onServiceDisconnected(ComponentName name) {
+		mKom = null;		
+	}
     private EditText mRecipient;
     private EditText mBody;
 

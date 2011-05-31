@@ -13,8 +13,8 @@
     <string name="x_to_y">" to "</string>
     <string name="lyskom_full">Lyskom is full, please make space</string>
     <string name="sync_db_msg">Syncing database</string>
-    <string name="loading_text">Loading text..</string>
-    <string name="loading">Loading...</string>
+    <string name="loading_text">Loading text ...</string>
+    <string name="loading">Loading ...</string>
     <string name="all_read">All read</string>
     <string name="error_fetching_unread_text">[error fetching unread text]</string>
     <string name="error_fetching_text">[error fetching text]</string>
@@ -25,6 +25,7 @@
     <string name="no_recipient_error">No such recipient</string>
     <string name="no_conference_error">No such conference</string>
     <string name="no_unreads">Nothing to read</string>
+    <string name="fetching_conferences">Loading unreads ...</string>
     <string name="local_time">(local)</string>
     
 	<string name="login_name">Username:</string>
@@ -77,7 +78,7 @@
     <string name="reconnect_label">Reconnect</string>
     <string name="reconnect_shortcut">R</string>
     
-    <string name="title_submenu_create">Create...</string>
+    <string name="title_submenu_create">Create ...</string>
     <string name="createnewtext_label">New text</string>
     <string name="createnewtext_shortcut">N</string>
     <string name="createnewmail_label">New mail</string>
@@ -85,7 +86,7 @@
     <string name="createnewIM_label">New IM</string>
     <string name="createnewIM_shortcut">I</string>
 
-    <string name="title_submenu_mark">Mark...</string>
+    <string name="title_submenu_mark">Mark ...</string>
     <string name="marktext_label">Mark text</string>
     <string name="marktext_shortcut">M</string>
     <string name="unmarktext_label">Unmark text</string>
@@ -123,4 +124,6 @@
     <string name="do_endast">Endast!</string>
     <string name="endast_label">Endast</string>
     <string name="endast_shortcut">E</string>
+    
+    <string name="message_log_label">Message Log</string>
 </resources>
