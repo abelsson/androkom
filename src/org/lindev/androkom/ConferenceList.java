@@ -55,8 +55,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
-				
-				
 	}
 
 	/**

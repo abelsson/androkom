@@ -287,9 +287,14 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT)
     {
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
+        Log.d(TAG, "fetchPersons begin");
+        
         try {
             DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
 
+            if(persons.length<1) {
+            	Log.d(TAG, "No persons online");
+            }
             for (int i = 0; i < persons.length; i++) {
                 int persNo = persons[i].getPerson();
                 String username;
@@ -305,7 +310,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
                 } else {
                 	username = getString(R.string.anonymous);
                 }
-                Log.i("androkom", username + " <" + persNo + ">");
+                Log.i("androkom", ""+i+"/"+persons.length+": "+username + " <" + persNo + ">");
 
                 ConferenceInfo info = new ConferenceInfo();
                 info.id = persNo;
@@ -323,6 +328,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         	Log.d(TAG, "fetchPersons2 "+e);
             e.printStackTrace();
         }
+        Log.d(TAG, "fetchPersons end");
 
         return arr;
     }
