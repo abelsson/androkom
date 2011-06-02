@@ -255,8 +255,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 						retlist = mKom.fetchConferences();
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
-						Toast.makeText(getApplicationContext(),
-								"Lost connection", Toast.LENGTH_SHORT).show();
 						mKom.reconnect();
 					}
 				}
@@ -264,9 +262,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
-			Toast.makeText(getApplicationContext(),
-					"fetchConferences failed, probably lost connection",
-					Toast.LENGTH_SHORT).show();
 		}
 		return retlist;
 	}
