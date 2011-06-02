@@ -67,8 +67,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onResume() {
 		super.onResume();
 
-		mAdapter.clear();
-
 		mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -205,6 +203,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			AsyncTask<Void, Void, List<ConferenceInfo>> {
 		@Override
 		protected void onPreExecute() {
+			mAdapter.clear();
+
 			setProgressBarIndeterminateVisibility(true);
 		}
 
@@ -218,7 +218,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		protected void onPostExecute(final List<ConferenceInfo> fetched) {
 			setProgressBarIndeterminateVisibility(false);
 
-			mAdapter.clear();
 			mConferences = fetched;
 
 			if (mConferences != null && (!mConferences.isEmpty())) {
