@@ -67,6 +67,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onResume() {
 		super.onResume();
 
+		mAdapter.clear();
+
 		mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 

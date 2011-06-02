@@ -126,4 +126,5 @@
     <string name="endast_shortcut">E</string>
     
     <string name="message_log_label">Message Log</string>
+    <string name="no_messages">No messages</string>
 </resources>

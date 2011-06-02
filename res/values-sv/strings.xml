@@ -122,4 +122,7 @@
     <string name="do_endast">Endast!</string>
     <string name="endast_label">Endast</string>
     <string name="endast_shortcut">E</string>
+
+    <string name="message_log_label">Meddelandelogg</string>
+    <string name="no_messages">Inga meddelanden</string>
 </resources>
