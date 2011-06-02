@@ -126,12 +126,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         // worker thread (separate from UI thread)
         protected TextInfo doInBackground(final Integer... args) {
-            Log.i(TAG, "LoadMessageTask doInBackground BEGIN");
-            TextInfo text;
+            Log.d(TAG, "LoadMessageTask doInBackground BEGIN");
+            TextInfo text = null;
 
             if (mState.hasCurrent()) {
                 mKom.markTextAsRead(mState.getCurrent().getTextNo());
             }
+
+            Log.d(TAG, "LoadMessageTask doInBackground curent text is marked as read");
+            Log.d(TAG, "LoadMessageTask doInBackground case "+args[0]);
 
             switch (args[0]) {
             case MESSAGE_TYPE_PARENT_TO:
@@ -151,7 +154,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
             default:
                 Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
-                return null;
+                text = null;
             }
 
             Log.i(TAG, "LoadMessageTask doInBackground END");
@@ -174,6 +177,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 TextView widget = (TextView) mSwitcher.getCurrentView();
                 widget.scrollTo(0, 0);
                 setTitle(mKom.getConferenceName());
+            } else {
+            	Log.d(TAG, "LoadMessageTask onPostExecute text=null");
             }
 
             setProgressBarIndeterminateVisibility(false);
@@ -320,7 +325,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     private void moveToParentText() {
         Log.i(TAG, "fetching parent to text " + mState.getCurrent().getTextNo());
-        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO);
+        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, mState.getCurrent().getTextNo());
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
     }

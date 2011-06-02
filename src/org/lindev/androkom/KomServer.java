@@ -540,12 +540,15 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     
     public TextInfo getParentToText(int textNo)
     {
+    	Log.d(TAG, "getParentToText begin");
     	try {
 			Text t = s.getText(textNo);
 			int arr[] = t.getCommented();
 			if (arr.length > 0) {
+				Log.d(TAG, "getParentToText "+textNo+" "+arr[0]);
 				return getKomText(arr[0]);
 			} else {
+				Log.d(TAG, "getParentToText "+textNo+" none");
 				return new TextInfo(-1, "", "", "", "", "Text has no parent");
 			}
 		} catch (RpcFailure e) {
@@ -600,6 +603,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      */
     public TextInfo getKomText(int textNo)
     {
+        Log.i(TAG, "KomServer getKomText");
         try {
             Text text = s.getText(textNo);
             String username;
@@ -694,6 +698,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 			}
 
 			docacheAllComments(text);
+	        Log.i(TAG, "KomServer getKomText return 1");
             return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -701,8 +706,8 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 
             e.printStackTrace();
         }
+        Log.i(TAG, "KomServer getKomText return 2");
         return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_text));
-
     }
 
     /**
@@ -710,7 +715,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      */
     private class cacheAllCommentsTask extends AsyncTask<Text, Integer, Void> {
         protected void onPreExecute() {
-
+            Log.i(TAG, "cacheAllCommentsTask onPreExecute");
         }
 
         protected Void doInBackground(Text... text) 
@@ -762,7 +767,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         @SuppressWarnings("unused")
 		protected void onPostExecute(final String result) 
         { 
-
+            Log.i(TAG, "cacheAllCommentsTask onPostExecute");
         }
 
     }
