@@ -318,8 +318,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private void moveToParentText() {
-        Log.i(TAG, "fetching parent to text " + mState.getCurrent().getTextNo());
-        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO);
+        int current = mState.getCurrent().getTextNo();
+        Log.i(TAG, "fetching parent to text " + current);
+        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current);
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
     }
