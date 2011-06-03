@@ -535,141 +535,29 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
         return s;
     }
-    
-    public TextInfo getParentToText(int textNo)
-    {
-    	try {
-			Text t = s.getText(textNo);
-			int arr[] = t.getCommented();
-			if (arr.length > 0) {
-				return getKomText(arr[0]);
-			} else {
-				return new TextInfo(-1, "", "", "", "", "Text has no parent");
-			}
-		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-        	Log.d(TAG, "getParentToText "+e);
-
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-        	Log.d(TAG, "getParentToText "+e);
-			e.printStackTrace();
-		}
-    	reconnect();
-		return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
-    }
-
-    /**
-     * Display the next unread text in a TextView. 
-     * 
-     * TODO: This should not interact directly with GUI components.
-     * 
-     * @return text number displayed
-     */
-    public TextInfo getNextUnreadText() 
-    {
-
-        try {
-            mLastTextNo = s.nextUnreadText(false);
-            if (mLastTextNo < 0) {                
-                s.nextUnreadConference(true);
-                               
-                mLastTextNo = s.nextUnreadText(false);
-                if (mLastTextNo < 0)
-                	return new TextInfo(-1, "", "", "", "", getString(R.string.all_read));
-            } 
-            
-            return getKomText(mLastTextNo);
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "getNextUnreadText "+e);
-            e.printStackTrace();
-        }
-    	reconnect();
-
-        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_unread_text));
-    }
 
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
-    public TextInfo getKomText(int textNo)
+    public TextInfo getKomText(final int textNo)
     {
         final TextInfo text = textFetcher.getText(textNo);
-        textFetcher.cacheComments(textNo);
+        textFetcher.doCacheComments(textNo);
         return text;
     }
 
-    /**
-     * Attempt to retrieve all comments for a text.
-     */
-    private class cacheAllCommentsTask extends AsyncTask<Text, Integer, Void> {
-        protected void onPreExecute() {
-
-        }
-
-        protected Void doInBackground(Text... text) 
-        {
-        		int[] comments = text[0].getComments();
-        		if (comments.length>0) {
-        			Log.d(TAG, "Text#"+text[0].getNo()+" has "+comments.length+" comments");
-        			for(int i=0; i<comments.length; i++) {
-        				try {
-        					Log.d(TAG, "Trying to cache text "+comments[i]);
-        					s.getText(comments[i]);
-        				} catch (RpcFailure e) {
-        					// TODO Auto-generated catch block
-        					e.printStackTrace();
-    						Log.e(TAG, "RpcFailure:"+e.toString());
-        				} catch (IOException e) {
-        					// TODO Auto-generated catch block
-        					e.printStackTrace();
-    						Log.e(TAG, "IOexception:"+e.toString());
-        				}
-        			}
-        		} else {
-        			Log.d(TAG, "No comments to cache on text#"+text[0].getNo());
-        			try {
-        				int[] recipients = text[0].getRecipients();
-        				if (recipients.length > 0) {
-        					List<Integer> list = s.nextUnreadTexts(recipients[0], false, 3);
-        					if (list.size()>0) {
-        						for (int i=0; i<list.size(); i++) {
-                					Log.d(TAG, "Trying to cache text "+list.get(i));
-                					s.getText(list.get(i));
-        						}
-        					} else {
-        						Log.d(TAG, "No more unread in conf"+recipients[0]);
-        					}
-						} else {
-							Log.d(TAG, "No recipients");
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						Log.e(TAG, "cacheallcomments encountered an error");
-						Log.e(TAG, e.toString());
-					}
-        		}
-				return null;
-        }
-
-        @SuppressWarnings("unused")
-		protected void onPostExecute(final String result) 
-        { 
-
-        }
-
-    }
-
-    public void docacheAllComments(Text text)
+    public TextInfo getNextUnreadText()
     {
-        new cacheAllCommentsTask().execute(text);
+        final TextInfo text = textFetcher.getNextUnreadText();
+        textFetcher.doCacheComments(text.getTextNo());
+        return text;
     }
-     
+
+    public TextInfo getParentToText(final int textNo) {
+        return textFetcher.getParentToText(textNo);
+    }
+
     public void markText(int textNo)
     {
     	try {
@@ -1136,10 +1024,10 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     	return s.sendMessage(recipient, message, block);
     }
 
-    public void setShowFullHeaders(boolean h) {
-    	ShowFullHeaders = h;
+    public void setShowFullHeaders(final boolean h) {
+        textFetcher.setShowFullHeaders(h);
     }
-    
+
     public ConferenceInfo[] getUserNames() {
     	try {
     		if (usernames != null && usernames.length > 1) {
@@ -1184,8 +1072,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     
     private Session s=null;
 
-    boolean ShowFullHeaders = false;
-    
     private int mLastTextNo=0;
     HashMap<String, String> mUserAreaProps=null;
 
