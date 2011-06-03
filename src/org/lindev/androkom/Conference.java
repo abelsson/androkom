@@ -164,7 +164,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
             if (text != null && text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
-                startActivity(new Intent(Conference.this, ConferenceList.class));
             }
             else if (text != null) {
                 mState.currentText.push(text);

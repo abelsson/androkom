@@ -75,7 +75,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     /**
      * Small helper class to manage texts.
      */
-    public class TextInfo 
+    public static class TextInfo
     {
     	public TextInfo() { }
 
@@ -592,112 +592,15 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_unread_text));
     }
 
-
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
+    private final TextFetcher textFetcher = new TextFetcher(this);
     public TextInfo getKomText(int textNo)
     {
-        try {
-            Text text = s.getText(textNo);
-            String username;
-            int authorid = text.getAuthor();
-            if (authorid > 0) {
-            	try {
-            		nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
-            		username = confStat.getNameString();
-                } catch (Exception e) {
-                	username = getString(R.string.person)+authorid+
-                	getString(R.string.does_not_exist);
-                }
-            } else {
-            	username = getString(R.string.anonymous);
-            }
-            String CreationTimeString = text.getCreationTimeString();
-            String SubjectString = null;
-            try {
-            	SubjectString = text.getSubjectString();
-            } catch (UnsupportedEncodingException e) {
-            	Log.d(TAG, "UnsupportedEncodingException"+e);
-            	SubjectString = text.getSubjectString8();
-            }
-            String BodyString = null;
-            try {
-            	BodyString = text.getBodyString();
-            } catch (UnsupportedEncodingException e) {
-            	Log.d(TAG, "UnsupportedEncodingException"+e);
-            	BodyString = text.getBodyString8();
-            }
-            
-			String HeadersString = "";
-			if (ShowFullHeaders) {
-				int[] items;
-				items = text.getRecipients();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Mottagare: ";
-						try {
-							nu.dll.lyskom.Conference confStat = s
-									.getConfStat(items[i]);
-							HeadersString += confStat.getNameString();
-						} catch (Exception e) {
-							username = getString(R.string.person) + authorid
-									+ getString(R.string.does_not_exist);
-						}
-						HeadersString += "\n";
-					}
-				}
-				items = text.getCcRecipients();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kopiemottagare: ";
-						try {
-							nu.dll.lyskom.Conference confStat = s
-									.getConfStat(items[i]);
-							HeadersString += confStat.getNameString();
-						} catch (Exception e) {
-							username = getString(R.string.person) + authorid
-									+ getString(R.string.does_not_exist);
-						}
-						HeadersString += "\n";
-					}
-				}
-				items = text.getCommented();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kommentar till: " + items[i] + "\n";
-					}
-				}
-				items = text.getComments();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kommentar i: " + items[i] + "\n";
-					}
-				}
-				items = text.getFootnotes();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Fotnot i: " + items[i] + "\n";
-					}
-				}
-				items = text.getFootnoted();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Fotnot till: " + items[i] + "\n";
-					}
-				}
-			}
-
-			docacheAllComments(text);
-            return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "getTextAsHTML "+e);
-
-            e.printStackTrace();
-        }
-        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_text));
-
+        final TextInfo text = textFetcher.getText(textNo);
+        textFetcher.cacheComments(textNo);
+        return text;
     }
 
     /**
@@ -762,7 +665,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 
     }
 
-    private void docacheAllComments(Text text)
+    public void docacheAllComments(Text text)
     {
         new cacheAllCommentsTask().execute(text);
     }
