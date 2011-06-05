@@ -547,23 +547,35 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      * Fetch next unread text, as a HTML formatted string. 
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
-    public TextInfo getKomText(final int textNo)
-    {
-        final TextInfo text = textFetcher.getText(textNo);
-        textFetcher.doCacheRelevant(textNo);
-        return text;
-    }
+
+	public TextInfo getKomText(final int textNo) {
+		Log.d(TAG, "Trying to get "+textNo);
+		final TextInfo text = textFetcher.getText(textNo);
+		textFetcher.doCacheRelevant(textNo);
+		Log.d(TAG, "Got text "+textNo);
+		return text;
+	}
 
     public TextInfo getNextUnreadText()
     {
+    	Log.d(TAG, "Trying to get next unread");
         final TextInfo text = textFetcher.getNextUnreadText();
-        textFetcher.doCacheRelevant(text.getTextNo());
+        int textNo = text.getTextNo();
+		if (textNo > 0) {
+			textFetcher.doCacheRelevant(textNo);
+		}
+    	Log.d(TAG, "Got next unread");
         return text;
     }
 
     public TextInfo getParentToText(final int textNo) {
+    	Log.d(TAG, "Trying to get parent to "+textNo);
         final TextInfo text = textFetcher.getParentToText(textNo);
-        textFetcher.doCacheRelevant(text.getTextNo());
+        int pTextNo = text.getTextNo();
+		if (pTextNo > 0) {
+			textFetcher.doCacheRelevant(pTextNo);
+		}
+    	Log.d(TAG, "Got parent");
         return text;
     }
 

@@ -248,6 +248,10 @@ public class TextFetcher
     * @param textNo global text number to fetch
     */
     public TextInfo getText(final int textNo) {
+    	if(textNo<1) {
+    		Log.d(TAG, "There are no negative text numbers.");
+    		return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
+    	}
         doGetText(textNo);
 
         TextInfo text = mTextCache.get(textNo);
@@ -340,9 +344,14 @@ public class TextFetcher
             final Matcher m = TEXT_LINK_FINDER.matcher(textInfo.getBody());
             while (m.find()) {
                 final String str = textInfo.getBody().substring(m.start(), m.end());
-                final int linkNo = Integer.valueOf(str);
-                Log.i(TAG, "CacheRelevantTask " + linkNo + " is a found int body of " + textNo);
-                texts.add(linkNo);
+				try {
+					final int linkNo = Integer.valueOf(str);
+					Log.i(TAG, "CacheRelevantTask " + linkNo
+							+ " is a found int body of " + textNo);
+					texts.add(linkNo);
+				} catch (java.lang.NumberFormatException e) {
+					Log.d(TAG, "Not a number error:" + str);
+				}
             }
 
             for (final int t : texts) {
