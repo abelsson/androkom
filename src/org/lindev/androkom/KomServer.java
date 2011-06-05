@@ -27,7 +27,6 @@ import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -77,7 +76,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     /**
      * Small helper class to manage texts.
      */
-    public class TextInfo 
+    public static class TextInfo
     {
     	public TextInfo() { }
 
@@ -543,246 +542,40 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
         return s;
     }
-    
-    public TextInfo getParentToText(int textNo)
-    {
-    	Log.d(TAG, "getParentToText begin");
-    	try {
-			Text t = s.getText(textNo);
-			int arr[] = t.getCommented();
-			if (arr.length > 0) {
-				Log.d(TAG, "getParentToText "+textNo+" "+arr[0]);
-				return getKomText(arr[0]);
-			} else {
-				Log.d(TAG, "getParentToText "+textNo+" none");
-				return new TextInfo(-1, "", "", "", "", "Text has no parent");
-			}
-		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-        	Log.d(TAG, "getParentToText "+e);
-
-			e.printStackTrace();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-        	Log.d(TAG, "getParentToText "+e);
-			e.printStackTrace();
-		}
-    	reconnect();
-		return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
-    }
-
-    /**
-     * Display the next unread text in a TextView. 
-     * 
-     * TODO: This should not interact directly with GUI components.
-     * 
-     * @return text number displayed
-     */
-    public TextInfo getNextUnreadText() 
-    {
-
-        try {
-            mLastTextNo = s.nextUnreadText(false);
-            if (mLastTextNo < 0) {                
-                s.nextUnreadConference(true);
-                               
-                mLastTextNo = s.nextUnreadText(false);
-                if (mLastTextNo < 0)
-                	return new TextInfo(-1, "", "", "", "", getString(R.string.all_read));
-            } 
-            
-            return getKomText(mLastTextNo);
-
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "getNextUnreadText "+e);
-            e.printStackTrace();
-        }
-    	reconnect();
-
-        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_unread_text));
-    }
-
 
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
-    public TextInfo getKomText(int textNo)
+    private final TextFetcher textFetcher = new TextFetcher(this);
+    public TextInfo getKomText(final int textNo)
     {
-        Log.i(TAG, "KomServer getKomText");
-        try {
-            Text text = s.getText(textNo);
-            String username;
-            int authorid = text.getAuthor();
-            if (authorid > 0) {
-            	try {
-            		nu.dll.lyskom.Conference confStat = s.getConfStat(authorid);
-            		username = confStat.getNameString();
-                } catch (Exception e) {
-                	username = getString(R.string.person)+authorid+
-                	getString(R.string.does_not_exist);
-                }
-            } else {
-            	username = getString(R.string.anonymous);
-            }
-            Date CreationTime = text.getCreationTime();
-            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
-            String CreationTimeString = sdf.format(CreationTime);
-
-            String SubjectString = null;
-            try {
-            	SubjectString = text.getSubjectString();
-            } catch (UnsupportedEncodingException e) {
-            	Log.d(TAG, "UnsupportedEncodingException"+e);
-            	SubjectString = text.getSubjectString8();
-            }
-            String BodyString = null;
-            try {
-            	BodyString = text.getBodyString();
-            } catch (UnsupportedEncodingException e) {
-            	Log.d(TAG, "UnsupportedEncodingException"+e);
-            	BodyString = text.getBodyString8();
-            }
-            
-			String HeadersString = "";
-			if (ShowFullHeaders) {
-				int[] items;
-				items = text.getRecipients();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Mottagare: ";
-						try {
-							nu.dll.lyskom.Conference confStat = s
-									.getConfStat(items[i]);
-							HeadersString += confStat.getNameString();
-						} catch (Exception e) {
-							username = getString(R.string.person) + authorid
-									+ getString(R.string.does_not_exist);
-						}
-						HeadersString += "\n";
-					}
-				}
-				items = text.getCcRecipients();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kopiemottagare: ";
-						try {
-							nu.dll.lyskom.Conference confStat = s
-									.getConfStat(items[i]);
-							HeadersString += confStat.getNameString();
-						} catch (Exception e) {
-							username = getString(R.string.person) + authorid
-									+ getString(R.string.does_not_exist);
-						}
-						HeadersString += "\n";
-					}
-				}
-				items = text.getCommented();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kommentar till: " + items[i] + "\n";
-					}
-				}
-				items = text.getComments();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Kommentar i: " + items[i] + "\n";
-					}
-				}
-				items = text.getFootnotes();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Fotnot i: " + items[i] + "\n";
-					}
-				}
-				items = text.getFootnoted();
-				if (items.length > 0) {
-					for (int i = 0; i < items.length; i++) {
-						HeadersString += "Fotnot till: " + items[i] + "\n";
-					}
-				}
-			}
-
-			docacheAllComments(text);
-	        Log.i(TAG, "KomServer getKomText return 1");
-            return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "getTextAsHTML "+e);
-
-            e.printStackTrace();
-        }
-        Log.i(TAG, "KomServer getKomText return 2");
-        return new TextInfo(-1, "", "", "", "", getString(R.string.error_fetching_text));
+        final TextInfo text = textFetcher.getText(textNo);
+        textFetcher.doCacheRelevant(textNo);
+        return text;
     }
 
-    /**
-     * Attempt to retrieve all comments for a text.
-     */
-    private class cacheAllCommentsTask extends AsyncTask<Text, Integer, Void> {
-        protected void onPreExecute() {
-            Log.i(TAG, "cacheAllCommentsTask onPreExecute");
-        }
-
-        protected Void doInBackground(Text... text) 
-        {
-        		int[] comments = text[0].getComments();
-        		if (comments.length>0) {
-        			Log.d(TAG, "Text#"+text[0].getNo()+" has "+comments.length+" comments");
-        			for(int i=0; i<comments.length; i++) {
-        				try {
-        					Log.d(TAG, "Trying to cache text "+comments[i]);
-        					s.getText(comments[i]);
-        				} catch (RpcFailure e) {
-        					// TODO Auto-generated catch block
-        					e.printStackTrace();
-    						Log.e(TAG, "RpcFailure:"+e.toString());
-        				} catch (IOException e) {
-        					// TODO Auto-generated catch block
-        					e.printStackTrace();
-    						Log.e(TAG, "IOexception:"+e.toString());
-        				}
-        			}
-        		} else {
-        			Log.d(TAG, "No comments to cache on text#"+text[0].getNo());
-        			try {
-        				int[] recipients = text[0].getRecipients();
-        				if (recipients.length > 0) {
-        					List<Integer> list = s.nextUnreadTexts(recipients[0], false, 3);
-        					if (list.size()>0) {
-        						for (int i=0; i<list.size(); i++) {
-                					Log.d(TAG, "Trying to cache text "+list.get(i));
-                					s.getText(list.get(i));
-        						}
-        					} else {
-        						Log.d(TAG, "No more unread in conf"+recipients[0]);
-        					}
-						} else {
-							Log.d(TAG, "No recipients");
-						}
-					} catch (Exception e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-						Log.e(TAG, "cacheallcomments encountered an error");
-						Log.e(TAG, e.toString());
-					}
-        		}
-				return null;
-        }
-
-        @SuppressWarnings("unused")
-		protected void onPostExecute(final String result) 
-        { 
-            Log.i(TAG, "cacheAllCommentsTask onPostExecute");
-        }
-
-    }
-
-    private void docacheAllComments(Text text)
+    public TextInfo getNextUnreadText()
     {
-        new cacheAllCommentsTask().execute(text);
+        final TextInfo text = textFetcher.getNextUnreadText();
+        textFetcher.doCacheRelevant(text.getTextNo());
+        return text;
     }
-     
+
+    public TextInfo getParentToText(final int textNo) {
+        final TextInfo text = textFetcher.getParentToText(textNo);
+        textFetcher.doCacheRelevant(text.getTextNo());
+        return text;
+    }
+
+    private final ReadMarker readMarker = new ReadMarker(this);
+    public void markTextAsRead(final int textNo) {
+        readMarker.mark(textNo);
+    }
+
+    public boolean isLocalRead(final int textNo) {
+        return readMarker.isLocalRead(textNo);
+    }
+
     public void markText(int textNo)
     {
     	try {
@@ -807,49 +600,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    }
-
-    public void markTextAsRead(int textNo)
-    {
-        Log.i(TAG, "Mark as read: " + textNo);
-
-        try
-        {
-            final TextStat stat = s.getTextStat(textNo, true);
-            final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
-            List<Selection> recipientSelections = new ArrayList<Selection>();
-
-            for (final int tag : tags)
-            {
-                recipientSelections.addAll(stat.getMiscInfoSelections(tag));
-            }
-
-            for (final Selection selection : recipientSelections)
-            {
-                int rcpt = 0;
-
-                for (int tag : tags)
-                {
-                    if (selection.contains(tag))
-                    {
-                        rcpt = selection.getIntValue(tag);
-                    }
-                }
-
-                if (rcpt > 0)
-                {
-                    int local = selection.getIntValue(TextStat.miscLocNo);
-                    Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-                    s.doMarkAsRead(rcpt, new int[] { local });
-                }
-            }
-        }
-        catch (final IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        Log.i(TAG, "Mark as read finished: " + textNo);
     }
 
     /**
@@ -1249,10 +999,10 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     	return s.sendMessage(recipient, message, block);
     }
 
-    public void setShowFullHeaders(boolean h) {
-    	ShowFullHeaders = h;
+    public void setShowFullHeaders(final boolean h) {
+        textFetcher.setShowFullHeaders(h);
     }
-    
+
     public ConferenceInfo[] getUserNames() {
     	try {
     		if (usernames != null && usernames.length > 1) {
@@ -1297,8 +1047,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     
     private Session s=null;
 
-    boolean ShowFullHeaders = false;
-    
     private int mLastTextNo=0;
     HashMap<String, String> mUserAreaProps=null;
 
