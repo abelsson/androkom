@@ -25,7 +25,6 @@ import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import android.app.Service;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
-import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.util.Log;
@@ -543,19 +542,30 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     public TextInfo getKomText(final int textNo)
     {
         final TextInfo text = textFetcher.getText(textNo);
-        textFetcher.doCacheComments(textNo);
+        textFetcher.doCacheRelevant(textNo);
         return text;
     }
 
     public TextInfo getNextUnreadText()
     {
         final TextInfo text = textFetcher.getNextUnreadText();
-        textFetcher.doCacheComments(text.getTextNo());
+        textFetcher.doCacheRelevant(text.getTextNo());
         return text;
     }
 
     public TextInfo getParentToText(final int textNo) {
-        return textFetcher.getParentToText(textNo);
+        final TextInfo text = textFetcher.getParentToText(textNo);
+        textFetcher.doCacheRelevant(text.getTextNo());
+        return text;
+    }
+
+    private final ReadMarker readMarker = new ReadMarker(this);
+    public void markTextAsRead(final int textNo) {
+        readMarker.mark(textNo);
+    }
+
+    public boolean isLocalRead(final int textNo) {
+        return readMarker.isLocalRead(textNo);
     }
 
     public void markText(int textNo)
@@ -582,49 +592,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-    }
-
-    public void markTextAsRead(int textNo)
-    {
-        Log.i(TAG, "Mark as read: " + textNo);
-
-        try
-        {
-            final TextStat stat = s.getTextStat(textNo, true);
-            final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
-            List<Selection> recipientSelections = new ArrayList<Selection>();
-
-            for (final int tag : tags)
-            {
-                recipientSelections.addAll(stat.getMiscInfoSelections(tag));
-            }
-
-            for (final Selection selection : recipientSelections)
-            {
-                int rcpt = 0;
-
-                for (int tag : tags)
-                {
-                    if (selection.contains(tag))
-                    {
-                        rcpt = selection.getIntValue(tag);
-                    }
-                }
-
-                if (rcpt > 0)
-                {
-                    int local = selection.getIntValue(TextStat.miscLocNo);
-                    Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-                    s.doMarkAsRead(rcpt, new int[] { local });
-                }
-            }
-        }
-        catch (final IOException e)
-        {
-            e.printStackTrace();
-        }
-
-        Log.i(TAG, "Mark as read finished: " + textNo);
     }
 
     /**
