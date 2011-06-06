@@ -55,7 +55,7 @@ import android.widget.ViewSwitcher;
  */
 public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener, ServiceConnection
 {
-	public static final String TAG = "Androkom";
+    private static final String TAG = "Androkom";
 
     private static final int SWIPE_MIN_DISTANCE = 150;
     private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -87,7 +87,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         final Object data = getLastNonConfigurationInstance();
         final int confNo = (Integer) getIntent().getExtras().get("conference-id");
 
-        Log.i("androkom", "Got passed conference id: " + confNo);
+        Log.i(TAG, "Got passed conference id: " + confNo);
 
         if (data != null) {      	
             mState = (State)data;
@@ -138,17 +138,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
             switch (args[0]) {
             case MESSAGE_TYPE_PARENT_TO:
-                Log.d(TAG, "Trying to get parent text of" + args[1]);
+                Log.i(TAG, "Trying to get parent text of" + args[1]);
                 text = mKom.getParentToText(args[1]);
                 break;
 
             case MESSAGE_TYPE_TEXTNO: 
-                Log.d(TAG, "Trying to get text " + args[1]);
+                Log.i(TAG, "Trying to get text " + args[1]);
                 text = mKom.getKomText(args[1]);
                 break;
 
             case MESSAGE_TYPE_NEXT:
-                Log.d(TAG, "Trying to get next unread text");
+                Log.i(TAG, "Trying to get next unread text");
                 text = mKom.getNextUnreadText();
                 break;
 
@@ -157,14 +157,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 text = null;
             }
 
-            Log.i(TAG, "LoadMessageTask doInBackground END");
             return text;
         }
 
         protected void onPostExecute(final TextInfo text) 
         {
-            Log.i(TAG, "LoadMessageTask onPostExecute BEGIN");
-
             if (text != null && text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
             }
@@ -179,9 +176,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             } else {
             	Log.d(TAG, "LoadMessageTask onPostExecute text=null");
             }
-
             setProgressBarIndeterminateVisibility(false);
-            Log.i(TAG, "LoadMessageTask onPostExecute END");
         }
     }
 
@@ -206,7 +201,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 textNo = Integer.valueOf(mLinkText);
             } catch (NumberFormatException e)
             {
-                Log.i("androkom", "Illegal textNo: " + mLinkText);
+                Log.i(TAG, "Illegal textNo: " + mLinkText);
                 return;
             }
             moveToText(textNo);
@@ -683,7 +678,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         FillMessage fm = new FillMessage(text.getBody());
         body.append(fm.run());
 
-        Log.i("androkom", body.toString());
+        //Log.i(TAG, body.toString());
 
         Spannable spannedText = (Spannable) Html.fromHtml(body.toString());
         addLinks(spannedText, Pattern.compile("\\d{5,}"), null);

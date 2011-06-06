@@ -5,13 +5,14 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
+import java.util.Queue;
 import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -27,19 +28,32 @@ import android.util.Log;
 public class TextFetcher
 {
     private static final String TAG = "Androkom";
+    private static final int MAX_PREFETCH = 10;
 
     private final KomServer mKom;
     private final Set<Integer> mSent;
     private final Map<Integer, TextInfo> mTextCache;
-    private final Map<Integer, SortedSet<Integer>> mKnownUnread;
+    private final BlockingQueue<TextConf> mUnreadQueue;
+
+    private PrefetchRunner mPrefetchRunner = null;
     private boolean mShowFullHeaders = true;
+
+    private class TextConf {
+        private final int textNo;
+        private final int confNo;
+
+        private TextConf (final int textNo, final int confNo) {
+            this.textNo = textNo;
+            this.confNo = confNo;
+        }
+    }
 
     public TextFetcher(final KomServer kom)
     {
         this.mKom = kom;
         this.mSent = new HashSet<Integer>();
         this.mTextCache = new ConcurrentHashMap<Integer, TextInfo>();
-        this.mKnownUnread = new HashMap<Integer, SortedSet<Integer>>();
+        this.mUnreadQueue = new ArrayBlockingQueue<TextConf>(MAX_PREFETCH);
     }
 
     public void setShowFullHeaders(final boolean showFullHeaders) {
@@ -156,6 +170,7 @@ public class TextFetcher
         protected TextInfo doInBackground(final Integer... args) {
         	Log.d(TAG, "TextFetcherTask doInBackground");
             mTextNo = args[0];
+            Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
             TextInfo text = getTextFromServer(mTextNo);
             if (text == null) {
                 text = new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_text));
@@ -174,72 +189,107 @@ public class TextFetcher
         }
     }
 
-    private class TextPrefetchTask extends AsyncTask<Integer, Void, Void> {
-        @Override
-        protected Void doInBackground(final Integer... args) {
-            for (final Integer textNo : args) {
-                Log.i(TAG, "TextPrefetcherTask prefetching " + textNo);
-                getText(textNo);
-            }
-			return null;
-        }
-    }
+    private class PrefetchRunner extends Thread {
+        private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
+        private final Queue<Integer> mUnreadConfs;
+        private Queue<TextConf> mUnreadTexts;
+        private boolean isInterrupted = false;
 
-    private SortedSet<Integer> getKnownUnreadForConf(final int conf) {
-    	Log.d(TAG, "getKnownUnreadForConf");
-        SortedSet<Integer> knownUnread;
-        synchronized (mKnownUnread) {
-            knownUnread = mKnownUnread.get(conf);
-            if (knownUnread == null) {
-                knownUnread = new TreeSet<Integer>();
-                mKnownUnread.put(conf, knownUnread);
-            }
+        private PrefetchRunner(final int confNo) {
+            Log.i(TAG, "PrefetchRunner starting in conference " + confNo);
+            this.mUnreadConfs = new LinkedList<Integer>();
+            this.mUnreadTexts = new LinkedList<TextConf>();
+            enqueueConfFrom(confNo);
         }
-    	Log.d(TAG, "getKnownUnreadForConf done");
-        return knownUnread;
-    }
 
-    private Integer nextUnreadInConf(final int conf) {
-    	Log.d(TAG, "nextUnreadInConf");
-        final SortedSet<Integer> knownUnread = getKnownUnreadForConf(conf);
-        Integer nextUnread = null;
-        synchronized (knownUnread) {
-            if (knownUnread.isEmpty()) {
-                refillUnreads(knownUnread, conf);
+        private void enqueueConfFrom(final int confNo) {
+            final List<Integer> unreadConfList = mKom.getSession().getUnreadConfsListCached();
+            final int startIdx = unreadConfList.indexOf(confNo);
+            if (startIdx < 0) {
+                return;
             }
-            if (!knownUnread.isEmpty()) {
-                nextUnread = knownUnread.first();
-                knownUnread.remove(nextUnread);
+            for (int i = startIdx; i < unreadConfList.size(); ++i) {
+                Log.i(TAG, "PrefetchRunner enqueuing unread conference " + unreadConfList.get(i));
+                mUnreadConfs.offer(unreadConfList.get(i));
+            }
+            for (int i = 0; i < startIdx; ++i) {
+                Log.i(TAG, "PrefetchRunner enqueuing unread conference " + unreadConfList.get(i));
+                mUnreadConfs.offer(unreadConfList.get(i));
             }
         }
-        Log.d(TAG, "nextUnreadInConf done");
-        return nextUnread;
-    }
 
-    private static final int MAX_PREFETCH = 20;
-    private void refillUnreads(final SortedSet<Integer> knownUnread, final int conf) {
-    	Log.d(TAG, "refillUnreads");
-    	try {
-            // possibleUnreads might contain texts that are read which the server isn't aware of
-            final List<Integer> possibleUnreads = mKom.getSession().nextUnreadTexts(conf, false, MAX_PREFETCH);
-
-            // newUnreads are the really unread texts
-            final List<Integer> newUnreads = new ArrayList<Integer>();
-            for (Integer textNo : possibleUnreads) {
+        /**
+         * Refills mUnreadTexts from the conference in the head of mUnreadConfs. Returns true if there might be more
+         * texts in the conference (i.e., we got as many texts as we asked for from nextUnreadTexts()).
+         */
+        private boolean refillTexts() {
+            final int confNo = mUnreadConfs.peek();
+            final List<Integer> maybeUnread;
+            try {
+                /* There can be up to MAX_PREFETCH number of unread texts currently in the queue (mUnreadQueue), but
+                 * those aren't marked as read yet, so the server doesn't know it. To make sure we actually get more
+                 * texts that aren't already in the queue, we ask for double the amount */
+                maybeUnread = mKom.getSession().nextUnreadTexts(confNo, false, ASK_AMOUNT);
+            } catch (final IOException e) {
+                e.printStackTrace();
+                return false;
+            }
+            String str = "";
+            for (final Integer textNo : maybeUnread) {
                 if (!mKom.isLocalRead(textNo)) {
-                    newUnreads.add(textNo);
-                    knownUnread.add(textNo);
+                    str += " " + textNo;
+                    mUnreadTexts.add(new TextConf(textNo, confNo));
+                }
+                else {
+                    str += " (" + textNo + ")";
+                }
+            }
+            Log.i(TAG, str);
+            return maybeUnread.size() == ASK_AMOUNT;
+        }
+
+        @Override
+        public void run() {
+            while (!isInterrupted) {
+                if (!mUnreadTexts.isEmpty()) {
+                    final TextConf tc = mUnreadTexts.poll();
+                    if (!mKom.isLocalRead(tc.textNo)) {
+                        try {
+                            mUnreadQueue.put(tc);
+                        } catch (final InterruptedException e) {
+                            // Someone called interrupt() on this thread. We shouldn't do anything more and exit.
+                            Log.i(TAG, "PrefetchRunner was interrupted " + isInterrupted);
+                            break;
+                        }
+                    }
+                    Log.i(TAG, "PrefetchRunner prefetching text " + tc.textNo + " in conference " + tc.confNo);
+                    getText(tc.textNo);
+                }
+                else if (!mUnreadConfs.isEmpty()) {
+                    final boolean moreTextsAvail = refillTexts();
+                    if (!moreTextsAvail) {
+                        // No more unread in this conference, remove it from head of queue
+                        mUnreadConfs.poll();
+                    }
+                }
+                else {
+                    // No more unread in conference, and no more unread conferences
+                    break;
                 }
             }
 
-            // Prefetch the new texts
-            if (newUnreads.size() > 0) {
-                new TextPrefetchTask().execute(newUnreads.toArray(new Integer[newUnreads.size()]));
+            // If the Thread was interrupted, we should't put any end marker on the queue.
+            if (isInterrupted) {
+                Log.i(TAG, "PrefetchRunner is exiting because it was interrupted");
             }
-        } catch (final IOException e) {
-            e.printStackTrace();
+            else {
+                try {
+                    // Enqueue the marker that there are no more unread texts
+                    Log.i(TAG, "PrefetchRunner found no more unread. Exiting.");
+                    mUnreadQueue.put(new TextConf(-1, -1));
+                } catch (final InterruptedException e) { }
+            }
         }
-    	Log.d(TAG, "refillUnreads done");
     }
 
     /**
@@ -265,49 +315,53 @@ public class TextFetcher
     * @param textNo global text number to fetch
     */
     public TextInfo getText(final int textNo) {
-    	Log.d(TAG, "Trying to get text "+textNo);
     	if(textNo<1) {
     		Log.d(TAG, "There are no negative text numbers.");
     		return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
     	}
-        doGetText(textNo);
+        final Thread currentThread = Thread.currentThread();
 
+        doGetText(textNo);
         TextInfo text = mTextCache.get(textNo);
 
-        while (text == null) {
-            Log.i(TAG, "TextFetcher getText(), waiting on text " + textNo);
+        while (!currentThread.isInterrupted() && text == null) {
+            //Log.i(TAG, "TextFetcher getText(), waiting on text " + textNo);
             synchronized(mTextCache) {
                 try {
                     mTextCache.wait(500);
-                } catch (final InterruptedException e) { }
+                } catch (final InterruptedException e) {
+                    return null;
+                }
             }
             text = mTextCache.get(textNo);
         }
 
-        Log.i(TAG, "TextFetcher getText(), got text " + textNo);
         return text;
     }
 
     public TextInfo getNextUnreadText() {
-        final int conf = mKom.getSession().getCurrentConference();
-        final Integer nextUnread = nextUnreadInConf(conf);
-
-        if (nextUnread == null) {
-            // No more unread in the conference
+        final int confNo = mKom.getSession().getCurrentConference();
+        if (mPrefetchRunner == null) {
+            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
+        }
+        final TextConf tc;
+        try {
+            tc = mUnreadQueue.take();
+        } catch (final InterruptedException e) {
+            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
+        }
+        if (tc.textNo < 0) {
+            mPrefetchRunner = null;
+            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
+        }
+        if (tc.confNo != confNo) {
             try {
-                int newConf = mKom.getSession().nextUnreadConference(true);
-                if (newConf < 0) {
-                    // No more unread conferences
-                    return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
-                }
-                return getNextUnreadText();
-            } catch (final IOException e) {
+                mKom.getSession().changeConference(tc.confNo);
+            } catch (final Exception e) {
                 e.printStackTrace();
-                return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
             }
         }
-
-        return getText(nextUnread);
+        return getText(tc.textNo);
     }
 
     public TextInfo getParentToText(final int textNo) {
@@ -329,6 +383,18 @@ public class TextFetcher
             e.printStackTrace();
         }
         return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
+    }
+
+    public void restartPrefetcher() {
+        final int confNo = mKom.getSession().getCurrentConference();
+        if (mPrefetchRunner != null) {
+            Log.i(TAG, "TextFetcher restartPrefetcher(), interrupting old PrefetchRunner");
+            mPrefetchRunner.isInterrupted = true;
+            mPrefetchRunner.interrupt();
+        }
+        mUnreadQueue.clear();
+        mPrefetchRunner = new PrefetchRunner(confNo);
+        mPrefetchRunner.start();
     }
 
     private static final Pattern TEXT_LINK_FINDER = Pattern.compile("\\d{5,}");
