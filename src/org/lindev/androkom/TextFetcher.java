@@ -181,13 +181,16 @@ public class TextFetcher
     private class PrefetchRunner extends Thread {
         private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
         private final Queue<Integer> mUnreadConfs;
-        private Queue<TextConf> mUnreadTexts;
+        private final Queue<TextConf> mUnreadTexts;
+        private final Set<Integer> mEnqueued;
+
         private boolean isInterrupted = false;
 
         private PrefetchRunner(final int confNo) {
             Log.i(TAG, "PrefetchRunner starting in conference " + confNo);
             this.mUnreadConfs = new LinkedList<Integer>();
             this.mUnreadTexts = new LinkedList<TextConf>();
+            this.mEnqueued = new HashSet<Integer>();
             enqueueConfFrom(confNo);
         }
 
@@ -225,7 +228,7 @@ public class TextFetcher
             }
             String str = "";
             for (final Integer textNo : maybeUnread) {
-                if (!mKom.isLocalRead(textNo)) {
+                if (mEnqueued.add(textNo)) {
                     str += " " + textNo;
                     mUnreadTexts.add(new TextConf(textNo, confNo));
                 }
