@@ -29,12 +29,13 @@ public class ReadMarker {
     private class MarkerThread extends Thread {
         @Override
         public void run() {
-            while (true) {
+            while (!isInterrupted()) {
                 int textNo = -1;
                 try {
                     textNo = mToMark.take();
                 } catch (final InterruptedException e) {
-                    e.printStackTrace();
+                    // Someone called interrupt()
+                    continue;
                 }
                 if (textNo > 0) {
                     markToServer(textNo);

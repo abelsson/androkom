@@ -13,10 +13,8 @@ import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
-import nu.dll.lyskom.Selection;
 import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
-import nu.dll.lyskom.TextStat;
 import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
@@ -421,6 +419,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     {
         try {
             s.changeConference(confNo);
+            textFetcher.restartPrefetcher();
         } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "setConference "+e);
