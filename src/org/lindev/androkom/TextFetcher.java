@@ -50,6 +50,8 @@ public class TextFetcher
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
+        	Log.d(TAG, "TextFetcherTask getTextFromServer");
+
             Text text = null;
             try {
                 text = mKom.getSession().getText(textNo);
@@ -147,23 +149,28 @@ public class TextFetcher
                     }
                 }
             }
+        	Log.d(TAG, "TextFetcherTask getTextFromServer done");
             return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
         }
 
         protected TextInfo doInBackground(final Integer... args) {
+        	Log.d(TAG, "TextFetcherTask doInBackground");
             mTextNo = args[0];
             TextInfo text = getTextFromServer(mTextNo);
             if (text == null) {
                 text = new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_text));
             }
+        	Log.d(TAG, "TextFetcherTask doInBackground done");
             return text;
         }
 
         protected void onPostExecute(final TextInfo text) {
+        	Log.d(TAG, "TextFetcherTask onPostExecute");
             mTextCache.put(mTextNo, text);
             synchronized(mTextCache) {
                 mTextCache.notifyAll();
             }
+        	Log.d(TAG, "TextFetcherTask onPostExecute done");
         }
     }
 
@@ -174,11 +181,12 @@ public class TextFetcher
                 Log.i(TAG, "TextPrefetcherTask prefetching " + textNo);
                 getText(textNo);
             }
-            return null;
+			return null;
         }
     }
 
     private SortedSet<Integer> getKnownUnreadForConf(final int conf) {
+    	Log.d(TAG, "getKnownUnreadForConf");
         SortedSet<Integer> knownUnread;
         synchronized (mKnownUnread) {
             knownUnread = mKnownUnread.get(conf);
@@ -187,10 +195,12 @@ public class TextFetcher
                 mKnownUnread.put(conf, knownUnread);
             }
         }
+    	Log.d(TAG, "getKnownUnreadForConf done");
         return knownUnread;
     }
 
     private Integer nextUnreadInConf(final int conf) {
+    	Log.d(TAG, "nextUnreadInConf");
         final SortedSet<Integer> knownUnread = getKnownUnreadForConf(conf);
         Integer nextUnread = null;
         synchronized (knownUnread) {
@@ -202,12 +212,14 @@ public class TextFetcher
                 knownUnread.remove(nextUnread);
             }
         }
+        Log.d(TAG, "nextUnreadInConf done");
         return nextUnread;
     }
 
     private static final int MAX_PREFETCH = 20;
     private void refillUnreads(final SortedSet<Integer> knownUnread, final int conf) {
-        try {
+    	Log.d(TAG, "refillUnreads");
+    	try {
             // possibleUnreads might contain texts that are read which the server isn't aware of
             final List<Integer> possibleUnreads = mKom.getSession().nextUnreadTexts(conf, false, MAX_PREFETCH);
 
@@ -227,6 +239,7 @@ public class TextFetcher
         } catch (final IOException e) {
             e.printStackTrace();
         }
+    	Log.d(TAG, "refillUnreads done");
     }
 
     /**
@@ -252,6 +265,7 @@ public class TextFetcher
     * @param textNo global text number to fetch
     */
     public TextInfo getText(final int textNo) {
+    	Log.d(TAG, "Trying to get text "+textNo);
     	if(textNo<1) {
     		Log.d(TAG, "There are no negative text numbers.");
     		return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
@@ -297,6 +311,7 @@ public class TextFetcher
     }
 
     public TextInfo getParentToText(final int textNo) {
+    	Log.d(TAG, "Trying to get parent to "+textNo);
         try {
             // We can assume this is cached
             Text t = mKom.getSession().getText(textNo);
@@ -313,7 +328,6 @@ public class TextFetcher
             Log.d(TAG, "getParentToText "+e);
             e.printStackTrace();
         }
-        mKom.reconnect();
         return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
     }
 
@@ -321,6 +335,7 @@ public class TextFetcher
     private class CacheRelevantTask extends AsyncTask<Integer, Void, Void> {
         @Override
         protected Void doInBackground(final Integer... args) {
+        	Log.d(TAG, "CacheRelevantTask doInBackground");
             final int textNo = args[0];
             final TextInfo textInfo = getText(textNo);
             final Text text;
@@ -362,6 +377,7 @@ public class TextFetcher
                 getText(t);
             }
 
+        	Log.d(TAG, "CacheRelevantTask doInBackground done");
             return null;
         }
     }
