@@ -435,6 +435,8 @@ public class TextFetcher
      * @param textNo
      */
     public void doCacheRelevant(final int textNo) {
-        new CacheRelevantTask().execute(textNo);
+        if (textNo > 0) {
+            new CacheRelevantTask().execute(textNo);
+        }
     }
 }
