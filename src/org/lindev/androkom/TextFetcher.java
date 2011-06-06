@@ -99,65 +99,74 @@ public class TextFetcher
                 Log.d(TAG, "UnsupportedEncodingException"+e);
                 BodyString = text.getBodyString8();
             }
-            String HeadersString = "";
+            StringBuilder headersString = new StringBuilder();
             if (mShowFullHeaders) {
                 int[] items;
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Mottagare: ";
+                        headersString.append("Mottagare: ");
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
-                            HeadersString += confStat.getNameString();
+                            headersString.append(confStat.getNameString());
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
-                        HeadersString += "\n";
+                        headersString.append('\n');
                     }
                 }
                 items = text.getCcRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kopiemottagare: ";
+                        headersString.append("Kopiemottagare: ");
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
-                            HeadersString += confStat.getNameString();
+                            headersString.append(confStat.getNameString());
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
-                        HeadersString += "\n";
+                        headersString.append('\n');
                     }
                 }
                 items = text.getCommented();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kommentar till: " + items[i] + "\n";
+                        headersString.append("Kommentar till: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getComments();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kommentar i: " + items[i] + "\n";
+                        headersString.append("Kommentar i: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getFootnotes();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Fotnot i: " + items[i] + "\n";
+                        headersString.append("Fotnot i: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getFootnoted();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Fotnot till: " + items[i] + "\n";
+                        headersString.append("Fotnot till: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
             }
-            return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
+            return new TextInfo(textNo, username, CreationTimeString, headersString.toString(),
+                    SubjectString, BodyString);
         }
 
         protected TextInfo doInBackground(final Integer... args) {
