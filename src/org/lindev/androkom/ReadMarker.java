@@ -88,8 +88,13 @@ public class ReadMarker {
             return mMarked.contains(textNo);
         }
     }
-    public void clearCaches() {
-    	mMarked.clear();
-    	mToMark.clear();
-    }
+
+	public void clearCaches() {
+		synchronized (mMarked) {
+			mMarked.clear();
+		}
+		synchronized (mToMark) {
+			mToMark.clear();
+		}
+	}
 }
