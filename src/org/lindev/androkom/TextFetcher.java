@@ -392,6 +392,7 @@ public class TextFetcher
             mPrefetchRunner.isInterrupted = true;
             mPrefetchRunner.interrupt();
         }
+        mTextCache.clear();
         mUnreadQueue.clear();
         mPrefetchRunner = new PrefetchRunner(confNo);
         mPrefetchRunner.start();

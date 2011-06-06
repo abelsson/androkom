@@ -1090,6 +1090,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     
     public void clearCaches() {
     	s.clearCaches();
+    	readMarker.clearCaches();
     	textFetcher.restartPrefetcher();
     }
     
