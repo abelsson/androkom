@@ -2,7 +2,9 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -70,7 +72,9 @@ public class TextFetcher
             } else {
                 username = mKom.getString(R.string.anonymous);
             }
-            String CreationTimeString = text.getCreationTimeString();
+            Date CreationTime = text.getCreationTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
+            String CreationTimeString = sdf.format(CreationTime);
             String SubjectString = null;
             try {
                 SubjectString = text.getSubjectString();
