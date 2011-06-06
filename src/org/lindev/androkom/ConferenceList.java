@@ -177,6 +177,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		    startActivity(intent);
 		    return true;
 
+		case R.id.menu_clear_cache_id:
+			clear_cache();
+			return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -200,6 +204,12 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	protected void seewhoison() {
 		Intent intent = new Intent(this, WhoIsOn.class);
 		startActivity(intent);
+	}
+
+	protected void clear_cache() {
+		mKom.clearCaches();
+		mAdapter.clear();
+		new PopulateConferenceTask().execute();
 	}
 
 	private class PopulateConferenceTask extends

@@ -1087,7 +1087,12 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     	}
     	return null;
     }
-
+    
+    public void clearCaches() {
+    	s.clearCaches();
+    	textFetcher.restartPrefetcher();
+    }
+    
     public boolean isConnected() {
     	if (s==null) {
     		return false;
