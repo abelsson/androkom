@@ -923,6 +923,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     }
 
     String[] getNextHollerith(String s) {
+    	s = s.trim();
         int prefixLen = s.indexOf("H");
 
         int len = Integer.parseInt(s.substring(0, prefixLen));
@@ -941,9 +942,55 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     }
 
     /**
+     * Parse properties from the common area, if any.
+     */
+    void parseCommonUserArea()
+    {
+    	// TODO: Should probably not use the same mUserAreaProps as parseElispUserArea
+        try {
+
+            UserArea ua = s.getUserArea();
+            String[] blocks = ua.getBlockNames();
+
+            mUserAreaProps = new HashMap<String, String>();
+
+            for(String block : blocks) {
+               
+                if (block.equals("common")) {
+                    String token = ua.getBlock(block).getContentString();
+                    while(token.length() > 0) {
+                        String[] first = getNextHollerith(token);
+                        String[] second = getNextHollerith(first[1]);
+
+                        mUserAreaProps.put(first[0], second[0]);
+                        token = second[1];
+                    }
+                }
+
+            }
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "parseCommonUserArea "+e);
+
+            e.printStackTrace();
+        }
+    }
+    
+    /**
+     * Get a property of presence-messages 
+     */
+    public boolean getPresenceMessages()
+    {
+        parseCommonUserArea();
+        String messages = mUserAreaProps.get("presence-messages");
+        boolean presence_messages = (messages.compareTo("1")==0);
+		return presence_messages;
+    }
+
+    /**
      * Parse properties the elisp client has set, if any.
      */
-    private void parseElispUserArea()
+    void parseElispUserArea()
     {
         try {
 
