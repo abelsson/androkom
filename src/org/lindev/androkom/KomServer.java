@@ -267,118 +267,98 @@ public class KomServer extends Service implements RpcEventListener,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+    }
 
-	/**
-	 * Fetch a list of persons online
-	 * 
-	 * @param populatePersonsTask
-	 */
-	public List<ConferenceInfo> fetchPersons(
-			populatePersonsTask populatePersonsT) {
-		ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-		Log.d(TAG, "fetchPersons begin");
+    /**
+     * Fetch a list of persons online
+     * @param populatePersonsTask 
+     */
+    public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT)
+    {
+        ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
+        try {
+            DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
 
-		try {
-			DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false,
-					30 * 60);
+            for (int i = 0; i < persons.length; i++) {
+                int persNo = persons[i].getPerson();
+                String username;
+                if (persNo > 0) {
+                	try {
+                		nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
+                		username = confStat.getNameString();
+                		populatePersonsT.updateProgress((int) ((i / (float) persons.length) * 100));
+                    } catch (Exception e) {
+                    	username = getString(R.string.person)+persNo+
+                    	getString(R.string.does_not_exist);
+                    }
+                } else {
+                	username = getString(R.string.anonymous);
+                }
+                Log.i("androkom", username + " <" + persNo + ">");
 
-			if (persons.length < 1) {
-				Log.d(TAG, "No persons online");
-			}
-			for (int i = 0; i < persons.length; i++) {
-				int persNo = persons[i].getPerson();
-				String username;
-				if (persNo > 0) {
-					try {
-						nu.dll.lyskom.Conference confStat = s
-								.getConfStat(persNo);
-						username = confStat.getNameString();
-						populatePersonsT
-								.updateProgress((int) ((i / (float) persons.length) * 100));
-					} catch (Exception e) {
-						username = getString(R.string.person) + persNo
-								+ getString(R.string.does_not_exist);
-					}
-				} else {
-					username = getString(R.string.anonymous);
-				}
-				Log.i("androkom", "" + i + "/" + persons.length + ": "
-						+ username + " <" + persNo + ">");
+                ConferenceInfo info = new ConferenceInfo();
+                info.id = persNo;
+                info.name = username;
 
-				ConferenceInfo info = new ConferenceInfo();
-				info.id = persNo;
-				info.name = username;
+                arr.add(info);
+            }
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchPersons1 "+e);
+            e.printStackTrace();
+            reconnect();
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "fetchPersons2 "+e);
+            e.printStackTrace();
+        }
 
-				arr.add(info);
-			}
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "fetchPersons1 " + e);
-			e.printStackTrace();
-			reconnect();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "fetchPersons2 " + e);
-			e.printStackTrace();
-		}
-		Log.d(TAG, "fetchPersons end");
+        return arr;
+    }
+    
+    /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void addAsyncSubscriber(AsyncMessageSubscriber sub) {
+    	asyncMessagesHandler.subscribe(sub);
+    }
+    
+    /**
+     * Add a new subscriber who's interested in asynchronous messages.
+     */
+    void removeAsyncSubscriber(AsyncMessageSubscriber sub) {
+    	asyncMessagesHandler.unsubscribe(sub);
+    }
 
-		return arr;
-	}
+    /**
+     * Fetch a list of conferences with unread texts.
+     */
+    public List<ConferenceInfo> fetchConferences() {
+        readMarker.clear();
+        List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
+        try {
+            for (int conf : s.getMyUnreadConfsList(true)) {
+                final String name = s.toString(s.getConfName(conf));
+                Log.i(TAG, name + " <" + conf + ">");
+                final ConferenceInfo info = new ConferenceInfo();
+                info.id = conf;
+                info.name = name;
+                info.numUnread = s.getUnreadCount(conf);
+                arr.add(info);
+            }
+        }
+        catch (final IOException e) {
+            e.printStackTrace();
+        }
+        return arr;
+    }
 
-	/**
-	 * Add a new subscriber who's interested in asynchronous messages.
-	 */
-	void addAsyncSubscriber(AsyncMessageSubscriber sub) {
-		asyncMessagesHandler.subscribe(sub);
-	}
-
-	/**
-	 * Add a new subscriber who's interested in asynchronous messages.
-	 */
-	void removeAsyncSubscriber(AsyncMessageSubscriber sub) {
-		asyncMessagesHandler.unsubscribe(sub);
-	}
-
-	/**
-	 * Fetch a list of conferences with unread texts.
-	 */
-	public List<ConferenceInfo> fetchConferences() {
-		Log.d(TAG, "KomServer fetchConferences 1");
-		readMarker.clearCaches();
-		Log.d(TAG, "KomServer fetchConferences 2");
-		List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-		s.clearCaches();
-		try {
-			Log.d(TAG, "KomServer fetchConferences 3");
-			for (int conf : s.getMyUnreadConfsList(true)) {
-				Log.d(TAG, "KomServer fetchConferences 4");
-
-				String name = s.toString(s.getConfName(conf));
-				Log.i(TAG, name + " <" + conf + ">");
-
-				ConferenceInfo info = new ConferenceInfo();
-				info.id = conf;
-				info.name = name;
-				info.numUnread = s.getUnreadCount(conf);
-
-				arr.add(info);
-			}
-			Log.d(TAG, "KomServer fetchConferences 5");
-		} catch (IOException e) {
-			e.printStackTrace();
-		}
-		Log.d(TAG, "KomServer fetchConferences 6");
-
-		return arr;
-	}
-
-	/**
-	 * Return name for given conference.
-	 */
-	public String getConferenceName(int conf) {
-		try {
+    /**
+     * Return name for given conference.
+     */
+    public String getConferenceName(int conf)
+    {
+    	try {
 			return s.toString(s.getConfName(conf));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
@@ -415,116 +395,111 @@ public class KomServer extends Service implements RpcEventListener,
 		return 0;
 	}
 
-	/**
-	 * Set currently active conference.
-	 */
-	public void setConference(int confNo) {
-		try {
-			s.changeConference(confNo);
-			textFetcher.restartPrefetcher();
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "setConference " + e);
+    /**
+     * Set currently active conference.
+     */
+    public void setConference(final int confNo) {
+        try {
+            s.changeConference(confNo);
+            readMarker.clear();
+            textFetcher.restartPrefetcher();
+        } catch (Exception e) {
+            Log.i(TAG, "setConference " + e);
+            e.printStackTrace();
+        }
+    }
 
-			e.printStackTrace();
-		}
-	}
+    /**
+     * Log in to server. 
+     * 
+     * @return Empty string on success, string describing failure otherwise
+     */
+    public String login(String username, String password, String server) 
+    {
+    	Log.d(TAG, "Trying to login username:"+username);
+    	try {
+    		if (!s.getConnected()) {
+    			if (connect(server) != 0)
+    				return "Couldn't connect to server";
+    		}
+        } catch (Exception e) {
+            Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+            e.printStackTrace();
+            return "Unknown error";
+        }
 
-	/**
-	 * Log in to server.
-	 * 
-	 * @return Empty string on success, string describing failure otherwise
-	 */
-	public String login(String username, String password, String server) {
-		Log.d(TAG, "Trying to login username:" + username);
-		try {
-			if (!s.getConnected()) {
-				if (connect(server) != 0)
-					return "Couldn't connect to server";
-			}
-		} catch (Exception e) {
-			Log.e("androkom", "Login.name connect Caught "
-					+ e.getClass().getName() + ":" + e + ":" + e.getCause());
-			e.printStackTrace();
-			return "Unknown error";
-		}
+        usernames = new ConfInfo[0];
+        try {
+            usernames = s.lookupName(username, true, false);
+            if (usernames.length != 1) {            
+                return "Invalid/ambigious username";
+            } else {
+                // login as hidden
+                if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
+                    return "Invalid password";
+                }
+            }
+        } catch (Exception e) {
+            Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+            e.printStackTrace();
+            return "Unknown error";
+        }
+        try {
+            s.setClientVersion("Androkom", getVersionName());
+            s.setLatteName("AndroKOM " + getVersionName());
+        } catch (Exception e) {
+        	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+        	e.printStackTrace();
+        }
+        re_userid = usernames[0].confNo;
+        re_password = password;
+        re_server = server;
 
-		usernames = new ConfInfo[0];
-		try {
-			usernames = s.lookupName(username, true, false);
-			if (usernames.length != 1) {
-				return "Invalid/ambigious username";
-			} else {
-				// login as hidden
-				if (!s.login(usernames[0].confNo, password, hidden_session,
-						false)) {
-					return "Invalid password";
-				}
-			}
-		} catch (Exception e) {
-			Log.e("androkom", "Login.name Caught " + e.getClass().getName()
-					+ ":" + e + ":" + e.getCause());
-			e.printStackTrace();
-			return "Unknown error";
-		}
-		try {
-			s.setClientVersion("Androkom", getVersionName());
-			s.setLatteName("AndroKOM " + getVersionName());
-		} catch (Exception e) {
-			Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()
-					+ ":" + e + ":" + e.getCause());
-			e.printStackTrace();
-		}
-		re_userid = usernames[0].confNo;
-		re_password = password;
-		re_server = server;
+        return "";
+    }
 
-		return "";
-	}
+    /**
+     * Log in to server. 
+     * 
+     * @return Empty string on success, string describing failure otherwise
+     */
+    public String login(int userid, String password, String server) 
+    {
+    	Log.d(TAG, "Trying to login userid:"+userid);
+        usernames = new ConfInfo[0];
+        if (!s.getConnected()) {
+            if (connect(server) != 0)
+                return "Couldn't connect to server";
+        }
 
-	/**
-	 * Log in to server.
-	 * 
-	 * @return Empty string on success, string describing failure otherwise
-	 */
-	public String login(int userid, String password, String server) {
-		Log.d(TAG, "Trying to login userid:" + userid);
-		usernames = new ConfInfo[0];
-		if (!s.getConnected()) {
-			if (connect(server) != 0)
-				return "Couldn't connect to server";
-		}
+        try {
+        	// login as hidden
+        	if (!s.login(userid, password, hidden_session, false)) {
+        		return "Invalid password";
+        	}
+        	s.setClientVersion("Androkom", getVersionName());
+        } catch (Exception e) {
+            Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
+            return "Unknown error";
+        }
+        re_userid = userid;
+        re_password = password;
+        re_server = server;
+        
+        return "";
+    }
 
-		try {
-			// login as hidden
-			if (!s.login(userid, password, hidden_session, false)) {
-				return "Invalid password";
-			}
-			s.setClientVersion("Androkom", getVersionName());
-		} catch (Exception e) {
-			Log.e("androkom", "Login.id Caught " + e.getClass().getName()
-					+ e.getStackTrace());
-			return "Unknown error";
-		}
-		re_userid = userid;
-		re_password = password;
-		re_server = server;
+    public String getVersionName() {
+    	try {
+    		PackageInfo pinfo = getBaseContext().getPackageManager().getPackageInfo("org.lindev.androkom", 0);
+    		return pinfo.versionName;
+    	} catch (android.content.pm.PackageManager.NameNotFoundException e) {
+        return "unknown";
+      }
+    }
 
-		return "";
-	}
-
-	public String getVersionName() {
-		try {
-			PackageInfo pinfo = getBaseContext().getPackageManager()
-					.getPackageInfo("org.lindev.androkom", 0);
-			return pinfo.versionName;
-		} catch (android.content.pm.PackageManager.NameNotFoundException e) {
-			return "unknown";
-		}
-	}
-
-	public void endast(int confNo, int no) {
-		try {
+    public void endast(int confNo, int no) {
+    	try {
 			s.endast(confNo, no);
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
@@ -533,62 +508,47 @@ public class KomServer extends Service implements RpcEventListener,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-		readMarker.clearCaches();
-	}
+    }
+    
+    public Session getSession()
+    {
+        return s;
+    }
 
-	public Session getSession() {
-		return s;
-	}
+    /**
+     * Fetch next unread text, as a HTML formatted string. 
+     */
+    private final TextFetcher textFetcher = new TextFetcher(this);
+    public TextInfo getKomText(final int textNo) {
+        final TextInfo text = textFetcher.getText(textNo);
+        textFetcher.doCacheRelevant(textNo);
+        return text;
+    }
 
-	/**
-	 * Fetch next unread text, as a HTML formatted string.
-	 */
-	private final TextFetcher textFetcher = new TextFetcher(this);
+    public TextInfo getNextUnreadText() {
+        final TextInfo text = textFetcher.getNextUnreadText();
+        textFetcher.doCacheRelevant(text.getTextNo());
+        return text;
+    }
 
-	public TextInfo getKomText(final int textNo) {
-		Log.d(TAG, "Trying to get " + textNo);
-		final TextInfo text = textFetcher.getText(textNo);
-		textFetcher.doCacheRelevant(textNo);
-		Log.d(TAG, "Got text " + textNo);
-		return text;
-	}
+    public TextInfo getParentToText(final int textNo) {
+        final TextInfo text = textFetcher.getParentToText(textNo);
+        textFetcher.doCacheRelevant(text.getTextNo());
+        return text;
+    }
 
-	public TextInfo getNextUnreadText() {
-		Log.d(TAG, "Trying to get next unread");
-		final TextInfo text = textFetcher.getNextUnreadText();
-		int textNo = text.getTextNo();
-		if (textNo > 0) {
-			textFetcher.doCacheRelevant(textNo);
-		}
-		Log.d(TAG, "Got next unread");
-		return text;
-	}
+    private final ReadMarker readMarker = new ReadMarker(this);
+    public void markTextAsRead(final int textNo) {
+        readMarker.mark(textNo);
+    }
 
-	public TextInfo getParentToText(final int textNo) {
-		Log.d(TAG, "Trying to get parent to " + textNo);
-		final TextInfo text = textFetcher.getParentToText(textNo);
-		int pTextNo = text.getTextNo();
-		if (pTextNo > 0) {
-			textFetcher.doCacheRelevant(pTextNo);
-		}
-		Log.d(TAG, "Got parent");
-		return text;
-	}
+    public boolean isLocalRead(final int textNo) {
+        return readMarker.isLocalRead(textNo);
+    }
 
-	private final ReadMarker readMarker = new ReadMarker(this);
-
-	public void markTextAsRead(final int textNo) {
-		Log.d(TAG, "markTextAsRead:" + textNo);
-		readMarker.mark(textNo);
-		Log.d(TAG, "markTextAsRead done:" + textNo);
-	}
-
-	public boolean isLocalRead(final int textNo) {
-		return readMarker.isLocalRead(textNo);
-	}
-
-	public void markText(int textNo) {
-		try {
+    public void markText(int textNo)
+    {
+    	try {
 			s.markText(textNo, 100);
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block

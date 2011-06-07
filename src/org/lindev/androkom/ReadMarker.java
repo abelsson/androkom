@@ -75,34 +75,29 @@ public class ReadMarker {
 		Log.i(TAG, "Mark as read finished: " + textNo);
 	}
 
-	public void mark(final int textNo) {
-		Log.d(TAG, "mark " + textNo);
-		final boolean needServerMark;
-		synchronized (mMarked) {
-			needServerMark = (mMarked.put(textNo, textNo) == null);
-		}
-		if (needServerMark) {
-			mToMark.add(textNo);
-		}
-	}
+    public void mark(final int textNo) {
+        boolean needServerMark = !isLocalRead(textNo);
+        if (!needServerMark) {
+            return;
+        }
+        synchronized (mMarked) {
+            needServerMark = (mMarked.put(textNo, textNo) == null);
+        }
+        if (needServerMark) {
+            synchronized (mToMark) {
+                mToMark.add(textNo);
+            }
+        }
+    }
 
-	public boolean isLocalRead(final int textNo) {
-		Log.d(TAG, "isLocalRead " + textNo);
-		boolean isRead;
-		synchronized (mMarked) {
-			isRead = mMarked.containsKey(textNo);
-		}
-		Log.d(TAG, "isLocalRead " + isRead);
-		return isRead;
-	}
+    public boolean isLocalRead(final int textNo) {
+        return mMarked.containsKey(textNo);
+    }
 
-	public void clearCaches() {
-		Log.d(TAG, "ReadMarker clearCaches 1");
-		synchronized (mMarked) {
-			mMarked.clear();
-		}
-		Log.d(TAG, "ReadMarker clearCaches 2");
-		mToMark.clear();
-		Log.d(TAG, "ReadMarker clearCaches 3");
-	}
+    public void clear() {
+        Log.i(TAG, "ReadMarker clear()");
+        synchronized (mMarked) {
+            mMarked.clear();
+        }
+    }
 }
