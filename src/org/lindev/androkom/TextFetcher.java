@@ -29,7 +29,7 @@ import android.util.Log;
 
 public class TextFetcher
 {
-    private static final String TAG = "Androkom";
+    private static final String TAG = "Androkom TextFetcher";
     private static final int MAX_PREFETCH = 10;
 
     private final KomServer mKom;
@@ -334,7 +334,7 @@ public class TextFetcher
 
     	Log.d(TAG, "getText 3");
     	int i=0;
-        while (!currentThread.isInterrupted() && text == null && i<100) {
+        while (!currentThread.isInterrupted() && text == null && i<10) {
         	i++;
         	Log.d(TAG, "getText 3a");
             //Log.i(TAG, "TextFetcher getText(), waiting on text " + textNo);
@@ -350,7 +350,7 @@ public class TextFetcher
         	Log.d(TAG, "getText 3c");
         }
     	Log.d(TAG, "getText 4");
-		if (i < 100) {
+		if (i < 10) {
 			return text;
 		} else {
 			Log.d(TAG, "Could not get text from cache. Timeout.");

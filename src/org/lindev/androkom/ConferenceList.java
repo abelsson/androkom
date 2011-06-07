@@ -79,7 +79,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 				});
 			}
 
-		}, 0, 60000);
+		}, 0, 6000);
 
 	}
 
@@ -200,6 +200,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			AsyncTask<Void, Void, List<ConferenceInfo>> {
 		@Override
 		protected void onPreExecute() {
+			Log.d(TAG, "PopulateConferenceTask onPreExecute");
 			mAdapter.clear();
 
 			setProgressBarIndeterminateVisibility(true);
@@ -208,11 +209,13 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		// worker thread (separate from UI thread)
 		@Override
 		protected List<ConferenceInfo> doInBackground(final Void... args) {
+			Log.d(TAG, "PopulateConferenceTask doInBackGround");
 			return fetchConferences();
 		}
 
 		@Override
 		protected void onPostExecute(final List<ConferenceInfo> fetched) {
+			Log.d(TAG, "PopulateConferenceTask onPostExecute");
 			setProgressBarIndeterminateVisibility(false);
 
 			mConferences = fetched;
@@ -242,14 +245,18 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 	private List<ConferenceInfo> fetchConferences() {
+		Log.d(TAG, "fetchConferences 1");
 		List<ConferenceInfo> retlist = null;
 
 		try {
+			Log.d(TAG, "fetchConferences 2");
 			App app = getApp();
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
+						Log.d(TAG, "fetchConferences 3");
 						retlist = mKom.fetchConferences();
+						Log.d(TAG, "fetchConferences 4");
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 						mKom.reconnect();
@@ -260,6 +267,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
 		}
+		Log.d(TAG, "fetchConferences 5");
 		return retlist;
 	}
 
