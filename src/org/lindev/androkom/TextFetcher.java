@@ -113,7 +113,7 @@ public class TextFetcher
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Mottagare: ");
+                        headersString.append(mKom.getString(R.string.header_recipient));
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
@@ -128,7 +128,7 @@ public class TextFetcher
                 items = text.getCcRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kopiemottagare: ");
+                        headersString.append(mKom.getString(R.string.header_cc_recipient));
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
@@ -143,7 +143,7 @@ public class TextFetcher
                 items = text.getCommented();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kommentar till: ");
+                        headersString.append(mKom.getString(R.string.header_comment_to));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -151,7 +151,7 @@ public class TextFetcher
                 items = text.getComments();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kommentar i: ");
+                        headersString.append(mKom.getString(R.string.header_comment_in));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -159,7 +159,7 @@ public class TextFetcher
                 items = text.getFootnotes();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Fotnot i: ");
+                        headersString.append(mKom.getString(R.string.header_footnote_in));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -167,7 +167,7 @@ public class TextFetcher
                 items = text.getFootnoted();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Fotnot till: ");
+                        headersString.append(mKom.getString(R.string.header_footnote_to));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
