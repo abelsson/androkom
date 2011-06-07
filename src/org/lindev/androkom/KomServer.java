@@ -325,46 +325,37 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     /**
      * Add a new subscriber who's interested in asynchronous messages.
      */
-    void addAsyncSubscriber(AsyncMessageSubscriber sub)
-    {
+    void addAsyncSubscriber(AsyncMessageSubscriber sub) {
     	asyncMessagesHandler.subscribe(sub);
     }
     
     /**
      * Add a new subscriber who's interested in asynchronous messages.
      */
-    void removeAsyncSubscriber(AsyncMessageSubscriber sub)
-    {
+    void removeAsyncSubscriber(AsyncMessageSubscriber sub) {
     	asyncMessagesHandler.unsubscribe(sub);
     }
 
     /**
      * Fetch a list of conferences with unread texts.
      */
-    public List<ConferenceInfo> fetchConferences()
-    {
+    public List<ConferenceInfo> fetchConferences() {
+        readMarker.clear();
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-
-        try
-        {
-            for (int conf : s.getMyUnreadConfsList(true))
-            {
-                  String name = s.toString(s.getConfName(conf));
-                  Log.i(TAG, name + " <" + conf + ">");
-
-                  ConferenceInfo info = new ConferenceInfo();
-                  info.id = conf;
-                  info.name = name;
-                  info.numUnread = s.getUnreadCount(conf);
-
-                  arr.add(info);
+        try {
+            for (int conf : s.getMyUnreadConfsList(true)) {
+                final String name = s.toString(s.getConfName(conf));
+                Log.i(TAG, name + " <" + conf + ">");
+                final ConferenceInfo info = new ConferenceInfo();
+                info.id = conf;
+                info.name = name;
+                info.numUnread = s.getUnreadCount(conf);
+                arr.add(info);
             }
         }
-        catch (IOException e)
-        {
+        catch (final IOException e) {
             e.printStackTrace();
         }
-
         return arr;
     }
 
@@ -415,15 +406,13 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     /**
      * Set currently active conference.
      */
-    public void setConference(int confNo) 
-    {
+    public void setConference(final int confNo) {
         try {
             s.changeConference(confNo);
+            readMarker.clear();
             textFetcher.restartPrefetcher();
         } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "setConference "+e);
-
+            Log.i(TAG, "setConference " + e);
             e.printStackTrace();
         }
     }
@@ -538,15 +527,13 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      * Fetch next unread text, as a HTML formatted string. 
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
-    public TextInfo getKomText(final int textNo)
-    {
+    public TextInfo getKomText(final int textNo) {
         final TextInfo text = textFetcher.getText(textNo);
         textFetcher.doCacheRelevant(textNo);
         return text;
     }
 
-    public TextInfo getNextUnreadText()
-    {
+    public TextInfo getNextUnreadText() {
         final TextInfo text = textFetcher.getNextUnreadText();
         textFetcher.doCacheRelevant(text.getTextNo());
         return text;

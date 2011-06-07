@@ -74,7 +74,13 @@ public class ReadMarker {
     }
 
     public void mark(final int textNo) {
-        final boolean needServerMark = (mMarked.put(textNo, textNo) == null);
+        boolean needServerMark = !isLocalRead(textNo);
+        if (!needServerMark) {
+            return;
+        }
+        synchronized (mMarked) {
+            needServerMark = (mMarked.put(textNo, textNo) == null);
+        }
         if (needServerMark) {
             synchronized (mToMark) {
                 mToMark.add(textNo);
@@ -84,5 +90,12 @@ public class ReadMarker {
 
     public boolean isLocalRead(final int textNo) {
         return mMarked.containsKey(textNo);
+    }
+
+    public void clear() {
+        Log.i(TAG, "ReadMarker clear()");
+        synchronized (mMarked) {
+            mMarked.clear();
+        }
     }
 }

@@ -60,7 +60,7 @@ public class TextFetcher
         this.mShowFullHeaders = showFullHeaders;
     }
 
-    private class TextFetcherTask extends AsyncTask<Integer, Void, TextInfo> {
+    private class TextFetcherTask extends AsyncTask<Integer, Void, Void> {
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
@@ -171,21 +171,18 @@ public class TextFetcher
                     SubjectString, BodyString);
         }
 
-        protected TextInfo doInBackground(final Integer... args) {
+        protected Void doInBackground(final Integer... args) {
             mTextNo = args[0];
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
             TextInfo text = getTextFromServer(mTextNo);
             if (text == null) {
                 text = new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_text));
             }
-            return text;
-        }
-
-        protected void onPostExecute(final TextInfo text) {
             mTextCache.put(mTextNo, text);
             synchronized(mTextCache) {
                 mTextCache.notifyAll();
             }
+            return null;
         }
     }
 
@@ -246,6 +243,8 @@ public class TextFetcher
             } catch (final IOException e) {
                 maybeUnread = Collections.<Integer>emptyList();
             }
+            Log.i(TAG, "PrefetchRunner asked server about conf " + mCurrConf + ", got " + maybeUnread.size() + " texts");
+            Log.i(TAG, maybeUnread.toString());
 
             // If we don't get as may texts as we ask for, we can assume that there are no more in the conference,
             // so we remove the head of mUnreadConfs.
@@ -422,9 +421,13 @@ public class TextFetcher
             final Matcher m = TEXT_LINK_FINDER.matcher(textInfo.getBody());
             while (m.find()) {
                 final String str = textInfo.getBody().substring(m.start(), m.end());
-                final int linkNo = Integer.valueOf(str);
-                Log.i(TAG, "CacheRelevantTask " + linkNo + " is a found int body of " + textNo);
-                texts.add(linkNo);
+                try {
+                    final int linkNo = Integer.valueOf(str);
+                    Log.i(TAG, "CacheRelevantTask, text number " + linkNo + " found in body of " + textNo);
+                    texts.add(linkNo);
+                } catch (final NumberFormatException e) {
+                    Log.i(TAG, "CacheRelevantTask, unable to parse " + str + " as text number in body of " + textNo);
+                }
             }
 
             for (final int t : texts) {
