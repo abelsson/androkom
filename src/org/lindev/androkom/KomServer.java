@@ -340,7 +340,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      * Fetch a list of conferences with unread texts.
      */
     public List<ConferenceInfo> fetchConferences() {
-        readMarker.clear();
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
         try {
             for (int conf : s.getMyUnreadConfsList(true)) {
