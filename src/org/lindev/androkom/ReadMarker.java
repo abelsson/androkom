@@ -2,10 +2,10 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.HashSet;
 import java.util.List;
-import java.util.Set;
+import java.util.Map;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import nu.dll.lyskom.Selection;
@@ -13,15 +13,15 @@ import nu.dll.lyskom.TextStat;
 import android.util.Log;
 
 public class ReadMarker {
-    private static final String TAG = "Android";
+    private static final String TAG = "Androkom";
 
     private final KomServer mKom;
-    private final Set<Integer> mMarked;
+    private final Map<Integer, Integer> mMarked;
     private final BlockingQueue<Integer> mToMark;
 
     public ReadMarker(final KomServer kom) {
         this.mKom = kom;
-        this.mMarked = new HashSet<Integer>();
+        this.mMarked = new ConcurrentHashMap<Integer, Integer>();
         this.mToMark = new LinkedBlockingQueue<Integer>();
         new MarkerThread().start();
     }
@@ -74,18 +74,15 @@ public class ReadMarker {
     }
 
     public void mark(final int textNo) {
-        final boolean needServerMark;
-        synchronized (mMarked) {
-            needServerMark = mMarked.add(textNo);
-        }
+        final boolean needServerMark = (mMarked.put(textNo, textNo) == null);
         if (needServerMark) {
-            mToMark.add(textNo);
+            synchronized (mToMark) {
+                mToMark.add(textNo);
+            }
         }
     }
 
     public boolean isLocalRead(final int textNo) {
-        synchronized (mMarked) {
-            return mMarked.contains(textNo);
-        }
+        return mMarked.containsKey(textNo);
     }
 }
