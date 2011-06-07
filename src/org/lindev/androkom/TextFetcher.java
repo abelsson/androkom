@@ -5,7 +5,9 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
@@ -105,66 +107,75 @@ public class TextFetcher
                 Log.d(TAG, "UnsupportedEncodingException"+e);
                 BodyString = text.getBodyString8();
             }
-            String HeadersString = "";
+            StringBuilder headersString = new StringBuilder();
             if (mShowFullHeaders) {
                 int[] items;
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Mottagare: ";
+                        headersString.append("Mottagare: ");
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
-                            HeadersString += confStat.getNameString();
+                            headersString.append(confStat.getNameString());
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
-                        HeadersString += "\n";
+                        headersString.append('\n');
                     }
                 }
                 items = text.getCcRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kopiemottagare: ";
+                        headersString.append("Kopiemottagare: ");
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
-                            HeadersString += confStat.getNameString();
+                            headersString.append(confStat.getNameString());
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
-                        HeadersString += "\n";
+                        headersString.append('\n');
                     }
                 }
                 items = text.getCommented();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kommentar till: " + items[i] + "\n";
+                        headersString.append("Kommentar till: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getComments();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Kommentar i: " + items[i] + "\n";
+                        headersString.append("Kommentar i: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getFootnotes();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Fotnot i: " + items[i] + "\n";
+                        headersString.append("Fotnot i: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
                 items = text.getFootnoted();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        HeadersString += "Fotnot till: " + items[i] + "\n";
+                        headersString.append("Fotnot till: ");
+                        headersString.append(items[i]);
+                        headersString.append('\n');
                     }
                 }
             }
-        	Log.d(TAG, "TextFetcherTask getTextFromServer done");
-            return new TextInfo(textNo, username, CreationTimeString, HeadersString, SubjectString, BodyString);
+            Log.d(TAG, "TextFetcherTask getTextFromServer done");
+            return new TextInfo(textNo, username, CreationTimeString, headersString.toString(),
+                    SubjectString, BodyString);
         }
 
         protected TextInfo doInBackground(final Integer... args) {
@@ -191,89 +202,81 @@ public class TextFetcher
 
     private class PrefetchRunner extends Thread {
         private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
+
         private final Queue<Integer> mUnreadConfs;
-        private final Queue<TextConf> mUnreadTexts;
         private final Set<Integer> mEnqueued;
 
-        private boolean isInterrupted = false;
+        private Iterator<Integer> mMaybeUnreadIter = null;
+        private int mCurrConf = -1;
+        private boolean mIsInterrupted = false;
 
         private PrefetchRunner(final int confNo) {
             Log.i(TAG, "PrefetchRunner starting in conference " + confNo);
             this.mUnreadConfs = new LinkedList<Integer>();
-            this.mUnreadTexts = new LinkedList<TextConf>();
             this.mEnqueued = new HashSet<Integer>();
-            enqueueConfFrom(confNo);
+            initialize(confNo);
         }
 
-        private void enqueueConfFrom(final int confNo) {
+        private void initialize(final int confNo) {
             final List<Integer> unreadConfList = mKom.getSession().getUnreadConfsListCached();
-            final int startIdx = unreadConfList.indexOf(confNo);
+            int startIdx = unreadConfList.indexOf(confNo);
             if (startIdx < 0) {
-                return;
+                startIdx = 0;
             }
             for (int i = startIdx; i < unreadConfList.size(); ++i) {
                 Log.i(TAG, "PrefetchRunner enqueuing unread conference " + unreadConfList.get(i));
-                mUnreadConfs.offer(unreadConfList.get(i));
+                mUnreadConfs.add(unreadConfList.get(i));
             }
             for (int i = 0; i < startIdx; ++i) {
                 Log.i(TAG, "PrefetchRunner enqueuing unread conference " + unreadConfList.get(i));
-                mUnreadConfs.offer(unreadConfList.get(i));
+                mUnreadConfs.add(unreadConfList.get(i));
+            }
+            this.mMaybeUnreadIter = Collections.<Integer>emptyList().iterator();
+        }
+
+        private void enqueueAndPrefetch(final int textNo, final int confNo) {
+            final boolean notEnqueued = mEnqueued.add(textNo);
+            if (notEnqueued && !mKom.isLocalRead(textNo)) {
+                try {
+                    mUnreadQueue.put(new TextConf(textNo, confNo));
+                } catch (final InterruptedException e) {
+                    // Someone called interrupt() on this thread. We shouldn't do anything more, just exit.
+                    Log.i(TAG, "PrefetchRunner was interrupted");
+                    return;
+                }
+                Log.i(TAG, "PrefetchRunner prefetching text " + textNo + " in conference " + confNo);
+                getText(textNo);
             }
         }
 
-        /**
-         * Refills mUnreadTexts from the conference in the head of mUnreadConfs. Returns true if there might be more
-         * texts in the conference (i.e., we got as many texts as we asked for from nextUnreadTexts()).
-         */
-        private boolean refillTexts() {
-            final int confNo = mUnreadConfs.peek();
-            final List<Integer> maybeUnread;
+        public Iterator<Integer> askServerForMore() {
+            mCurrConf = mUnreadConfs.element();
+            List<Integer> maybeUnread;
             try {
-                /* There can be up to MAX_PREFETCH number of unread texts currently in the queue (mUnreadQueue), but
-                 * those aren't marked as read yet, so the server doesn't know it. To make sure we actually get more
-                 * texts that aren't already in the queue, we ask for double the amount */
-                maybeUnread = mKom.getSession().nextUnreadTexts(confNo, false, ASK_AMOUNT);
+                maybeUnread = mKom.getSession().nextUnreadTexts(mCurrConf, false, ASK_AMOUNT);
             } catch (final IOException e) {
-                e.printStackTrace();
-                return false;
+                maybeUnread = Collections.<Integer>emptyList();
             }
-            String str = "";
-            for (final Integer textNo : maybeUnread) {
-                if (mEnqueued.add(textNo)) {
-                    str += " " + textNo;
-                    mUnreadTexts.add(new TextConf(textNo, confNo));
-                }
-                else {
-                    str += " (" + textNo + ")";
-                }
+
+            // If we don't get as may texts as we ask for, we can assume that there are no more in the conference,
+            // so we remove the head of mUnreadConfs.
+            if (maybeUnread.size() < ASK_AMOUNT) {
+                mUnreadConfs.remove();
             }
-            Log.i(TAG, str);
-            return maybeUnread.size() == ASK_AMOUNT;
+
+            return maybeUnread.iterator();
         }
 
         @Override
         public void run() {
-            while (!isInterrupted) {
-                if (!mUnreadTexts.isEmpty()) {
-                    final TextConf tc = mUnreadTexts.poll();
-                    if (!mKom.isLocalRead(tc.textNo)) {
-                        try {
-                            mUnreadQueue.put(tc);
-                        } catch (final InterruptedException e) {
-                            // Someone called interrupt() on this thread. We shouldn't do anything more and exit.
-                            Log.i(TAG, "PrefetchRunner was interrupted " + isInterrupted);
-                            break;
-                        }
-                    }
-                    Log.i(TAG, "PrefetchRunner prefetching text " + tc.textNo + " in conference " + tc.confNo);
-                    getText(tc.textNo);
+            while (!mIsInterrupted) {
+                if (mMaybeUnreadIter.hasNext()) {
+                    final int textNo = mMaybeUnreadIter.next();
+                    enqueueAndPrefetch(textNo, mCurrConf);
                 }
                 else if (!mUnreadConfs.isEmpty()) {
-                    final boolean moreTextsAvail = refillTexts();
-                    if (!moreTextsAvail) {
-                        // No more unread in this conference, remove it from head of queue
-                        mUnreadConfs.poll();
-                    }
+                    // Ask the server for more (possibly) unread texts
+                    mMaybeUnreadIter = askServerForMore();
                 }
                 else {
                     // No more unread in conference, and no more unread conferences
@@ -281,16 +284,16 @@ public class TextFetcher
                 }
             }
 
-            // If the Thread was interrupted, we should't put any end marker on the queue.
-            if (isInterrupted) {
-                Log.i(TAG, "PrefetchRunner is exiting because it was interrupted");
-            }
-            else {
+            // If the thread wasn't interrupted, we should put an end marker on the queue.
+            if (!mIsInterrupted) {
                 try {
                     // Enqueue the marker that there are no more unread texts
                     Log.i(TAG, "PrefetchRunner found no more unread. Exiting.");
                     mUnreadQueue.put(new TextConf(-1, -1));
                 } catch (final InterruptedException e) { }
+            }
+            else {
+                Log.i(TAG, "PrefetchRunner is exiting because it was interrupted");
             }
         }
     }
@@ -357,6 +360,9 @@ public class TextFetcher
             mPrefetchRunner = null;
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
+        if (mKom.isLocalRead(tc.textNo)) {
+            return getNextUnreadText();
+        }
         if (tc.confNo != confNo) {
             try {
                 mKom.getSession().changeConference(tc.confNo);
@@ -392,7 +398,7 @@ public class TextFetcher
         final int confNo = mKom.getSession().getCurrentConference();
         if (mPrefetchRunner != null) {
             Log.i(TAG, "TextFetcher restartPrefetcher(), interrupting old PrefetchRunner");
-            mPrefetchRunner.isInterrupted = true;
+            mPrefetchRunner.mIsInterrupted = true;
             mPrefetchRunner.interrupt();
         }
         mTextCache.clear();
@@ -458,6 +464,8 @@ public class TextFetcher
      * @param textNo
      */
     public void doCacheRelevant(final int textNo) {
-        new CacheRelevantTask().execute(textNo);
+        if (textNo > 0) {
+            new CacheRelevantTask().execute(textNo);
+        }
     }
 }
