@@ -113,7 +113,7 @@ public class TextFetcher
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_recipient));
+                        headersString.append(mKom.getString(R.string.androkom_header_recipient));
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
@@ -321,16 +321,22 @@ public class TextFetcher
     * @param textNo global text number to fetch
     */
     public TextInfo getText(final int textNo) {
+    	Log.d(TAG, "getText 1");
     	if(textNo<1) {
     		Log.d(TAG, "There are no negative text numbers.");
     		return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
     	}
         final Thread currentThread = Thread.currentThread();
+    	Log.d(TAG, "getText 2");
 
         doGetText(textNo);
         TextInfo text = mTextCache.get(textNo);
 
-        while (!currentThread.isInterrupted() && text == null) {
+    	Log.d(TAG, "getText 3");
+    	int i=0;
+        while (!currentThread.isInterrupted() && text == null && i<100) {
+        	i++;
+        	Log.d(TAG, "getText 3a");
             //Log.i(TAG, "TextFetcher getText(), waiting on text " + textNo);
             synchronized(mTextCache) {
                 try {
@@ -339,30 +345,43 @@ public class TextFetcher
                     return null;
                 }
             }
+        	Log.d(TAG, "getText 3b");
             text = mTextCache.get(textNo);
+        	Log.d(TAG, "getText 3c");
         }
-
-        return text;
+    	Log.d(TAG, "getText 4");
+		if (i < 100) {
+			return text;
+		} else {
+			Log.d(TAG, "Could not get text from cache. Timeout.");
+			return new TextInfo(-1, "", "", "", "", mKom
+					.getString(R.string.error_fetching_unread_text));
+		}
     }
 
     public TextInfo getNextUnreadText() {
+    	Log.d(TAG, "getNextUnreadText 1");
         final int confNo = mKom.getSession().getCurrentConference();
         if (mPrefetchRunner == null) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
+    	Log.d(TAG, "getNextUnreadText 2");
         final TextConf tc;
         try {
             tc = mUnreadQueue.take();
         } catch (final InterruptedException e) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
         }
+    	Log.d(TAG, "getNextUnreadText 3");
         if (tc.textNo < 0) {
             mPrefetchRunner = null;
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
+    	Log.d(TAG, "getNextUnreadText 4");
         if (mKom.isLocalRead(tc.textNo)) {
             return getNextUnreadText();
         }
+    	Log.d(TAG, "getNextUnreadText 5");
         if (tc.confNo != confNo) {
             try {
                 mKom.getSession().changeConference(tc.confNo);
@@ -370,6 +389,7 @@ public class TextFetcher
                 e.printStackTrace();
             }
         }
+    	Log.d(TAG, "getNextUnreadText 6");
         return getText(tc.textNo);
     }
 

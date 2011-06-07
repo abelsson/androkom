@@ -18,7 +18,4 @@
         android:id="@+id/menu_seewhoison_id"></item>
     
     <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
-    <item android:title="@string/clear_cache_label"
-        android:alphabeticShortcut="@string/clear_cache_shortcut"
-        android:id="@+id/menu_clear_cache_id"/>
 </menu>

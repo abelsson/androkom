@@ -128,7 +128,7 @@
     <string name="message_log_label">Meddelandelogg</string>
     <string name="no_messages">Inga meddelanden</string>
     
-    <string name="header_recipient">"Mottagare: "</string>
+    <string name="androkom_header_recipient">"Mottagare: "</string>
     <string name="header_cc_recipient">"Kopiemottagare: "</string>
     <string name="header_comment_to">"Kommentar till: "</string>
     <string name="header_comment_in">"Kommentar i: "</string>

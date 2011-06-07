@@ -133,7 +133,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mKom.markTextAsRead(mState.getCurrent().getTextNo());
             }
 
-            Log.d(TAG, "LoadMessageTask doInBackground curent text is marked as read");
             Log.d(TAG, "LoadMessageTask doInBackground case "+args[0]);
 
             switch (args[0]) {

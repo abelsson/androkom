@@ -351,6 +351,8 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      */
     public List<ConferenceInfo> fetchConferences()
     {
+    	readMarker.clearCaches();
+    	
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
 
         try
@@ -535,6 +537,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
+    	readMarker.clearCaches();
     }
     
     public Session getSession()
@@ -580,7 +583,9 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 
     private final ReadMarker readMarker = new ReadMarker(this);
     public void markTextAsRead(final int textNo) {
+    	Log.d(TAG, "markTextAsRead:"+textNo);
         readMarker.mark(textNo);
+    	Log.d(TAG, "markTextAsRead done:"+textNo);
     }
 
     public boolean isLocalRead(final int textNo) {
@@ -1086,12 +1091,6 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     		e.printStackTrace();
     	}
     	return null;
-    }
-    
-    public void clearCaches() {
-    	s.clearCaches();
-    	readMarker.clearCaches();
-    	textFetcher.restartPrefetcher();
     }
     
     public boolean isConnected() {
