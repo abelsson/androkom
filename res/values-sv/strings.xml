@@ -83,8 +83,6 @@
     <string name="createnewmail_shortcut">B</string>
     <string name="createnewIM_label">Nytt meddelande</string>
     <string name="createnewIM_shortcut">M</string>
-    <string name="clear_cache_label">Rensa cache</string>
-    <string name="clear_cache_shortcut">R</string>
     
     <string name="title_submenu_mark">Markera...</string>
     <string name="marktext_label">Markera text</string>

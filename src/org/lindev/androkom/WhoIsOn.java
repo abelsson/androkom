@@ -35,9 +35,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-
+                
         getApp().doBindService(this);
-        int i=0;
         mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison);
         setListAdapter(mAdapter);
         
@@ -78,7 +77,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     protected void onListItemClick(ListView l, View v, int position, long id) 
     {
         Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();    
-
+        
         //Intent intent = new Intent(this, Conference.class);
         //intent.putExtra("conference-id", mConferences.get((int)id).id);
         //startActivity(intent);
@@ -129,7 +128,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
             this.dialog.dismiss();
             mPersons = tPersons;
             populatePersons();
-       }
+        }
+
     }
 
     /**

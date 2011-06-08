@@ -30,63 +30,68 @@ import android.os.IBinder;
 import android.util.Log;
 import android.widget.Toast;
 
+
 /**
- * A service which keeps the Lattekom session object and all LysKOM stuff for
- * the various activities in the app.
+ * A service which keeps the Lattekom session object and all
+ * LysKOM stuff for the various activities in the app.
  * 
  * @author henrik
- * 
+ *
  */
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
 	public static boolean RELEASE_BUILD = false;
 
-	/**
-	 * Class for clients to access. Because we assume this service always runs
-	 * in the same process as its clients, we don't deal with IPC.
-	 */
-	public class LocalBinder extends Binder {
-		KomServer getService() {
-			return KomServer.this;
-		}
-	}
+    /**
+     * Class for clients to access.  Because we assume this service always
+     * runs in the same process as its clients, we don't deal with IPC.
+     */
+    public class LocalBinder extends Binder 
+    {
+        KomServer getService() 
+        {
+            return KomServer.this;
+        }
+    }
 
-	/**
-	 * Small helper class which maps conference names and LysKOM id's.
-	 */
-	public class ConferenceInfo {
-		public int id;
-		public String name;
-		public int numUnread;
+    /**
+     * Small helper class which maps conference names and LysKOM id's.
+     */
+    public class ConferenceInfo 
+    {
+        public int id;
+        public String name;
+        public int numUnread;
 
-		@Override
-		public String toString() {
-			return name + " <" + id + ">";
-		}
-	}
+        @Override
+        public String toString() 
+        {
+            return name + " <" + id + ">";
+        }
+    }
 
-	/**
-	 * Small helper class to manage texts.
-	 */
-	public static class TextInfo {
-		public TextInfo() {
-		}
+    /**
+     * Small helper class to manage texts.
+     */
+    public static class TextInfo
+    {
+    	public TextInfo() { }
 
-		public TextInfo(int textNo, String author, String date, String headers,
-				String subject, String body) {
-			this.setTextNo(textNo);
-			this.setAuthor(author);
-			this.setDate(date);
-			this.setHeaders(headers);
-			this.setSubject(subject);
-			this.setBody(body);
-		}
-
-		public void setAuthor(String author) {
+    	public TextInfo(int textNo, String author, String date, String headers, String subject, String body)
+    	{
+    		this.setTextNo(textNo);
+    		this.setAuthor(author);
+    		this.setDate(date);
+    		this.setHeaders(headers);
+    		this.setSubject(subject);
+    		this.setBody(body);
+    	}
+    	
+    	public void setAuthor(String author) {
 			this.author = author;
 		}
-
+		
 		public String getAuthor() {
 			return author;
 		}
@@ -133,133 +138,136 @@ public class KomServer extends Service implements RpcEventListener,
 
 		private int textNo;
 		private String date;
-		private String subject;
-		private String headers;
-		private String body;
-		private String author;
-	}
+    	private String subject;
+    	private String headers;
+    	private String body;
+    	private String author;
+    }
+    
+    public KomServer() {
+    	if (!RELEASE_BUILD)
+    		System.setProperty("lattekom.debug", "true");
+        System.setProperty("lattekom.enable-prefetch", "true"); 
+        Session.setLog(this);
+        mLastTextNo = -1;
+        mPendingSentTexts = new HashSet<Integer>();
+    }
 
-	public KomServer() {
-		if (!RELEASE_BUILD)
-			System.setProperty("lattekom.debug", "true");
-		System.setProperty("lattekom.enable-prefetch", "true");
-		Session.setLog(this);
-		mLastTextNo = -1;
-		mPendingSentTexts = new HashSet<Integer>();
-	}
 
-	@Override
-	public void onCreate() {
-		super.onCreate();
+    @Override
+    public void onCreate() 
+    {
+        super.onCreate();
+        
+        asyncMessagesHandler = new AsyncMessages(getApp(), this);
+        asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
+        
+        if (s == null) {
+            s = new Session();
+            s.addRpcEventListener(this);
+        }
+    }
 
-		asyncMessagesHandler = new AsyncMessages(getApp(), this);
-		asyncMessagesHandler
-				.subscribe(asyncMessagesHandler.new MessageToaster());
+    @Override
+    public IBinder onBind(Intent arg0) 
+    {
+        return mBinder;
+    }
 
-		if (s == null) {
-			s = new Session();
-			s.addRpcEventListener(this);
-		}
-	}
+    App getApp() 
+    {
+        return (App) getApplication();
+    }
 
-	@Override
-	public IBinder onBind(Intent arg0) {
-		return mBinder;
-	}
+    /**
+     * Called upon destruction of the service. If we're logged in,
+     * we want to log out and close the connection now.
+     */
+    @Override
+    public void onDestroy() 
+    {
 
-	App getApp() {
-		return (App) getApplication();
-	}
+        // Tell the user we stopped.
+        Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
 
-	/**
-	 * Called upon destruction of the service. If we're logged in, we want to
-	 * log out and close the connection now.
-	 */
-	@Override
-	public void onDestroy() {
+        try {
+            if (s.getState() == Session.STATE_LOGIN)
+                s.logout(true);
+            Log.i("androkom","logged out");
 
-		// Tell the user we stopped.
-		Toast.makeText(this, getString(R.string.komserver_stopped),
-				Toast.LENGTH_SHORT).show();
+            if (s.getState() == Session.STATE_CONNECTED)
+                s.disconnect(false);
 
-		try {
-			if (s.getState() == Session.STATE_LOGIN)
-				s.logout(true);
-			Log.i("androkom", "logged out");
+            Log.i("androkom","disconnected");           
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "onDestroy "+e);
+            e.printStackTrace();
+        }
 
-			if (s.getState() == Session.STATE_CONNECTED)
-				s.disconnect(false);
+        s.removeRpcEventListener(this);        
+        s = null;
 
-			Log.i("androkom", "disconnected");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "onDestroy " + e);
-			e.printStackTrace();
-		}
+        super.onDestroy();
+    }
 
-		s.removeRpcEventListener(this);
-		s = null;
+    void reconnect() {
+    	Log.d(TAG, "KomServer trying to reconnect");
+        try {
+            if (s.getState() == Session.STATE_LOGIN)
+                s.logout(true);
+            Log.i("androkom","logged out");
 
-		super.onDestroy();
-	}
+            if (s.getState() == Session.STATE_CONNECTED)
+                s.disconnect(false);
 
-	void reconnect() {
-		Log.d(TAG, "KomServer trying to reconnect");
-		try {
-			if (s.getState() == Session.STATE_LOGIN)
-				s.logout(true);
-			Log.i("androkom", "logged out");
+            Log.i("androkom","disconnected");           
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "onDestroy "+e);
+            e.printStackTrace();
+        }
 
-			if (s.getState() == Session.STATE_CONNECTED)
-				s.disconnect(false);
+        s.removeRpcEventListener(this);
+        s = null;
+    	
+        s = new Session();
+        s.addRpcEventListener(this);
 
-			Log.i("androkom", "disconnected");
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "onDestroy " + e);
-			e.printStackTrace();
-		}
+        Log.d(TAG, "KomServer trying to login using "+re_userid+" "+re_server);
+        login(re_userid, re_password, re_server);
+    }
 
-		s.removeRpcEventListener(this);
-		s = null;
+    /**
+     * Connect to LysKOM server.
+     * 
+     * @return 0 on success, non-zero on failure.
+     */
+    public int connect(String server) 
+    {
+        try {
+            s.connect(server);
+            s.addAsynchMessageReceiver(asyncMessagesHandler);
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "connect1 "+e);
 
-		s = new Session();
-		s.addRpcEventListener(this);
+            e.printStackTrace();
+            return -1;
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "connect2 "+e);
 
-		Log.d(TAG, "KomServer trying to login using " + re_userid + " "
-				+ re_server);
-		login(re_userid, re_password, re_server);
-	}
+            e.printStackTrace();
+            return -1;
+        }
 
-	/**
-	 * Connect to LysKOM server.
-	 * 
-	 * @return 0 on success, non-zero on failure.
-	 */
-	public int connect(String server) {
-		try {
-			s.connect(server);
-			s.addAsynchMessageReceiver(asyncMessagesHandler);
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "connect1 " + e);
+        return 0;
+    }
 
-			e.printStackTrace();
-			return -1;
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "connect2 " + e);
-
-			e.printStackTrace();
-			return -1;
-		}
-
-		return 0;
-	}
-
-	public void disconnect() {
-		try {
-			s.disconnect(true);
+    public void disconnect() {
+    	try {
+    		s.disconnect(true);
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
 			e.printStackTrace();
@@ -361,23 +369,25 @@ public class KomServer extends Service implements RpcEventListener,
 			return s.toString(s.getConfName(conf));
 		} catch (Exception e) {
 			// TODO Auto-generated catch block
-			Log.d(TAG, "getConferenceName " + e);
+        	Log.d(TAG, "getConferenceName "+e);
 
 			e.printStackTrace();
 		}
 		return "";
-	}
+    }
+    
 
-	/**
-	 * Return name for given conference.
-	 */
-	public String getConferenceName() {
-		return getConferenceName(s.getCurrentConference());
-	}
+    /**
+     * Return name for given conference.
+     */
+    public String getConferenceName()
+    {
+    	return getConferenceName(s.getCurrentConference());
+    }
 
-	/**
-	 * Return presentation text number for current conference.
-	 */
+    /**
+     * Return presentation text number for current conference.
+     */
 	public int getConferencePres() {
 		int confNo = s.getCurrentConference();
 		if (confNo > 0) {
@@ -556,10 +566,11 @@ public class KomServer extends Service implements RpcEventListener,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+    }
 
-	public void unmarkText(int textNo) {
-		try {
+    public void unmarkText(int textNo)
+    {
+    	try {
 			s.unmarkText(textNo);
 		} catch (RpcFailure e) {
 			// TODO Auto-generated catch block
@@ -568,36 +579,39 @@ public class KomServer extends Service implements RpcEventListener,
 			// TODO Auto-generated catch block
 			e.printStackTrace();
 		}
-	}
+    }
 
-	/**
-	 * Get text number of last read text in current meeting, or -1 if there is
-	 * no suitable text.
-	 */
-	public int getLastTextNo() {
-		return mLastTextNo;
-	}
+    /**
+     * Get text number of last read text in current meeting, 
+     * or -1 if there is no suitable text.
+     */
+    public int getLastTextNo()
+    {
+        return mLastTextNo;
+    }
 
-	/**
-	 * Create a text, which is not a reply to another text.
-	 */
-	public void createText(String subject, String body) {
-		createText(subject, body, -1);
-	}
+    /**
+     * Create a text, which is not a reply to another text.
+     */
+    public void createText(String subject, String body)
+    {
+        createText(subject, body, -1);
+    }
 
-	/**
-	 * Create a text, in reply to another text.
-	 */
-	public void createText(String subject, String body, int inReplyTo) {
-		Text text = new Text();
+    /**
+     * Create a text, in reply to another text.
+     */
+    public void createText(String subject, String body, int inReplyTo) 
+    {
+        Text text = new Text();
 
-		if (inReplyTo != -1)
-			text.addCommented(inReplyTo);
+        if (inReplyTo != -1)
+            text.addCommented(inReplyTo);
 
-		int currConf = s.getCurrentConference();
-		try {
-			// only add current Conf if comments are allowed
-			if (s.getConfStat(currConf).getConfInfo().confType.original()) {
+        int currConf = s.getCurrentConference();
+        try {
+        	// only add current Conf if comments are allowed
+			if(s.getConfStat(currConf).getConfInfo().confType.original()) {
 				Log.d(TAG, "Conf is original, add super conf instead");
 				text.addRecipient(s.getConfStat(currConf).getSuperConf());
 			} else {
@@ -613,8 +627,8 @@ public class KomServer extends Service implements RpcEventListener,
 			Log.d(TAG, "createText failed to add conf");
 			e2.printStackTrace();
 		}
-		try {
-			if (!s.isMemberOf(currConf)) {
+        try {
+			if(!s.isMemberOf(currConf)) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
@@ -622,43 +636,40 @@ public class KomServer extends Service implements RpcEventListener,
 			Log.d(TAG, "Failed testing membership");
 			e1.printStackTrace();
 		}
+        
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
 
-		final byte[] subjectBytes = subject.getBytes();
-		final byte[] bodyBytes = body.getBytes();
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
 
-		byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-		System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-		System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1,
-				bodyBytes.length);
-		contents[subjectBytes.length] = (byte) '\n';
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
-		text.setContents(contents);
-		text.getStat().setAuxItem(
-				new AuxItem(AuxItem.tagContentType,
-						"text/x-kom-basic;charset=utf-8"));
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
 
-		try {
-			mPendingSentTexts.add(s.doCreateText(text).getId());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "createText " + e);
+            e.printStackTrace();
+        }
+    }
 
-			e.printStackTrace();
-		}
-	}
+    /**
+     * Create a text, in reply to another text.
+     */
+    public void createText(String subject, String body, int inReplyTo, boolean copyRecipients) 
+    {
+        Text text = new Text();
 
-	/**
-	 * Create a text, in reply to another text.
-	 */
-	public void createText(String subject, String body, int inReplyTo,
-			boolean copyRecipients) {
-		Text text = new Text();
+        if (inReplyTo != -1)
+            text.addCommented(inReplyTo);
 
-		if (inReplyTo != -1)
-			text.addCommented(inReplyTo);
-
-		if ((inReplyTo != -1) && (copyRecipients)) {
-			Text orgtext = null;
+        if ( (inReplyTo != -1) && (copyRecipients) ) {
+            Text orgtext=null;
 			try {
 				orgtext = s.getText(inReplyTo);
 			} catch (RpcFailure e) {
@@ -668,21 +679,17 @@ public class KomServer extends Service implements RpcEventListener,
 				// TODO Auto-generated catch block
 				e.printStackTrace();
 			}
-			if (orgtext != null) {
+			if(orgtext != null) {
 				int[] receps = orgtext.getRecipients();
-				Log.d(TAG, "Found no of recipients:" + receps.length);
-				for (int i = 0; i < receps.length; i++) {
-					Log.d(TAG, "adding recipient:" + receps[i]);
+				Log.d(TAG, "Found no of recipients:"+receps.length);
+				for(int i=0; i < receps.length; i++) {
+					Log.d(TAG, "adding recipient:"+receps[i]);
 					try {
-						try {
-							// only add Conf if comments are allowed
-							if (s.getConfStat(receps[i]).getConfInfo().confType
-									.original()) {
-								Log
-										.d(TAG,
-												"Conf is original, add super conf instead");
-								text.addRecipient(s.getConfStat(receps[i])
-										.getSuperConf());
+				        try {
+				        	// only add Conf if comments are allowed
+							if(s.getConfStat(receps[i]).getConfInfo().confType.original()) {
+								Log.d(TAG, "Conf is original, add super conf instead");
+								text.addRecipient(s.getConfStat(receps[i]).getSuperConf());
 							} else {
 								Log.d(TAG, "Conf is not original, ok to add");
 								text.addRecipient(receps[i]);
@@ -701,17 +708,17 @@ public class KomServer extends Service implements RpcEventListener,
 					}
 				}
 			}
-		}
-
-		try {
+        }
+        
+        try {
 			int[] receps = text.getRecipients();
 			boolean userIsMemberOfSomeConf = false;
-			for (int i = 0; i < receps.length; i++) {
-				if (s.isMemberOf(receps[i])) {
+			for(int i=0; i < receps.length; i++) {
+				if(s.isMemberOf(receps[i])) {
 					userIsMemberOfSomeConf = true;
 				}
 			}
-			if (!userIsMemberOfSomeConf) {
+			if(!userIsMemberOfSomeConf) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
@@ -722,36 +729,35 @@ public class KomServer extends Service implements RpcEventListener,
 			Log.d(TAG, "recipient already added");
 		}
 
-		final byte[] subjectBytes = subject.getBytes();
-		final byte[] bodyBytes = body.getBytes();
+        
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
 
-		byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-		System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-		System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1,
-				bodyBytes.length);
-		contents[subjectBytes.length] = (byte) '\n';
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
 
-		text.setContents(contents);
-		text.getStat().setAuxItem(
-				new AuxItem(AuxItem.tagContentType,
-						"text/x-kom-basic;charset=utf-8"));
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
-		try {
-			mPendingSentTexts.add(s.doCreateText(text).getId());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "createText " + e);
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
 
-			e.printStackTrace();
-		}
-	}
+            e.printStackTrace();
+        }
+    }
 
-	/**
-	 * Get a list of conferencenames matching a string
-	 */
-	public ConfInfo[] getConferences(String name) {
-		// find ConfNo
-		ConfInfo[] conferences = null;
+    /**
+     * Get a list of conferencenames matching a string
+     */
+    public ConfInfo[] getConferences(String name) 
+    {
+        // find ConfNo
+        ConfInfo[] conferences=null;
 		try {
 			conferences = s.lookupName(name, false, true);
 		} catch (RpcFailure e1) {
@@ -762,14 +768,15 @@ public class KomServer extends Service implements RpcEventListener,
 			e1.printStackTrace();
 		}
 		return conferences;
-	}
+    }
 
-	/**
-	 * Get a list of usernames matching a string
-	 */
-	public ConfInfo[] getUsers(String name) {
-		// find ConfNo
-		ConfInfo[] conferences = null;
+    /**
+     * Get a list of usernames matching a string
+     */
+    public ConfInfo[] getUsers(String name) 
+    {
+        // find ConfNo
+        ConfInfo[] conferences=null;
 		try {
 			conferences = s.lookupName(name, true, false);
 		} catch (RpcFailure e1) {
@@ -780,39 +787,39 @@ public class KomServer extends Service implements RpcEventListener,
 			e1.printStackTrace();
 		}
 		return conferences;
-	}
+    }
 
-	/**
-	 * Create a text
-	 */
-	public ConfInfo[] createText(int recipient_type, String recipient,
-			String subject, String body) {
-		Text text = new Text();
-		ConfInfo[] conferences;
-
-		// find ConfNo
-		switch (recipient_type) {
-		case 1:
-			conferences = getConferences(recipient);
-			break;
-		case 2:
-			conferences = getUsers(recipient);
-			break;
-		default:
-			Log.d(TAG, "create text unknown recipient_type:" + recipient_type);
-			return null;
-		}
+    /**
+     * Create a text
+     */
+    public ConfInfo[] createText(int recipient_type, String recipient, String subject, String body) 
+    {
+        Text text = new Text();
+        ConfInfo[] conferences;
+        
+        // find ConfNo
+        switch(recipient_type) {
+        case 1 :
+            conferences=getConferences(recipient);
+        	break;
+        case 2 :
+            conferences=getUsers(recipient);
+        	break;
+        default:
+        	Log.d(TAG, "create text unknown recipient_type:"+recipient_type);
+        	return null;
+        }
 		if ((conferences == null) || (conferences.length < 1)
 				|| (conferences.length > 1)) {
-			Log.d(TAG, "Could not find uniq ConfNo");
-			return conferences;
-		}
-		int confno = 0;
-		confno = conferences[0].getNo();
-		Log.d(TAG, "creating text in confno:" + confno);
-		text.addRecipient(confno);
-		try {
-			if (!s.isMemberOf(confno)) {
+        	Log.d(TAG, "Could not find uniq ConfNo");
+        	return conferences;
+        }
+    	int confno = 0;
+    	confno = conferences[0].getNo();
+    	Log.d(TAG, "creating text in confno:"+confno);
+        text.addRecipient(confno);
+        try {
+			if(!s.isMemberOf(confno)) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
@@ -821,41 +828,38 @@ public class KomServer extends Service implements RpcEventListener,
 			e1.printStackTrace();
 		}
 
-		final byte[] subjectBytes = subject.getBytes();
-		final byte[] bodyBytes = body.getBytes();
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
 
-		byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-		System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-		System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1,
-				bodyBytes.length);
-		contents[subjectBytes.length] = (byte) '\n';
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
 
-		text.setContents(contents);
-		text.getStat().setAuxItem(
-				new AuxItem(AuxItem.tagContentType,
-						"text/x-kom-basic;charset=utf-8"));
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
-		try {
-			mPendingSentTexts.add(s.doCreateText(text).getId());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "createText " + e);
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
 
-			e.printStackTrace();
-		}
-		return conferences;
-	}
+            e.printStackTrace();
+        }
+    	return conferences;
+    }
 
-	/**
-	 * Create a text
-	 */
-	public void createText(int recipient_type, int confno, String subject,
-			String body) {
-		Text text = new Text();
+    /**
+     * Create a text
+     */
+    public void createText(int recipient_type, int confno, String subject, String body) 
+    {
+        Text text = new Text();
 
-		text.addRecipient(confno);
-		try {
-			if (!s.isMemberOf(confno)) {
+        text.addRecipient(confno);
+        try {
+			if(!s.isMemberOf(confno)) {
 				text.addRecipient(re_userid);
 			}
 		} catch (IOException e1) {
@@ -864,38 +868,35 @@ public class KomServer extends Service implements RpcEventListener,
 			e1.printStackTrace();
 		}
 
-		final byte[] subjectBytes = subject.getBytes();
-		final byte[] bodyBytes = body.getBytes();
+        final byte[] subjectBytes = subject.getBytes();
+        final byte[] bodyBytes = body.getBytes();
 
-		byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-		System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-		System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1,
-				bodyBytes.length);
-		contents[subjectBytes.length] = (byte) '\n';
+        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
+        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
+        contents[subjectBytes.length] = (byte) '\n';
 
-		text.setContents(contents);
-		text.getStat().setAuxItem(
-				new AuxItem(AuxItem.tagContentType,
-						"text/x-kom-basic;charset=utf-8"));
+        text.setContents(contents);
+        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
-		try {
-			mPendingSentTexts.add(s.doCreateText(text).getId());
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "createText " + e);
+        try {
+            mPendingSentTexts.add(s.doCreateText(text).getId());
+        } catch (Exception e) {
+            // TODO Auto-generated catch block
+        	Log.d(TAG, "createText "+e);
 
-			e.printStackTrace();
-		}
-	}
+            e.printStackTrace();
+        }
+    }
 
 	String[] getNextHollerith(String s) {
 		s = s.trim();
 		int prefixLen = s.indexOf("H");
 
-		int len = Integer.parseInt(s.substring(0, prefixLen));
+        int len = Integer.parseInt(s.substring(0, prefixLen));
 
-		prefixLen++;
-		String first = s.substring(prefixLen, prefixLen + len);
+        prefixLen++;
+        String first = s.substring(prefixLen, prefixLen + len);
 
 		String second;
 		if (s.length() > first.length() + prefixLen + 1)

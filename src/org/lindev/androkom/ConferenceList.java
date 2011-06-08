@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
+
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
@@ -79,7 +80,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 				});
 			}
 
-		}, 0, 6000);
+		}, 0, 60000);
 
 	}
 
@@ -200,24 +201,20 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			AsyncTask<Void, Void, List<ConferenceInfo>> {
 		@Override
 		protected void onPreExecute() {
-			Log.d(TAG, "PopulateConferenceTask onPreExecute");
-			mAdapter.clear();
-
 			setProgressBarIndeterminateVisibility(true);
 		}
 
 		// worker thread (separate from UI thread)
 		@Override
 		protected List<ConferenceInfo> doInBackground(final Void... args) {
-			Log.d(TAG, "PopulateConferenceTask doInBackGround");
 			return fetchConferences();
 		}
 
 		@Override
 		protected void onPostExecute(final List<ConferenceInfo> fetched) {
-			Log.d(TAG, "PopulateConferenceTask onPostExecute");
 			setProgressBarIndeterminateVisibility(false);
 
+			mAdapter.clear();
 			mConferences = fetched;
 
 			if (mConferences != null && (!mConferences.isEmpty())) {
@@ -245,18 +242,14 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 	private List<ConferenceInfo> fetchConferences() {
-		Log.d(TAG, "fetchConferences 1");
 		List<ConferenceInfo> retlist = null;
 
 		try {
-			Log.d(TAG, "fetchConferences 2");
 			App app = getApp();
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						Log.d(TAG, "fetchConferences 3");
 						retlist = mKom.fetchConferences();
-						Log.d(TAG, "fetchConferences 4");
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 						mKom.reconnect();

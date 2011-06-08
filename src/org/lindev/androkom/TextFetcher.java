@@ -66,8 +66,6 @@ public class TextFetcher
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
-        	Log.d(TAG, "TextFetcherTask getTextFromServer");
-
             Text text = null;
             try {
                 text = mKom.getSession().getText(textNo);
@@ -173,13 +171,11 @@ public class TextFetcher
                     }
                 }
             }
-            Log.d(TAG, "TextFetcherTask getTextFromServer done");
             return new TextInfo(textNo, username, CreationTimeString, headersString.toString(),
                     SubjectString, BodyString);
         }
 
         protected Void doInBackground(final Integer... args) {
-        	Log.d(TAG, "TextFetcherTask doInBackground");
             mTextNo = args[0];
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
             TextInfo text = getTextFromServer(mTextNo);
@@ -191,7 +187,6 @@ public class TextFetcher
             synchronized(mTextCache) {
                 mTextCache.notifyAll();
             }
-        	Log.d(TAG, "TextFetcherTask onPostExecute done");
             return null;
         }
     }
@@ -325,7 +320,6 @@ public class TextFetcher
     		return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
     	}
         final Thread currentThread = Thread.currentThread();
-    	Log.d(TAG, "getText 2");
 
         doGetText(textNo);
         TextInfo text = mTextCache.get(textNo);
@@ -343,9 +337,7 @@ public class TextFetcher
                     return null;
                 }
             }
-        	Log.d(TAG, "getText 3b");
             text = mTextCache.get(textNo);
-        	Log.d(TAG, "getText 3c");
         }
     	Log.d(TAG, "getText 4");
 		if (i < 10) {
@@ -358,28 +350,23 @@ public class TextFetcher
     }
 
     public TextInfo getNextUnreadText() {
-    	Log.d(TAG, "getNextUnreadText 1");
         final int confNo = mKom.getSession().getCurrentConference();
         if (mPrefetchRunner == null) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
-    	Log.d(TAG, "getNextUnreadText 2");
         final TextConf tc;
         try {
             tc = mUnreadQueue.take();
         } catch (final InterruptedException e) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
         }
-    	Log.d(TAG, "getNextUnreadText 3");
         if (tc.textNo < 0) {
             mPrefetchRunner = null;
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
-    	Log.d(TAG, "getNextUnreadText 4");
         if (mKom.isLocalRead(tc.textNo)) {
             return getNextUnreadText();
         }
-    	Log.d(TAG, "getNextUnreadText 5");
         if (tc.confNo != confNo) {
             try {
                 mKom.getSession().changeConference(tc.confNo);
@@ -387,7 +374,6 @@ public class TextFetcher
                 e.printStackTrace();
             }
         }
-    	Log.d(TAG, "getNextUnreadText 6");
         return getText(tc.textNo);
     }
 
@@ -409,6 +395,7 @@ public class TextFetcher
             Log.d(TAG, "getParentToText "+e);
             e.printStackTrace();
         }
+        mKom.reconnect();
         return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
     }
 
@@ -419,7 +406,6 @@ public class TextFetcher
             mPrefetchRunner.mIsInterrupted = true;
             mPrefetchRunner.interrupt();
         }
-        mTextCache.clear();
         mUnreadQueue.clear();
         mPrefetchRunner = new PrefetchRunner(confNo);
         mPrefetchRunner.start();
@@ -429,7 +415,6 @@ public class TextFetcher
     private class CacheRelevantTask extends AsyncTask<Integer, Void, Void> {
         @Override
         protected Void doInBackground(final Integer... args) {
-        	Log.d(TAG, "CacheRelevantTask doInBackground");
             final int textNo = args[0];
             final TextInfo textInfo = getText(textNo);
             final Text text;
@@ -470,7 +455,6 @@ public class TextFetcher
                 getText(t);
             }
 
-        	Log.d(TAG, "CacheRelevantTask doInBackground done");
             return null;
         }
     }
