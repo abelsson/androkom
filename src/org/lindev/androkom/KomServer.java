@@ -533,9 +533,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     }
 
     public TextInfo getNextUnreadText() {
-        final TextInfo text = textFetcher.getNextUnreadText();
-        textFetcher.doCacheRelevant(text.getTextNo());
-        return text;
+        return textFetcher.getNextUnreadText();
     }
 
     public TextInfo getParentToText(final int textNo) {

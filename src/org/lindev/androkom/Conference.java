@@ -128,10 +128,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         protected TextInfo doInBackground(final Integer... args) {
             TextInfo text;
 
-            if (mState.hasCurrent()) {
-                mKom.markTextAsRead(mState.getCurrent().getTextNo());
-            }
-
             switch (args[0]) {
             case MESSAGE_TYPE_PARENT_TO:
                 Log.i(TAG, "Trying to get parent text of" + args[1]);
@@ -158,6 +154,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         protected void onPostExecute(final TextInfo text) 
         {
+            int curr = -1;
+            if (mState.hasCurrent()) {
+                curr = mState.getCurrent().getTextNo();
+            }
             if (text != null && text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
             }
@@ -171,6 +171,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 setTitle(mKom.getConferenceName());
             }
             setProgressBarIndeterminateVisibility(false);
+            if (curr > 0) {
+                mKom.markTextAsRead(curr);
+            }
         }
     }
 

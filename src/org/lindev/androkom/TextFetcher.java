@@ -32,6 +32,7 @@ public class TextFetcher
 
     private final KomServer mKom;
     private final Set<Integer> mSent;
+    private final Set<Integer> mRelevantCached;
     private final Map<Integer, TextInfo> mTextCache;
     private final BlockingQueue<TextConf> mUnreadQueue;
 
@@ -52,6 +53,7 @@ public class TextFetcher
     {
         this.mKom = kom;
         this.mSent = new HashSet<Integer>();
+        this.mRelevantCached = new HashSet<Integer>();
         this.mTextCache = new ConcurrentHashMap<Integer, TextInfo>();
         this.mUnreadQueue = new ArrayBlockingQueue<TextConf>(MAX_PREFETCH);
     }
@@ -334,19 +336,28 @@ public class TextFetcher
         if (mPrefetchRunner == null) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
+
+        // Get the next unread text from the queue
         final TextConf tc;
         try {
             tc = mUnreadQueue.take();
         } catch (final InterruptedException e) {
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
         }
+
+        // This is how the prefetcher marks that there are no more unread texts. mPrefetchRunner should be finished,
+        // so we can delete the reference to it.
         if (tc.textNo < 0) {
             mPrefetchRunner = null;
             return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
         }
+
+        // If the text is already locally marked as read, get the next one instead
         if (mKom.isLocalRead(tc.textNo)) {
             return getNextUnreadText();
         }
+
+        // Switch conference if the new text is from another conference
         if (tc.confNo != confNo) {
             try {
                 mKom.getSession().changeConference(tc.confNo);
@@ -354,7 +365,18 @@ public class TextFetcher
                 e.printStackTrace();
             }
         }
-        return getText(tc.textNo);
+
+        // Retrieve the text
+        final TextInfo text = getText(tc.textNo);
+
+        // Cache relevant info both for this text and for the next in the queue (if available)
+        doCacheRelevant(tc.textNo);
+        final TextConf tcNext = mUnreadQueue.peek();
+        if (tcNext != null) {
+            doCacheRelevant(tcNext.textNo);
+        }
+
+        return text;
     }
 
     public TextInfo getParentToText(final int textNo) {
@@ -444,7 +466,14 @@ public class TextFetcher
      * @param textNo
      */
     public void doCacheRelevant(final int textNo) {
-        if (textNo > 0) {
+        if (textNo <= 0) {
+            return;
+        }
+        final boolean needCaching;
+        synchronized (mRelevantCached) {
+            needCaching = mRelevantCached.add(textNo);
+        }
+        if (needCaching) {
             new CacheRelevantTask().execute(textNo);
         }
     }
