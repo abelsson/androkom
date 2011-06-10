@@ -8,6 +8,7 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
@@ -281,35 +282,45 @@ public class KomServer extends Service implements RpcEventListener,
      * Fetch a list of persons online
      * @param populatePersonsTask 
      */
-    public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT)
+    public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT, int who_type)
     {
+    	Set<Integer> friendsList=new HashSet<Integer>();
+    	
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
+        if(who_type==2) {
+        	friendsList = getFriends();
+        }
+        
         try {
             DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
 
-            for (int i = 0; i < persons.length; i++) {
-                int persNo = persons[i].getPerson();
-                String username;
-                if (persNo > 0) {
-                	try {
-                		nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
-                		username = confStat.getNameString();
-                		populatePersonsT.updateProgress((int) ((i / (float) persons.length) * 100));
-                    } catch (Exception e) {
-                    	username = getString(R.string.person)+persNo+
-                    	getString(R.string.does_not_exist);
-                    }
-                } else {
-                	username = getString(R.string.anonymous);
-                }
-                Log.i("androkom", username + " <" + persNo + ">");
+			for (int i = 0; i < persons.length; i++) {
+				int persNo = persons[i].getPerson();
+				if ((who_type == 1) || (friendsList.contains(persNo))) {
+					String username;
+					if (persNo > 0) {
+						try {
+							nu.dll.lyskom.Conference confStat = s
+									.getConfStat(persNo);
+							username = confStat.getNameString();
+							populatePersonsT
+									.updateProgress((int) ((i / (float) persons.length) * 100));
+						} catch (Exception e) {
+							username = getString(R.string.person) + persNo
+									+ getString(R.string.does_not_exist);
+						}
+					} else {
+						username = getString(R.string.anonymous);
+					}
+					Log.i("androkom", username + " <" + persNo + ">");
 
-                ConferenceInfo info = new ConferenceInfo();
-                info.id = persNo;
-                info.name = username;
+					ConferenceInfo info = new ConferenceInfo();
+					info.id = persNo;
+					info.name = username;
 
-                arr.add(info);
-            }
+					arr.add(info);
+				}
+			}
         } catch (IOException e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "fetchPersons1 "+e);
@@ -987,7 +998,9 @@ public class KomServer extends Service implements RpcEventListener,
 	 * Get a list of the IDs of all friends which are set in the elisp client
 	 * user area.
 	 */
-	public void getFriends() {
+	public Set<Integer> getFriends() {
+		Set<Integer> friendsList=new HashSet<Integer>();
+		
 		parseElispUserArea();
 		String friends = mUserAreaProps.get("kom-friends");
 		if (friends != null) {
@@ -995,8 +1008,10 @@ public class KomServer extends Service implements RpcEventListener,
 			String[] friendList = friends.split(" ");
 			for (String friend : friendList) {
 				Log.i("androkom", "friend " + friend);
+				friendsList.add(Integer.parseInt(friend));
 			}
 		}
+		return friendsList;
 	}
 
 	public void rpcEvent(RpcEvent e) {

@@ -13,9 +13,13 @@
     <item android:title="@string/createnewIM_label"
         android:alphabeticShortcut="@string/createnewIM_shortcut"
         android:id="@+id/menu_createnewIM_id"/>
-    <item android:alphabeticShortcut="@string/endast_shortcut" android:title="@string/endast_label" android:id="@+id/menu_endast_id" /><item android:title="@string/seewhoison_label"
-        android:alphabeticShortcut="@string/seewhoison_shortcut"
-        android:id="@+id/menu_seewhoison_id"></item>
+	<item android:alphabeticShortcut="@string/endast_shortcut"
+		android:title="@string/endast_label" android:id="@+id/menu_endast_id" />
+	<item android:title="@string/seewhoison_label"
+		android:alphabeticShortcut="@string/seewhoison_shortcut" android:id="@+id/menu_seewhoison_id"></item>
+	<item android:title="@string/seefriendsison_label"
+		android:alphabeticShortcut="@string/seefriendsison_shortcut"
+		android:id="@+id/menu_seefriendsison_id"></item>
     
     <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
 </menu>

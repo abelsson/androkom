@@ -97,6 +97,8 @@
     <string name="seetextagain_shortcut">T</string>
     <string name="seewhoison_label">Vilka</string>
     <string name="seewhoison_shortcut">V</string>
+    <string name="seefriendsison_label">Vilka vänner</string>
+    <string name="seefriendsison_shortcut">W</string>
     <string name="alert_dialog_text_entry">Textnummer</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Avbryt</string>

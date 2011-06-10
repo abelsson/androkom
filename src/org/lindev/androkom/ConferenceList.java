@@ -159,7 +159,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 
 		case R.id.menu_seewhoison_id:
-			seewhoison();
+			seewhoison(1);
+			return true;
+
+		case R.id.menu_seefriendsison_id:
+			seewhoison(2);
 			return true;
 
 		case R.id.menu_endast_id:
@@ -192,8 +196,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		return false;
 	}
 
-	protected void seewhoison() {
+	protected void seewhoison(int type) {
 		Intent intent = new Intent(this, WhoIsOn.class);
+		intent.putExtra("who_type", type);
 		startActivity(intent);
 	}
 

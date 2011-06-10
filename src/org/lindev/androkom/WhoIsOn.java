@@ -35,8 +35,19 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-                
+
         getApp().doBindService(this);
+        who_type = (Integer) getIntent().getExtras().get("who_type");
+
+        // Set Window Title
+        switch(who_type) {
+        	case 1 : setTitle(getString(R.string.seewhoison_label));
+        	         break;
+        	case 2 : setTitle(getString(R.string.seefriendsison_label));
+        	         break;
+        	default: setTitle("Title of window");
+        }
+        
         mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison);
         setListAdapter(mAdapter);
         
@@ -111,7 +122,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 				}
     		}
     		Log.d(TAG, "populatePersonsTask slept "+i);
-	        tPersons = fetchPersons(this);
+	        tPersons = fetchPersons(this, who_type);
 			return 1;
 		}
 
@@ -155,13 +166,13 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         }
     }
  
-    private List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT) {
+    private List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT, int whoType) {
     	List<ConferenceInfo> retlist = null;
     	
 		try {
 			if (mKom != null) {
 				if (mKom.isConnected()) {
-					retlist = mKom.fetchPersons(populatePersonsT);
+					retlist = mKom.fetchPersons(populatePersonsT, whoType);
 				} else {
 					Log.d(TAG, "Can't fetch persons when no connection");
 					mKom.reconnect();
@@ -191,4 +202,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     private List<ConferenceInfo> tPersons;
     private List<ConferenceInfo> mPersons;
     private ArrayAdapter<ConferenceInfo> mAdapter;
+    
+    private int who_type = 0; // type 1 = all, type 2 = friends
+
  }
