@@ -20,6 +20,13 @@
 	<item android:title="@string/seefriendsison_label"
 		android:alphabeticShortcut="@string/seefriendsison_shortcut"
 		android:id="@+id/menu_seefriendsison_id"></item>
+
+    <item android:title="@string/appreciation_label"
+        android:alphabeticShortcut="@string/appreciation_shortcut"
+        android:id="@+id/menu_appreciation_id"></item>
+    <item android:title="@string/abuse_label"
+        android:alphabeticShortcut="@string/abuse_shortcut"
+        android:id="@+id/menu_abuse_id"></item>
     
     <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
 </menu>

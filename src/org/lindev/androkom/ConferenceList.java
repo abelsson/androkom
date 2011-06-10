@@ -171,6 +171,16 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			startActivity(intent);
 			return true;
 			
+		case R.id.menu_appreciation_id:
+			Toast.makeText(getApplicationContext(), getString(R.string.appreciation_text),
+					Toast.LENGTH_LONG).show();
+			return true;
+			
+		case R.id.menu_abuse_id:
+			Toast.makeText(getApplicationContext(), getString(R.string.abuse_text),
+					Toast.LENGTH_LONG).show();
+			return true;
+			
 		case R.id.menu_message_log_id:
 		    intent = new Intent(this, MessageLog.class);
 		    startActivity(intent);

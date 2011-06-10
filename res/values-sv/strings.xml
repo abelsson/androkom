@@ -135,4 +135,18 @@
     <string name="header_footnote_in">"Fotnot i: "</string>
     <string name="header_footnote_to">"Fotnot till: "</string>
     
+    <string name="appreciation_label">Få uppmuntran</string>
+    <string name="appreciation_shortcut">U</string>
+    <string name="abuse_label">Få skäll</string>
+    <string name="abuse_shortcut">Ä</string>
+    <string name="appreciation_text">"Du är mycket vacker och mycket klok. Många älskar dig både till kropp
+och till själ. Du kommer att överösas med rikedom och få stor lycka i ditt
+liv. Var glad att just du är du. Det har du all anledning att vara.
+Fantomen önskar dig en bra dag."</string>
+
+    <string name="abuse_text">"Du är mycket ful och mycket dum. Många hatar dig både till kropp
+och till själ. Du kommer att överösas med sjukdomar och inte få någon som
+helst lycka i ditt liv. Du borde verkligen ta dig samman och göra något av
+ditt liv även om det inte är mycket att starta med.
+Guran vill helst sätta en giftpil i dig."</string>
 </resources>
