@@ -141,17 +141,9 @@
     <string name="appreciation_shortcut">H</string>
     <string name="abuse_label">(Please) kick my butt</string>
     <string name="abuse_shortcut">B</string>
-    <string name="appreciation_text">"You are a very special person, beautiful and wise, respected by
-everybody around you. You are doing a splendid job. Many people love
-you, body and soul. You make life easier for others. You are a very
-warm and sensitive person.
-
+    <string name="appreciation_text">"You are a very special person, beautiful and wise, respected by everybody around you. You are doing a splendid job. Many people love you, body and soul. You make life easier for others. You are a very warm and sensitive person. 
 Be proud of being You! You have a very good reason."</string>
 
-    <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around
-you. You are doing a worthless job. Many people hate you, body and
-soul. You make life harder for others. You are a very cold and
-unfeeling person.
-
+    <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around you. You are doing a worthless job. Many people hate you, body and soul. You make life harder for others. You are a very cold and unfeeling person.
 Be ashamed of being You! You have a very good reason."</string>
 </resources>
