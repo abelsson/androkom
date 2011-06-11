@@ -19,6 +19,7 @@ import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
+import org.lindev.androkom.text.TextFetcher;
 
 import android.app.Service;
 import android.content.Intent;
@@ -209,7 +210,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
         super.onDestroy();
     }
 
-    void reconnect() {
+    public void reconnect() {
     	Log.d(TAG, "KomServer trying to reconnect");
         try {
             if (s.getState() == Session.STATE_LOGIN)
@@ -527,9 +528,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
     public TextInfo getKomText(final int textNo) {
-        final TextInfo text = textFetcher.getText(textNo);
-        textFetcher.doCacheRelevant(textNo);
-        return text;
+        return textFetcher.getKomText(textNo);
     }
 
     public TextInfo getNextUnreadText() {
@@ -537,9 +536,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     }
 
     public TextInfo getParentToText(final int textNo) {
-        final TextInfo text = textFetcher.getParentToText(textNo);
-        textFetcher.doCacheRelevant(text.getTextNo());
-        return text;
+        return textFetcher.getParentToText(textNo);
     }
 
     private final ReadMarker readMarker = new ReadMarker(this);
