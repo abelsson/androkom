@@ -303,8 +303,6 @@ public class KomServer extends Service implements RpcEventListener,
 							nu.dll.lyskom.Conference confStat = s
 									.getConfStat(persNo);
 							username = confStat.getNameString();
-							populatePersonsT
-									.updateProgress((int) ((i / (float) persons.length) * 100));
 						} catch (Exception e) {
 							username = getString(R.string.person) + persNo
 									+ getString(R.string.does_not_exist);
@@ -320,6 +318,8 @@ public class KomServer extends Service implements RpcEventListener,
 
 					arr.add(info);
 				}
+				populatePersonsT
+				.updateProgress((int) ((i / (float) persons.length) * 100));
 			}
         } catch (IOException e) {
             // TODO Auto-generated catch block

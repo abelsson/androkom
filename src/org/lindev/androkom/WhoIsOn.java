@@ -36,6 +36,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     {
         super.onCreate(savedInstanceState);
 
+		setContentView(R.layout.whoison);
         getApp().doBindService(this);
         who_type = (Integer) getIntent().getExtras().get("who_type");
 
@@ -48,7 +49,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         	default: setTitle("Title of window");
         }
         
-        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison);
+        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison_person);
         setListAdapter(mAdapter);
         
         ListView lv = getListView();

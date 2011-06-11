@@ -99,6 +99,7 @@
     <string name="seepresentation_shortcut">P</string>
     <string name="seewhoison_label">See who is on</string>
     <string name="seewhoison_shortcut">W</string>
+    <string name="no_friends_online">No friends online</string>
     <string name="seefriendsison_label">See online friends</string>
     <string name="seefriendsison_shortcut">V</string>
     <string name="alert_dialog_text_entry">Enter text number</string>
