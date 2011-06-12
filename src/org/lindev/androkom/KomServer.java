@@ -1026,6 +1026,14 @@ public class KomServer extends Service implements RpcEventListener,
 
 	}
 
+	public void setLatestIMSender(String name) {
+		latestIMSender = name;
+	}
+	
+	public String getLatestIMSender() {
+		return latestIMSender;
+	}
+	
 	public boolean sendMessage(int recipient, String message, boolean block)
 			throws IOException, RpcFailure {
 		return s.sendMessage(recipient, message, block);
@@ -1092,6 +1100,8 @@ public class KomServer extends Service implements RpcEventListener,
 	private String re_password; // for reconnect
 	private String re_server; // for reconnect
 
+	private String latestIMSender=""; // for creating new IM
+	
 	private boolean hidden_session = !RELEASE_BUILD;
 
 	AsyncMessages asyncMessagesHandler;

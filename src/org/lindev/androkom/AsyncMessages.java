@@ -131,6 +131,8 @@ public class AsyncMessages implements AsynchMessageReceiver
             b.putString("from", mKom.getConferenceName(params[1].intValue()));
             b.putString("to", mKom.getConferenceName(params[0].intValue()));
             b.putString("msg", ((Hollerith) params[2]).getContentString());
+            
+            mKom.setLatestIMSender(b.getString("from"));
             break;
 
         case nu.dll.lyskom.Asynch.new_text_old:

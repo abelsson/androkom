@@ -174,6 +174,8 @@ public class CreateNewIM extends Activity implements ServiceConnection
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
 		mKom = ((KomServer.LocalBinder)service).getService();		
+        
+        mRecipient.setText(mKom.getLatestIMSender());
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
