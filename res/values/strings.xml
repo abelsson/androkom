@@ -124,9 +124,9 @@
     
     <string name="conf_name">Conference:</string>
     <string name="num_texts">Number of texts:</string>
-    <string name="do_endast">Endast!</string>
-    <string name="endast_label">Endast</string>
-    <string name="endast_shortcut">E</string>
+    <string name="do_endast">Only the last!</string>
+    <string name="endast_label">Only the last</string>
+    <string name="endast_shortcut">O</string>
     
     <string name="message_log_label">Message Log</string>
     <string name="no_messages">No messages</string>
