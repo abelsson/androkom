@@ -2,6 +2,8 @@ package org.lindev.androkom.text;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
@@ -58,7 +60,9 @@ class TextCache {
             } else {
                 username = mKom.getString(R.string.anonymous);
             }
-            String CreationTimeString = text.getCreationTimeString();
+            Date CreationTime = text.getCreationTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
+            String CreationTimeString = sdf.format(CreationTime);
             String SubjectString = null;
             try {
                 SubjectString = text.getSubjectString();
@@ -79,7 +83,7 @@ class TextCache {
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Mottagare: ");
+                        headersString.append(mKom.getString(R.string.androkom_header_recipient));
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
@@ -94,7 +98,7 @@ class TextCache {
                 items = text.getCcRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kopiemottagare: ");
+                        headersString.append(mKom.getString(R.string.header_cc_recipient));
                         try {
                             nu.dll.lyskom.Conference confStat = mKom.getSession()
                                     .getConfStat(items[i]);
@@ -109,7 +113,7 @@ class TextCache {
                 items = text.getCommented();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kommentar till: ");
+                        headersString.append(mKom.getString(R.string.header_comment_to));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -117,7 +121,7 @@ class TextCache {
                 items = text.getComments();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Kommentar i: ");
+                        headersString.append(mKom.getString(R.string.header_comment_in));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -125,7 +129,7 @@ class TextCache {
                 items = text.getFootnotes();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Fotnot i: ");
+                        headersString.append(mKom.getString(R.string.header_footnote_in));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -133,7 +137,7 @@ class TextCache {
                 items = text.getFootnoted();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append("Fotnot till: ");
+                        headersString.append(mKom.getString(R.string.header_footnote_to));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
