@@ -48,9 +48,9 @@ public class KomServer extends Service implements RpcEventListener,
      * Class for clients to access.  Because we assume this service always
      * runs in the same process as its clients, we don't deal with IPC.
      */
-    public class LocalBinder extends Binder 
+    public class LocalBinder extends Binder
     {
-        KomServer getService() 
+        KomServer getService()
         {
             return KomServer.this;
         }
