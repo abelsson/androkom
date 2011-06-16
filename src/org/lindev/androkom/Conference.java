@@ -129,6 +129,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             Log.d(TAG, "LoadMessageTask doInBackground BEGIN");
             TextInfo text = null;
 
+            if (mState.hasCurrent()) {
+                mKom.markTextAsRead(mState.getCurrent().getTextNo());
+            }
+
             switch (args[0]) {
             case MESSAGE_TYPE_PARENT_TO:
                 Log.i(TAG, "Trying to get parent text of" + args[1]);
