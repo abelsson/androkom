@@ -541,21 +541,15 @@ public class KomServer extends Service implements RpcEventListener,
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
     public TextInfo getKomText(final int textNo) {
-        final TextInfo text = textFetcher.getText(textNo);
-        textFetcher.doCacheRelevant(textNo);
-        return text;
+        return textFetcher.getKomText(textNo);
     }
 
     public TextInfo getNextUnreadText() {
-        final TextInfo text = textFetcher.getNextUnreadText();
-        textFetcher.doCacheRelevant(text.getTextNo());
-        return text;
+        return textFetcher.getNextUnreadText();
     }
 
     public TextInfo getParentToText(final int textNo) {
-        final TextInfo text = textFetcher.getParentToText(textNo);
-        textFetcher.doCacheRelevant(text.getTextNo());
-        return text;
+        return textFetcher.getParentToText(textNo);
     }
 
     private final ReadMarker readMarker = new ReadMarker(this);
@@ -958,9 +952,12 @@ public class KomServer extends Service implements RpcEventListener,
 	 * Get a property of presence-messages
 	 */
 	public boolean getPresenceMessages() {
+	    boolean presence_messages = true;
 		parseCommonUserArea();
 		String messages = mUserAreaProps.get("presence-messages");
-		boolean presence_messages = (messages.compareTo("1") == 0);
+		if (messages != null) {
+		    presence_messages = (messages.compareTo("1") == 0);
+		}
 		return presence_messages;
 	}
 
