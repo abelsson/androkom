@@ -41,9 +41,20 @@ public class CreateNewIM extends Activity implements ServiceConnection
         setContentView(R.layout.createnew_im);
 
         getApp().doBindService(this);
+
+        Bundle extras = getIntent().getExtras();
+        String recipient = null;
+        if (extras != null) {
+            recipient = (String) extras.get("recipient");
+        }
         
         mRecipient = (EditText) findViewById(R.id.recipient);
         mBody = (EditText) findViewById(R.id.body);
+
+        if (recipient != null) {
+            Log.d(TAG, "trying to set recipient:"+recipient);
+            mRecipient.setText(recipient);
+        }
 
         Button confirmButton = (Button) findViewById(R.id.send);
         Button cancelButton = (Button) findViewById(R.id.cancel);

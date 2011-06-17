@@ -3,9 +3,12 @@ package org.lindev.androkom;
 import java.util.List;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -86,15 +89,47 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
      * Called when a person has been clicked. Switch to send message or mail?
      */
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) 
+    protected void onListItemClick(ListView l, View v, int position, long id)
     {
-        Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();    
-        
-        //Intent intent = new Intent(this, Conference.class);
-        //intent.putExtra("conference-id", mConferences.get((int)id).id);
-        //startActivity(intent);
-    }
-    
+        selected_user = ((ConferenceInfo) l.getItemAtPosition(position)).name;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(WhoIsOn.this);
+        builder.setTitle(getString(R.string.pick_a_name));
+        String vals[] = {
+                getString(R.string.createnewmail_label),
+                getString(R.string.createnewIM_label)
+                };
+        builder.setSingleChoiceItems(vals, -1,
+                new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int item)
+                    {
+                        dialog.cancel();
+                        Intent intent = null;
+                        switch (item)
+                        {
+                        case 0: // mail
+                            Log.d(TAG, "Trying to create mail");
+                            intent = new Intent(getBaseContext(), CreateNewText.class);
+                            intent.putExtra("recipient", selected_user);
+                            intent.putExtra("recipient_type", 2);
+                            startActivity(intent);
+                            finish();
+                            break;
+                        case 1: // IM
+                            Log.d(TAG, "Trying to create IM");
+                            intent = new Intent(getBaseContext(), CreateNewIM.class);
+                            intent.putExtra("recipient", selected_user);
+                            startActivity(intent);
+                            finish();
+                            break;
+                        }
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+    }    
 
     /**
      * Attempt to get all persons online.
@@ -203,6 +238,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     private List<ConferenceInfo> tPersons;
     private List<ConferenceInfo> mPersons;
     private ArrayAdapter<ConferenceInfo> mAdapter;
+    
+    private String selected_user = null;
     
     private int who_type = 0; // type 1 = all, type 2 = friends
 

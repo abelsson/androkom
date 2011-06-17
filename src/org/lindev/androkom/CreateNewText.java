@@ -39,6 +39,7 @@ public class CreateNewText extends Activity implements ServiceConnection
 
         getApp().doBindService(this);
         recipient_type = (Integer) getIntent().getExtras().get("recipient_type");
+        String recipient = (String) getIntent().getExtras().get("recipient");
         
         // Set Window Title
         switch(recipient_type) {
@@ -53,6 +54,10 @@ public class CreateNewText extends Activity implements ServiceConnection
         mSubject = (EditText) findViewById(R.id.subject);
         mBody = (EditText) findViewById(R.id.body);
 
+        if (recipient != null) {
+            mRecipient.setText(recipient);
+        }
+        
         Button confirmButton = (Button) findViewById(R.id.send);
         Button cancelButton = (Button) findViewById(R.id.cancel);
 
