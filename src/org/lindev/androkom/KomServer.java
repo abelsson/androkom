@@ -417,6 +417,26 @@ public class KomServer extends Service implements RpcEventListener,
 	}
 
     /**
+     * Return number of unreads for current conference.
+     */
+    public int getConferenceUnreadsNo() {
+        int confNo = s.getCurrentConference();
+        if (confNo > 0) {
+            try {
+                return s.getUnreadCount(confNo);
+            } catch (RpcFailure e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+        Log.d(TAG, "getConferenceUnreadsNo no current conference (or exception)");
+        return 0;
+    }
+
+    /**
      * Set currently active conference.
      */
     public void setConference(final int confNo) {

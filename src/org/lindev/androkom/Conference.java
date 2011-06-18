@@ -173,7 +173,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
                 TextView widget = (TextView) mSwitcher.getCurrentView();
                 widget.scrollTo(0, 0);
-                setTitle(mKom.getConferenceName());
+                setTitle(mKom.getConferenceName()+" <"+mKom.getConferenceUnreadsNo()+">");
             } else {
             	Log.d(TAG, "LoadMessageTask onPostExecute text=null");
             }
