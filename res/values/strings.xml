@@ -130,6 +130,7 @@
     
     <string name="message_log_label">Message Log</string>
     <string name="no_messages">No messages</string>
+    <string name="im_conversations_list_label">IM Conversations</string>
 
     <string name="androkom_header_recipient">"Recipient: "</string>
     <string name="header_cc_recipient">"CarbonCopy: "</string>
