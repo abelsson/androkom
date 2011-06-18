@@ -30,7 +30,7 @@ import android.widget.TextView;
 public class IMConversation extends ListActivity implements ServiceConnection, Observer, OnClickListener {
     public static final String TAG = "Androkom";
 
-    private static final int MAX_MESSAGES = 5;
+    private static final int MAX_MESSAGES = 50;
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;

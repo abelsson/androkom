@@ -137,19 +137,19 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     public Cursor getConversations(final int max) {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
-        final String limit = Integer.toString(max);
         return db.query(TABLE_CONV, SELECT_CONV, null, null, null, null, ORDER_BY_CONV, null);
     }
 
-    private static final String[] SELECT_MSG = { BaseColumns._ID, COL_FROM_STR, COL_TO_STR, COL_MSG };
+    private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_STR + ", " + COL_TO_STR + ", " + COL_MSG;
     private static final String WHERE_MSG = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
-    private static final String ORDER_BY_MSG = BaseColumns._ID;
+    private static final String QUERY_MSG = "SELECT " + SELECT_MSG + " FROM (SELECT " + SELECT_MSG + " FROM " +
+            TABLE_MSG + " WHERE " + WHERE_MSG + " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?) ORDER BY " +
+            BaseColumns._ID + " ASC";
 
     public Cursor getMessages(final int convId, final int max) {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
-        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
-        final String limit = Integer.toString(max);
-        return db.query(TABLE_MSG, SELECT_MSG, WHERE_MSG, whereArgs, null, null, ORDER_BY_MSG, null);
+        final String[] args = { Integer.toString(mKom.getUserId()), Integer.toString(convId), Integer.toString(max) };
+        return db.rawQuery(QUERY_MSG, args);
     }
 
     public void asyncMessage(final Message msg) {
