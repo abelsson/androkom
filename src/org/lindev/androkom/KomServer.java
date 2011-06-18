@@ -19,6 +19,7 @@ import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
+import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.text.TextFetcher;
 
 import android.app.Service;
@@ -48,7 +49,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
      */
     public class LocalBinder extends Binder 
     {
-        KomServer getService() 
+        public KomServer getService()
         {
             return KomServer.this;
         }
@@ -157,10 +158,12 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     public void onCreate() 
     {
         super.onCreate();
-        
+
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
         asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
-        
+        imLogger = new IMLogger(this);
+        asyncMessagesHandler.subscribe(imLogger);
+
         if (s == null) {
             s = new Session();
             s.addRpcEventListener(this);
@@ -185,7 +188,7 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     @Override
     public void onDestroy() 
     {
-
+        imLogger.close();
         // Tell the user we stopped.
         Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
 
@@ -326,15 +329,15 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     /**
      * Add a new subscriber who's interested in asynchronous messages.
      */
-    void addAsyncSubscriber(AsyncMessageSubscriber sub) {
-    	asyncMessagesHandler.subscribe(sub);
+    public void addAsyncSubscriber(AsyncMessageSubscriber sub) {
+        asyncMessagesHandler.subscribe(sub);
     }
     
     /**
      * Add a new subscriber who's interested in asynchronous messages.
      */
-    void removeAsyncSubscriber(AsyncMessageSubscriber sub) {
-    	asyncMessagesHandler.unsubscribe(sub);
+    public void removeAsyncSubscriber(AsyncMessageSubscriber sub) {
+        asyncMessagesHandler.unsubscribe(sub);
     }
 
     /**
@@ -968,7 +971,9 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
 
     public boolean sendMessage(int recipient, String message, boolean block)
     throws IOException, RpcFailure {
-    	return s.sendMessage(recipient, message, block);
+        boolean res = s.sendMessage(recipient, message, block);
+        imLogger.sendMessage(recipient, message);
+        return res;
     }
 
     public void setShowFullHeaders(final boolean h) {
@@ -1000,6 +1005,10 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     		e.printStackTrace();
     	}
     	return null;
+    }
+
+    public int getUserId() {
+        return re_userid;
     }
 
     public boolean isConnected() {
@@ -1034,4 +1043,5 @@ public class KomServer extends Service implements RpcEventListener, nu.dll.lysko
     private boolean hidden_session = !RELEASE_BUILD;
     
     AsyncMessages asyncMessagesHandler;
+    public IMLogger imLogger;
 }

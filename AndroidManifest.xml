@@ -70,7 +70,9 @@
         <!--  Connection to the KOM server -->
         <service android:name=".KomServer"
         		 android:label="@string/app_name">        	
-        </service>        
+        </service>
+        <activity android:name=".gui.IMConversationList" android:label="@string/im_conversations_list_labe"></activity>
+        <activity android:name=".gui.IMConversation"></activity>
 
     </application>
 

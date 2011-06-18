@@ -122,6 +122,8 @@ public class AsyncMessages implements AsynchMessageReceiver
             break;
 
         case nu.dll.lyskom.Asynch.send_message:
+            b.putInt("from-id", params[1].intValue());
+            b.putInt("to-id", params[0].intValue());
             b.putString("from", mKom.getConferenceName(params[1].intValue()));
             b.putString("to", mKom.getConferenceName(params[0].intValue()));
             b.putString("msg", ((Hollerith) params[2]).getContentString());

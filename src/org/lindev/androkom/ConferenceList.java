@@ -7,6 +7,7 @@ import java.util.TimerTask;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.gui.IMConversationList;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -170,7 +171,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 			
 		case R.id.menu_message_log_id:
-		    intent = new Intent(this, MessageLog.class);
+		    intent = new Intent(this, IMConversationList.class);
 		    startActivity(intent);
 		    return true;
 
