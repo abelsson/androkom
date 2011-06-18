@@ -68,11 +68,10 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         @Override
         public void bindView(final View view, final Context context, final Cursor cursor) {
             final String fromStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_FROM_STR));
-            final String toStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_TO_STR));
             final String msg = cursor.getString(cursor.getColumnIndex(IMLogger.COL_MSG));
 
             final TextView tv = (TextView) view;
-            tv.setText(fromStr + " says " + msg + " to " + toStr);
+            tv.setText(fromStr + " says " + msg);
         }
     }
 
@@ -102,15 +101,15 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-
         requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+
         final Bundle data = getIntent().getExtras();
         mConvId = data.getInt("conversation-id");
         setTitle(data.getString("conversation-str"));
 
         setContentView(R.layout.im_conversation_layout);
-        mTextField = (EditText) findViewById(R.id.message);
         mSendButton = (Button) findViewById(R.id.send);
+        mTextField = (EditText) findViewById(R.id.message);
 
         mSendButton.setOnClickListener(this);
 

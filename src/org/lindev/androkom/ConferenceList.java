@@ -155,7 +155,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 
 		case R.id.menu_createnewIM_id:
-			intent = new Intent(this, CreateNewIM.class);
+			intent = new Intent(this, IMConversationList.class);
 			startActivity(intent);
 			return true;
 
@@ -183,7 +183,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 			
 		case R.id.menu_message_log_id:
-		    intent = new Intent(this, IMConversationList.class);
+		    intent = new Intent(this, MessageLog.class);
 		    startActivity(intent);
 		    return true;
 

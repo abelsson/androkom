@@ -142,8 +142,9 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_STR + ", " + COL_TO_STR + ", " + COL_MSG;
     private static final String WHERE_MSG = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
-    private static final String QUERY_MSG = "SELECT " + SELECT_MSG + " FROM (SELECT " + SELECT_MSG + " FROM " +
-            TABLE_MSG + " WHERE " + WHERE_MSG + " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?) ORDER BY " +
+    private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE_MSG +
+            " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?";
+    private static final String QUERY_MSG = "SELECT " + SELECT_MSG + " FROM (" + SUBQUERY_MSG + ") ORDER BY " +
             BaseColumns._ID + " ASC";
 
     public Cursor getMessages(final int convId, final int max) {
