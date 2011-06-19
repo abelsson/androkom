@@ -142,7 +142,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
             this.dialog.setCancelable(true);
             this.dialog.setIndeterminate(false);
             this.dialog.setMessage(getString(R.string.loading));
-            this.dialog.setMax(100);
+            this.dialog.setMax(1);
             this.dialog.show();
         }
 
@@ -162,6 +162,10 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 			return 1;
 		}
 
+        void changeMax(int val) {
+            this.dialog.setMax(val);
+        }
+        
 		void updateProgress(int percent) {
 			publishProgress(percent);
 		}

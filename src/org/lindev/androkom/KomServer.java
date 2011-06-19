@@ -298,7 +298,8 @@ public class KomServer extends Service implements RpcEventListener,
         
         try {
             DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
-
+            populatePersonsT.changeMax(persons.length);
+            
 			for (int i = 0; i < persons.length; i++) {
 				int persNo = persons[i].getPerson();
 				if ((who_type == 1) || (friendsList.contains(persNo))) {
