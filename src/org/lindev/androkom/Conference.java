@@ -173,9 +173,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
                 TextView widget = (TextView) mSwitcher.getCurrentView();
                 widget.scrollTo(0, 0);
-                setTitle(mKom.getConferenceName()+" <"+mKom.getConferenceUnreadsNo()+">");
+                setTitle(mKom.getConferenceName());
             } else {
-            	Log.d(TAG, "LoadMessageTask onPostExecute text=null");
+                Log.d(TAG, "LoadMessageTask onPostExecute text=null");
             }
             setProgressBarIndeterminateVisibility(false);
             if (curr > 0) {
@@ -633,7 +633,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         return true;
     }
 
-
+    private static final Pattern digits = Pattern.compile("\\d{5,}");
     public Spannable formatText(TextInfo text, boolean ShowFullHeaders)
     {
         String[] lines = text.getBody().split("\n");
@@ -685,7 +685,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         //Log.i(TAG, body.toString());
 
         Spannable spannedText = (Spannable) Html.fromHtml(body.toString());
-        addLinks(spannedText, Pattern.compile("\\d{5,}"), null);
+        addLinks(spannedText, digits, null);
         Linkify.addLinks(spannedText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
         
         return spannedText;
