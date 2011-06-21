@@ -13,14 +13,16 @@ import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.provider.BaseColumns;
 import android.util.AttributeSet;
 import android.view.View;
-import android.view.Window;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
+import android.view.Window;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
@@ -31,12 +33,15 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     public static final String TAG = "Androkom";
 
     private static final int MAX_MESSAGES = 50;
+    private static final int BACKGROUND_COLOR_READ = Color.BLACK;
+    private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private int mConvId = -1;
     private CursorAdapter mAdapter = null;
     private Cursor mCursor = null;
+    private int mLatestSeen = -1;
 
     private Button mSendButton = null;
     private EditText mTextField = null;
@@ -67,10 +72,17 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
         @Override
         public void bindView(final View view, final Context context, final Cursor cursor) {
+            final int msgId = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
             final String fromStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_FROM_STR));
             final String msg = cursor.getString(cursor.getColumnIndex(IMLogger.COL_MSG));
 
             final TextView tv = (TextView) view;
+            if (msgId <= mLatestSeen) {
+                tv.setBackgroundColor(BACKGROUND_COLOR_READ);
+            }
+            else {
+                tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
+            }
             tv.setText(fromStr + " says " + msg);
         }
     }
@@ -106,6 +118,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         final Bundle data = getIntent().getExtras();
         mConvId = data.getInt("conversation-id");
         setTitle(data.getString("conversation-str"));
+        mLatestSeen = data.getInt("latest-seen");
 
         setContentView(R.layout.im_conversation_layout);
         mSendButton = (Button) findViewById(R.id.send);
@@ -158,6 +171,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
             public void run() {
                 if (requery) {
                     mCursor.requery();
+                    mIMLogger.updateLatestSeen(mConvId);
                 }
                 getListView().setSelection(getListView().getCount() - 1);
             }
@@ -177,6 +191,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mKom = ((KomServer.LocalBinder) service).getService();
         mIMLogger = mKom.imLogger;
         mCursor = mIMLogger.getMessages(mConvId, MAX_MESSAGES);
+        mIMLogger.updateLatestSeen(mConvId);
         mAdapter = new IMConvCursorAdapter(this, mCursor);
         mIMLogger.addObserver(this);
         setListAdapter(mAdapter);

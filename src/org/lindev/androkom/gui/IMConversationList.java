@@ -19,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -37,6 +38,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     public static final String TAG = "Androkom";
 
     private static final int MAX_CONVERSATIONS = 50;
+    private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
+    private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
@@ -76,8 +79,16 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             final int convId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_CONV_ID));
             final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
             final int numMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_NUM_MSG));
+            final int latestMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_MSG));
+            final int latestSeen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_SEEN));
 
             final TextView tv = (TextView) view;
+            if (latestMsg == latestSeen) {
+                tv.setBackgroundColor(BACKGROUND_COLOR_ALL_READ);
+            }
+            else {
+                tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
+            }
             tv.setText("(" + numMsg + ") " + convStr + " <" + convId + ">");
         }
     }
@@ -253,10 +264,12 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         final Cursor cursor = (Cursor) listView.getItemAtPosition(position);
         final int convId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_CONV_ID));
         final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
+        final int latestSeen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_SEEN));
 
         final Intent intent = new Intent(this, IMConversation.class);
         intent.putExtra("conversation-id", convId);
         intent.putExtra("conversation-str", convStr);
+        intent.putExtra("latest-seen", latestSeen);
 
         startActivity(intent);
     }
