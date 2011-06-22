@@ -39,7 +39,6 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private int mConvId = -1;
-    private CursorAdapter mAdapter = null;
     private Cursor mCursor = null;
     private int mLatestSeen = -1;
 
@@ -196,9 +195,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mCursor = mIMLogger.getMessages(mConvId, MAX_MESSAGES);
         mLatestSeen = mIMLogger.getLatestSeen(mConvId);
         mIMLogger.updateLatestSeen(mConvId);
-        mAdapter = new IMConvCursorAdapter(this, mCursor);
+        setListAdapter(new IMConvCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
-        setListAdapter(mAdapter);
         updateView(false);
     }
 

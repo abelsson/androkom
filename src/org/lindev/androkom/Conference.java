@@ -5,6 +5,7 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import org.lindev.androkom.KomServer.TextInfo;
+import org.lindev.androkom.gui.IMConversationList;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -511,8 +512,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
 			return true;
 
-		case R.id.menu_createnewIM_id:
-            intent = new Intent(this, CreateNewIM.class);    
+		case R.id.menu_messaging_id:
+            intent = new Intent(this, IMConversationList.class);
             startActivity(intent);
 			return true;
 

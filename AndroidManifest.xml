@@ -27,10 +27,6 @@
         </activity>
         
          <!--  Create a KOM IM -->
-         <activity android:name=".CreateNewIM"       
-                   android:label="@string/create_new_IM"
-                   android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
         
          <!--  Who Is On -->
          <activity android:name=".WhoIsOn"       

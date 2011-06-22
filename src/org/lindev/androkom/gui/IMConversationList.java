@@ -46,7 +46,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
-    private CursorAdapter mAdapter = null;
     private Cursor mCursor = null;
 
     private Button mSendButton = null;
@@ -278,9 +277,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mKom = ((KomServer.LocalBinder) service).getService();
         mIMLogger = mKom.imLogger;
         mCursor = mIMLogger.getConversations(MAX_CONVERSATIONS);
-        mAdapter = new IMConvListCursorAdapter(this, mCursor);
+        setListAdapter(new IMConvListCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
-        setListAdapter(mAdapter);
         updateView(false);
     }
 

@@ -153,8 +153,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     }
 
     private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_STR + ", " + COL_TO_STR + ", " + COL_MSG;
-    private static final String WHERE_MSG = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
-    private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE_MSG +
+    private static final String WHERE = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
+    private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE +
             " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?";
     private static final String QUERY_MSG = "SELECT " + SELECT_MSG + " FROM (" + SUBQUERY_MSG + ") ORDER BY " +
             BaseColumns._ID + " ASC";
@@ -170,7 +170,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public int getLatestSeen(final int convId) {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
         final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
-        final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE_MSG, whereArgs, null, null, null);
+        final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE, whereArgs, null, null, null);
         cursor.moveToFirst();
         if (cursor.isAfterLast()) {
             return -1;
@@ -179,12 +179,12 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     }
 
     private static final String QUERY_UPDATE_LATEST = "UPDATE " + TABLE_CONV + " SET " + COL_LATEST_SEEN  + " = " +
-            COL_LATEST_MSG + " WHERE " + WHERE_MSG;
+            COL_LATEST_MSG + " WHERE " + WHERE;
 
     public void updateLatestSeen(final int convId) {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
-        final String[] args = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
-        db.execSQL(QUERY_UPDATE_LATEST, args);
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        db.execSQL(QUERY_UPDATE_LATEST, whereArgs);
     }
 
     public void asyncMessage(final Message msg) {
