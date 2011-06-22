@@ -83,6 +83,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
         @Override
         public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+            // This is the Easy Ugly Fix. Deal with it or implement it yourself. :)
             db.execSQL("DROP TABLE " + TABLE_MSG);
             db.execSQL("DROP TABLE " + TABLE_CONV);
             onCreate(db);
@@ -134,8 +135,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         db.insertWithOnConflict(TABLE_CONV, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
         // Update conversation record
-        final Object[] updateArgs =
-            { convStr, Long.valueOf(rowId), Integer.valueOf(myId), Integer.valueOf(convId) };
+        final Object[] updateArgs = { convStr, Long.valueOf(rowId), Integer.valueOf(myId), Integer.valueOf(convId) };
         db.execSQL(UPDATE_CONV, updateArgs);
 
         // Notify observers that the database has changed. Send the conversation id as argument
@@ -165,8 +165,21 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         return db.rawQuery(QUERY_MSG, args);
     }
 
+    private static final String[] COLS_LATEST_SEEN = { COL_LATEST_SEEN };
+
+    public int getLatestSeen(final int convId) {
+        final SQLiteDatabase db = dbHelper.getReadableDatabase();
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE_MSG, whereArgs, null, null, null);
+        cursor.moveToFirst();
+        if (cursor.isAfterLast()) {
+            return -1;
+        }
+        return cursor.getInt(cursor.getColumnIndex(COL_LATEST_SEEN));
+    }
+
     private static final String QUERY_UPDATE_LATEST = "UPDATE " + TABLE_CONV + " SET " + COL_LATEST_SEEN  + " = " +
-            COL_LATEST_MSG + " WHERE " + COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
+            COL_LATEST_MSG + " WHERE " + WHERE_MSG;
 
     public void updateLatestSeen(final int convId) {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();

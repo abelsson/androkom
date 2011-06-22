@@ -41,6 +41,9 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
 
+    static final String INTENT_CONVERSATION_ID = "conversation-id";
+    static final String INTENT_CONVERSATION_STR = "conversation-str";
+
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private CursorAdapter mAdapter = null;
@@ -100,7 +103,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         @Override
         protected void onPreExecute() {
-            dialog.setCancelable(true);
+            dialog.setCancelable(false);
             dialog.setIndeterminate(true);
             dialog.setMessage("Resolving recipient ...");
             dialog.show();
@@ -149,15 +152,14 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         @Override
         protected void onPreExecute() {
-            dialog.setCancelable(true);
+            dialog.setCancelable(false);
             dialog.setIndeterminate(true);
             dialog.setMessage("Sending message ...");
             dialog.show();
         }
 
         @Override
-        protected ConfInfo doInBackground(final Object... args)
-        {
+        protected ConfInfo doInBackground(final Object... args) {
             final ConfInfo conf = (ConfInfo) args[0];
             final String msg = (String) args[1];
             try {
@@ -173,8 +175,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         protected void onPostExecute(final ConfInfo conf) {
             if (conf != null) {
                 final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
-                intent.putExtra("conversation-id", conf.confNo);
-                intent.putExtra("conversation-str", conf.getNameString());
+                intent.putExtra(INTENT_CONVERSATION_ID, conf.confNo);
+                intent.putExtra(INTENT_CONVERSATION_STR, conf.getNameString());
                 mRecipientField.setText("");
                 mMessageField.setText("");
                 startActivity(intent);
@@ -264,12 +266,10 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         final Cursor cursor = (Cursor) listView.getItemAtPosition(position);
         final int convId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_CONV_ID));
         final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
-        final int latestSeen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_SEEN));
 
         final Intent intent = new Intent(this, IMConversation.class);
-        intent.putExtra("conversation-id", convId);
-        intent.putExtra("conversation-str", convStr);
-        intent.putExtra("latest-seen", latestSeen);
+        intent.putExtra(INTENT_CONVERSATION_ID, convId);
+        intent.putExtra(INTENT_CONVERSATION_STR, convStr);
 
         startActivity(intent);
     }

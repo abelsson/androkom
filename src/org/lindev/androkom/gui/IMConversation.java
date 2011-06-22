@@ -9,6 +9,7 @@ import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.ServiceConnection;
@@ -22,7 +23,6 @@ import android.util.AttributeSet;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
-import android.view.Window;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
@@ -88,16 +88,21 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     private class SendMessageTask extends AsyncTask<String, Void, Void> {
+        private final ProgressDialog dialog = new ProgressDialog(IMConversation.this);
+
         @Override
         protected void onPreExecute() {
-            setProgressBarIndeterminateVisibility(true);
+            dialog.setCancelable(false);
+            dialog.setIndeterminate(true);
+            dialog.setMessage("Sending message ...");
+            dialog.show();
         }
 
         @Override
-        protected Void doInBackground(final String... args)
-        {
+        protected Void doInBackground(final String... args) {
+            final String msg = (String) args[0];
             try {
-                mKom.sendMessage(mConvId, args[0], true);
+                mKom.sendMessage(mConvId, msg, true);
             } catch (final Exception e) {
                 e.printStackTrace();
             }
@@ -106,19 +111,18 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
         @Override
         protected void onPostExecute(final Void v) {
-            setProgressBarIndeterminateVisibility(false);
+            mTextField.setText("");
+            dialog.dismiss();
         }
     }
 
     @Override
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
 
         final Bundle data = getIntent().getExtras();
-        mConvId = data.getInt("conversation-id");
-        setTitle(data.getString("conversation-str"));
-        mLatestSeen = data.getInt("latest-seen");
+        mConvId = data.getInt(IMConversationList.INTENT_CONVERSATION_ID);
+        setTitle(data.getString(IMConversationList.INTENT_CONVERSATION_STR));
 
         setContentView(R.layout.im_conversation_layout);
         mSendButton = (Button) findViewById(R.id.send);
@@ -158,7 +162,6 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     public void onClick(final View view) {
         if (view == mSendButton && mIMLogger != null) {
             final String msg = mTextField.getText().toString();
-            mTextField.setText("");
             new SendMessageTask().execute(msg);
         }
     }
@@ -191,6 +194,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mKom = ((KomServer.LocalBinder) service).getService();
         mIMLogger = mKom.imLogger;
         mCursor = mIMLogger.getMessages(mConvId, MAX_MESSAGES);
+        mLatestSeen = mIMLogger.getLatestSeen(mConvId);
         mIMLogger.updateLatestSeen(mConvId);
         mAdapter = new IMConvCursorAdapter(this, mCursor);
         mIMLogger.addObserver(this);
