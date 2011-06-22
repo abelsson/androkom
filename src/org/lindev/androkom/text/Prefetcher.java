@@ -267,7 +267,7 @@ class Prefetcher {
      * Cache all comments and footnotes to a text
      */
     void doCacheRelevant(final int textNo) {
-        if (textNo <= 0) {
+        if (true || textNo <= 0) {
             return;
         }
         final boolean needCaching;

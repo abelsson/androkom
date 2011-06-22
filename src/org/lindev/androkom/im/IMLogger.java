@@ -20,7 +20,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     private static final String TABLE_MSG = "table_msg";
     private static final String TABLE_CONV = "table_conv";
 
-    private static final String INDEX_MY_ID_CONV_ID = "index_my_id_conv_id";
+    private static final String INDEX_MSG_MY_ID_CONV_ID = "index_msg_my_id_conv_id";
+    private static final String INDEX_CONV_MY_ID_CONV_ID = "index_conv_my_id_conv_id";
 
     public static final String COL_CONV_ID = "col_conv_id";
     public static final String COL_MY_ID = "col_my_id";
@@ -28,6 +29,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public static final String COL_CONV_STR = "col_conv_str";
     public static final String COL_NUM_MSG = "col_num_msgs";
     public static final String COL_LATEST_MSG = "col_latest_im";
+    public static final String COL_LATEST_SEEN = "col_latest_seen";
 
     public static final String COL_FROM_ID = "col_from_id";
     public static final String COL_TO_ID = "col_to_id";
@@ -38,7 +40,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private class SQLHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "lyskom_im_log.db";
-        private static final int DATABASE_VERSION = 1;
+        private static final int DATABASE_VERSION = 4;
 
         public SQLHelper(final Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -56,11 +58,11 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
                   COL_TO_ID + " INTEGER NOT NULL, " +
                   COL_TO_STR + " TEXT NOT NULL, " +
                   COL_TIMESTAMP + " INTEGER NOT NULL, " +
-                  COL_MSG + " TEXT NOT NULL);";
+                  COL_MSG + " TEXT NOT NULL)";
             db.execSQL(sql);
 
-            sql = "CREATE INDEX " + INDEX_MY_ID_CONV_ID + " ON " +
-                  TABLE_MSG + " (" + COL_MY_ID + ", " + COL_CONV_ID + ");";
+            sql = "CREATE INDEX " + INDEX_MSG_MY_ID_CONV_ID + " ON " +
+                  TABLE_MSG + " (" + COL_MY_ID + ", " + COL_CONV_ID + ")";
             db.execSQL(sql);
 
             sql = "CREATE TABLE " + TABLE_CONV + " (" +
@@ -70,12 +72,21 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
                   COL_CONV_STR + " TEXT NOT NULL, " +
                   COL_NUM_MSG + " INTEGER NOT NULL, " +
                   COL_LATEST_MSG + " INTEGER NOT NULL, " +
-                  "UNIQUE (" + COL_MY_ID + ", " + COL_CONV_ID + "));";
+                  COL_LATEST_SEEN + " INTEGER NOT NULL, " +
+                  "UNIQUE (" + COL_MY_ID + ", " + COL_CONV_ID + "))";
+            db.execSQL(sql);
+
+            sql = "CREATE INDEX " + INDEX_CONV_MY_ID_CONV_ID + " ON " +
+                  TABLE_CONV + " (" + COL_MY_ID + ", " + COL_CONV_ID + ")";
             db.execSQL(sql);
         }
 
         @Override
         public void onUpgrade(final SQLiteDatabase db, final int oldVersion, final int newVersion) {
+            // This is the Easy Ugly Fix. Deal with it or implement it yourself. :)
+            db.execSQL("DROP TABLE " + TABLE_MSG);
+            db.execSQL("DROP TABLE " + TABLE_CONV);
+            onCreate(db);
         }
     }
 
@@ -94,7 +105,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
             COL_NUM_MSG + " = " + COL_NUM_MSG + " + 1, " +
             COL_LATEST_MSG + " = ? WHERE " +
             COL_MY_ID + " = ? AND " +
-            COL_CONV_ID + " = ?;";
+            COL_CONV_ID + " = ?";
 
     private void logIM(final int myId, final int fromId, final String fromStr, final int toId, final String toStr,
             final int convId, final String convStr, final String msg) {
@@ -120,11 +131,11 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         values.put(COL_CONV_STR, "");
         values.put(COL_NUM_MSG, 0);
         values.put(COL_LATEST_MSG, 0);
+        values.put(COL_LATEST_SEEN, -1);
         db.insertWithOnConflict(TABLE_CONV, null, values, SQLiteDatabase.CONFLICT_IGNORE);
 
         // Update conversation record
-        final Object[] updateArgs =
-            { convStr, Long.valueOf(rowId), Integer.valueOf(myId), Integer.valueOf(convId) };
+        final Object[] updateArgs = { convStr, Long.valueOf(rowId), Integer.valueOf(myId), Integer.valueOf(convId) };
         db.execSQL(UPDATE_CONV, updateArgs);
 
         // Notify observers that the database has changed. Send the conversation id as argument
@@ -132,7 +143,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         notifyObservers(Integer.valueOf(convId));
     }
 
-    private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_MSG };
+    private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_MSG,
+            COL_LATEST_MSG, COL_LATEST_SEEN };
     private static final String ORDER_BY_CONV = COL_LATEST_MSG;
 
     public Cursor getConversations(final int max) {
@@ -141,8 +153,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     }
 
     private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_STR + ", " + COL_TO_STR + ", " + COL_MSG;
-    private static final String WHERE_MSG = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
-    private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE_MSG +
+    private static final String WHERE = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
+    private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE +
             " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?";
     private static final String QUERY_MSG = "SELECT " + SELECT_MSG + " FROM (" + SUBQUERY_MSG + ") ORDER BY " +
             BaseColumns._ID + " ASC";
@@ -151,6 +163,28 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
         final String[] args = { Integer.toString(mKom.getUserId()), Integer.toString(convId), Integer.toString(max) };
         return db.rawQuery(QUERY_MSG, args);
+    }
+
+    private static final String[] COLS_LATEST_SEEN = { COL_LATEST_SEEN };
+
+    public int getLatestSeen(final int convId) {
+        final SQLiteDatabase db = dbHelper.getReadableDatabase();
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE, whereArgs, null, null, null);
+        cursor.moveToFirst();
+        if (cursor.isAfterLast()) {
+            return -1;
+        }
+        return cursor.getInt(cursor.getColumnIndex(COL_LATEST_SEEN));
+    }
+
+    private static final String QUERY_UPDATE_LATEST = "UPDATE " + TABLE_CONV + " SET " + COL_LATEST_SEEN  + " = " +
+            COL_LATEST_MSG + " WHERE " + WHERE;
+
+    public void updateLatestSeen(final int convId) {
+        final SQLiteDatabase db = dbHelper.getWritableDatabase();
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        db.execSQL(QUERY_UPDATE_LATEST, whereArgs);
     }
 
     public void asyncMessage(final Message msg) {

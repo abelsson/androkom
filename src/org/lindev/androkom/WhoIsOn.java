@@ -2,6 +2,7 @@ package org.lindev.androkom;
 
 import java.util.List;
 import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.gui.IMConversationList;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -97,7 +98,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         builder.setTitle(getString(R.string.pick_a_name));
         String vals[] = {
                 getString(R.string.createnewmail_label),
-                getString(R.string.createnewIM_label)
+                getString(R.string.create_new_IM)
                 };
         builder.setSingleChoiceItems(vals, -1,
                 new DialogInterface.OnClickListener()
@@ -118,7 +119,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
                             break;
                         case 1: // IM
                             Log.d(TAG, "Trying to create IM");
-                            intent = new Intent(getBaseContext(), CreateNewIM.class);
+                            intent = new Intent(getBaseContext(), IMConversationList.class);
                             intent.putExtra("recipient", selected_user);
                             startActivity(intent);
                             finish();

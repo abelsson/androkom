@@ -83,8 +83,8 @@
     <string name="createnewtext_shortcut">N</string>
     <string name="createnewmail_label">New mail</string>
     <string name="createnewmail_shortcut">M</string>
-    <string name="createnewIM_label">New IM</string>
-    <string name="createnewIM_shortcut">I</string>
+    <string name="messaging_label">Messaging</string>
+    <string name="messaging_shortcut">I</string>
 
     <string name="title_submenu_mark">Mark ...</string>
     <string name="marktext_label">Mark text</string>

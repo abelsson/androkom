@@ -19,6 +19,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -37,10 +38,14 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     public static final String TAG = "Androkom";
 
     private static final int MAX_CONVERSATIONS = 50;
+    private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
+    private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
+
+    static final String INTENT_CONVERSATION_ID = "conversation-id";
+    static final String INTENT_CONVERSATION_STR = "conversation-str";
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
-    private CursorAdapter mAdapter = null;
     private Cursor mCursor = null;
 
     private Button mSendButton = null;
@@ -76,8 +81,16 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             final int convId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_CONV_ID));
             final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
             final int numMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_NUM_MSG));
+            final int latestMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_MSG));
+            final int latestSeen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_SEEN));
 
             final TextView tv = (TextView) view;
+            if (latestMsg == latestSeen) {
+                tv.setBackgroundColor(BACKGROUND_COLOR_ALL_READ);
+            }
+            else {
+                tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
+            }
             tv.setText("(" + numMsg + ") " + convStr + " <" + convId + ">");
         }
     }
@@ -89,7 +102,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         @Override
         protected void onPreExecute() {
-            dialog.setCancelable(true);
+            dialog.setCancelable(false);
             dialog.setIndeterminate(true);
             dialog.setMessage("Resolving recipient ...");
             dialog.show();
@@ -138,15 +151,14 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         @Override
         protected void onPreExecute() {
-            dialog.setCancelable(true);
+            dialog.setCancelable(false);
             dialog.setIndeterminate(true);
             dialog.setMessage("Sending message ...");
             dialog.show();
         }
 
         @Override
-        protected ConfInfo doInBackground(final Object... args)
-        {
+        protected ConfInfo doInBackground(final Object... args) {
             final ConfInfo conf = (ConfInfo) args[0];
             final String msg = (String) args[1];
             try {
@@ -162,8 +174,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         protected void onPostExecute(final ConfInfo conf) {
             if (conf != null) {
                 final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
-                intent.putExtra("conversation-id", conf.confNo);
-                intent.putExtra("conversation-str", conf.getNameString());
+                intent.putExtra(INTENT_CONVERSATION_ID, conf.confNo);
+                intent.putExtra(INTENT_CONVERSATION_STR, conf.getNameString());
                 mRecipientField.setText("");
                 mMessageField.setText("");
                 startActivity(intent);
@@ -255,8 +267,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
 
         final Intent intent = new Intent(this, IMConversation.class);
-        intent.putExtra("conversation-id", convId);
-        intent.putExtra("conversation-str", convStr);
+        intent.putExtra(INTENT_CONVERSATION_ID, convId);
+        intent.putExtra(INTENT_CONVERSATION_STR, convStr);
 
         startActivity(intent);
     }
@@ -265,9 +277,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mKom = ((KomServer.LocalBinder) service).getService();
         mIMLogger = mKom.imLogger;
         mCursor = mIMLogger.getConversations(MAX_CONVERSATIONS);
-        mAdapter = new IMConvListCursorAdapter(this, mCursor);
+        setListAdapter(new IMConvListCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
-        setListAdapter(mAdapter);
         updateView(false);
     }
 

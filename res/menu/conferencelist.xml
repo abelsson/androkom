@@ -1,18 +1,17 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	
+	<item android:id="@+id/menu_messaging_id" android:title="@string/messaging_label" android:alphabeticShortcut="@string/messaging_shortcut"/>
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
-		android:id="@+id/menu_settings_id"/>
+		android:id="@+id/menu_settings_id"></item>
     <item android:title="@string/createnewtext_label"
         android:alphabeticShortcut="@string/createnewtext_shortcut"
-        android:id="@+id/menu_createnewtext_id"/>
+        android:id="@+id/menu_createnewtext_id"></item>
     <item android:title="@string/createnewmail_label"
         android:alphabeticShortcut="@string/createnewmail_shortcut"
-        android:id="@+id/menu_createnewmail_id"/>
-    <item android:title="@string/createnewIM_label"
-        android:alphabeticShortcut="@string/createnewIM_shortcut"
-        android:id="@+id/menu_createnewIM_id"/>
+        android:id="@+id/menu_createnewmail_id"></item>
+    
 	<item android:alphabeticShortcut="@string/endast_shortcut"
 		android:title="@string/endast_label" android:id="@+id/menu_endast_id" />
 	<item android:title="@string/seewhoison_label"
