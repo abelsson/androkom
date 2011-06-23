@@ -30,6 +30,7 @@ import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import android.text.Spannable;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -79,32 +80,22 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public static class TextInfo
     {
-    	public TextInfo() { }
+        public static final TextInfo ALL_READ = new TextInfo(-1, "", "", "", "", "All read", false); 
+        public static final TextInfo ERROR_FETCHING_TEXT = new TextInfo(-1, "", "", "", "", "[error fetching text]", false);
+        public static final TextInfo NO_PARENT = new TextInfo(-1, "", "", "", "", "Text has no parent", false);
 
-    	public TextInfo(int textNo, String author, String date, String headers, String subject, String body)
-    	{
-    		this.setTextNo(textNo);
-    		this.setAuthor(author);
-    		this.setDate(date);
-    		this.setHeaders(headers);
-    		this.setSubject(subject);
-    		this.setBody(body);
-    	}
-    	
-    	public void setAuthor(String author) {
-			this.author = author;
-		}
-		
+        public TextInfo(int textNo, String author, String date, String headers, String subject, String body, boolean showFullHeaders) {
+            this.textNo = textNo;
+            this.author = author;
+            this.date = date;
+            this.headers = headers;
+            this.subject = subject;
+            this.body = body;
+            this.spannable = Conference.formatText(this, showFullHeaders);
+        }
+
 		public String getAuthor() {
 			return author;
-		}
-
-		public void setHeaders(String headers) {
-			this.headers = headers;
-		}
-
-		public void setBody(String body) {
-			this.body = body;
 		}
 
 		public String getBody() {
@@ -115,36 +106,29 @@ public class KomServer extends Service implements RpcEventListener,
 			return headers;
 		}
 
-		public void setSubject(String subject) {
-			this.subject = subject;
-		}
-
 		public String getSubject() {
 			return subject;
-		}
-
-		public void setDate(String date) {
-			this.date = date;
 		}
 
 		public String getDate() {
 			return date;
 		}
 
-		public void setTextNo(int textNo) {
-			this.textNo = textNo;
-		}
-
 		public int getTextNo() {
 			return textNo;
 		}
 
-		private int textNo;
-		private String date;
-    	private String subject;
-    	private String headers;
-    	private String body;
-    	private String author;
+		public Spannable getSpannable() {
+		    return spannable;
+		}
+
+        private int textNo;
+        private String date;
+        private String subject;
+        private String headers;
+        private String body;
+        private String author;
+        private Spannable spannable;
     }
     
     public KomServer() {
@@ -163,7 +147,7 @@ public class KomServer extends Service implements RpcEventListener,
         super.onCreate();
         
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
-        asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
+        //asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
 
         imLogger = new IMLogger(this);
         asyncMessagesHandler.subscribe(imLogger);

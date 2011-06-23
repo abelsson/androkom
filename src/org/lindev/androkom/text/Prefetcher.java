@@ -29,6 +29,7 @@ class Prefetcher {
     private static final Pattern TEXT_LINK_FINDER = Pattern.compile("\\d{5,}");
     private static final int MAX_PREFETCH = 10;
     private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
+    private static boolean ENABLE_CACHE_RELEVANT = false;
 
     private final KomServer mKom;
     private final TextCache mTextCache;
@@ -55,7 +56,7 @@ class Prefetcher {
         }
     }
 
-    class PrefetchNextUnread extends Thread {
+    private class PrefetchNextUnread extends Thread {
         private final Queue<Integer> mUnreadConfs;
         private final Set<Integer> mEnqueued;
 
@@ -156,7 +157,7 @@ class Prefetcher {
     TextInfo getNextUnreadText(final boolean cacheRelevant) {
         // If mPrefetchRunner is null, we have already reached the end of the queue
         if (mPrefetchRunner == null) {
-            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
+            return TextInfo.ALL_READ;
         }
 
         // Get the next unread text from the queue
@@ -164,14 +165,14 @@ class Prefetcher {
         try {
             tc = mUnreadQueue.take();
         } catch (final InterruptedException e) {
-            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_unread_text));
+            return TextInfo.ERROR_FETCHING_TEXT;
         }
 
         // This is how the prefetcher marks that there are no more unread texts. mPrefetchRunner should be finished,
         // so we can delete the reference to it.
         if (tc.textNo < 0) {
             mPrefetchRunner = null;
-            return new TextInfo(-1, "", "", "", "", mKom.getString(R.string.all_read));
+            return TextInfo.ALL_READ;
         }
 
         // If the text is already locally marked as read, get the next one instead
@@ -267,7 +268,7 @@ class Prefetcher {
      * Cache all comments and footnotes to a text
      */
     void doCacheRelevant(final int textNo) {
-        if (true || textNo <= 0) {
+        if (!ENABLE_CACHE_RELEVANT || textNo <= 0) {
             return;
         }
         final boolean needCaching;

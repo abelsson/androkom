@@ -144,7 +144,7 @@ class TextCache {
                 }
             }
             return new TextInfo(textNo, username, CreationTimeString, headersString.toString(),
-                    SubjectString, BodyString);
+                    SubjectString, BodyString, mShowFullHeaders);
         }
 
         protected Void doInBackground(final Integer... args) {
@@ -152,7 +152,7 @@ class TextCache {
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
             TextInfo text = getTextFromServer(mTextNo);
             if (text == null) {
-                text = new TextInfo(-1, "", "", "", "", mKom.getString(R.string.error_fetching_text));
+                text = TextInfo.ERROR_FETCHING_TEXT;
             }
             mTextCache.put(mTextNo, text);
             synchronized(mTextCache) {

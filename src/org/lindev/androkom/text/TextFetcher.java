@@ -41,7 +41,7 @@ public class TextFetcher {
             Log.d(TAG, "getParentToText " + e);
             e.printStackTrace();
             mKom.reconnect();
-            return new TextInfo(-1, "", "", "", "", "[error fetching parent text]");
+            return TextInfo.ERROR_FETCHING_TEXT;
         }
 
         final int commented[] = text.getCommented();
@@ -50,7 +50,7 @@ public class TextFetcher {
             mPrefetcher.doCacheRelevant(textInfo.getTextNo());
             return textInfo;
         }
-        return new TextInfo(-1, "", "", "", "", "Text has no parent");
+        return TextInfo.NO_PARENT;
     }
 
     public void restartPrefetcher() {
