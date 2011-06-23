@@ -90,9 +90,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         Log.i(TAG, "Got passed conference id: " + confNo);
 
-        if (data != null) {      	
+        if (data != null) {
             mState = (State)data;
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+            Spannable spannedText = mState.currentText.elementAt(mState.currentTextIndex).getSpannable();
+            addLinks(spannedText, digits, null);
+            mSwitcher.setText(spannedText);
         } else {
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
@@ -171,7 +173,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mState.currentText.push(text);
                 mState.currentTextIndex = mState.currentText.size() - 1;
                 Log.i(TAG, stackAsString());
-                mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+
+                final Spannable spannedText = text.getSpannable();
+                addLinks(spannedText, digits, null);
+                mSwitcher.setText(spannedText);
+
                 TextView widget = (TextView) mSwitcher.getCurrentView();
                 widget.scrollTo(0, 0);
                 setTitle(mKom.getConferenceName());
@@ -219,6 +225,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      *  links. To be used with the class above.
      */ 
     public final boolean addLinks(Spannable s, Pattern p, String scheme) {
+        // This could possibly be a new Conference activity, and these links are for a specifik instance. So we
+        // remove all old links first.
+        for (KomInternalURLSpan span : s.getSpans(0, s.length(), KomInternalURLSpan.class)) {
+            s.removeSpan(span);
+        }
+
         boolean hasMatches = false;
         Matcher m = p.matcher(s);
 
@@ -298,7 +310,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             Log.i(TAG, stackAsString());
             mSwitcher.setInAnimation(mSlideRightIn);
             mSwitcher.setOutAnimation(mSlideRightOut);
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+            mSwitcher.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
         }
     }
 
@@ -318,7 +330,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mSwitcher.setInAnimation(mSlideLeftIn);
             mSwitcher.setOutAnimation(mSlideLeftOut);
             Log.i(TAG, stackAsString());
-            mSwitcher.setText(formatText(mState.currentText.elementAt(mState.currentTextIndex), mState.ShowFullHeaders));
+            mSwitcher.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
         }
     }
 
@@ -635,7 +647,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private static final Pattern digits = Pattern.compile("\\d{5,}");
-    public Spannable formatText(TextInfo text, boolean ShowFullHeaders)
+    public static Spannable formatText(TextInfo text, boolean ShowFullHeaders)
     {
         String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
@@ -686,7 +698,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         //Log.i(TAG, body.toString());
 
         Spannable spannedText = (Spannable) Html.fromHtml(body.toString());
-        addLinks(spannedText, digits, null);
         Linkify.addLinks(spannedText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
         
         return spannedText;
