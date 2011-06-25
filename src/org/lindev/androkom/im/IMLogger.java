@@ -101,14 +101,14 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private static final String INSERT_CONV = "INSERT OR IGNORE INTO " + TABLE_CONV + " (" + COL_MY_ID + ", " +
             COL_CONV_ID + ", " + COL_CONV_STR + ", " + COL_NUM_MSG + ", " + COL_LATEST_MSG + ", " +
-            COL_LATEST_SEEN + ") VALUES (?, ?, ?, ?, ? ,?)";
+            COL_LATEST_SEEN + ") VALUES (?, ?, ?, ?, ?, ?)";
 
     private static final String UPDATE_CONV = "UPDATE " + TABLE_CONV + " SET " + COL_CONV_STR + " = ?, " +
             COL_NUM_MSG + " = " + COL_NUM_MSG + " + 1, " + COL_LATEST_MSG + " = ? WHERE " + COL_MY_ID + " = ? AND " +
             COL_CONV_ID + " = ?";
 
-    private void logIM(final int myId, final int fromId, final String fromStr, final int toId, final String toStr,
-            final int convId, final String convStr, final String msg) {
+    private void logIM(final Integer myId, final Integer fromId, final String fromStr, final Integer toId,
+            final String toStr, final Integer convId, final String convStr, final String msg) {
 
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
@@ -125,17 +125,16 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final long rowId = db.insert(TABLE_MSG, null, values);
 
         // Create a new empty record for the conversation if it doesn't already exist
-        final Object insertArgs[] = { Integer.valueOf(myId), Integer.valueOf(convId), "", Integer.valueOf(0),
-                Integer.valueOf(-1), Integer.valueOf(-1) };
+        final Object insertArgs[] = { myId, convId, "", Integer.valueOf(0), Integer.valueOf(-1), Integer.valueOf(-1) };
         db.execSQL(INSERT_CONV, insertArgs);
 
         // Update conversation record
-        final Object[] updateArgs = { convStr, Long.valueOf(rowId), Integer.valueOf(myId), Integer.valueOf(convId) };
+        final Object[] updateArgs = { convStr, Long.valueOf(rowId), myId, convId };
         db.execSQL(UPDATE_CONV, updateArgs);
 
         // Notify observers that the database has changed. Send the conversation id as argument
         setChanged();
-        notifyObservers(Integer.valueOf(convId));
+        notifyObservers(convId);
     }
 
     private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_MSG,
