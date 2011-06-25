@@ -35,6 +35,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     private static final int MAX_MESSAGES = 50;
     private static final int BACKGROUND_COLOR_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
+    private static final String LATEST_SEEN = "latest-seen";
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
@@ -129,6 +130,10 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     public void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        if (savedInstanceState != null && savedInstanceState.containsKey(LATEST_SEEN)) {
+            mLatestSeen = savedInstanceState.getInt(LATEST_SEEN);
+        }
+
         final Bundle data = getIntent().getExtras();
         mConvId = data.getInt(IMConversationList.INTENT_CONVERSATION_ID);
         setTitle(data.getString(IMConversationList.INTENT_CONVERSATION_STR));
@@ -199,11 +204,18 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
     }
 
+    @Override
+    protected void onSaveInstanceState(final Bundle outState) {
+        outState.putInt(LATEST_SEEN, mLatestSeen);
+    }
+
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         mKom = ((KomServer.LocalBinder) service).getService();
         mIMLogger = mKom.imLogger;
         mCursor = mIMLogger.getMessages(mConvId, MAX_MESSAGES);
-        mLatestSeen = mIMLogger.getLatestSeen(mConvId);
+        if (mLatestSeen < 0) {
+            mLatestSeen = mIMLogger.getLatestSeen(mConvId);
+        }
         mIMLogger.updateLatestSeen(mConvId);
         setListAdapter(new IMConvCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
