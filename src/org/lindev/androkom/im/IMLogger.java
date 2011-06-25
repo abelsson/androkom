@@ -125,7 +125,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final long rowId = db.insert(TABLE_MSG, null, values);
 
         // Create a new empty record for the conversation if it doesn't already exist
-        final Object insertArgs[] = { myId, convId, "", Integer.valueOf(0), Integer.valueOf(-1), Integer.valueOf(-1) };
+        final Integer zero = Integer.valueOf(0);
+        final Object insertArgs[] = { myId, convId, "", zero, zero, zero };
         db.execSQL(INSERT_CONV, insertArgs);
 
         // Update conversation record
@@ -166,7 +167,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
         final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
         final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE, whereArgs, null, null, null);
-        int latestSeen = -1;
+        int latestSeen = 0;
         cursor.moveToFirst();
         if (!cursor.isAfterLast()) {
             latestSeen = cursor.getInt(cursor.getColumnIndex(COL_LATEST_SEEN));
