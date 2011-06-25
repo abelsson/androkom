@@ -18,7 +18,6 @@ import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.KomServer.TextInfo;
-import org.lindev.androkom.R;
 
 import android.os.AsyncTask;
 import android.util.Log;
@@ -180,15 +179,8 @@ class Prefetcher {
             return getNextUnreadText(cacheRelevant);
         }
 
-        // Switch conference if the new text is from another conference
-        final int confNo = mKom.getSession().getCurrentConference();
-        if (tc.confNo != confNo) {
-            try {
-                mKom.getSession().changeConference(tc.confNo);
-            } catch (final Exception e) {
-                e.printStackTrace();
-            }
-        }
+        // Switch conference name
+        mKom.setConferenceName(mKom.getConferenceName(tc.confNo));
 
         // Retrieve the text
         final TextInfo text = mTextCache.getText(tc.textNo);

@@ -377,12 +377,16 @@ public class KomServer extends Service implements RpcEventListener,
     }
     
 
+    private String mConfName = "";
+    public void setConferenceName(final String name) {
+        mConfName = name;
+    }
+
     /**
      * Return name for given conference.
      */
-    public String getConferenceName()
-    {
-    	return getConferenceName(s.getCurrentConference());
+    public String getConferenceName() {
+        return mConfName;
     }
 
     /**
