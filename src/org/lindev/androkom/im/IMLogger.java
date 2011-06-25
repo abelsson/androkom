@@ -146,7 +146,8 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         return db.query(TABLE_CONV, SELECT_CONV, null, null, null, null, ORDER_BY_CONV, null);
     }
 
-    private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_STR + ", " + COL_TO_STR + ", " + COL_MSG;
+    private static final String SELECT_MSG = BaseColumns._ID + ", " + COL_FROM_ID + ", " + COL_FROM_STR + ", " +
+            COL_TO_STR + ", " + COL_MSG;
     private static final String WHERE = COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
     private static final String SUBQUERY_MSG = "SELECT " + SELECT_MSG + " FROM " + TABLE_MSG + " WHERE " + WHERE +
             " ORDER BY " + BaseColumns._ID + " DESC LIMIT ?";
@@ -198,6 +199,12 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final String convStr;
 
         final String msgStr = msg.getData().getString("msg");
+
+        // If we received a message from the server about a message we sent ourselves, it shouldn't be stored as that
+        // is already stored when it was sent.
+        if (fromId == myId) {
+            return;
+        }
 
         // For personal messages, conversations are tracked by the other person (fromId in this context)
         // For group messages, they are tracked by the conference sent to (toId in this context)

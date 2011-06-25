@@ -34,7 +34,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
     private static final int MAX_MESSAGES = 50;
     private static final int BACKGROUND_COLOR_READ = Color.BLACK;
-    private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
+    private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
@@ -72,6 +72,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         @Override
         public void bindView(final View view, final Context context, final Cursor cursor) {
             final int msgId = cursor.getInt(cursor.getColumnIndex(BaseColumns._ID));
+            final int fromId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_FROM_ID));
             final String fromStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_FROM_STR));
             final String msg = cursor.getString(cursor.getColumnIndex(IMLogger.COL_MSG));
 
@@ -82,7 +83,16 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
             else {
                 tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
             }
-            tv.setText(fromStr + " says " + msg);
+
+            final StringBuilder sb = new StringBuilder();
+            if (fromId == mKom.getUserId()) {
+                sb.append("You: ");
+            }
+            else {
+                sb.append(fromStr).append(": ");
+            }
+            sb.append(msg);
+            tv.setText(sb.toString());
         }
     }
 

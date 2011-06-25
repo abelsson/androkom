@@ -39,7 +39,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
     private static final int MAX_CONVERSATIONS = 50;
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
-    private static final int BACKGROUND_COLOR_UNREAD = 0xff202050;
+    private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
 
     static final String INTENT_CONVERSATION_ID = "conversation-id";
     static final String INTENT_CONVERSATION_STR = "conversation-str";
