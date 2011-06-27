@@ -147,7 +147,7 @@ public class KomServer extends Service implements RpcEventListener,
         super.onCreate();
         
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
-        //asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
+        asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
 
         imLogger = new IMLogger(this);
         asyncMessagesHandler.subscribe(imLogger);
