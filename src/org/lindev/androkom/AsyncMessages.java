@@ -42,17 +42,11 @@ public class AsyncMessages implements AsynchMessageReceiver
         switch (msg.what)
         {
         case nu.dll.lyskom.Asynch.login:
-			if (mKom.getPresenceMessages()) {
-				str = msg.getData().getString("name")
-						+ app.getString(R.string.x_logged_in);
-			}
+            str = msg.getData().getString("name") + app.getString(R.string.x_logged_in);
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-			if (mKom.getPresenceMessages()) {
-				str = msg.getData().getString("name")
-						+ app.getString(R.string.x_logged_out);
-			}
+            str = msg.getData().getString("name") + app.getString(R.string.x_logged_out);
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
