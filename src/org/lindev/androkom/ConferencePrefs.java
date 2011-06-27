@@ -18,6 +18,9 @@ public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_SHOWFULLHEADERS = "showfullheaders";
 	private static final Boolean OPT_SHOWFULLHEADERS_DEF = false;
 
+    private static final String OPT_MARKTEXTREAD = "marktextread";
+    private static final Boolean OPT_MARKTEXTREAD_DEF = false;
+	
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
@@ -38,4 +41,8 @@ public class ConferencePrefs extends PreferenceActivity {
 	public static Boolean getShowFullHeaders(Context context) {
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_SHOWFULLHEADERS, OPT_SHOWFULLHEADERS_DEF);
 	}
+
+    public static Boolean getMarkTextRead(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_MARKTEXTREAD, OPT_MARKTEXTREAD_DEF);
+    }
 }

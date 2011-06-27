@@ -67,6 +67,9 @@
     <string name="showfullheaders_title">Show full headers</string>
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
 
+    <string name="marktextread_title">Mark texts read</string>
+    <string name="marktextread_summary">Mark texts read</string>
+
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
 

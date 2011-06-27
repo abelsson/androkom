@@ -13,4 +13,10 @@
     android:summary="@string/showfullheaders_summary"
     android:defaultValue="false"
     />
+  <CheckBoxPreference
+    android:key="marktextread"
+    android:title="@string/marktextread_title"
+    android:summary="@string/marktextread_summary"
+    android:defaultValue="true"
+    />
 </PreferenceScreen>

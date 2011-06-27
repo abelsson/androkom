@@ -133,7 +133,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             TextInfo text = null;
 
             if (mState.hasCurrent()) {
-                mKom.markTextAsRead(mState.getCurrent().getTextNo());
+                if(ConferencePrefs.getMarkTextRead(getBaseContext())) {
+                    mKom.markTextAsRead(mState.getCurrent().getTextNo());
+                }
             }
 
             switch (args[0]) {
@@ -186,7 +188,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             }
             setProgressBarIndeterminateVisibility(false);
             if (curr > 0) {
-                mKom.markTextAsRead(curr);
+                if (ConferencePrefs.getMarkTextRead(getBaseContext()))
+                {
+                    mKom.markTextAsRead(curr);
+                }
             }
         }
     }
