@@ -489,6 +489,8 @@ public class KomServer extends Service implements RpcEventListener,
         re_password = password;
         re_server = server;
 
+        parseCommonUserArea();
+        parseElispUserArea();
         return "";
     }
 
@@ -930,14 +932,11 @@ public class KomServer extends Service implements RpcEventListener,
 	 * Parse properties from the common area, if any.
 	 */
 	void parseCommonUserArea() {
-		// TODO: Should probably not use the same mUserAreaProps as
-		// parseElispUserArea
 		try {
-
 			UserArea ua = s.getUserArea();
 			String[] blocks = ua.getBlockNames();
 
-			mUserAreaProps = new HashMap<String, String>();
+			mCommonUserAreaProps = new HashMap<String, String>();
 
 			for (String block : blocks) {
 
@@ -947,7 +946,7 @@ public class KomServer extends Service implements RpcEventListener,
 						String[] first = getNextHollerith(token);
 						String[] second = getNextHollerith(first[1]);
 
-						mUserAreaProps.put(first[0], second[0]);
+						mCommonUserAreaProps.put(first[0], second[0]);
 						token = second[1];
 					}
 				}
@@ -966,8 +965,8 @@ public class KomServer extends Service implements RpcEventListener,
 	 */
 	public boolean getPresenceMessages() {
 	    boolean presence_messages = true;
-		parseCommonUserArea();
-		String messages = mUserAreaProps.get("presence-messages");
+
+		String messages = mCommonUserAreaProps.get("presence-messages");
 		if (messages != null) {
 		    presence_messages = (messages.compareTo("1") == 0);
 		}
@@ -983,7 +982,7 @@ public class KomServer extends Service implements RpcEventListener,
 			UserArea ua = s.getUserArea();
 			String[] blocks = ua.getBlockNames();
 
-			mUserAreaProps = new HashMap<String, String>();
+			mElispUserAreaProps = new HashMap<String, String>();
 
 			for (String block : blocks) {
 
@@ -993,7 +992,7 @@ public class KomServer extends Service implements RpcEventListener,
 						String[] first = getNextHollerith(token);
 						String[] second = getNextHollerith(first[1]);
 
-						mUserAreaProps.put(first[0], second[0]);
+						mElispUserAreaProps.put(first[0], second[0]);
 						token = second[1];
 					}
 				}
@@ -1014,8 +1013,7 @@ public class KomServer extends Service implements RpcEventListener,
 	public Set<Integer> getFriends() {
 		Set<Integer> friendsList=new HashSet<Integer>();
 		
-		parseElispUserArea();
-		String friends = mUserAreaProps.get("kom-friends");
+		String friends = mElispUserAreaProps.get("kom-friends");
 		if (friends != null) {
 			friends = friends.substring(1, friends.length() - 2);
 			String[] friendList = friends.split(" ");
@@ -1108,7 +1106,8 @@ public class KomServer extends Service implements RpcEventListener,
 	private Session s = null;
 
 	private int mLastTextNo = 0;
-	HashMap<String, String> mUserAreaProps = null;
+	HashMap<String, String> mElispUserAreaProps = null;
+    HashMap<String, String> mCommonUserAreaProps = null;
 
 	// This is the object that receives interactions from clients.
 	private final IBinder mBinder = new LocalBinder();
