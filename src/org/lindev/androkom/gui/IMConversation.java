@@ -207,6 +207,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     @Override
     protected void onSaveInstanceState(final Bundle outState) {
         outState.putInt(LATEST_SEEN, mLatestSeen);
+        super.onSaveInstanceState(outState);
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
