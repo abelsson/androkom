@@ -70,6 +70,9 @@
     <string name="marktextread_title">Mark texts read</string>
     <string name="marktextread_summary">Mark texts read</string>
 
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
+
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
 

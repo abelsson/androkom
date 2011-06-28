@@ -81,8 +81,7 @@ public class AsyncMessages implements AsynchMessageReceiver
     /**
      * Displays incoming messages as Toast events
      */
-    public class MessageToaster implements AsyncMessageSubscriber
-    {
+    public class MessageToaster implements AsyncMessageSubscriber {
         public void asyncMessage(Message msg) {
             final String str = messageAsString(msg);
 
@@ -91,7 +90,9 @@ public class AsyncMessages implements AsynchMessageReceiver
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
                 }
-                Toast.makeText(app, str, length).show();
+                if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
+                    Toast.makeText(app, str, length).show();
+                }
             }
         }
     };

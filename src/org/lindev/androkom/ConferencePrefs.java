@@ -21,6 +21,9 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_MARKTEXTREAD = "marktextread";
     private static final Boolean OPT_MARKTEXTREAD_DEF = false;
 	
+    private static final String OPT_TOASTFORASYNCH = "toastforasynch";
+    private static final Boolean OPT_TOASTFORASYNCH_DEF = false;
+    
 	protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
@@ -44,5 +47,9 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static Boolean getMarkTextRead(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_MARKTEXTREAD, OPT_MARKTEXTREAD_DEF);
+    }
+
+    public static Boolean getToastForAsynch(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_TOASTFORASYNCH, OPT_TOASTFORASYNCH_DEF);
     }
 }
