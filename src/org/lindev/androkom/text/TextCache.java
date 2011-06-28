@@ -12,6 +12,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
+import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.R;
@@ -40,6 +41,7 @@ class TextCache {
         private TextInfo getTextFromServer(final int textNo) {
             Text text = null;
             try {
+                Log.d(TAG, "TextFetcherTask:"+textNo);
                 text = mKom.getSession().getText(textNo);
             } catch (final RpcFailure e) {
                 e.printStackTrace();
@@ -58,6 +60,7 @@ class TextCache {
                     username = mKom.getString(R.string.person) + authorid + mKom.getString(R.string.does_not_exist);
                 }
             } else {
+                Log.d(TAG, "Text "+textNo+" authorid:"+authorid);
                 username = mKom.getString(R.string.anonymous);
             }
             Date CreationTime = text.getCreationTime();
@@ -143,7 +146,7 @@ class TextCache {
                     }
                 }
             }
-            return new TextInfo(textNo, username, CreationTimeString, headersString.toString(),
+            return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, headersString.toString(),
                     SubjectString, BodyString, mShowFullHeaders);
         }
 
@@ -152,7 +155,7 @@ class TextCache {
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
             TextInfo text = getTextFromServer(mTextNo);
             if (text == null) {
-                text = TextInfo.ERROR_FETCHING_TEXT;
+                text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
             }
             mTextCache.put(mTextNo, text);
             synchronized(mTextCache) {

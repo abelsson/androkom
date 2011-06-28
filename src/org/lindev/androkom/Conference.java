@@ -11,6 +11,7 @@ import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.Dialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -56,7 +57,7 @@ import android.widget.ViewSwitcher;
  */
 public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener, ServiceConnection
 {
-    private static final String TAG = "Androkom";
+    private static final String TAG = "Androkom Conference";
 
     private static final int SWIPE_MIN_DISTANCE = 150;
     private static final int SWIPE_MAX_OFF_PATH = 250;
@@ -652,7 +653,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private static final Pattern digits = Pattern.compile("\\d{5,}");
-    public static Spannable formatText(TextInfo text, boolean ShowFullHeaders)
+    public static Spannable formatText(Context context, TextInfo text, boolean ShowFullHeaders)
     {
         String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
@@ -676,7 +677,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 				}
 			}
             
-            body.append("<b>Subject: ");
+            body.append("<b>"+context.getString(R.string.subject));
             body.append(text.getSubject());
             body.append("</b>");
         }
@@ -723,7 +724,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     public View makeView() {
         TextView t = new TextView(this);
-        t.setText("[no text loaded]", TextView.BufferType.SPANNABLE);
+        t.setText(getString(R.string.no_text_loaded), TextView.BufferType.SPANNABLE);
         t.setMovementMethod(LinkMovementMethod.getInstance());
         t.setGravity(Gravity.TOP | Gravity.LEFT);
         t.setTextColor(ColorStateList.valueOf(Color.WHITE));

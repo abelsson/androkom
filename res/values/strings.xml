@@ -18,6 +18,7 @@
     <string name="all_read">All read</string>
     <string name="error_fetching_unread_text">[error fetching unread text]</string>
     <string name="error_fetching_text">[error fetching text]</string>
+    <string name="error_no_parent">"Text has no parent"</string>
     <string name="anonymous">anonymous</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" does not exist"</string>
@@ -160,5 +161,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="im_sending_message">"Sending message ..."</string>
     <string name="im_resolving_recipient">"Resolving recipient ..."</string>
     <string name="im_no_such_recipient">"No such recipient: "</string>
+
+    <string name="no_text_loaded">"[no text loaded]"</string>
 
 </resources>

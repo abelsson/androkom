@@ -156,7 +156,7 @@ class Prefetcher {
     TextInfo getNextUnreadText(final boolean cacheRelevant) {
         // If mPrefetchRunner is null, we have already reached the end of the queue
         if (mPrefetchRunner == null) {
-            return TextInfo.ALL_READ;
+            return TextInfo.createText(mKom.getBaseContext(), TextInfo.ALL_READ);
         }
 
         // Get the next unread text from the queue
@@ -164,14 +164,14 @@ class Prefetcher {
         try {
             tc = mUnreadQueue.take();
         } catch (final InterruptedException e) {
-            return TextInfo.ERROR_FETCHING_TEXT;
+            return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
 
         // This is how the prefetcher marks that there are no more unread texts. mPrefetchRunner should be finished,
         // so we can delete the reference to it.
         if (tc.textNo < 0) {
             mPrefetchRunner = null;
-            return TextInfo.ALL_READ;
+            return TextInfo.createText(mKom.getBaseContext(), TextInfo.ALL_READ);
         }
 
         // If the text is already locally marked as read, get the next one instead

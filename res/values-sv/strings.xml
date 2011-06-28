@@ -18,6 +18,7 @@
     <string name="all_read">Allt läst</string>
     <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
     <string name="error_fetching_text">[problem att hämta text]</string>
+    <string name="error_no_parent">"Texten är inte en kommentar"</string>
     <string name="anonymous">anonym</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" finns inte"</string>
@@ -48,6 +49,7 @@
 
     <string name="server_title">Server</string>
     <string name="server_summary">Välj server</string>
+    <string name="server_dialog_title_prefs">Server dialog title</string>
 
     <string name="otherserver_title">Annan server</string>
     <string name="otherserver_summary">Serverns adress</string>
@@ -75,7 +77,8 @@
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 
-    <string name="smallerfontsize_label">Mindre text</string>
+    <string name="title_submenu_textsize">Text size...</string>
+    <string name="smallerfontsize_label">Mindre typsnitt</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
     <string name="biggerfontsize_shortcut">+</string>
@@ -157,5 +160,7 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="im_sending_message">"Skickar meddelande ..."</string>
     <string name="im_resolving_recipient">"Hittar mottagare ..."</string>
     <string name="im_no_such_recipient">"Hittar ingen mottagare: "</string>
+
+    <string name="no_text_loaded">"[no text loaded]"</string>
 
 </resources>
