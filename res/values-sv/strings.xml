@@ -66,6 +66,12 @@
     <string name="showfullheaders_title">Visa text info</string>
     <string name="showfullheaders_summary">Visa text info som kommentarer</string>
 
+    <string name="marktextread_title">Läsmarkera</string>
+    <string name="marktextread_summary">Markera visade texter som lästa</string>
+
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
+
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 
@@ -145,4 +151,11 @@ Fantomen önskar dig en bra dag."</string>
 
     <string name="abuse_text">"Du är mycket ful och mycket dum. Många hatar dig både till kropp och till själ. Du kommer att överösas med sjukdomar och inte få någon som helst lycka i ditt liv. Du borde verkligen ta dig samman och göra något av ditt liv även om det inte är mycket att starta med.
 Guran vill helst sätta en giftpil i dig."</string>
+
+    <string name="im_you">"Du: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Skickar meddelande ..."</string>
+    <string name="im_resolving_recipient">"Hittar mottagare ..."</string>
+    <string name="im_no_such_recipient">"Hittar ingen mottagare: "</string>
+
 </resources>

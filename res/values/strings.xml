@@ -154,4 +154,11 @@ Be proud of being You! You have a very good reason."</string>
 
     <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around you. You are doing a worthless job. Many people hate you, body and soul. You make life harder for others. You are a very cold and unfeeling person.
 Be ashamed of being You! You have a very good reason."</string>
+
+    <string name="im_you">"You: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Sending message ..."</string>
+    <string name="im_resolving_recipient">"Resolving recipient ..."</string>
+    <string name="im_no_such_recipient">"No such recipient: "</string>
+
 </resources>

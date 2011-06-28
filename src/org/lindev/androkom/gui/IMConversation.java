@@ -87,10 +87,10 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
             final StringBuilder sb = new StringBuilder();
             if (fromId == mKom.getUserId()) {
-                sb.append("You: ");
+                sb.append(getString(R.string.im_you));
             }
             else {
-                sb.append(fromStr).append(": ");
+                sb.append(fromStr).append(getString(R.string.im_prompt));
             }
             sb.append(msg);
             tv.setText(sb.toString());
@@ -104,7 +104,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         protected void onPreExecute() {
             dialog.setCancelable(false);
             dialog.setIndeterminate(true);
-            dialog.setMessage("Sending message ...");
+            dialog.setMessage(getString(R.string.im_sending_message));
             dialog.show();
         }
 
