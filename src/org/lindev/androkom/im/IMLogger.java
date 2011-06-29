@@ -10,6 +10,7 @@ import android.content.Context;
 import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
+import android.os.Bundle;
 import android.os.Message;
 import android.provider.BaseColumns;
 
@@ -37,6 +38,17 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public static final String COL_TO_STR = "col_to_str";
     public static final String COL_TIMESTAMP = "col_timestamp";
     public static final String COL_MSG = "col_msg";
+
+    public static final int NEW_MESSAGE = 1;
+    public static final int UNREAD_UPDATE = 2;
+
+    public static final String MESSAGE_CONV_ID = "message-conv-id";
+    public static final String MESSAGE_CONV_STR = "message-conv-str";
+    public static final String MESSAGE_FROM_ID = "message-from-id";
+    public static final String MESSAGE_FROM_STR = "message-from-str";
+    public static final String MESSAGE_TO_ID = "message-to-id";
+    public static final String MESSAGE_TO_STR = "message-to-str";
+    public static final String MESSAGE_BODY = "message-body";
 
     private class SQLHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "lyskom_im_log.db";
@@ -133,9 +145,20 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final Object[] updateArgs = { convStr, Long.valueOf(rowId), myId, convId };
         db.execSQL(UPDATE_CONV, updateArgs);
 
-        // Notify observers that the database has changed. Send the conversation id as argument
+        // Notify observers that the database has changed.
+        final Bundle data = new Bundle();
+        data.putInt(MESSAGE_CONV_ID, convId);
+        data.putString(MESSAGE_CONV_STR, convStr);
+        data.putInt(MESSAGE_FROM_ID, fromId);
+        data.putString(MESSAGE_FROM_STR, fromStr);
+        data.putInt(MESSAGE_TO_ID, toId);
+        data.putString(MESSAGE_TO_STR, toStr);
+        data.putString(MESSAGE_BODY, msg);
+        final Message message = new Message();
+        message.what = NEW_MESSAGE;
+        message.setData(data);
         setChanged();
-        notifyObservers(convId);
+        notifyObservers(message);
     }
 
     private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_MSG,
@@ -181,8 +204,18 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     public void updateLatestSeen(final int convId) {
         final SQLiteDatabase db = dbHelper.getWritableDatabase();
-        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        final Object[] whereArgs = { Integer.valueOf(mKom.getUserId()), Integer.valueOf(convId) };
         db.execSQL(QUERY_UPDATE_LATEST, whereArgs);
+
+        // Notify observers that the database has changed.
+        setChanged();
+        final Bundle data = new Bundle();
+        data.putInt(MESSAGE_CONV_ID, convId);
+        final Message message = new Message();
+        message.what = UNREAD_UPDATE;
+        message.setData(data);
+        setChanged();
+        notifyObservers(message);
     }
 
     private static final String QUERY_HAS_UNREAD = "SELECT COUNT(" + BaseColumns._ID + ") FROM " + TABLE_CONV +

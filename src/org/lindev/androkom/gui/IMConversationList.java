@@ -41,9 +41,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
 
-    static final String INTENT_CONVERSATION_ID = "conversation-id";
-    static final String INTENT_CONVERSATION_STR = "conversation-str";
-
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private Cursor mCursor = null;
@@ -174,8 +171,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         protected void onPostExecute(final ConfInfo conf) {
             if (conf != null) {
                 final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
-                intent.putExtra(INTENT_CONVERSATION_ID, conf.confNo);
-                intent.putExtra(INTENT_CONVERSATION_STR, conf.getNameString());
+                intent.putExtra(IMConversation.INTENT_CONVERSATION_ID, conf.confNo);
+                intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, conf.getNameString());
                 mRecipientField.setText("");
                 mMessageField.setText("");
                 startActivity(intent);
@@ -267,8 +264,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
 
         final Intent intent = new Intent(this, IMConversation.class);
-        intent.putExtra(INTENT_CONVERSATION_ID, convId);
-        intent.putExtra(INTENT_CONVERSATION_STR, convStr);
+        intent.putExtra(IMConversation.INTENT_CONVERSATION_ID, convId);
+        intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, convStr);
 
         startActivity(intent);
     }

@@ -23,6 +23,7 @@ import nu.dll.lyskom.UserArea;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.im.IMLogger;
+import org.lindev.androkom.im.IMNotification;
 import org.lindev.androkom.text.TextFetcher;
 
 import android.app.Service;
@@ -150,6 +151,7 @@ public class KomServer extends Service implements RpcEventListener,
         //asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
 
         imLogger = new IMLogger(this);
+        imNotification = new IMNotification(this);
         asyncMessagesHandler.subscribe(imLogger);
 
         if (s == null) {
@@ -1125,4 +1127,5 @@ public class KomServer extends Service implements RpcEventListener,
 
 	AsyncMessages asyncMessagesHandler;
 	public IMLogger imLogger;
+	private IMNotification imNotification;
 }
