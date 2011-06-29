@@ -18,6 +18,7 @@ import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Message;
 import android.provider.BaseColumns;
 import android.util.AttributeSet;
 import android.view.View;
@@ -36,6 +37,9 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     private static final int BACKGROUND_COLOR_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
     private static final String LATEST_SEEN = "latest-seen";
+
+    public static final String INTENT_CONVERSATION_ID = "conversation-id";
+    public static final String INTENT_CONVERSATION_STR = "conversation-str";
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
@@ -135,8 +139,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
 
         final Bundle data = getIntent().getExtras();
-        mConvId = data.getInt(IMConversationList.INTENT_CONVERSATION_ID);
-        setTitle(data.getString(IMConversationList.INTENT_CONVERSATION_STR));
+        mConvId = data.getInt(INTENT_CONVERSATION_ID);
+        setTitle(data.getString(INTENT_CONVERSATION_STR));
 
         setContentView(R.layout.im_conversation_layout);
         mSendButton = (Button) findViewById(R.id.send);
@@ -153,6 +157,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         if (mIMLogger != null) {
             mIMLogger.addObserver(this);
             updateView(true);
+            mIMLogger.updateLatestSeen(mConvId);
         }
     }
 
@@ -188,18 +193,20 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
             public void run() {
                 if (requery) {
                     mCursor.requery();
-                    mIMLogger.updateLatestSeen(mConvId);
                 }
                 getListView().setSelection(getListView().getCount() - 1);
             }
         });
     }
 
-    public void update(final Observable observable, final Object data) {
+    public void update(final Observable observable, final Object obj) {
         if (observable == mIMLogger) {
-            final int convId = (Integer) data;
-            if (convId == mConvId) {
-                updateView(true);
+            final Message msg = (Message) obj;
+            if (msg.what == IMLogger.NEW_MESSAGE) {
+                if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
+                    updateView(true);
+                    mIMLogger.updateLatestSeen(mConvId);
+                }
             }
         }
     }
