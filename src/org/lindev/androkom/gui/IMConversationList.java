@@ -77,18 +77,17 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         public void bindView(final View view, final Context context, final Cursor cursor) {
             final int convId = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_CONV_ID));
             final String convStr = cursor.getString(cursor.getColumnIndex(IMLogger.COL_CONV_STR));
-            final int numMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_NUM_MSG));
-            final int latestMsg = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_MSG));
-            final int latestSeen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_LATEST_SEEN));
+            final int numUnseen = cursor.getInt(cursor.getColumnIndex(IMLogger.COL_NUM_UNSEEN));
 
             final TextView tv = (TextView) view;
-            if (latestMsg == latestSeen) {
+            if (numUnseen == 0) {
                 tv.setBackgroundColor(BACKGROUND_COLOR_ALL_READ);
+                tv.setText(convStr + " <" + convId + ">");
             }
             else {
                 tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
+                tv.setText("(" + numUnseen + ") " + convStr + " <" + convId + ">");
             }
-            tv.setText("(" + numMsg + ") " + convStr + " <" + convId + ">");
         }
     }
 
