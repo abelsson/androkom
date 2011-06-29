@@ -17,6 +17,7 @@ import android.provider.BaseColumns;
 public class IMLogger extends Observable implements AsyncMessageSubscriber {
     private final SQLHelper dbHelper;
     private final KomServer mKom;
+    private final Object mWriteLock;
 
     private static final String TABLE_MSG = "table_msg";
     private static final String TABLE_CONV = "table_conv";
@@ -31,6 +32,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public static final String COL_NUM_MSG = "col_num_msgs";
     public static final String COL_LATEST_MSG = "col_latest_im";
     public static final String COL_LATEST_SEEN = "col_latest_seen";
+    public static final String COL_NUM_UNSEEN = "col_num_unseen";
 
     public static final String COL_FROM_ID = "col_from_id";
     public static final String COL_TO_ID = "col_to_id";
@@ -52,7 +54,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private class SQLHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "lyskom_im_log.db";
-        private static final int DATABASE_VERSION = 4;
+        private static final int DATABASE_VERSION = 5;
 
         public SQLHelper(final Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -85,6 +87,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
                   COL_NUM_MSG + " INTEGER NOT NULL, " +
                   COL_LATEST_MSG + " INTEGER NOT NULL, " +
                   COL_LATEST_SEEN + " INTEGER NOT NULL, " +
+                  COL_NUM_UNSEEN + " INTEGER NOT NULL, " +
                   "UNIQUE (" + COL_MY_ID + ", " + COL_CONV_ID + "))";
             db.execSQL(sql);
 
@@ -105,6 +108,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public IMLogger(final KomServer kom) {
         this.mKom = kom;
         this.dbHelper = new SQLHelper(mKom);
+        this.mWriteLock = new Object();
     }
 
     public void close() {
@@ -113,18 +117,14 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private static final String INSERT_CONV = "INSERT OR IGNORE INTO " + TABLE_CONV + " (" + COL_MY_ID + ", " +
             COL_CONV_ID + ", " + COL_CONV_STR + ", " + COL_NUM_MSG + ", " + COL_LATEST_MSG + ", " +
-            COL_LATEST_SEEN + ") VALUES (?, ?, ?, ?, ?, ?)";
+            COL_LATEST_SEEN + ", " + COL_NUM_UNSEEN + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
 
     private static final String UPDATE_CONV = "UPDATE " + TABLE_CONV + " SET " + COL_CONV_STR + " = ?, " +
-            COL_NUM_MSG + " = " + COL_NUM_MSG + " + 1, " + COL_LATEST_MSG + " = ? WHERE " + COL_MY_ID + " = ? AND " +
-            COL_CONV_ID + " = ?";
+            COL_NUM_MSG + " = " + COL_NUM_MSG + " + 1, " + COL_LATEST_MSG + " = ?, " + COL_NUM_UNSEEN + " = " +
+            COL_NUM_UNSEEN + " + 1 WHERE " + COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
 
     private void logIM(final Integer myId, final Integer fromId, final String fromStr, final Integer toId,
             final String toStr, final Integer convId, final String convStr, final String msg) {
-
-        final SQLiteDatabase db = dbHelper.getWritableDatabase();
-
-        // Insert the message into the message table
         ContentValues values = new ContentValues();
         values.put(COL_MY_ID, myId);
         values.put(COL_CONV_ID, convId);
@@ -134,16 +134,22 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         values.put(COL_TO_STR, toStr);
         values.put(COL_TIMESTAMP, System.currentTimeMillis());
         values.put(COL_MSG, msg);
-        final long rowId = db.insert(TABLE_MSG, null, values);
 
-        // Create a new empty record for the conversation if it doesn't already exist
-        final Integer zero = Integer.valueOf(0);
-        final Object insertArgs[] = { myId, convId, "", zero, zero, zero };
-        db.execSQL(INSERT_CONV, insertArgs);
+        synchronized (mWriteLock) {
+            final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
-        // Update conversation record
-        final Object[] updateArgs = { convStr, Long.valueOf(rowId), myId, convId };
-        db.execSQL(UPDATE_CONV, updateArgs);
+            // Insert the message into the message table
+            final long rowId = db.insert(TABLE_MSG, null, values);
+
+            // Create a new empty record for the conversation if it doesn't already exist
+            final Integer zero = Integer.valueOf(0);
+            final Object insertArgs[] = { myId, convId, "", zero, zero, zero, zero };
+            db.execSQL(INSERT_CONV, insertArgs);
+
+            // Update conversation record
+            final Object[] updateArgs = { convStr, Long.valueOf(rowId), myId, convId };
+            db.execSQL(UPDATE_CONV, updateArgs);
+        }
 
         // Notify observers that the database has changed.
         final Bundle data = new Bundle();
@@ -161,8 +167,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         notifyObservers(message);
     }
 
-    private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_MSG,
-            COL_LATEST_MSG, COL_LATEST_SEEN };
+    private static final String[] SELECT_CONV = { BaseColumns._ID, COL_CONV_ID, COL_CONV_STR, COL_NUM_UNSEEN };
     private static final String ORDER_BY_CONV = COL_LATEST_MSG;
 
     public Cursor getConversations(final int max) {
@@ -200,12 +205,14 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     }
 
     private static final String QUERY_UPDATE_LATEST = "UPDATE " + TABLE_CONV + " SET " + COL_LATEST_SEEN  + " = " +
-            COL_LATEST_MSG + " WHERE " + WHERE;
+            COL_LATEST_MSG + ", " + COL_NUM_UNSEEN + " = ? WHERE " + WHERE;
 
     public void updateLatestSeen(final int convId) {
-        final SQLiteDatabase db = dbHelper.getWritableDatabase();
-        final Object[] whereArgs = { Integer.valueOf(mKom.getUserId()), Integer.valueOf(convId) };
-        db.execSQL(QUERY_UPDATE_LATEST, whereArgs);
+        final Object[] args = { Integer.valueOf(0), Integer.valueOf(mKom.getUserId()), Integer.valueOf(convId) };
+        synchronized (mWriteLock) {
+            final SQLiteDatabase db = dbHelper.getWritableDatabase();
+            db.execSQL(QUERY_UPDATE_LATEST, args);
+        }
 
         // Notify observers that the database has changed.
         setChanged();
