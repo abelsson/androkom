@@ -74,6 +74,10 @@
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
 
+    <string name="preferredlanguage_title">Språk</string>
+    <string name="preferredlanguage_summary">Välj språk</string>
+    <string name="preferredlanguage_dialog_title_prefs">Språk dialog title</string>
+
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 

@@ -23,8 +23,11 @@ public class ConferencePrefs extends PreferenceActivity {
 	
     private static final String OPT_TOASTFORASYNCH = "toastforasynch";
     private static final Boolean OPT_TOASTFORASYNCH_DEF = false;
-    
-	protected void onCreate(Bundle savedInstanceState) {
+
+    private static final String OPT_PREFERREDLANGUAGE = "preferredlanguage";
+    private static final String OPT_PREFERREDLANGUAGE_DEF = "";
+
+    protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
 	}
@@ -51,5 +54,9 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static Boolean getToastForAsynch(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_TOASTFORASYNCH, OPT_TOASTFORASYNCH_DEF);
+    }
+
+    public static String getPreferredLanguage(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_PREFERREDLANGUAGE, OPT_PREFERREDLANGUAGE_DEF);
     }
 }

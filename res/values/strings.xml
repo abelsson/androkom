@@ -74,6 +74,10 @@
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
 
+    <string name="preferredlanguage_title">Language</string>
+    <string name="preferredlanguage_summary">Select language.</string>
+    <string name="preferredlanguage_dialog_title_prefs">Language dialog title</string>
+
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
 

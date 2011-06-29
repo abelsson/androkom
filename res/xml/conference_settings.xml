@@ -25,4 +25,15 @@
     android:summary="@string/toastforasynch_summary"
     android:defaultValue="true"
     />
+  <PreferenceCategory
+    android:title="@string/preferredlanguage_title">
+  <ListPreference
+    android:key="preferredlanguage"
+    android:title="@string/preferredlanguage_title"
+    android:summary="@string/preferredlanguage_summary"
+    android:entries="@array/preferredlanguage_entries_list"
+    android:entryValues="@array/preferredlanguage_values_list"
+    android:dialogTitle="@string/preferredlanguage_dialog_title_prefs"
+    />
+  </PreferenceCategory>
 </PreferenceScreen>
