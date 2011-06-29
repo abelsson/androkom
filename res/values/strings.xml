@@ -164,4 +164,11 @@ Be ashamed of being You! You have a very good reason."</string>
 
     <string name="no_text_loaded">"[no text loaded]"</string>
 
+    <string name="creating_text">"Creating text..."</string>
+    <string name="no_zero_texts">"zero texts is not implemented"</string>
+    <string name="error_could_not_connect">"Couldn't connect to server"</string>
+    <string name="error_unknown">"Unknown error"</string>
+    <string name="error_ambigious_name">"Invalid/ambigious username"</string>
+    <string name="error_invalid_password">"Invalid password"</string>
+    
 </resources>

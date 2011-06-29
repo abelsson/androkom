@@ -480,29 +480,29 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
     		if (!s.getConnected()) {
     			if (connect(server) != 0)
-    				return "Couldn't connect to server";
+    				return getString(R.string.error_could_not_connect);
     		}
         } catch (Exception e) {
             Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
             e.printStackTrace();
-            return "Unknown error";
+            return getString(R.string.error_unknown);
         }
 
         usernames = new ConfInfo[0];
         try {
             usernames = s.lookupName(username, true, false);
             if (usernames.length != 1) {            
-                return "Invalid/ambigious username";
+                return getString(R.string.error_ambigious_name);
             } else {
                 // login as hidden
                 if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
-                    return "Invalid password";
+                    return getString(R.string.error_invalid_password);
                 }
             }
         } catch (Exception e) {
             Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
             e.printStackTrace();
-            return "Unknown error";
+            return getString(R.string.error_unknown);
         }
         try {
             s.setClientVersion("Androkom", getVersionName());

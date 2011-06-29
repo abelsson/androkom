@@ -92,7 +92,7 @@ public class Endast extends Activity implements ServiceConnection
 						Toast.LENGTH_SHORT).show();			
 			}
 		} else {
-			Toast.makeText(getBaseContext(), "zero texts is not implemented",
+			Toast.makeText(getBaseContext(), getString(R.string.no_zero_texts),
 					Toast.LENGTH_SHORT).show();
 		}
 	}

@@ -163,4 +163,11 @@ Guran vill helst sätta en giftpil i dig."</string>
 
     <string name="no_text_loaded">"[no text loaded]"</string>
 
+    <string name="creating_text">"Skapar text..."</string>
+    <string name="no_zero_texts">"tomma texter är inte tillåtna"</string>
+    <string name="error_could_not_connect">"Kunde inte ansluta till servern"</string>
+    <string name="error_unknown">"Okänt fel"</string>
+    <string name="error_ambigious_name">"Otillåtet/tvetydigt namn"</string>
+    <string name="error_invalid_password">"Felaktigt lösenord"</string>
+
 </resources>
