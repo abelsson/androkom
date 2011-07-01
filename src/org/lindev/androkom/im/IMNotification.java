@@ -71,19 +71,24 @@ public class IMNotification implements Observer {
     }
 
     public void update(final Observable observable, final Object obj) {
-        if (observable == mIMLogger) {
-            final Message msg = (Message) obj;
-            final Bundle data = msg.getData();
-            if (msg.what == IMLogger.NEW_MESSAGE) {
-                final int convId = data.getInt(IMLogger.MESSAGE_CONV_ID);
-                final String convStr = data.getString(IMLogger.MESSAGE_CONV_STR);
-                final int fromId = data.getInt(IMLogger.MESSAGE_FROM_ID);
-                final String fromStr = data.getString(IMLogger.MESSAGE_FROM_STR);
-                final int toId = data.getInt(IMLogger.MESSAGE_TO_ID);
-                final String toStr = data.getString(IMLogger.MESSAGE_TO_STR);
-                final String body = data.getString(IMLogger.MESSAGE_BODY);
-                newMessage(convId, convStr, fromId, fromStr, toId, toStr, body);
-            }
+        if (observable != mIMLogger) {
+            return;
+        }
+        if (!(obj instanceof Message) || ((Message) obj).what != IMLogger.NEW_MESSAGE) {
+            return;
+        }
+
+        final Bundle data = ((Message) obj).getData();
+        final int convId = data.getInt(IMLogger.MESSAGE_CONV_ID);
+        final String convStr = data.getString(IMLogger.MESSAGE_CONV_STR);
+        final int fromId = data.getInt(IMLogger.MESSAGE_FROM_ID);
+        final String fromStr = data.getString(IMLogger.MESSAGE_FROM_STR);
+        final int toId = data.getInt(IMLogger.MESSAGE_TO_ID);
+        final String toStr = data.getString(IMLogger.MESSAGE_TO_STR);
+        final String body = data.getString(IMLogger.MESSAGE_BODY);
+
+        if (fromId != mKom.getUserId()) {
+            newMessage(convId, convStr, fromId, fromStr, toId, toStr, body);
         }
     }
 }
