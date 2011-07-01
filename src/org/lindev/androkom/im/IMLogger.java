@@ -196,8 +196,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
         final Cursor cursor = db.query(TABLE_CONV, COLS_LATEST_SEEN, WHERE, whereArgs, null, null, null);
         int latestSeen = 0;
-        cursor.moveToFirst();
-        if (!cursor.isAfterLast()) {
+        if (cursor.moveToFirst()) {
             latestSeen = cursor.getInt(cursor.getColumnIndex(COL_LATEST_SEEN));
         }
         cursor.close();
@@ -205,10 +204,10 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     }
 
     private static final String QUERY_UPDATE_LATEST = "UPDATE " + TABLE_CONV + " SET " + COL_LATEST_SEEN  + " = " +
-            COL_LATEST_MSG + ", " + COL_NUM_UNSEEN + " = ? WHERE " + WHERE;
+            COL_LATEST_MSG + ", " + COL_NUM_UNSEEN + " = 0 WHERE " + WHERE;
 
     public void updateLatestSeen(final int convId) {
-        final Object[] args = { Integer.valueOf(0), Integer.valueOf(mKom.getUserId()), Integer.valueOf(convId) };
+        final Object[] args = { Integer.valueOf(mKom.getUserId()), Integer.valueOf(convId) };
         synchronized (mWriteLock) {
             final SQLiteDatabase db = dbHelper.getWritableDatabase();
             db.execSQL(QUERY_UPDATE_LATEST, args);
@@ -225,16 +224,48 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         notifyObservers(message);
     }
 
-    private static final String QUERY_HAS_UNREAD = "SELECT COUNT(" + BaseColumns._ID + ") FROM " + TABLE_CONV +
-            " WHERE " + COL_MY_ID + " = ? AND " + COL_LATEST_MSG + " > " + COL_LATEST_SEEN;
+    private static final String QUERY_NUM_UNSEEN = "SELECT SUM(" + COL_NUM_UNSEEN + ") FROM " + TABLE_CONV +
+            " WHERE " + COL_MY_ID + " = ?";
 
-    public boolean hasUnreadMessages() {
+    public int numUnseenMessages() {
         final SQLiteDatabase db = dbHelper.getReadableDatabase();
         final String[] args = { Integer.toString(mKom.getUserId()) };
-        final Cursor cursor = db.rawQuery(QUERY_HAS_UNREAD, args);
-        final int count = cursor.getInt(0);
+        final Cursor cursor = db.rawQuery(QUERY_NUM_UNSEEN, args);
+        int numUnread = 0;
+        if (cursor.moveToFirst() && !cursor.isNull(0)) {
+            numUnread = cursor.getInt(0);
+        }
         cursor.close();
-        return count > 0;
+        return numUnread;
+    }
+
+    private static final String[] COLS_UNSEEN_IN_CONV = { COL_NUM_UNSEEN };
+
+    public int numUnseenInConversation(final int convId) {
+        final SQLiteDatabase db = dbHelper.getReadableDatabase();
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        final Cursor cursor = db.query(TABLE_CONV, COLS_UNSEEN_IN_CONV, WHERE, whereArgs, null, null, null);
+        int numUnseen = 0;
+        if (cursor.moveToFirst()) {
+            numUnseen = cursor.getInt(cursor.getColumnIndex(COL_NUM_UNSEEN));
+        }
+        cursor.close();
+        return numUnseen;
+    }
+
+    private static final String QUERY_UNSEEN_CONVS = "SELECT COUNT(" + BaseColumns._ID + ") FROM " + TABLE_CONV +
+            " WHERE " + COL_MY_ID + " = ? AND " + COL_NUM_UNSEEN + " > 0";
+
+    public int numConversationsWithUnseen() {
+        final SQLiteDatabase db = dbHelper.getReadableDatabase();
+        final String[] args = { Integer.toString(mKom.getUserId()) };
+        final Cursor cursor = db.rawQuery(QUERY_UNSEEN_CONVS, args);
+        int numConvWithUnseen = 0;
+        if (cursor.moveToFirst()) {
+            numConvWithUnseen = cursor.getInt(0);
+        }
+        cursor.close();
+        return numConvWithUnseen;
     }
 
     public void asyncMessage(final Message msg) {
