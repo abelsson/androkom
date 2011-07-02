@@ -18,6 +18,7 @@
     <string name="all_read">Allt läst</string>
     <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
     <string name="error_fetching_text">[problem att hämta text]</string>
+    <string name="error_no_parent">"Texten är inte en kommentar"</string>
     <string name="anonymous">anonym</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" finns inte"</string>
@@ -48,6 +49,7 @@
 
     <string name="server_title">Server</string>
     <string name="server_summary">Välj server</string>
+    <string name="server_dialog_title_prefs">Server dialog title</string>
 
     <string name="otherserver_title">Annan server</string>
     <string name="otherserver_summary">Serverns adress</string>
@@ -66,10 +68,21 @@
     <string name="showfullheaders_title">Visa text info</string>
     <string name="showfullheaders_summary">Visa text info som kommentarer</string>
 
+    <string name="marktextread_title">Läsmarkera</string>
+    <string name="marktextread_summary">Markera visade texter som lästa</string>
+
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
+
+    <string name="preferredlanguage_title">Språk</string>
+    <string name="preferredlanguage_summary">Välj språk</string>
+    <string name="preferredlanguage_dialog_title_prefs">Språk dialog title</string>
+
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 
-    <string name="smallerfontsize_label">Mindre text</string>
+    <string name="title_submenu_textsize">Text size...</string>
+    <string name="smallerfontsize_label">Mindre typsnitt</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
     <string name="biggerfontsize_shortcut">+</string>
@@ -145,4 +158,20 @@ Fantomen önskar dig en bra dag."</string>
 
     <string name="abuse_text">"Du är mycket ful och mycket dum. Många hatar dig både till kropp och till själ. Du kommer att överösas med sjukdomar och inte få någon som helst lycka i ditt liv. Du borde verkligen ta dig samman och göra något av ditt liv även om det inte är mycket att starta med.
 Guran vill helst sätta en giftpil i dig."</string>
+
+    <string name="im_you">"Du: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Skickar meddelande ..."</string>
+    <string name="im_resolving_recipient">"Hittar mottagare ..."</string>
+    <string name="im_no_such_recipient">"Hittar ingen mottagare: "</string>
+
+    <string name="no_text_loaded">"[no text loaded]"</string>
+
+    <string name="creating_text">"Skapar text..."</string>
+    <string name="no_zero_texts">"tomma texter är inte tillåtna"</string>
+    <string name="error_could_not_connect">"Kunde inte ansluta till servern"</string>
+    <string name="error_unknown">"Okänt fel"</string>
+    <string name="error_ambigious_name">"Otillåtet/tvetydigt namn"</string>
+    <string name="error_invalid_password">"Felaktigt lösenord"</string>
+
 </resources>

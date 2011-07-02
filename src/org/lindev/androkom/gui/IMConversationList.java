@@ -102,7 +102,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         protected void onPreExecute() {
             dialog.setCancelable(false);
             dialog.setIndeterminate(true);
-            dialog.setMessage("Resolving recipient ...");
+            dialog.setMessage(getString(R.string.im_resolving_recipient));
             dialog.show();
         }
 
@@ -120,7 +120,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         protected void onPostExecute(final ConfInfo[] possibleRecip) {
             if (possibleRecip.length == 0) {
-                Toast.makeText(getApplicationContext(), "No such recipient: " + mRecip, Toast.LENGTH_SHORT).show();
+                Toast.makeText(getApplicationContext(), getString(R.string.im_no_such_recipient) + mRecip, Toast.LENGTH_SHORT).show();
             }
             else if (possibleRecip.length == 1) {
                 new SendMessageTask().execute(possibleRecip[0], mMsg);
@@ -151,7 +151,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         protected void onPreExecute() {
             dialog.setCancelable(false);
             dialog.setIndeterminate(true);
-            dialog.setMessage("Sending message ...");
+            dialog.setMessage(getString(R.string.im_sending_message));
             dialog.show();
         }
 

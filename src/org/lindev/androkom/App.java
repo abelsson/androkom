@@ -1,10 +1,14 @@
 package org.lindev.androkom;
 
+import java.util.Locale;
+
 import android.app.Application;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -23,12 +27,27 @@ public class App extends Application implements ServiceConnection
 	private static final String OPT_KEEPSCREENON = "keepscreenon";
 	private static final Boolean OPT_KEEPSCREENON_DEF = false;
 	private static final String TAG = "Androkom";
-	
+
+    private Locale locale = null;
+
 	@Override
 	public void onCreate()
 	{
 		super.onCreate();
-		doBindService(this);
+
+		Configuration config = getBaseContext().getResources()
+        .getConfiguration();
+		
+        String lang = ConferencePrefs.getPreferredLanguage(getBaseContext());
+        if (!"".equals(lang) && !config.locale.getLanguage().equals(lang)) {
+            locale = new Locale(lang);
+            Locale.setDefault(locale);
+            config.locale = locale;
+            getBaseContext().getResources().updateConfiguration(config,
+                    getBaseContext().getResources().getDisplayMetrics());
+        }
+
+        doBindService(this);
 		
         // keep screen on, depending on preferences
         boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
@@ -73,4 +92,15 @@ public class App extends Application implements ServiceConnection
 	{
 		
 	}
+
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        if (locale != null) {
+            newConfig.locale = locale;
+            Locale.setDefault(locale);
+            getBaseContext().getResources().updateConfiguration(newConfig,
+                    getBaseContext().getResources().getDisplayMetrics());
+        }
+    }
 }

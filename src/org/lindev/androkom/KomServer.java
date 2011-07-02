@@ -27,6 +27,7 @@ import org.lindev.androkom.im.IMNotification;
 import org.lindev.androkom.text.TextFetcher;
 
 import android.app.Service;
+import android.content.Context;
 import android.content.Intent;
 import android.content.pm.PackageInfo;
 import android.os.Binder;
@@ -81,21 +82,42 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public static class TextInfo
     {
-        public static final TextInfo ALL_READ = new TextInfo(-1, "", "", "", "", "All read", false); 
-        public static final TextInfo ERROR_FETCHING_TEXT = new TextInfo(-1, "", "", "", "", "[error fetching text]", false);
-        public static final TextInfo NO_PARENT = new TextInfo(-1, "", "", "", "", "Text has no parent", false);
+        public static final int ALL_READ=1;
+        public static final int ERROR_FETCHING_TEXT=2;
+        public static final int NO_PARENT=3;
 
-        public TextInfo(int textNo, String author, String date, String headers, String subject, String body, boolean showFullHeaders) {
+        public TextInfo(Context context, int textNo, String author, String date, String headers, String subject, String body, boolean showFullHeaders) {
             this.textNo = textNo;
             this.author = author;
             this.date = date;
             this.headers = headers;
             this.subject = subject;
             this.body = body;
-            this.spannable = Conference.formatText(this, showFullHeaders);
+            this.spannable = Conference.formatText(context, this, showFullHeaders);
         }
 
-		public String getAuthor() {
+        public static TextInfo createText(Context context, int id) {
+            switch (id) {
+            case ALL_READ:
+                Log.d(TAG, "createText ALL_READ");
+                return new TextInfo(context, -1, "", "", "", "", context
+                        .getString(R.string.all_read), false);
+            case ERROR_FETCHING_TEXT:
+                Log.d(TAG, "createText ERROR_FETCHING_TEXT");
+                return new TextInfo(context, -1, "", "", "", "", context
+                        .getString(R.string.error_fetching_text), false);
+            case NO_PARENT:
+                Log.d(TAG, "createText NO_PARENT");
+                return new TextInfo(context, -1, "", "", "", "", context
+                        .getString(R.string.error_no_parent), false);
+            default:
+                Log.d(TAG, "createText default");
+                return new TextInfo(context, -1, "", "", "", "", context
+                        .getString(R.string.error_fetching_text), false);
+            }
+        }
+
+        public String getAuthor() {
 			return author;
 		}
 
@@ -148,8 +170,9 @@ public class KomServer extends Service implements RpcEventListener,
         super.onCreate();
         
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
-        //asyncMessagesHandler.subscribe(asyncMessagesHandler.new MessageToaster());
-
+        asyncMessagesHandler
+                .subscribe(asyncMessagesHandler.new MessageToaster());
+        
         imLogger = new IMLogger(this);
         imNotification = new IMNotification(this);
         asyncMessagesHandler.subscribe(imLogger);
@@ -300,6 +323,7 @@ public class KomServer extends Service implements RpcEventListener,
 									+ getString(R.string.does_not_exist);
 						}
 					} else {
+					    Log.d(TAG, "fetchPersons persNo="+persNo);
 						username = getString(R.string.anonymous);
 					}
 					Log.i("androkom", username + " <" + persNo + ">");
@@ -456,29 +480,29 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
     		if (!s.getConnected()) {
     			if (connect(server) != 0)
-    				return "Couldn't connect to server";
+    				return getString(R.string.error_could_not_connect);
     		}
         } catch (Exception e) {
             Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
             e.printStackTrace();
-            return "Unknown error";
+            return getString(R.string.error_unknown);
         }
 
         usernames = new ConfInfo[0];
         try {
             usernames = s.lookupName(username, true, false);
             if (usernames.length != 1) {            
-                return "Invalid/ambigious username";
+                return getString(R.string.error_ambigious_name);
             } else {
                 // login as hidden
                 if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
-                    return "Invalid password";
+                    return getString(R.string.error_invalid_password);
                 }
             }
         } catch (Exception e) {
             Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
             e.printStackTrace();
-            return "Unknown error";
+            return getString(R.string.error_unknown);
         }
         try {
             s.setClientVersion("Androkom", getVersionName());
@@ -491,6 +515,8 @@ public class KomServer extends Service implements RpcEventListener,
         re_password = password;
         re_server = server;
 
+        parseCommonUserArea();
+        parseElispUserArea();
         return "";
     }
 
@@ -932,14 +958,11 @@ public class KomServer extends Service implements RpcEventListener,
 	 * Parse properties from the common area, if any.
 	 */
 	void parseCommonUserArea() {
-		// TODO: Should probably not use the same mUserAreaProps as
-		// parseElispUserArea
 		try {
-
 			UserArea ua = s.getUserArea();
 			String[] blocks = ua.getBlockNames();
 
-			mUserAreaProps = new HashMap<String, String>();
+			mCommonUserAreaProps = new HashMap<String, String>();
 
 			for (String block : blocks) {
 
@@ -949,7 +972,7 @@ public class KomServer extends Service implements RpcEventListener,
 						String[] first = getNextHollerith(token);
 						String[] second = getNextHollerith(first[1]);
 
-						mUserAreaProps.put(first[0], second[0]);
+						mCommonUserAreaProps.put(first[0], second[0]);
 						token = second[1];
 					}
 				}
@@ -968,8 +991,8 @@ public class KomServer extends Service implements RpcEventListener,
 	 */
 	public boolean getPresenceMessages() {
 	    boolean presence_messages = true;
-		parseCommonUserArea();
-		String messages = mUserAreaProps.get("presence-messages");
+
+		String messages = mCommonUserAreaProps.get("presence-messages");
 		if (messages != null) {
 		    presence_messages = (messages.compareTo("1") == 0);
 		}
@@ -985,7 +1008,7 @@ public class KomServer extends Service implements RpcEventListener,
 			UserArea ua = s.getUserArea();
 			String[] blocks = ua.getBlockNames();
 
-			mUserAreaProps = new HashMap<String, String>();
+			mElispUserAreaProps = new HashMap<String, String>();
 
 			for (String block : blocks) {
 
@@ -995,7 +1018,7 @@ public class KomServer extends Service implements RpcEventListener,
 						String[] first = getNextHollerith(token);
 						String[] second = getNextHollerith(first[1]);
 
-						mUserAreaProps.put(first[0], second[0]);
+						mElispUserAreaProps.put(first[0], second[0]);
 						token = second[1];
 					}
 				}
@@ -1016,8 +1039,7 @@ public class KomServer extends Service implements RpcEventListener,
 	public Set<Integer> getFriends() {
 		Set<Integer> friendsList=new HashSet<Integer>();
 		
-		parseElispUserArea();
-		String friends = mUserAreaProps.get("kom-friends");
+		String friends = mElispUserAreaProps.get("kom-friends");
 		if (friends != null) {
 			friends = friends.substring(1, friends.length() - 2);
 			String[] friendList = friends.split(" ");
@@ -1110,7 +1132,8 @@ public class KomServer extends Service implements RpcEventListener,
 	private Session s = null;
 
 	private int mLastTextNo = 0;
-	HashMap<String, String> mUserAreaProps = null;
+	HashMap<String, String> mElispUserAreaProps = null;
+    HashMap<String, String> mCommonUserAreaProps = null;
 
 	// This is the object that receives interactions from clients.
 	private final IBinder mBinder = new LocalBinder();

@@ -42,11 +42,19 @@ public class AsyncMessages implements AsynchMessageReceiver
         switch (msg.what)
         {
         case nu.dll.lyskom.Asynch.login:
-            str = msg.getData().getString("name") + app.getString(R.string.x_logged_in);
+            if (mKom.getPresenceMessages())
+            {
+                str = msg.getData().getString("name")
+                        + app.getString(R.string.x_logged_in);
+            }
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-            str = msg.getData().getString("name") + app.getString(R.string.x_logged_out);
+            if (mKom.getPresenceMessages())
+            {
+                str = msg.getData().getString("name")
+                        + app.getString(R.string.x_logged_out);
+            }
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
@@ -73,8 +81,7 @@ public class AsyncMessages implements AsynchMessageReceiver
     /**
      * Displays incoming messages as Toast events
      */
-    public class MessageToaster implements AsyncMessageSubscriber
-    {
+    public class MessageToaster implements AsyncMessageSubscriber {
         public void asyncMessage(Message msg) {
             final String str = messageAsString(msg);
 
@@ -83,7 +90,9 @@ public class AsyncMessages implements AsynchMessageReceiver
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
                 }
-                Toast.makeText(app, str, length).show();
+                if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
+                    Toast.makeText(app, str, length).show();
+                }
             }
         }
     };

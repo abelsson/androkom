@@ -90,7 +90,7 @@ public class CreateNewText extends Activity implements ServiceConnection
         protected void onPreExecute() {
             this.dialog.setCancelable(true);
             this.dialog.setIndeterminate(true);
-            this.dialog.setMessage("Creating text...");
+            this.dialog.setMessage(getString(R.string.creating_text));
             this.dialog.show();
 
             this.recipient = mRecipient.getText().toString();

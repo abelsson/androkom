@@ -18,6 +18,7 @@
     <string name="all_read">All read</string>
     <string name="error_fetching_unread_text">[error fetching unread text]</string>
     <string name="error_fetching_text">[error fetching text]</string>
+    <string name="error_no_parent">"Text has no parent"</string>
     <string name="anonymous">anonymous</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" does not exist"</string>
@@ -66,6 +67,16 @@
 
     <string name="showfullheaders_title">Show full headers</string>
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
+
+    <string name="marktextread_title">Mark texts read</string>
+    <string name="marktextread_summary">Mark texts read</string>
+
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
+
+    <string name="preferredlanguage_title">Language</string>
+    <string name="preferredlanguage_summary">Select language.</string>
+    <string name="preferredlanguage_dialog_title_prefs">Language dialog title</string>
 
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
@@ -148,4 +159,20 @@ Be proud of being You! You have a very good reason."</string>
 
     <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around you. You are doing a worthless job. Many people hate you, body and soul. You make life harder for others. You are a very cold and unfeeling person.
 Be ashamed of being You! You have a very good reason."</string>
+
+    <string name="im_you">"You: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Sending message ..."</string>
+    <string name="im_resolving_recipient">"Resolving recipient ..."</string>
+    <string name="im_no_such_recipient">"No such recipient: "</string>
+
+    <string name="no_text_loaded">"[no text loaded]"</string>
+
+    <string name="creating_text">"Creating text..."</string>
+    <string name="no_zero_texts">"zero texts is not implemented"</string>
+    <string name="error_could_not_connect">"Couldn't connect to server"</string>
+    <string name="error_unknown">"Unknown error"</string>
+    <string name="error_ambigious_name">"Invalid/ambigious username"</string>
+    <string name="error_invalid_password">"Invalid password"</string>
+    
 </resources>
