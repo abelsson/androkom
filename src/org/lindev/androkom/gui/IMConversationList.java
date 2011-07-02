@@ -41,6 +41,8 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
 
+    public static final String INTENT_CONVERSATION_LIST_RECIPIENT = "recipient-str";
+
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private Cursor mCursor = null;
@@ -181,7 +183,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     @Override
-    public void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.im_conversation_list_layout);
 
@@ -191,7 +193,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         final Bundle extras = getIntent().getExtras();
         if (extras != null) {
-            final String recipient = extras.getString("recipient");
+            final String recipient = extras.getString(INTENT_CONVERSATION_LIST_RECIPIENT);
             if (recipient != null) {
                 mRecipientField.setText(recipient);
             }
@@ -203,7 +205,13 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     @Override
-    public void onResume() {
+    protected void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
+        initialize();
+    }
+
+    @Override
+    protected void onResume() {
         super.onResume();
         if (mIMLogger != null) {
             mIMLogger.addObserver(this);
@@ -212,7 +220,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         if (mIMLogger != null) {
             mIMLogger.deleteObserver(this);
         }
@@ -220,7 +228,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         if (mIMLogger != null) {
             mCursor.close();
         }
@@ -269,13 +277,20 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         startActivity(intent);
     }
 
-    public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+    private void initialize() {
         mIMLogger = mKom.imLogger;
+        if (mCursor != null) {
+            mCursor.close();
+        }
         mCursor = mIMLogger.getConversations(MAX_CONVERSATIONS);
         setListAdapter(new IMConvListCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
         updateView(false);
+    }
+
+    public void onServiceConnected(final ComponentName name, final IBinder service) {
+        mKom = ((KomServer.LocalBinder) service).getService();
+        initialize();
     }
 
     public void onServiceDisconnected(final ComponentName name) {

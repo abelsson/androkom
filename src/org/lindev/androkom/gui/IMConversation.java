@@ -12,6 +12,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Color;
@@ -131,16 +132,13 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     @Override
-    public void onCreate(final Bundle savedInstanceState) {
+    protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
 
+        mLatestSeen = -1;
         if (savedInstanceState != null && savedInstanceState.containsKey(LATEST_SEEN)) {
             mLatestSeen = savedInstanceState.getInt(LATEST_SEEN);
         }
-
-        final Bundle data = getIntent().getExtras();
-        mConvId = data.getInt(INTENT_CONVERSATION_ID);
-        setTitle(data.getString(INTENT_CONVERSATION_STR));
 
         setContentView(R.layout.im_conversation_layout);
         mSendButton = (Button) findViewById(R.id.send);
@@ -152,7 +150,14 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     @Override
-    public void onResume() {
+    protected void onNewIntent(final Intent intent) {
+        super.onNewIntent(intent);
+        mLatestSeen = -1;
+        initialize(intent);
+    }
+
+    @Override
+    protected void onResume() {
         super.onResume();
         if (mIMLogger != null) {
             mIMLogger.addObserver(this);
@@ -162,7 +167,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     @Override
-    public void onPause() {
+    protected void onPause() {
         if (mIMLogger != null) {
             mIMLogger.deleteObserver(this);
         }
@@ -170,7 +175,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     @Override
-    public void onDestroy() {
+    protected void onDestroy() {
         if (mIMLogger != null) {
             mCursor.close();
         }
@@ -217,9 +222,15 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         super.onSaveInstanceState(outState);
     }
 
-    public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+    private void initialize(final Intent intent) {
+        final Bundle data = intent.getExtras();
+        mConvId = data.getInt(INTENT_CONVERSATION_ID);
+        setTitle(data.getString(INTENT_CONVERSATION_STR));
+
         mIMLogger = mKom.imLogger;
+        if (mCursor != null) {
+            mCursor.close();
+        }
         mCursor = mIMLogger.getMessages(mConvId, MAX_MESSAGES);
         if (mLatestSeen < 0) {
             mLatestSeen = mIMLogger.getLatestSeen(mConvId);
@@ -228,6 +239,11 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         setListAdapter(new IMConvCursorAdapter(this, mCursor));
         mIMLogger.addObserver(this);
         updateView(false);
+    }
+
+    public void onServiceConnected(final ComponentName name, final IBinder service) {
+        mKom = ((KomServer.LocalBinder) service).getService();
+        initialize(getIntent());
     }
 
     public void onServiceDisconnected(final ComponentName name) {
