@@ -153,6 +153,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     protected void onNewIntent(final Intent intent) {
         super.onNewIntent(intent);
         mLatestSeen = -1;
+        mTextField.setText("");
         initialize(intent);
     }
 
@@ -223,9 +224,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     private void initialize(final Intent intent) {
-        final Bundle data = intent.getExtras();
-        mConvId = data.getInt(INTENT_CONVERSATION_ID);
-        setTitle(data.getString(INTENT_CONVERSATION_STR));
+        mConvId = intent.getIntExtra(INTENT_CONVERSATION_ID, 0);
+        setTitle(intent.getStringExtra(INTENT_CONVERSATION_STR));
 
         mIMLogger = mKom.imLogger;
         if (mCursor != null) {

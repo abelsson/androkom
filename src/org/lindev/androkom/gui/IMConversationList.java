@@ -191,14 +191,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mRecipientField = (EditText) findViewById(R.id.recipient);
         mMessageField = (EditText) findViewById(R.id.message);
 
-        final Bundle extras = getIntent().getExtras();
-        if (extras != null) {
-            final String recipient = extras.getString(INTENT_CONVERSATION_LIST_RECIPIENT);
-            if (recipient != null) {
-                mRecipientField.setText(recipient);
-            }
-        }
-
         mSendButton.setOnClickListener(this);
 
         getApp().doBindService(this);
@@ -207,7 +199,9 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     @Override
     protected void onNewIntent(final Intent intent) {
         super.onNewIntent(intent);
-        initialize();
+        mRecipientField.setText("");
+        mMessageField.setText("");
+        initialize(intent);
     }
 
     @Override
@@ -277,7 +271,15 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         startActivity(intent);
     }
 
-    private void initialize() {
+    private void initialize(final Intent intent) {
+        if (intent.hasExtra(INTENT_CONVERSATION_LIST_RECIPIENT)) {
+            final String recipient = intent.getStringExtra(INTENT_CONVERSATION_LIST_RECIPIENT);
+            intent.removeExtra(INTENT_CONVERSATION_LIST_RECIPIENT);
+            if (recipient != null) {
+                mRecipientField.setText(recipient);
+            }
+        }
+
         mIMLogger = mKom.imLogger;
         if (mCursor != null) {
             mCursor.close();
@@ -290,7 +292,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         mKom = ((KomServer.LocalBinder) service).getService();
-        initialize();
+        initialize(getIntent());
     }
 
     public void onServiceDisconnected(final ComponentName name) {
