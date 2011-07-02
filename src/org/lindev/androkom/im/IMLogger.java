@@ -2,6 +2,7 @@ package org.lindev.androkom.im;
 
 import java.util.Observable;
 
+import org.lindev.androkom.AsyncMessages;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer;
 
@@ -275,16 +276,16 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
         final int myId = mKom.getUserId();
 
-        final int fromId = msg.getData().getInt("from-id");
-        final String fromStr = msg.getData().getString("from");
+        final int fromId = msg.getData().getInt(AsyncMessages.ASYNC_MESSAGE_FROM_ID);
+        final String fromStr = msg.getData().getString(AsyncMessages.ASYNC_MESSAGE_FROM);
 
-        final int toId = msg.getData().getInt("to-id");
-        final String toStr = msg.getData().getString("to");
+        final int toId = msg.getData().getInt(AsyncMessages.ASYNC_MESSAGE_TO_ID);
+        final String toStr = msg.getData().getString(AsyncMessages.ASYNC_MESSAGE_TO);
 
         final int convId;
         final String convStr;
 
-        final String msgStr = msg.getData().getString("msg");
+        final String msgStr = msg.getData().getString(AsyncMessages.ASYNC_MESSAGE_MSG);
 
         // If we received a message from the server about a message we sent ourselves, it shouldn't be stored as that
         // is already stored when it was sent.

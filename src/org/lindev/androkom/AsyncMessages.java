@@ -18,9 +18,17 @@ import android.os.Message;
 import android.util.Log;
 import android.widget.Toast;
 
-public class AsyncMessages implements AsynchMessageReceiver
-{
+public class AsyncMessages implements AsynchMessageReceiver {
     private static final String TAG = "Androkom";
+
+    public static final String ASYNC_MESSAGE_NAME = "name";
+    public static final String ASYNC_MESSAGE_NEWNAME = "newname";
+    public static final String ASYNC_MESSAGE_OLDNAME = "oldname";
+    public static final String ASYNC_MESSAGE_FROM_ID = "from-id";
+    public static final String ASYNC_MESSAGE_FROM = "from";
+    public static final String ASYNC_MESSAGE_TO_ID = "to-id";
+    public static final String ASYNC_MESSAGE_TO = "to";
+    public static final String ASYNC_MESSAGE_MSG = "msg";
 
     private final App app;
     private final Set<AsyncMessageSubscriber> subscribers;
@@ -30,40 +38,36 @@ public class AsyncMessages implements AsynchMessageReceiver
 
     private KomServer mKom;
 
-    public static interface AsyncMessageSubscriber
-    {
+    public static interface AsyncMessageSubscriber {
         public void asyncMessage(Message msg);
     }
 
-    public String messageAsString(Message msg)
-    {
+    public String messageAsString(Message msg) {
         String str = null;
 
-        switch (msg.what)
-        {
+        switch (msg.what) {
         case nu.dll.lyskom.Asynch.login:
-            if (mKom.getPresenceMessages())
-            {
-                str = msg.getData().getString("name")
+            if (mKom.getPresenceMessages()) {
+                str = msg.getData().getString(ASYNC_MESSAGE_NAME)
                         + app.getString(R.string.x_logged_in);
             }
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-            if (mKom.getPresenceMessages())
-            {
-                str = msg.getData().getString("name")
+            if (mKom.getPresenceMessages()) {
+                str = msg.getData().getString(ASYNC_MESSAGE_NAME)
                         + app.getString(R.string.x_logged_out);
             }
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
-            str = msg.getData().getString("oldname") + app.getString(R.string.x_changed_to_y);
+            str = msg.getData().getString(ASYNC_MESSAGE_OLDNAME) + app.getString(R.string.x_changed_to_y);
             break;
 
         case nu.dll.lyskom.Asynch.send_message:
-            str = msg.getData().getString("from") + app.getString(R.string.x_says_y) + msg.getData().getString("msg")
-                    + app.getString(R.string.x_to_y) + msg.getData().getString("to");
+            str = msg.getData().getString(ASYNC_MESSAGE_FROM) + app.getString(R.string.x_says_y) +
+                    msg.getData().getString(ASYNC_MESSAGE_MSG) + app.getString(R.string.x_to_y) +
+                    msg.getData().getString(ASYNC_MESSAGE_TO);
             break;
 
         case nu.dll.lyskom.Asynch.rejected_connection:
@@ -118,26 +122,25 @@ public class AsyncMessages implements AsynchMessageReceiver
 
         switch (msg.what) {
         case nu.dll.lyskom.Asynch.login:
-            b.putString("name", mKom.getConferenceName(params[0].intValue()));
+            b.putString(ASYNC_MESSAGE_NAME, mKom.getConferenceName(params[0].intValue()));
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-            b.putString("name", mKom.getConferenceName(params[0].intValue()));
+            b.putString(ASYNC_MESSAGE_NAME, mKom.getConferenceName(params[0].intValue()));
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
-            b.putString("oldname", ((Hollerith) params[1]).getContentString());
-            b.putString("newname", ((Hollerith) params[2]).getContentString());
+            b.putString(ASYNC_MESSAGE_OLDNAME, ((Hollerith) params[1]).getContentString());
+            b.putString(ASYNC_MESSAGE_NEWNAME, ((Hollerith) params[2]).getContentString());
             break;
 
         case nu.dll.lyskom.Asynch.send_message:
-            b.putInt("from-id", params[1].intValue());
-            b.putInt("to-id", params[0].intValue());
-            b.putString("from", mKom.getConferenceName(params[1].intValue()));
-            b.putString("to", mKom.getConferenceName(params[0].intValue()));
-            b.putString("msg", ((Hollerith) params[2]).getContentString());
-            
-            mKom.setLatestIMSender(b.getString("from"));
+            b.putInt(ASYNC_MESSAGE_FROM_ID, params[1].intValue());
+            b.putInt(ASYNC_MESSAGE_TO_ID, params[0].intValue());
+            b.putString(ASYNC_MESSAGE_FROM, mKom.getConferenceName(params[1].intValue()));
+            b.putString(ASYNC_MESSAGE_TO, mKom.getConferenceName(params[0].intValue()));
+            b.putString(ASYNC_MESSAGE_MSG, ((Hollerith) params[2]).getContentString());
+            mKom.setLatestIMSender(b.getString(ASYNC_MESSAGE_FROM));
             break;
 
         case nu.dll.lyskom.Asynch.new_text_old:
@@ -207,8 +210,7 @@ public class AsyncMessages implements AsynchMessageReceiver
         subscribers.remove(sub);
     }
 
-    private class AsyncHandlerTask extends AsyncTask<AsynchMessage, Void, Message>
-    {
+    private class AsyncHandlerTask extends AsyncTask<AsynchMessage, Void, Message> {
         @Override
         protected Message doInBackground(final AsynchMessage... message) {
             return processMessage(message[0]);
