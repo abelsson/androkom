@@ -25,7 +25,7 @@ public class App extends Application implements ServiceConnection
 {
 	private static final String OPT_KEEPSCREENON = "keepscreenon";
 	private static final Boolean OPT_KEEPSCREENON_DEF = false;
-	private static final String TAG = "Androkom";
+	private static final String TAG = "Androkom Application";
 
     private Locale locale = null;
 
@@ -34,6 +34,8 @@ public class App extends Application implements ServiceConnection
 	{
 		super.onCreate();
 
+		Log.d(TAG, "onCreate");
+		
 		Configuration config = getBaseContext().getResources()
         .getConfiguration();
 		
@@ -46,8 +48,6 @@ public class App extends Application implements ServiceConnection
                     getBaseContext().getResources().getDisplayMetrics());
         }
 
-        doBindService(this);
-		
         // keep screen on, depending on preferences
         boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
 		Log.d(TAG, "keepscreenon="+keepScreenOn);
@@ -59,17 +59,6 @@ public class App extends Application implements ServiceConnection
 		}
 	}
 	
-	@Override
-	public void onTerminate()
-	{
-	 	if(mWakeLock != null) {
-    		mWakeLock.release();
-    		mWakeLock = null;
-    	}
-	 	doUnbindService(this);
-	 	super.onTerminate();
-	}
-
     public void doBindService(ServiceConnection connection) 
     {
     	bindService(new Intent(App.this, KomServer.class), connection, Context.BIND_AUTO_CREATE);
@@ -84,11 +73,13 @@ public class App extends Application implements ServiceConnection
 
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
-		
+        Log.d(TAG, "onServiceConnected");
+        		
 	}
 
 	public void onServiceDisconnected(ComponentName name) 
 	{
+        Log.d(TAG, "onServiceDisconnected");
 		
 	}
 
