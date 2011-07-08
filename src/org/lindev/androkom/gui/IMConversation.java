@@ -1,13 +1,17 @@
 package org.lindev.androkom.gui;
 
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
+
+import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -45,6 +49,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private int mConvId = -1;
+    private String mConvStr = null;
     private Cursor mCursor = null;
     private int mLatestSeen = -1;
 
@@ -102,7 +107,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
     }
 
-    private class SendMessageTask extends AsyncTask<String, Void, Void> {
+    private class SendMessageTask extends AsyncTask<String, Void, String> {
         private final ProgressDialog dialog = new ProgressDialog(IMConversation.this);
 
         @Override
@@ -114,19 +119,31 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
 
         @Override
-        protected Void doInBackground(final String... args) {
+        protected String doInBackground(final String... args) {
             final String msg = (String) args[0];
             try {
                 mKom.sendMessage(mConvId, msg, true);
-            } catch (final Exception e) {
-                e.printStackTrace();
+            }
+            catch (final RpcFailure e) {
+                return mConvStr + " isn't logged in.";
+            }
+            catch (final IOException e) {
+                return "Network error occured while sending message.";
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(final Void v) {
-            mTextField.setText("");
+        protected void onPostExecute(final String errorMsg) {
+            if (errorMsg == null) {
+                mTextField.setText("");
+            }
+            else {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
+                builder.setTitle(errorMsg);
+                builder.setPositiveButton("OK", null);
+                builder.create().show();
+            }
             dialog.dismiss();
         }
     }
@@ -225,7 +242,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
     private void initialize(final Intent intent) {
         mConvId = intent.getIntExtra(INTENT_CONVERSATION_ID, 0);
-        setTitle(intent.getStringExtra(INTENT_CONVERSATION_STR));
+        mConvStr = intent.getStringExtra(INTENT_CONVERSATION_STR);
+        setTitle(mConvStr);
 
         mIMLogger = mKom.imLogger;
         if (mCursor != null) {

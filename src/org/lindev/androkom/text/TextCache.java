@@ -12,7 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
-import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.R;
