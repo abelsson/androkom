@@ -16,6 +16,7 @@ import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -26,6 +27,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.provider.BaseColumns;
 import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -201,6 +205,36 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         super.onDestroy();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.imconversation_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.imconversation_menu_id:
+            clearHistory();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void clearHistory() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
+        builder.setTitle("Delete all history from conversation?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, int which) {
+                mIMLogger.clearConversationHistory(mConvId);
+            }
+        });
+        builder.setNegativeButton("No", null);
+        builder.create().show();
+    }
+
     public void onClick(final View view) {
         if (view == mSendButton && mIMLogger != null) {
             final String msg = mTextField.getText().toString();
@@ -223,14 +257,28 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     public void update(final Observable observable, final Object obj) {
-        if (observable == mIMLogger) {
-            final Message msg = (Message) obj;
-            if (msg.what == IMLogger.NEW_MESSAGE) {
-                if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
-                    updateView(true);
-                    mIMLogger.updateLatestSeen(mConvId);
-                }
+        if (observable != mIMLogger) {
+            return;
+        }
+        final Message msg = (Message) obj;
+        switch (msg.what) {
+        case IMLogger.NEW_MESSAGE:
+            if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
+                // New message in this conversation
+                updateView(true);
+                mIMLogger.updateLatestSeen(mConvId);
             }
+            break;
+        case IMLogger.HISTORY_CLEARED:
+            if (!msg.getData().containsKey(IMLogger.MESSAGE_CONV_ID)) {
+                // All history cleared
+                updateView(true);
+            }
+            else if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
+                // This conversation cleared
+                updateView(true);
+            }
+            break;
         }
     }
 

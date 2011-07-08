@@ -44,6 +44,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     public static final int NEW_MESSAGE = 1;
     public static final int UNREAD_UPDATE = 2;
+    public static final int HISTORY_CLEARED = 3;
 
     public static final String MESSAGE_CONV_ID = "message-conv-id";
     public static final String MESSAGE_CONV_STR = "message-conv-str";
@@ -215,7 +216,6 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         }
 
         // Notify observers that the database has changed.
-        setChanged();
         final Bundle data = new Bundle();
         data.putInt(MESSAGE_CONV_ID, convId);
         final Message message = new Message();
@@ -267,6 +267,39 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         }
         cursor.close();
         return numConvWithUnseen;
+    }
+
+    public void clearConversationHistory(final int convId) {
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()), Integer.toString(convId) };
+        synchronized (mWriteLock) {
+            final SQLiteDatabase db = dbHelper.getWritableDatabase();
+            db.delete(TABLE_MSG, WHERE, whereArgs);
+            db.delete(TABLE_CONV, WHERE, whereArgs);
+        }
+        // Notify observers that the database has changed.
+        final Bundle data = new Bundle();
+        data.putInt(MESSAGE_CONV_ID, convId);
+        final Message message = new Message();
+        message.what = HISTORY_CLEARED;
+        message.setData(data);
+        setChanged();
+        notifyObservers(message);
+    }
+
+    private final String CLEAR_ALL_HISTORY_WHERE = COL_MY_ID + " = ?";
+
+    public void clearAllHistory() {
+        final String[] whereArgs = { Integer.toString(mKom.getUserId()) };
+        synchronized (mWriteLock) {
+            final SQLiteDatabase db = dbHelper.getWritableDatabase();
+            db.delete(TABLE_MSG, CLEAR_ALL_HISTORY_WHERE, whereArgs);
+            db.delete(TABLE_CONV, CLEAR_ALL_HISTORY_WHERE, whereArgs);
+        }
+        // Notify observers that the database has changed.
+        final Message message = new Message();
+        message.what = HISTORY_CLEARED;
+        setChanged();
+        notifyObservers(message);
     }
 
     public void asyncMessage(final Message msg) {
