@@ -139,6 +139,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
         @Override
         protected void onPostExecute(final String errorMsg) {
+            dialog.dismiss();
             if (errorMsg == null) {
                 mTextField.setText("");
             }
@@ -148,7 +149,6 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
                 builder.setPositiveButton("OK", null);
                 builder.create().show();
             }
-            dialog.dismiss();
         }
     }
 

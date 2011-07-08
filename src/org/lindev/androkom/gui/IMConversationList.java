@@ -26,6 +26,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -242,6 +245,36 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         }
         getApp().doUnbindService(this);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.imconversationlist_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.imconversationlist_menu_id:
+            clearAllHistory();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void clearAllHistory() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
+        builder.setTitle("Delete all history?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, int which) {
+                mIMLogger.clearAllHistory();
+            }
+        });
+        builder.setNegativeButton("No", null);
+        builder.create().show();
     }
 
     public void onClick(final View view) {
