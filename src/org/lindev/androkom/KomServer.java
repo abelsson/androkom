@@ -226,6 +226,8 @@ public class KomServer extends Service implements RpcEventListener,
         s.removeRpcEventListener(this);        
         s = null;
 
+        getApp().shutdown();
+        
         super.onDestroy();
     }
 
@@ -252,8 +254,13 @@ public class KomServer extends Service implements RpcEventListener,
         s = new Session();
         s.addRpcEventListener(this);
 
-        Log.d(TAG, "KomServer trying to login using "+re_userid+" "+re_server);
-        login(re_userid, re_password, re_server);
+        if (re_userid > 0) {
+            Log.d(TAG, "KomServer trying to login using id " + re_userid
+                    + " on server " + re_server);
+            login(re_userid, re_password, re_server);
+        } else {
+            Log.d(TAG, "Can't reconnect because no userid");
+        }
     }
 
     /**
@@ -1143,7 +1150,7 @@ public class KomServer extends Service implements RpcEventListener,
 
 	private HashSet<Integer> mPendingSentTexts;
 	ConfInfo usernames[];
-	private int re_userid; // for reconnect
+	private int re_userid; // for reconnect, note: none of these are saved during screen rotation
 	private String re_password; // for reconnect
 	private String re_server; // for reconnect
 

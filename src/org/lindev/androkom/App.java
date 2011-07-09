@@ -83,6 +83,18 @@ public class App extends Application implements ServiceConnection
 		
 	}
 
+    /**
+     * Called by KomServer on destruction of the service.
+     */
+    public void shutdown() {
+        Log.d(TAG, "shutdown");
+
+        if (mWakeLock != null) {
+            mWakeLock.release();
+            mWakeLock = null;
+        }
+    }
+	
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
