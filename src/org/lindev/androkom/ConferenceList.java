@@ -36,7 +36,7 @@ import android.widget.Toast;
  * 
  */
 public class ConferenceList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom ConferenceList";
 
 	/**
 	 * Instantiate activity.
@@ -45,6 +45,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
@@ -66,6 +67,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onResume() {
 		super.onResume();
 
+        Log.d(TAG, "onResume");
 		mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -91,12 +93,14 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	public void onPause() {
 		super.onPause();
+        Log.d(TAG, "onPause");
 		mTimer.cancel();
 	}
 
 	@Override
 	protected void onDestroy() {
 		super.onDestroy();
+        Log.d(TAG, "onDestroy");
 		mKom.removeAsyncSubscriber(this);
 		getApp().doUnbindService(this);
 	}
@@ -301,12 +305,14 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
 		mKom = ((KomServer.LocalBinder)service).getService();
 		mKom.addAsyncSubscriber(this);		
 		
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
 		mKom = null;		
 	}
 	

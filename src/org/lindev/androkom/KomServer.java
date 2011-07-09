@@ -167,6 +167,8 @@ public class KomServer extends Service implements RpcEventListener,
     {
         super.onCreate();
         
+        Log.d(TAG, "onCreate");
+        
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
         asyncMessagesHandler
                 .subscribe(asyncMessagesHandler.new MessageToaster());
@@ -184,6 +186,7 @@ public class KomServer extends Service implements RpcEventListener,
     @Override
     public IBinder onBind(Intent arg0) 
     {
+        Log.d(TAG, "onBind");
         return mBinder;
     }
 
@@ -199,6 +202,8 @@ public class KomServer extends Service implements RpcEventListener,
     @Override
     public void onDestroy() 
     {
+        Log.d(TAG, "onDestroy");
+
         imLogger.close();
         // Tell the user we stopped.
         Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
@@ -1124,7 +1129,7 @@ public class KomServer extends Service implements RpcEventListener,
 	}
 
 	public void debug(String s) {
-		Log.d("androkom", s);
+		Log.d("androkom KomServer", s);
 	}
 
 	private Session s = null;

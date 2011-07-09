@@ -38,7 +38,7 @@ import android.widget.Toast;
  */
 public class Login extends Activity implements ServiceConnection
 {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom Login";
 	private boolean loginFailed = false;
 
     @Override
@@ -66,6 +66,7 @@ public class Login extends Activity implements ServiceConnection
 
 	@Override
 	protected void onDestroy() {
+	    Log.d(TAG, "onDestroy");
 		getApp().doUnbindService(this);
 		super.onDestroy();
 	}

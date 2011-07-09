@@ -164,6 +164,9 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="im_sending_message">"Skickar meddelande ..."</string>
     <string name="im_resolving_recipient">"Hittar mottagare ..."</string>
     <string name="im_no_such_recipient">"Hittar ingen mottagare: "</string>
+    <string name="im_new_message">"Nytt meddelande:"</string>
+    <string name="im_new_message_to">"Nytt meddelande till:"</string>
+    <string name="im_message">"Meddelande:"</string>
 
     <string name="no_text_loaded">"[no text loaded]"</string>
 
