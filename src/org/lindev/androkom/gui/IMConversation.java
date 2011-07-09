@@ -39,7 +39,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class IMConversation extends ListActivity implements ServiceConnection, Observer, OnClickListener {
+public class IMConversation extends ListActivity implements ServiceConnection, Observer {
     public static final String TAG = "Androkom";
 
     private static final int MAX_MESSAGES = 50;
@@ -165,8 +165,14 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mSendButton = (Button) findViewById(R.id.send);
         mTextField = (EditText) findViewById(R.id.message);
 
-        mSendButton.setOnClickListener(this);
-
+        mSendButton.setOnClickListener(new OnClickListener() {
+            public void onClick(final View view) {
+                if (view == mSendButton && mIMLogger != null) {
+                    final String msg = mTextField.getText().toString();
+                    new SendMessageTask().execute(msg);
+                }
+            }
+        });
         getApp().doBindService(this);
     }
 
@@ -225,7 +231,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
     private void clearHistory() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
-        builder.setTitle("Delete all history from conversation?");
+        builder.setTitle("Clear conversation history?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(final DialogInterface dialog, int which) {
                 mIMLogger.clearConversationHistory(mConvId);
@@ -233,13 +239,6 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         });
         builder.setNegativeButton("No", null);
         builder.create().show();
-    }
-
-    public void onClick(final View view) {
-        if (view == mSendButton && mIMLogger != null) {
-            final String msg = mTextField.getText().toString();
-            new SendMessageTask().execute(msg);
-        }
     }
 
     private void updateView(final boolean requery) {

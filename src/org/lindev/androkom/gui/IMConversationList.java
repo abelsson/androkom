@@ -18,6 +18,7 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -38,7 +39,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class IMConversationList extends ListActivity implements ServiceConnection, Observer, OnClickListener {
+public class IMConversationList extends ListActivity implements ServiceConnection, Observer {
     public static final String TAG = "Androkom";
 
     private static final int MAX_CONVERSATIONS = 50;
@@ -104,9 +105,14 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
         @Override
         protected void onPreExecute() {
-            dialog.setCancelable(false);
+            dialog.setCancelable(true);
             dialog.setIndeterminate(true);
             dialog.setMessage(getString(R.string.im_resolving_recipient));
+            dialog.setOnCancelListener(new OnCancelListener() {
+                public void onCancel(final DialogInterface dialog) {
+                    ResolveRecipientTask.this.cancel(true);
+                }
+            });
             dialog.show();
         }
 
@@ -208,8 +214,15 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mRecipientField = (EditText) findViewById(R.id.recipient);
         mMessageField = (EditText) findViewById(R.id.message);
 
-        mSendButton.setOnClickListener(this);
-
+        mSendButton.setOnClickListener(new OnClickListener() {
+            public void onClick(final View view) {
+                if (view == mSendButton && mIMLogger != null) {
+                    final String recipient = mRecipientField.getText().toString();
+                    final String msg = mMessageField.getText().toString();
+                    new ResolveRecipientTask().execute(recipient, msg);
+                }
+            }
+        });
         getApp().doBindService(this);
     }
 
@@ -267,7 +280,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
     private void clearAllHistory() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
-        builder.setTitle("Delete all history?");
+        builder.setTitle("Clear all messaging history?");
         builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
             public void onClick(final DialogInterface dialog, int which) {
                 mIMLogger.clearAllHistory();
@@ -275,14 +288,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         });
         builder.setNegativeButton("No", null);
         builder.create().show();
-    }
-
-    public void onClick(final View view) {
-        if (view == mSendButton && mIMLogger != null) {
-            final String recipient = mRecipientField.getText().toString();
-            final String msg = mMessageField.getText().toString();
-            new ResolveRecipientTask().execute(recipient, msg);
-        }
     }
 
     private void updateView(final boolean requery) {
