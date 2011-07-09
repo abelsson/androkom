@@ -1,9 +1,11 @@
 package org.lindev.androkom.gui;
 
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
 import nu.dll.lyskom.ConfInfo;
+import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
@@ -24,6 +26,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -32,7 +37,6 @@ import android.widget.CursorAdapter;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
-import android.widget.Toast;
 
 public class IMConversationList extends ListActivity implements ServiceConnection, Observer, OnClickListener {
     public static final String TAG = "Androkom";
@@ -119,8 +123,12 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         }
 
         protected void onPostExecute(final ConfInfo[] possibleRecip) {
+            dialog.dismiss();
             if (possibleRecip.length == 0) {
-                Toast.makeText(getApplicationContext(), getString(R.string.im_no_such_recipient) + mRecip, Toast.LENGTH_SHORT).show();
+                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
+                builder.setTitle(getString(R.string.im_no_such_recipient) + mRecip);
+                builder.setPositiveButton("OK", null);
+                builder.create().show();
             }
             else if (possibleRecip.length == 1) {
                 new SendMessageTask().execute(possibleRecip[0], mMsg);
@@ -140,11 +148,10 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
                 });
                 builder.create().show();
             }
-            dialog.dismiss();
         }
     }
 
-    private class SendMessageTask extends AsyncTask<Object, Void, ConfInfo> {
+    private class SendMessageTask extends AsyncTask<Object, Void, Object> {
         private final ProgressDialog dialog = new ProgressDialog(IMConversationList.this);
 
         @Override
@@ -156,21 +163,32 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         }
 
         @Override
-        protected ConfInfo doInBackground(final Object... args) {
+        protected Object doInBackground(final Object... args) {
             final ConfInfo conf = (ConfInfo) args[0];
             final String msg = (String) args[1];
             try {
                 mKom.sendMessage(conf.confNo, msg, true);
-            } catch (final Exception e) {
-                e.printStackTrace();
-                return null;
+            }
+            catch (final RpcFailure e) {
+                return conf.getNameString() + " isn't logged in.";
+            }
+            catch (final IOException e) {
+                return "Network error occured while sending message.";
             }
             return conf;
         }
 
         @Override
-        protected void onPostExecute(final ConfInfo conf) {
-            if (conf != null) {
+        protected void onPostExecute(final Object obj) {
+            dialog.dismiss();
+            if (obj instanceof String) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
+                builder.setTitle((String) obj);
+                builder.setPositiveButton("OK", null);
+                builder.create().show();
+            }
+            else {
+                ConfInfo conf = (ConfInfo) obj;
                 final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
                 intent.putExtra(IMConversation.INTENT_CONVERSATION_ID, conf.confNo);
                 intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, conf.getNameString());
@@ -178,7 +196,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
                 mMessageField.setText("");
                 startActivity(intent);
             }
-            dialog.dismiss();
         }
     }
 
@@ -228,6 +245,36 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         }
         getApp().doUnbindService(this);
         super.onDestroy();
+    }
+
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.imconversationlist_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.imconversationlist_menu_id:
+            clearAllHistory();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void clearAllHistory() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
+        builder.setTitle("Delete all history?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, int which) {
+                mIMLogger.clearAllHistory();
+            }
+        });
+        builder.setNegativeButton("No", null);
+        builder.create().show();
     }
 
     public void onClick(final View view) {

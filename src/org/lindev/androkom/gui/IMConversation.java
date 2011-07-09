@@ -1,17 +1,22 @@
 package org.lindev.androkom.gui;
 
+import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
+
+import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -22,6 +27,9 @@ import android.os.IBinder;
 import android.os.Message;
 import android.provider.BaseColumns;
 import android.util.AttributeSet;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.view.View.OnClickListener;
 import android.view.ViewGroup;
@@ -45,6 +53,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
     private int mConvId = -1;
+    private String mConvStr = null;
     private Cursor mCursor = null;
     private int mLatestSeen = -1;
 
@@ -102,7 +111,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
     }
 
-    private class SendMessageTask extends AsyncTask<String, Void, Void> {
+    private class SendMessageTask extends AsyncTask<String, Void, String> {
         private final ProgressDialog dialog = new ProgressDialog(IMConversation.this);
 
         @Override
@@ -114,20 +123,32 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
 
         @Override
-        protected Void doInBackground(final String... args) {
+        protected String doInBackground(final String... args) {
             final String msg = (String) args[0];
             try {
                 mKom.sendMessage(mConvId, msg, true);
-            } catch (final Exception e) {
-                e.printStackTrace();
+            }
+            catch (final RpcFailure e) {
+                return mConvStr + " isn't logged in.";
+            }
+            catch (final IOException e) {
+                return "Network error occured while sending message.";
             }
             return null;
         }
 
         @Override
-        protected void onPostExecute(final Void v) {
-            mTextField.setText("");
+        protected void onPostExecute(final String errorMsg) {
             dialog.dismiss();
+            if (errorMsg == null) {
+                mTextField.setText("");
+            }
+            else {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
+                builder.setTitle(errorMsg);
+                builder.setPositiveButton("OK", null);
+                builder.create().show();
+            }
         }
     }
 
@@ -184,6 +205,36 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         super.onDestroy();
     }
 
+    @Override
+    public boolean onCreateOptionsMenu(final Menu menu) {
+        final MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.imconversation_menu, menu);
+        return true;
+    }
+
+    @Override
+    public boolean onOptionsItemSelected(final MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.imconversation_menu_id:
+            clearHistory();
+            return true;
+        default:
+            return super.onOptionsItemSelected(item);
+        }
+    }
+
+    private void clearHistory() {
+        final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
+        builder.setTitle("Delete all history from conversation?");
+        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+            public void onClick(final DialogInterface dialog, int which) {
+                mIMLogger.clearConversationHistory(mConvId);
+            }
+        });
+        builder.setNegativeButton("No", null);
+        builder.create().show();
+    }
+
     public void onClick(final View view) {
         if (view == mSendButton && mIMLogger != null) {
             final String msg = mTextField.getText().toString();
@@ -206,14 +257,28 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     public void update(final Observable observable, final Object obj) {
-        if (observable == mIMLogger) {
-            final Message msg = (Message) obj;
-            if (msg.what == IMLogger.NEW_MESSAGE) {
-                if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
-                    updateView(true);
-                    mIMLogger.updateLatestSeen(mConvId);
-                }
+        if (observable != mIMLogger) {
+            return;
+        }
+        final Message msg = (Message) obj;
+        switch (msg.what) {
+        case IMLogger.NEW_MESSAGE:
+            if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
+                // New message in this conversation
+                updateView(true);
+                mIMLogger.updateLatestSeen(mConvId);
             }
+            break;
+        case IMLogger.HISTORY_CLEARED:
+            if (!msg.getData().containsKey(IMLogger.MESSAGE_CONV_ID)) {
+                // All history cleared
+                updateView(true);
+            }
+            else if (mConvId == msg.getData().getInt(IMLogger.MESSAGE_CONV_ID)) {
+                // This conversation cleared
+                updateView(true);
+            }
+            break;
         }
     }
 
@@ -225,7 +290,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
     private void initialize(final Intent intent) {
         mConvId = intent.getIntExtra(INTENT_CONVERSATION_ID, 0);
-        setTitle(intent.getStringExtra(INTENT_CONVERSATION_STR));
+        mConvStr = intent.getStringExtra(INTENT_CONVERSATION_STR);
+        setTitle(mConvStr);
 
         mIMLogger = mKom.imLogger;
         if (mCursor != null) {
