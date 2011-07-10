@@ -8,6 +8,7 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
+import android.os.AsyncTask;
 import android.os.IBinder;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
@@ -66,9 +67,35 @@ public class App extends Application implements ServiceConnection
     
     public void doUnbindService(ServiceConnection connection)
     {
-    	unbindService(connection);
+        new DelayedUnbindTask().execute(connection);
+   }
+
+    
+    private class DelayedUnbindTask extends
+            AsyncTask<ServiceConnection, Void, ServiceConnection> {
+        @SuppressWarnings("unused")
+        protected void onPreExecute(ServiceConnection connection) {
+        }
+
+        // worker thread (separate from UI thread)
+        protected ServiceConnection doInBackground(final ServiceConnection... args) {
+            Log.d(TAG, "waiting to doUnbind");
+            try {
+                Thread.sleep(5000);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return args[0];
+        }
+
+        protected void onPostExecute(ServiceConnection connection) {
+            Log.d(TAG, "doing delayed doUnbind");
+            unbindService(connection);
+        }
+
     }
-      
+    
     private PowerManager.WakeLock mWakeLock = null;
 
 	public void onServiceConnected(ComponentName name, IBinder service)
@@ -80,7 +107,6 @@ public class App extends Application implements ServiceConnection
 	public void onServiceDisconnected(ComponentName name) 
 	{
         Log.d(TAG, "onServiceDisconnected");
-		
 	}
 
     /**

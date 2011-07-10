@@ -190,6 +190,10 @@ public class KomServer extends Service implements RpcEventListener,
         return mBinder;
     }
 
+    public boolean onUnbind (Intent intent) {
+        return false;
+    }
+    
     App getApp() 
     {
         return (App) getApplication();
@@ -1002,10 +1006,12 @@ public class KomServer extends Service implements RpcEventListener,
 	public boolean getPresenceMessages() {
 	    boolean presence_messages = true;
 
-		String messages = mCommonUserAreaProps.get("presence-messages");
-		if (messages != null) {
-		    presence_messages = (messages.compareTo("1") == 0);
-		}
+        if (mCommonUserAreaProps != null) {
+            String messages = mCommonUserAreaProps.get("presence-messages");
+            if (messages != null) {
+                presence_messages = (messages.compareTo("1") == 0);
+            }
+        }
 		return presence_messages;
 	}
 

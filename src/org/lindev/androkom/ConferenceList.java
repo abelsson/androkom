@@ -49,7 +49,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
-		getApp().doBindService(this);
+        getApp().doBindService(this);
+
+        if (savedInstanceState != null) {
+            Log.d(TAG, "Got a bundle");
+        }
 		
 		mEmptyView = (TextView) findViewById(android.R.id.empty);
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
@@ -97,13 +101,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		mTimer.cancel();
 	}
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
         Log.d(TAG, "onDestroy");
-		mKom.removeAsyncSubscriber(this);
-		getApp().doUnbindService(this);
-	}
+        if (mKom != null) {
+            mKom.removeAsyncSubscriber(this);
+        }
+        getApp().doUnbindService(this);
+    }
 
 	/**
 	 * Called when a conference has been clicked. Switch to Conference activity,
@@ -245,7 +251,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 				mAdapter.notifyDataSetChanged();
 			} else {
-				// TODO: Do something here?
 				Log.d(TAG, "populateConferences failed, no Conferences");
 				Log.d(TAG, "mConferences is null:" + (mConferences == null));
 				if (mConferences != null) {
@@ -274,13 +279,16 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 						Log.d(TAG, "Can't fetch conferences when no connection");
 						mKom.reconnect();
 					}
+				} else {
+				    Log.d(TAG, "mKom==null");
 				}
+			} else {
+			    Log.d(TAG, "app == null");
 			}
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
 		}
-		Log.d(TAG, "fetchConferences 5");
 		return retlist;
 	}
 
@@ -291,7 +299,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 
 	public void asyncMessage(Message msg) {
-		// TODO Auto-generated method stub
 		if (msg.what == nu.dll.lyskom.Asynch.new_text) {
 			Log.d(TAG, "New text created, update unread list");
 		
@@ -304,21 +311,36 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		
 	}
 
-	public void onServiceConnected(ComponentName name, IBinder service) {
+    public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected");
-		mKom = ((KomServer.LocalBinder)service).getService();
-		mKom.addAsyncSubscriber(this);		
-		
-	}
+        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom.addAsyncSubscriber(this);
+    }
 
 	public void onServiceDisconnected(ComponentName name) {
         Log.d(TAG, "onServiceDisconnected");
 		mKom = null;		
 	}
 	
+	
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState");
+
+        if (savedInstanceState != null) {
+            Log.d(TAG, "got a bundle");
+        }
+    }
+
 	private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
 	private Timer mTimer;
 	TextView mEmptyView;
-	KomServer mKom;
+	KomServer mKom=null;
 }
