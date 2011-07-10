@@ -168,6 +168,12 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="im_new_message">"New message:"</string>
     <string name="im_new_message_to">"New message to:"</string>
     <string name="im_message">"Message:"</string>
+    <string name="im_isnt_logged_in">" isn't logged in."</string>
+    <string name="im_network_error">"Network error occured while sending message."</string>
+    <string name="im_clear_history_q">"Clear conversation history?"</string>
+
+    <string name="yes">"Yes"</string>
+    <string name="no">"No"</string>
     
     <string name="no_text_loaded">"[no text loaded]"</string>
 

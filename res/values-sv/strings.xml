@@ -167,6 +167,12 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="im_new_message">"Nytt meddelande:"</string>
     <string name="im_new_message_to">"Nytt meddelande till:"</string>
     <string name="im_message">"Meddelande:"</string>
+    <string name="im_isnt_logged_in">" är inte inloggad."</string>
+    <string name="im_network_error">"Nätverksfel under sändning."</string>
+    <string name="im_clear_history_q">"Rensa konversationshistorik?"</string>
+
+    <string name="yes">"Ja"</string>
+    <string name="no">"Nej"</string>
 
     <string name="no_text_loaded">"[no text loaded]"</string>
 

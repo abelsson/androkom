@@ -40,7 +40,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class IMConversation extends ListActivity implements ServiceConnection, Observer {
-    public static final String TAG = "Androkom";
+    public static final String TAG = "Androkom IMConversation";
 
     private static final int MAX_MESSAGES = 50;
     private static final int BACKGROUND_COLOR_READ = Color.BLACK;
@@ -129,10 +129,10 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
                 mKom.sendMessage(mConvId, msg, true);
             }
             catch (final RpcFailure e) {
-                return mConvStr + " isn't logged in.";
+                return mConvStr + getString(R.string.im_isnt_logged_in);
             }
             catch (final IOException e) {
-                return "Network error occured while sending message.";
+                return getString(R.string.im_network_error);
             }
             return null;
         }
@@ -146,7 +146,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
             else {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
                 builder.setTitle(errorMsg);
-                builder.setPositiveButton("OK", null);
+                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
                 builder.create().show();
             }
         }
@@ -231,13 +231,13 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
 
     private void clearHistory() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
-        builder.setTitle("Clear conversation history?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.im_clear_history_q));
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             public void onClick(final DialogInterface dialog, int which) {
                 mIMLogger.clearConversationHistory(mConvId);
             }
         });
-        builder.setNegativeButton("No", null);
+        builder.setNegativeButton(getString(R.string.yes), null);
         builder.create().show();
     }
 

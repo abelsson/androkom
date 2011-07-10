@@ -40,7 +40,7 @@ import android.widget.ListView;
 import android.widget.TextView;
 
 public class IMConversationList extends ListActivity implements ServiceConnection, Observer {
-    public static final String TAG = "Androkom";
+    public static final String TAG = "Androkom IMConversationList";
 
     private static final int MAX_CONVERSATIONS = 50;
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
@@ -133,7 +133,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             if (possibleRecip.length == 0) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
                 builder.setTitle(getString(R.string.im_no_such_recipient) + mRecip);
-                builder.setPositiveButton("OK", null);
+                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
                 builder.create().show();
             }
             else if (possibleRecip.length == 1) {
@@ -190,7 +190,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             if (obj instanceof String) {
                 final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
                 builder.setTitle((String) obj);
-                builder.setPositiveButton("OK", null);
+                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
                 builder.create().show();
             }
             else {
