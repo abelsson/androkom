@@ -88,6 +88,9 @@
     <string name="biggerfontsize_shortcut">+</string>
     <string name="reconnect_label">Reconnect</string>
     <string name="reconnect_shortcut">R</string>
+
+    <string name="logout_label">Logout</string>
+    <string name="logout_shortcut">O</string>
     
     <string name="title_submenu_create">Create ...</string>
     <string name="createnewtext_label">New text</string>

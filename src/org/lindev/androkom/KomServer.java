@@ -235,26 +235,32 @@ public class KomServer extends Service implements RpcEventListener,
         super.onDestroy();
     }
 
-    public void reconnect() {
-    	Log.d(TAG, "KomServer trying to reconnect");
+    public void logout() {
+        Log.d(TAG, "KomServer logout");
         try {
             if (s.getState() == Session.STATE_LOGIN)
                 s.logout(true);
-            Log.i("androkom","logged out");
+            Log.i("androkom", "logged out");
 
             if (s.getState() == Session.STATE_CONNECTED)
                 s.disconnect(false);
 
-            Log.i("androkom","disconnected");           
+            Log.i("androkom", "disconnected");
         } catch (Exception e) {
             // TODO Auto-generated catch block
-        	Log.d(TAG, "onDestroy "+e);
+            Log.d(TAG, "onDestroy " + e);
             e.printStackTrace();
         }
 
         s.removeRpcEventListener(this);
         s = null;
+    }
+    
+    public void reconnect() {
+    	logout();
     	
+        Log.d(TAG, "KomServer trying to reconnect");
+
         s = new Session();
         s.addRpcEventListener(this);
 
@@ -491,6 +497,12 @@ public class KomServer extends Service implements RpcEventListener,
     public String login(String username, String password, String server) 
     {
     	Log.d(TAG, "Trying to login username:"+username);
+
+    	if (s == null) {
+            s = new Session();
+            s.addRpcEventListener(this);
+        }
+
     	try {
     		if (!s.getConnected()) {
     			if (connect(server) != 0)

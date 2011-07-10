@@ -28,4 +28,9 @@
         android:id="@+id/menu_abuse_id"></item>
     
     <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
+
+    <item android:title="@string/logout_label"
+        android:alphabeticShortcut="@string/logout_shortcut"
+        android:id="@+id/menu_logout_id"></item>
+    
 </menu>
