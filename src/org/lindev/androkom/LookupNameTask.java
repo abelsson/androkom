@@ -8,7 +8,7 @@ import android.content.DialogInterface;
 import android.content.DialogInterface.OnCancelListener;
 import android.os.AsyncTask;
 
-public class LookupRecipientTask extends AsyncTask<Void, Void, ConfInfo[]> {
+public class LookupNameTask extends AsyncTask<Void, Void, ConfInfo[]> {
     public static final int LOOKUP_CONFERENCES = 1;
     public static final int LOOKUP_USERS = 2;
     public static final int LOOKUP_BOTH = LOOKUP_USERS | LOOKUP_CONFERENCES;
@@ -24,7 +24,7 @@ public class LookupRecipientTask extends AsyncTask<Void, Void, ConfInfo[]> {
         public void run(final ConfInfo conf);
     }
 
-    public LookupRecipientTask(final Activity activity, final KomServer kom, final String recipient,
+    public LookupNameTask(final Activity activity, final KomServer kom, final String recipient,
             final int lookupFlags, final RunOnSuccess runnable) {
         this.mActivity = activity;
         this.mKom = kom;
@@ -41,7 +41,7 @@ public class LookupRecipientTask extends AsyncTask<Void, Void, ConfInfo[]> {
         mDialog.setMessage(mActivity.getString(R.string.im_resolving_recipient));
         mDialog.setOnCancelListener(new OnCancelListener() {
             public void onCancel(DialogInterface dialog) {
-                LookupRecipientTask.this.cancel(true);
+                LookupNameTask.this.cancel(true);
             }
         });
         mDialog.show();

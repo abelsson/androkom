@@ -2,7 +2,7 @@ package org.lindev.androkom;
 
 import nu.dll.lyskom.ConfInfo;
 
-import org.lindev.androkom.LookupRecipientTask.RunOnSuccess;
+import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 
 import android.app.Activity;
 import android.app.ProgressDialog;
@@ -110,7 +110,7 @@ public class CreateNewText extends Activity implements ServiceConnection {
         final String recipient = mRecipient.getText().toString();
         final String subject = mSubject.getText().toString();
         final String body = mBody.getText().toString();
-        new LookupRecipientTask(this, mKom, recipient, recipient_type, new RunOnSuccess() {
+        new LookupNameTask(this, mKom, recipient, recipient_type, new RunOnSuccess() {
             public void run(final ConfInfo conf) {
                 new SendTextTask().execute(conf.confNo, subject, body);
             }

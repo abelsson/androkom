@@ -1,19 +1,16 @@
 package org.lindev.androkom.gui;
 
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
-
-import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
+import org.lindev.androkom.im.SendMessageTask;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -21,7 +18,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
@@ -39,7 +35,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class IMConversation extends ListActivity implements ServiceConnection, Observer {
+public class IMConversation extends ListActivity implements ServiceConnection, Observer, OnClickListener {
     public static final String TAG = "Androkom IMConversation";
 
     private static final int MAX_MESSAGES = 50;
@@ -111,47 +107,6 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
     }
 
-    private class SendMessageTask extends AsyncTask<String, Void, String> {
-        private final ProgressDialog dialog = new ProgressDialog(IMConversation.this);
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setCancelable(false);
-            dialog.setIndeterminate(true);
-            dialog.setMessage(getString(R.string.im_sending_message));
-            dialog.show();
-        }
-
-        @Override
-        protected String doInBackground(final String... args) {
-            final String msg = (String) args[0];
-            try {
-                mKom.sendMessage(mConvId, msg, true);
-            }
-            catch (final RpcFailure e) {
-                return mConvStr + getString(R.string.im_isnt_logged_in);
-            }
-            catch (final IOException e) {
-                return getString(R.string.im_network_error);
-            }
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(final String errorMsg) {
-            dialog.dismiss();
-            if (errorMsg == null) {
-                mTextField.setText("");
-            }
-            else {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversation.this);
-                builder.setTitle(errorMsg);
-                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
-                builder.create().show();
-            }
-        }
-    }
-
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -165,14 +120,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mSendButton = (Button) findViewById(R.id.send);
         mTextField = (EditText) findViewById(R.id.message);
 
-        mSendButton.setOnClickListener(new OnClickListener() {
-            public void onClick(final View view) {
-                if (view == mSendButton && mIMLogger != null) {
-                    final String msg = mTextField.getText().toString();
-                    new SendMessageTask().execute(msg);
-                }
-            }
-        });
+        mSendButton.setOnClickListener(this);
         getApp().doBindService(this);
     }
 
@@ -285,6 +233,19 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     protected void onSaveInstanceState(final Bundle outState) {
         outState.putInt(LATEST_SEEN, mLatestSeen);
         super.onSaveInstanceState(outState);
+    }
+
+    public void onClick(final View view) {
+        if (mIMLogger == null || view != mSendButton) {
+            return;
+        }
+        final String msg = mTextField.getText().toString();
+
+        new SendMessageTask(this, mKom, mConvId, mConvStr, msg, new Runnable() {
+            public void run() {
+                mTextField.setText("");
+            }
+        }).execute();
     }
 
     private void initialize(final Intent intent) {

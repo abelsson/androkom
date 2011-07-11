@@ -1,22 +1,20 @@
 package org.lindev.androkom.gui;
 
-import java.io.IOException;
 import java.util.Observable;
 import java.util.Observer;
 
 import nu.dll.lyskom.ConfInfo;
-import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
-import org.lindev.androkom.LookupRecipientTask;
-import org.lindev.androkom.LookupRecipientTask.RunOnSuccess;
+import org.lindev.androkom.LookupNameTask;
+import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
+import org.lindev.androkom.im.SendMessageTask;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
-import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -24,7 +22,6 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
 import android.graphics.Color;
-import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.AttributeSet;
@@ -95,54 +92,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             else {
                 tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
                 tv.setText("(" + numUnseen + ") " + convStr + " <" + convId + ">");
-            }
-        }
-    }
-
-    private class SendMessageTask extends AsyncTask<Object, Void, Object> {
-        private final ProgressDialog dialog = new ProgressDialog(IMConversationList.this);
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setCancelable(false);
-            dialog.setIndeterminate(true);
-            dialog.setMessage(getString(R.string.im_sending_message));
-            dialog.show();
-        }
-
-        @Override
-        protected Object doInBackground(final Object... args) {
-            final ConfInfo conf = (ConfInfo) args[0];
-            final String msg = (String) args[1];
-            try {
-                mKom.sendMessage(conf.confNo, msg, true);
-            }
-            catch (final RpcFailure e) {
-                return conf.getNameString() + " isn't logged in.";
-            }
-            catch (final IOException e) {
-                return "Network error occured while sending message.";
-            }
-            return conf;
-        }
-
-        @Override
-        protected void onPostExecute(final Object obj) {
-            dialog.dismiss();
-            if (obj instanceof String) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
-                builder.setTitle((String) obj);
-                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
-                builder.create().show();
-            }
-            else {
-                ConfInfo conf = (ConfInfo) obj;
-                final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
-                intent.putExtra(IMConversation.INTENT_CONVERSATION_ID, conf.confNo);
-                intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, conf.getNameString());
-                mRecipientField.setText("");
-                mMessageField.setText("");
-                startActivity(intent);
             }
         }
     }
@@ -263,9 +212,19 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         }
         final String recipient = mRecipientField.getText().toString();
         final String msg = mMessageField.getText().toString();
-        new LookupRecipientTask(this, mKom, recipient, LookupRecipientTask.LOOKUP_BOTH, new RunOnSuccess() {
+
+        new LookupNameTask(this, mKom, recipient, LookupNameTask.LOOKUP_BOTH, new RunOnSuccess() {
             public void run(final ConfInfo conf) {
-                new SendMessageTask().execute(conf, msg);
+                new SendMessageTask(IMConversationList.this, mKom, conf.getNo(), conf.getNameString(), msg, new Runnable() {
+                    public void run() {
+                        final Intent intent = new Intent(IMConversationList.this, IMConversation.class);
+                        intent.putExtra(IMConversation.INTENT_CONVERSATION_ID, conf.getNo());
+                        intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, conf.getNameString());
+                        mRecipientField.setText("");
+                        mMessageField.setText("");
+                        startActivity(intent);
+                    }
+                }).execute();
             }
         }).execute();
     }
