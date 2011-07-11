@@ -120,7 +120,7 @@
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Cancel</string>
     
-    <string name="subject">Subject:</string>
+    <string name="subject">"Subject: "</string>
     <string name="send">Send</string>
     <string name="cancel">Cancel</string>
     <string name="conference_list">Conference list</string>
@@ -187,4 +187,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="error_ambigious_name">"Invalid/ambigious username"</string>
     <string name="error_invalid_password">"Invalid password"</string>
     
+    <string name="not_a_number">"Not a number: "</string>
+    <string name="must_not_be_negative">"Number of texts must be positive"</string>
 </resources>

@@ -557,13 +557,13 @@ public class KomServer extends Service implements RpcEventListener,
         usernames = new ConfInfo[0];
         if (!s.getConnected()) {
             if (connect(server) != 0)
-                return "Couldn't connect to server";
+                return getString(R.string.error_could_not_connect);
         }
 
         try {
         	// login as hidden
         	if (!s.login(userid, password, hidden_session, false)) {
-        		return "Invalid password";
+        		return getString(R.string.error_invalid_password);
         	}
         	s.setClientVersion("Androkom", getVersionName());
         } catch (Exception e) {

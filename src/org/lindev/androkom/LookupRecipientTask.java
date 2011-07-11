@@ -75,7 +75,7 @@ public class LookupRecipientTask extends AsyncTask<Void, Void, ConfInfo[]> {
         if (possibleRecip == null || possibleRecip.length == 0) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(mActivity);
             builder.setTitle(mActivity.getString(R.string.im_no_such_recipient) + mRecip);
-            builder.setPositiveButton("OK", null);
+            builder.setPositiveButton(mActivity.getString(R.string.alert_dialog_ok), null);
             builder.create().show();
         }
         else if (possibleRecip.length == 1) {

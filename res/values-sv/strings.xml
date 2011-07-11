@@ -120,7 +120,7 @@
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Avbryt</string>
     
-    <string name="subject">Ämne:</string>
+    <string name="subject">"Ämne: "</string>
     <string name="send">Skicka</string>
     <string name="cancel">Avbryt</string>
     <string name="conference_list">Möteslista</string>
@@ -186,4 +186,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="error_ambigious_name">"Otillåtet/tvetydigt namn"</string>
     <string name="error_invalid_password">"Felaktigt lösenord"</string>
 
+    <string name="not_a_number">"Inte ett textnummer: "</string>
+    <string name="must_not_be_negative">"Textnummer måste vara positiva"</string>
 </resources>

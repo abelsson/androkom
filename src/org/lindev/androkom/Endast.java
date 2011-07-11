@@ -60,15 +60,15 @@ public class Endast extends Activity implements ServiceConnection {
         }
         catch (final NumberFormatException e) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Not a number: " + numTextsStr);
-            builder.setPositiveButton("OK", null);
+            builder.setTitle(getString(R.string.not_a_number) + numTextsStr);
+            builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
             builder.create().show();
             return;
         }
         if (numTexts < 0) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("Number of texts must be positive");
-            builder.setPositiveButton("OK", null);
+            builder.setTitle(getString(R.string.must_not_be_negative));
+            builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
             builder.create().show();
             return;
         }
