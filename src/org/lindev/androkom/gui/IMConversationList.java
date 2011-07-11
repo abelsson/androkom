@@ -9,6 +9,8 @@ import nu.dll.lyskom.RpcFailure;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.LookupRecipientTask;
+import org.lindev.androkom.LookupRecipientTask.RunOnSuccess;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
 
@@ -18,7 +20,6 @@ import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.DialogInterface.OnCancelListener;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.database.Cursor;
@@ -39,7 +40,7 @@ import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TextView;
 
-public class IMConversationList extends ListActivity implements ServiceConnection, Observer {
+public class IMConversationList extends ListActivity implements ServiceConnection, Observer, OnClickListener {
     public static final String TAG = "Androkom IMConversationList";
 
     private static final int MAX_CONVERSATIONS = 50;
@@ -94,65 +95,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
             else {
                 tv.setBackgroundColor(BACKGROUND_COLOR_UNREAD);
                 tv.setText("(" + numUnseen + ") " + convStr + " <" + convId + ">");
-            }
-        }
-    }
-
-    private class ResolveRecipientTask extends AsyncTask<String, Void, ConfInfo[]> {
-        private final ProgressDialog dialog = new ProgressDialog(IMConversationList.this);
-        private String mRecip;
-        private String mMsg;
-
-        @Override
-        protected void onPreExecute() {
-            dialog.setCancelable(true);
-            dialog.setIndeterminate(true);
-            dialog.setMessage(getString(R.string.im_resolving_recipient));
-            dialog.setOnCancelListener(new OnCancelListener() {
-                public void onCancel(final DialogInterface dialog) {
-                    ResolveRecipientTask.this.cancel(true);
-                }
-            });
-            dialog.show();
-        }
-
-        protected ConfInfo[] doInBackground(final String... args) {
-            mRecip = args[0];
-            mMsg = args[1];
-
-            final ConfInfo[] users = mKom.getUsers(mRecip);
-            final ConfInfo[] confs = mKom.getConferences(mRecip);
-            final ConfInfo[] possibleRecip = new ConfInfo[users.length + confs.length];
-            System.arraycopy(users, 0, possibleRecip, 0, users.length);
-            System.arraycopy(confs, 0, possibleRecip, users.length, confs.length);
-            return possibleRecip;
-        }
-
-        protected void onPostExecute(final ConfInfo[] possibleRecip) {
-            dialog.dismiss();
-            if (possibleRecip.length == 0) {
-                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
-                builder.setTitle(getString(R.string.im_no_such_recipient) + mRecip);
-                builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
-                builder.create().show();
-            }
-            else if (possibleRecip.length == 1) {
-                new SendMessageTask().execute(possibleRecip[0], mMsg);
-            }
-            else {
-                final String[] items = new String[possibleRecip.length];
-                for (int i = 0; i < items.length; ++i) {
-                    items[i] = possibleRecip[i].getNameString();
-                }
-                final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
-                builder.setTitle(getString(R.string.pick_a_name));
-                builder.setSingleChoiceItems(items, -1, new DialogInterface.OnClickListener() {
-                    public void onClick(final DialogInterface dialog, final int item) {
-                        new SendMessageTask().execute(possibleRecip[item], mMsg);
-                        dialog.dismiss();
-                    }
-                });
-                builder.create().show();
             }
         }
     }
@@ -214,15 +156,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mRecipientField = (EditText) findViewById(R.id.recipient);
         mMessageField = (EditText) findViewById(R.id.message);
 
-        mSendButton.setOnClickListener(new OnClickListener() {
-            public void onClick(final View view) {
-                if (view == mSendButton && mIMLogger != null) {
-                    final String recipient = mRecipientField.getText().toString();
-                    final String msg = mMessageField.getText().toString();
-                    new ResolveRecipientTask().execute(recipient, msg);
-                }
-            }
-        });
+        mSendButton.setOnClickListener(this);
         getApp().doBindService(this);
     }
 
@@ -321,6 +255,19 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         intent.putExtra(IMConversation.INTENT_CONVERSATION_STR, convStr);
 
         startActivity(intent);
+    }
+
+    public void onClick(final View view) {
+        if (mIMLogger == null || view != mSendButton) {
+            return;
+        }
+        final String recipient = mRecipientField.getText().toString();
+        final String msg = mMessageField.getText().toString();
+        new LookupRecipientTask(this, mKom, recipient, LookupRecipientTask.LOOKUP_BOTH, new RunOnSuccess() {
+            public void run(final ConfInfo conf) {
+                new SendMessageTask().execute(conf, msg);
+            }
+        }).execute();
     }
 
     private void initialize(final Intent intent) {

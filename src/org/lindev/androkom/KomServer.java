@@ -865,67 +865,6 @@ public class KomServer extends Service implements RpcEventListener,
     /**
      * Create a text
      */
-    public ConfInfo[] createText(int recipient_type, String recipient, String subject, String body) 
-    {
-        Text text = new Text();
-        ConfInfo[] conferences;
-        
-        // find ConfNo
-        switch(recipient_type) {
-        case 1 :
-            conferences=getConferences(recipient);
-        	break;
-        case 2 :
-            conferences=getUsers(recipient);
-        	break;
-        default:
-        	Log.d(TAG, "create text unknown recipient_type:"+recipient_type);
-        	return null;
-        }
-		if ((conferences == null) || (conferences.length < 1)
-				|| (conferences.length > 1)) {
-        	Log.d(TAG, "Could not find uniq ConfNo");
-        	return conferences;
-        }
-    	int confno = 0;
-    	confno = conferences[0].getNo();
-    	Log.d(TAG, "creating text in confno:"+confno);
-        text.addRecipient(confno);
-        try {
-			if(!s.isMemberOf(confno)) {
-				text.addRecipient(re_userid);
-			}
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			Log.d(TAG, "Failed testing membership");
-			e1.printStackTrace();
-		}
-
-        final byte[] subjectBytes = subject.getBytes();
-        final byte[] bodyBytes = body.getBytes();
-
-        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length+1, bodyBytes.length);
-        contents[subjectBytes.length] = (byte) '\n';
-
-        text.setContents(contents);
-        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
-
-        try {
-            mPendingSentTexts.add(s.doCreateText(text).getId());
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "createText "+e);
-
-            e.printStackTrace();
-        }
-    	return conferences;
-    }
-
-    /**
-     * Create a text
-     */
     public void createText(int recipient_type, int confno, String subject, String body) 
     {
         Text text = new Text();
