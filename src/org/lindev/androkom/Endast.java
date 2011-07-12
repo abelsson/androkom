@@ -6,8 +6,10 @@ import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 
 import android.app.Activity;
 import android.app.AlertDialog;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
+import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
@@ -28,12 +30,37 @@ public class Endast extends Activity implements ServiceConnection {
     private EditText mConfName;
     private EditText mTexts;
 
+    private class EndastTask extends AsyncTask<Integer, Void, Void> {
+        private ProgressDialog mDialog;
+
+        @Override
+        protected void onPreExecute() {
+            mDialog = new ProgressDialog(Endast.this);
+            mDialog.setCancelable(false);
+            mDialog.setIndeterminate(true);
+            mDialog.setMessage("Only the last");
+            mDialog.show();
+        }
+
+        @Override
+        protected Void doInBackground(final Integer... args) {
+            mKom.endast(args[0], args[1]);
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final Void arg) {
+            mDialog.dismiss();
+            Endast.this.finish();
+        }
+    }
+
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.endast);
         getApp().doBindService(this);
-        
+
         mConfName = (EditText) findViewById(R.id.confname);
         mTexts = (EditText) findViewById(R.id.num_texts);
         Button endastButton = (Button) findViewById(R.id.do_endast);
@@ -76,8 +103,7 @@ public class Endast extends Activity implements ServiceConnection {
         new LookupNameTask(this, mKom, confName, LookupNameTask.LOOKUP_CONFERENCES, new RunOnSuccess() {
             public void run(final ConfInfo conf) {
                 Toast.makeText(getApplicationContext(), conf.getNameString(), Toast.LENGTH_SHORT).show();
-                mKom.endast(conf.getNo(), numTexts);
-                Endast.this.finish();
+                new EndastTask().execute(conf.getNo(), numTexts);
             }
         }).execute();
     }
