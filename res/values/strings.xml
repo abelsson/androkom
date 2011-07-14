@@ -189,4 +189,10 @@ Be ashamed of being You! You have a very good reason."</string>
     
     <string name="not_a_number">"Not a number: "</string>
     <string name="must_not_be_negative">"Number of texts must be positive"</string>
+    
+    <string name="error_oisafe_not_found">"OISafe not found"</string>
+    <string name="im_new_messages_title">"New Messages"</string>
+    <string name="im_new_messages_in">" new messages in "</string>
+    <string name="im_conversations">" conversations."</string>
+    <string name="im_new_messages">" new messages."</string>
 </resources>

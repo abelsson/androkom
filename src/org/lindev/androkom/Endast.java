@@ -38,7 +38,7 @@ public class Endast extends Activity implements ServiceConnection {
             mDialog = new ProgressDialog(Endast.this);
             mDialog.setCancelable(false);
             mDialog.setIndeterminate(true);
-            mDialog.setMessage("Only the last");
+            mDialog.setMessage(getString(R.string.endast_label));
             mDialog.show();
         }
 

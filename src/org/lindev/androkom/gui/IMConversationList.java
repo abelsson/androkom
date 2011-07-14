@@ -163,13 +163,13 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
 
     private void clearAllHistory() {
         final AlertDialog.Builder builder = new AlertDialog.Builder(IMConversationList.this);
-        builder.setTitle("Clear all messaging history?");
-        builder.setPositiveButton("Yes", new DialogInterface.OnClickListener() {
+        builder.setTitle(getString(R.string.im_clear_history_q));
+        builder.setPositiveButton(getString(R.string.yes), new DialogInterface.OnClickListener() {
             public void onClick(final DialogInterface dialog, int which) {
                 mIMLogger.clearAllHistory();
             }
         });
-        builder.setNegativeButton("No", null);
+        builder.setNegativeButton(getString(R.string.no), null);
         builder.create().show();
     }
 

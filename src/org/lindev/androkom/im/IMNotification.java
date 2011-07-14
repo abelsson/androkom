@@ -41,15 +41,16 @@ public class IMNotification implements Observer {
         final int unseenConvs = mIMLogger.numConversationsWithUnseen();
         if (unseenConvs > 1) {
             final int unseenMessages = mIMLogger.numUnseenMessages();
-            contentTitle = "New Messages";
-            contentText = unseenMessages + " new messages in " + unseenConvs + " conversations.";
+            contentTitle = mKom.getApplicationContext().getString(R.string.im_new_messages_title);
+            contentText = unseenMessages + mKom.getApplicationContext().getString(R.string.im_new_messages_in) +
+                          unseenConvs + mKom.getApplicationContext().getString(R.string.im_conversations);
             notificationIntent = new Intent(mKom, IMConversationList.class);
         }
         else {
             final int unseenInConv = mIMLogger.numUnseenInConversation(convId);
             contentTitle = convStr;
             if (unseenInConv > 1) {
-                contentText = unseenInConv + " new messages.";
+                contentText = unseenInConv + mKom.getApplicationContext().getString(R.string.im_new_messages);
             }
             else if (toId == mKom.getUserId()) {
                 contentText = msg;

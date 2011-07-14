@@ -97,7 +97,7 @@ public class Login extends Activity implements ServiceConnection
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
     			Toast.makeText(getBaseContext(),
-    					"OISafe not found",
+    					getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
     		}
@@ -216,7 +216,7 @@ public class Login extends Activity implements ServiceConnection
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
             		builder.setMessage(result)
             		.setCancelable(false)
-            		.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+            		.setNegativeButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
             			public void onClick(DialogInterface dialog, int id) {
             				dialog.cancel();
             			}
@@ -273,7 +273,7 @@ public class Login extends Activity implements ServiceConnection
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
     			Toast.makeText(getBaseContext(),
-    					"OISafe not found",
+    			        getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
     		}
@@ -294,7 +294,7 @@ public class Login extends Activity implements ServiceConnection
 			startActivityForResult(i, 17);
 		} catch (ActivityNotFoundException e) {
 			Toast.makeText(getBaseContext(),
-					"OISafe not found",
+			        getString(R.string.error_oisafe_not_found),
 					Toast.LENGTH_LONG).show();
 			Log.e(TAG, "failed to store password in OISafe");
 		}

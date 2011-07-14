@@ -46,10 +46,10 @@ public class SendMessageTask extends AsyncTask<Void, Void, String> {
             mKom.sendMessage(mConfNo, mMsg, true);
         }
         catch (final RpcFailure e) {
-            return mConfStr + " isn't logged in.";
+            return mConfStr + mContext.getString(R.string.im_isnt_logged_in);
         }
         catch (final IOException e) {
-            return "Network error occured while sending message.";
+            return mContext.getString(R.string.im_network_error);
         }
         return null;
     }
@@ -60,7 +60,7 @@ public class SendMessageTask extends AsyncTask<Void, Void, String> {
         if (errorMsg != null) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle(errorMsg);
-            builder.setPositiveButton("OK", null);
+            builder.setPositiveButton(mContext.getString(R.string.alert_dialog_ok), null);
             builder.create().show();
             return;
         }

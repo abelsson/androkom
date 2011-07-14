@@ -188,4 +188,10 @@ Guran vill helst sätta en giftpil i dig."</string>
 
     <string name="not_a_number">"Inte ett textnummer: "</string>
     <string name="must_not_be_negative">"Textnummer måste vara positiva"</string>
+
+    <string name="error_oisafe_not_found">"OISafe saknas"</string>
+    <string name="im_new_messages_title">"Nya meddelanden"</string>
+    <string name="im_new_messages_in">" nya meddelanden i "</string>
+    <string name="im_conversations">" konversationer."</string>
+    <string name="im_new_messages">" nya meddelanden."</string>
 </resources>
