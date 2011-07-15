@@ -56,7 +56,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private class SQLHelper extends SQLiteOpenHelper {
         private static final String DATABASE_NAME = "lyskom_im_log.db";
-        private static final int DATABASE_VERSION = 5;
+        private static final int DATABASE_VERSION = 6;
 
         public SQLHelper(final Context context) {
             super(context, DATABASE_NAME, null, DATABASE_VERSION);
@@ -90,6 +90,7 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
                   COL_LATEST_MSG + " INTEGER NOT NULL, " +
                   COL_LATEST_SEEN + " INTEGER NOT NULL, " +
                   COL_NUM_UNSEEN + " INTEGER NOT NULL, " +
+                  COL_TIMESTAMP + " INTEGER NOT NULL, " +
                   "UNIQUE (" + COL_MY_ID + ", " + COL_CONV_ID + "))";
             db.execSQL(sql);
 
@@ -119,14 +120,16 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
 
     private static final String INSERT_CONV = "INSERT OR IGNORE INTO " + TABLE_CONV + " (" + COL_MY_ID + ", " +
             COL_CONV_ID + ", " + COL_CONV_STR + ", " + COL_NUM_MSG + ", " + COL_LATEST_MSG + ", " +
-            COL_LATEST_SEEN + ", " + COL_NUM_UNSEEN + ") VALUES (?, ?, ?, ?, ?, ?, ?)";
+            COL_LATEST_SEEN + ", " + COL_NUM_UNSEEN + ", " + COL_TIMESTAMP + ") VALUES (?, ?, ?, ?, ?, ?, ?, ?)";
 
     private static final String UPDATE_CONV = "UPDATE " + TABLE_CONV + " SET " + COL_CONV_STR + " = ?, " +
             COL_NUM_MSG + " = " + COL_NUM_MSG + " + 1, " + COL_LATEST_MSG + " = ?, " + COL_NUM_UNSEEN + " = " +
-            COL_NUM_UNSEEN + " + 1 WHERE " + COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
+            COL_NUM_UNSEEN + " + 1, " + COL_TIMESTAMP + " = ? WHERE " + COL_MY_ID + " = ? AND " + COL_CONV_ID + " = ?";
 
     private void logIM(final Integer myId, final Integer fromId, final String fromStr, final Integer toId,
             final String toStr, final Integer convId, final String convStr, final String msg) {
+        final Long timestamp = System.currentTimeMillis();
+
         ContentValues values = new ContentValues();
         values.put(COL_MY_ID, myId);
         values.put(COL_CONV_ID, convId);
@@ -134,22 +137,22 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
         values.put(COL_FROM_STR, fromStr);
         values.put(COL_TO_ID, toId);
         values.put(COL_TO_STR, toStr);
-        values.put(COL_TIMESTAMP, System.currentTimeMillis());
+        values.put(COL_TIMESTAMP, timestamp);
         values.put(COL_MSG, msg);
 
         synchronized (mWriteLock) {
             final SQLiteDatabase db = dbHelper.getWritableDatabase();
 
             // Insert the message into the message table
-            final long rowId = db.insert(TABLE_MSG, null, values);
+            final Long rowId = db.insert(TABLE_MSG, null, values);
 
             // Create a new empty record for the conversation if it doesn't already exist
             final Integer zero = Integer.valueOf(0);
-            final Object insertArgs[] = { myId, convId, "", zero, zero, zero, zero };
+            final Object insertArgs[] = { myId, convId, "", zero, zero, zero, zero, zero };
             db.execSQL(INSERT_CONV, insertArgs);
 
             // Update conversation record
-            final Object[] updateArgs = { convStr, Long.valueOf(rowId), myId, convId };
+            final Object[] updateArgs = { convStr, rowId, timestamp, myId, convId };
             db.execSQL(UPDATE_CONV, updateArgs);
         }
 

@@ -39,7 +39,7 @@
         </activity>
         
          <!--  MessageLog -->
-         <activity android:name=".MessageLog"
+         <activity android:name="gui.MessageLog"
                    android:label="@string/message_log_label">
         </activity>
         
@@ -69,6 +69,7 @@
         </service>
         <activity android:name=".gui.IMConversationList" android:label="@string/im_conversations_list_label" android:launchMode="singleTop"></activity>
         <activity android:name=".gui.IMConversation" android:launchMode="singleTop"></activity>
+        <activity android:name=".gui.TextCreator"></activity>
 
     </application>
 

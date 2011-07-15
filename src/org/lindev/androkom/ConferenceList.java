@@ -8,6 +8,8 @@ import java.util.TimerTask;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.MessageLog;
+import org.lindev.androkom.gui.TextCreator;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -153,7 +155,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 
 		case R.id.menu_createnewtext_id:
-			intent = new Intent(this, CreateNewText.class);
+			intent = new Intent(this, TextCreator.class);
 			intent.putExtra("recipient_type", 1);
 			startActivity(intent);
 			return true;

@@ -6,6 +6,8 @@ import java.util.regex.Pattern;
 
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.MessageLog;
+import org.lindev.androkom.gui.TextCreator;
 
 import android.app.Activity;
 import android.app.AlertDialog;
@@ -479,9 +481,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
          * CreateText activity. 
          */
         case R.id.reply:
-            Intent intent = new Intent(this, CreateText.class);    
-            intent.putExtra("in-reply-to", mState.getCurrent().getTextNo());
-            intent.putExtra("subject-line", mState.getCurrent().getSubject());
+            Intent intent = new Intent(this, TextCreator.class);
+            intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent().getSubject());
+            intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent().getTextNo());
             startActivity(intent);
             return true;
 

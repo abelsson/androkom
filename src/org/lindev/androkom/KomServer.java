@@ -174,7 +174,7 @@ public class KomServer extends Service implements RpcEventListener,
                 .subscribe(asyncMessagesHandler.new MessageToaster());
         
         imLogger = new IMLogger(this);
-        imNotification = new IMNotification(this);
+        new IMNotification(this);
         asyncMessagesHandler.subscribe(imLogger);
 
         if (s == null) {
@@ -1105,7 +1105,7 @@ public class KomServer extends Service implements RpcEventListener,
 	// This is the object that receives interactions from clients.
 	private final IBinder mBinder = new LocalBinder();
 
-	private HashSet<Integer> mPendingSentTexts;
+	public HashSet<Integer> mPendingSentTexts;
 	ConfInfo usernames[];
 	private int re_userid; // for reconnect, note: none of these are saved during screen rotation
 	private String re_password; // for reconnect
@@ -1115,7 +1115,6 @@ public class KomServer extends Service implements RpcEventListener,
 	
 	private boolean hidden_session = !RELEASE_BUILD;
 
-	AsyncMessages asyncMessagesHandler;
+	public AsyncMessages asyncMessagesHandler;
 	public IMLogger imLogger;
-	private IMNotification imNotification;
 }

@@ -1,6 +1,10 @@
-package org.lindev.androkom;
+package org.lindev.androkom.gui;
 
+import org.lindev.androkom.App;
+import org.lindev.androkom.AsyncMessages;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
+import org.lindev.androkom.KomServer;
+import org.lindev.androkom.R;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
