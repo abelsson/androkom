@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.TextCreator;
 
 import android.app.Dialog;
 import android.content.Context;
@@ -52,13 +53,11 @@ public class XDialog extends Dialog
             myContext.startActivity(intent);
             break;
 		case 1 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 1);
+            intent = new Intent(myContext, TextCreator.class);
             myContext.startActivity(intent);
             break;
 		case 2 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 2);
+            intent = new Intent(myContext, TextCreator.class);
             myContext.startActivity(intent);
             break;
 		}

@@ -521,13 +521,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			return true;
 
 		case R.id.menu_createnewtext_id:
-            intent = new Intent(this, CreateNewText.class);    
-            intent.putExtra("recipient_type", 1);
+            intent = new Intent(this, TextCreator.class);
             startActivity(intent);
 			return true;
 
 		case R.id.menu_createnewmail_id:
-            intent = new Intent(this, CreateNewText.class);    
+            intent = new Intent(this, TextCreator.class);
             intent.putExtra("recipient_type", 2);
             startActivity(intent);
 			return true;

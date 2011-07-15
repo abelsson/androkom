@@ -3,6 +3,7 @@ package org.lindev.androkom;
 import java.util.List;
 import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.TextCreator;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
@@ -111,9 +112,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
                         {
                         case 0: // mail
                             Log.d(TAG, "Trying to create mail");
-                            intent = new Intent(getBaseContext(), CreateNewText.class);
-                            intent.putExtra("recipient", selected_user);
-                            intent.putExtra("recipient_type", 2);
+                            intent = new Intent(getBaseContext(), TextCreator.class);
+                            intent.putExtra(TextCreator.INTENT_RECIPIENT, selected_user);
                             startActivity(intent);
                             finish();
                             break;

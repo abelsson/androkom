@@ -47,6 +47,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private static final String INTENT_STATE_CONFIGURED = "initial-state-configured";
     public static final String INTENT_REPLY_TO = "in-reply-to";
     public static final String INTENT_SUBJECT = "subject-line";
+    public static final String INTENT_RECIPIENT = "recipient";
 
     private KomServer mKom = null;
     private List<Recipient> mRecipients;
@@ -87,10 +88,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         @Override
         public void onPostExecute(final List<Recipient> recipients) {
             for (final Recipient recipient : recipients) {
-                mRecipients.add(recipient);
-                mAdapter.add(recipient);
+                add(recipient);
             }
-            mAdapter.notifyDataSetChanged();
         }
     }
 
@@ -166,8 +165,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         sendButton.setOnClickListener(buttonClickListener);
         cancelButton.setOnClickListener(buttonClickListener);
 
-        for (final Recipient recip : mRecipients) {
-            mAdapter.add(recip);
+        for (final Recipient recipient : mRecipients) {
+            mAdapter.add(recipient);
         }
         mAdapter.notifyDataSetChanged();
     }
@@ -178,9 +177,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         builder.setNegativeButton("No", null);
         builder.setPositiveButton("Yes", new OnClickListener() {
             public void onClick(final DialogInterface dialog, final int which) {
-                mRecipients.remove(recipient);
-                mAdapter.remove(recipient);
-                mAdapter.notifyDataSetChanged();
+                remove(recipient);
             }
         });
         builder.create().show();
@@ -197,10 +194,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                 final String recip = input.getText().toString();
                 new LookupNameTask(TextCreator.this, mKom, recip, LookupNameTask.LOOKUP_BOTH, new RunOnSuccess() {
                     public void run(final ConfInfo conf) {
-                        final Recipient recipient = new Recipient(conf.getNo(), conf.getNameString(), type);
-                        mRecipients.add(recipient);
-                        mAdapter.add(recipient);
-                        mAdapter.notifyDataSetChanged();
+                        add(new Recipient(conf.getNo(), conf.getNameString(), type));
                     }
                 }).execute();
             }
@@ -229,6 +223,18 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         }).execute();
     }
 
+    private void remove(final Recipient recipient) {
+        mRecipients.remove(recipient);
+        mAdapter.remove(recipient);
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void add(final Recipient recipient) {
+        mRecipients.add(recipient);
+        mAdapter.add(recipient);
+        mAdapter.notifyDataSetChanged();
+    }
+
     @Override
     public Object onRetainNonConfigurationInstance() {
         return mRecipients;
@@ -249,6 +255,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             else {
                 new CopyRecipientsTask().execute(mReplyTo);
             }
+        }
+        final int to = getIntent().getIntExtra(INTENT_RECIPIENT, -1);
+        if (to > 0) {
+            add(new Recipient(to, mKom.getConferenceName(to), RecipientType.RECP_TO));
         }
         if (mReplyTo <= 0) {
             setTitle("Create new text");

@@ -15,16 +15,8 @@
         </activity>
         
          <!--  Create a KOM message -->
-         <activity android:name=".CreateText"       
-                   android:label="@string/create_text"
-                   android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
         
          <!--  Create a KOM message -->
-         <activity android:name=".CreateNewText"       
-                   android:label="@string/create_new_text"
-                   android:windowSoftInputMode="stateVisible|adjustResize">
-        </activity>
         
          <!--  Create a KOM IM -->
         
