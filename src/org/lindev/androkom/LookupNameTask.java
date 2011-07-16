@@ -1,6 +1,9 @@
 package org.lindev.androkom;
 
+import java.io.IOException;
+
 import nu.dll.lyskom.ConfInfo;
+import nu.dll.lyskom.RpcFailure;
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -51,24 +54,24 @@ public class LookupNameTask extends AsyncTask<Void, Void, ConfInfo[]> {
 
     @Override
     protected ConfInfo[] doInBackground(final Void... args) {
-        ConfInfo[] users = null;
-        ConfInfo[] confs = null;
-        if (mLookupType == LookupType.LOOKUP_USERS || mLookupType == LookupType.LOOKUP_BOTH) {
-            users = mKom.getUsers(mRecip);
+        try {
+            switch (mLookupType) {
+            case LOOKUP_USERS:
+                return mKom.getSession().lookupName(mRecip, true, false);
+            case LOOKUP_CONFERENCES:
+                return mKom.getSession().lookupName(mRecip, false, true);
+            case LOOKUP_BOTH:
+                return mKom.getSession().lookupName(mRecip, true, true);
+            default:
+                return null;
+            }
         }
-        if (mLookupType == LookupType.LOOKUP_CONFERENCES || mLookupType == LookupType.LOOKUP_BOTH) {
-            confs = mKom.getConferences(mRecip);
+        catch (final RpcFailure e) {
+            return null;
         }
-        if (users == null || users.length == 0) {
-            return confs;
+        catch (final IOException e) {
+            return null;
         }
-        if (confs == null || confs.length == 0) {
-            return users;
-        }
-        final ConfInfo[] possibleRecip = new ConfInfo[users.length + confs.length];
-        System.arraycopy(users, 0, possibleRecip, 0, users.length);
-        System.arraycopy(confs, 0, possibleRecip, users.length, confs.length);
-        return possibleRecip;
     }
 
     @Override

@@ -685,44 +685,6 @@ public class KomServer extends Service implements RpcEventListener,
         return mLastTextNo;
     }
 
-    /**
-     * Get a list of conferencenames matching a string
-     */
-    public ConfInfo[] getConferences(String name) 
-    {
-        // find ConfNo
-        ConfInfo[] conferences=null;
-		try {
-			conferences = s.lookupName(name, false, true);
-		} catch (RpcFailure e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		return conferences;
-    }
-
-    /**
-     * Get a list of usernames matching a string
-     */
-    public ConfInfo[] getUsers(String name) 
-    {
-        // find ConfNo
-        ConfInfo[] conferences=null;
-		try {
-			conferences = s.lookupName(name, true, false);
-		} catch (RpcFailure e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		} catch (IOException e1) {
-			// TODO Auto-generated catch block
-			e1.printStackTrace();
-		}
-		return conferences;
-    }
-
 	String[] getNextHollerith(String s) {
 		s = s.trim();
 		int prefixLen = s.indexOf("H");
