@@ -183,6 +183,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			startActivity(intent);
 			return true;
 			
+        case R.id.menu_joinconference_id:
+            intent = new Intent(this, JoinConference.class);
+            startActivity(intent);
+            return true;
+            
         case R.id.menu_logout_id:
             mKom.logout();
             intent = new Intent(this, Login.class);

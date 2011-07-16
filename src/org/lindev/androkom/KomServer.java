@@ -595,6 +595,18 @@ public class KomServer extends Service implements RpcEventListener,
 			e.printStackTrace();
 		}
     }
+
+    public void joinconference(int confNo) {
+        try {
+            s.joinConference(confNo);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
     
     public Session getSession()
     {

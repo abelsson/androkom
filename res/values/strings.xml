@@ -195,4 +195,9 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="im_new_messages_in">" new messages in "</string>
     <string name="im_conversations">" conversations."</string>
     <string name="im_new_messages">" new messages."</string>
+
+    <string name="do_joinconference">Join conference</string>
+    <string name="joinconference_label">Join conference</string>
+    <string name="joinconference_shortcut">J</string>
+
 </resources>

@@ -14,6 +14,8 @@
     
 	<item android:alphabeticShortcut="@string/endast_shortcut"
 		android:title="@string/endast_label" android:id="@+id/menu_endast_id" />
+    <item android:alphabeticShortcut="@string/joinconference_shortcut"
+        android:title="@string/joinconference_label" android:id="@+id/menu_joinconference_id" />
 	<item android:title="@string/seewhoison_label"
 		android:alphabeticShortcut="@string/seewhoison_shortcut" android:id="@+id/menu_seewhoison_id"></item>
 	<item android:title="@string/seefriendsison_label"

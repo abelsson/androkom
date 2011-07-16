@@ -194,4 +194,9 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="im_new_messages_in">" nya meddelanden i "</string>
     <string name="im_conversations">" konversationer."</string>
     <string name="im_new_messages">" nya meddelanden."</string>
+
+    <string name="do_joinconference">Join conference</string>
+    <string name="joinconference_label">Join conference</string>
+    <string name="joinconference_shortcut">J</string>
+
 </resources>

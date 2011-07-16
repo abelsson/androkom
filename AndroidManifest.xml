@@ -28,12 +28,17 @@
          <!--  Endast -->
          <activity android:name=".Endast"       
                    android:label="@string/endast_label">
-        </activity>
+         </activity>
+        
+         <!--  Join Conference -->
+         <activity android:name=".JoinConference"       
+                   android:label="@string/joinconference_label">
+         </activity>
         
          <!--  MessageLog -->
          <activity android:name="gui.MessageLog"
                    android:label="@string/message_log_label">
-        </activity>
+         </activity>
         
          <!--  Login dialog -->
          <activity android:name=".Login"       
