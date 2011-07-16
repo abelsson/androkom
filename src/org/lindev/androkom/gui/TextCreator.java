@@ -170,6 +170,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         final Button sendButton = (Button) findViewById(R.id.send);
         final Button cancelButton = (Button) findViewById(R.id.cancel);
 
+        toButton.setEnabled(false);
+        ccButton.setEnabled(false);
+        bccButton.setEnabled(false);
+        sendButton.setEnabled(false);
+        cancelButton.setEnabled(true);
+
         final View.OnClickListener buttonClickListener = new View.OnClickListener() {
             public void onClick(final View view) {
                 if (view == toButton) {
@@ -195,6 +201,13 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         bccButton.setOnClickListener(buttonClickListener);
         sendButton.setOnClickListener(buttonClickListener);
         cancelButton.setOnClickListener(buttonClickListener);
+    }
+
+    private void enableButtons() {
+        ((Button) findViewById(R.id.add_to)).setEnabled(true);
+        ((Button) findViewById(R.id.add_cc)).setEnabled(true);
+        ((Button) findViewById(R.id.add_bcc)).setEnabled(true);
+        ((Button) findViewById(R.id.send)).setEnabled(true);
     }
 
     private void showRemoveRecipientDialog(final Recipient recipient) {
@@ -296,6 +309,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             addInitialRecipients();
             getIntent().putExtra(INTENT_INITIAL_RECIPIENTS_ADDED, true);
         }
+        enableButtons();
     }
 
     public void onServiceDisconnected(final ComponentName name) {
