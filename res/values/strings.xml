@@ -200,4 +200,9 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="joinconference_label">Join conference</string>
     <string name="joinconference_shortcut">J</string>
 
+    <string name="do_leaveconference">Leave conference</string>
+    <string name="leaveconference_label">Leave conference</string>
+    <string name="leaveconference_shortcut">L</string>
+
+    <string name="title_submenu_others">"More..."</string>
 </resources>

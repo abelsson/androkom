@@ -556,6 +556,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			seewhoison();
 			return true;
 
+        case R.id.menu_leaveconference_id:
+            leaveconference();
+            return true;
+
         case R.id.menu_message_log_id:
             intent = new Intent(this, MessageLog.class);
             startActivity(intent);
@@ -608,7 +612,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         Intent intent = new Intent(this, WhoIsOn.class);    
         startActivity(intent);
 	}
-	
+
+    protected void leaveconference() {
+        mKom.leaveConference(mState.conferenceNo);
+        finish();
+    }
+
     protected Dialog onCreateDialog(int id) {
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
