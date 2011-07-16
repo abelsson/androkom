@@ -113,6 +113,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
                         case 0: // mail
                             Log.d(TAG, "Trying to create mail");
                             intent = new Intent(getBaseContext(), TextCreator.class);
+                            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
                             intent.putExtra(TextCreator.INTENT_RECIPIENT, selected_user);
                             startActivity(intent);
                             finish();

@@ -44,10 +44,11 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private static final String TEXT_TAB_TAG = "text-tab-tag";
     private static final String RECIPIENTS_TAB_TAG = "recipients-tab-tag";
 
-    private static final String INTENT_STATE_CONFIGURED = "initial-state-configured";
+    private static final String INTENT_INITIAL_RECIPIENTS_ADDED = "initial-recipients-added";
     public static final String INTENT_REPLY_TO = "in-reply-to";
     public static final String INTENT_SUBJECT = "subject-line";
     public static final String INTENT_RECIPIENT = "recipient";
+    public static final String INTENT_IS_MAIL = "is-mail";
 
     private KomServer mKom = null;
     private List<Recipient> mRecipients;
@@ -87,27 +88,24 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
         @Override
         public void onPostExecute(final List<Recipient> recipients) {
-            for (final Recipient recipient : recipients) {
-                add(recipient);
+            if (recipients != null) {
+                for (final Recipient recipient : recipients) {
+                    add(recipient);
+                }
             }
         }
     }
 
-    @SuppressWarnings("unchecked")
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_new_text_layout);
 
-        mSubject = (EditText) findViewById(R.id.subject);
-        mBody = (EditText) findViewById(R.id.body);
-        mAdapter = new ArrayAdapter<Recipient>(this, R.layout.message_log);
-        mRecipients = (List<Recipient>) getLastNonConfigurationInstance();
-        if (mRecipients == null) {
-            mRecipients = new ArrayList<Recipient>();
-        }
+        initializeCommon();
+        initializeRecipients();
+        initializeTabs();
+        initializeButtons();
 
-        initialize();
         getApp().doBindService(this);
     }
 
@@ -117,7 +115,32 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         super.onDestroy();
     }
 
-    private void initialize() {
+    private void initializeCommon() {
+        mSubject = (EditText) findViewById(R.id.subject);
+        mBody = (EditText) findViewById(R.id.body);
+        mReplyTo = getIntent().getIntExtra(INTENT_REPLY_TO, -1);
+        if (mReplyTo > 0) {
+            setTitle("Create comment to " + mReplyTo);
+        }
+        else {
+            setTitle("Create new text");
+        }
+    }
+
+    @SuppressWarnings("unchecked")
+    private void initializeRecipients() {
+        mAdapter = new ArrayAdapter<Recipient>(this, R.layout.message_log);
+        mRecipients = (List<Recipient>) getLastNonConfigurationInstance();
+        if (mRecipients == null) {
+            mRecipients = new ArrayList<Recipient>();
+        }
+        for (final Recipient recipient : mRecipients) {
+            mAdapter.add(recipient);
+        }
+        mAdapter.notifyDataSetChanged();
+    }
+
+    private void initializeTabs() {
         final TabHost tabHost = getTabHost();
         final TabSpec textTab = tabHost.newTabSpec(TEXT_TAB_TAG);
         textTab.setIndicator("Text");
@@ -137,7 +160,9 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                 showRemoveRecipientDialog(recipient);
             }
         });
+    }
 
+    private void initializeButtons() {
         final Button toButton = (Button) findViewById(R.id.add_to);
         final Button ccButton = (Button) findViewById(R.id.add_cc);
         final Button sendButton = (Button) findViewById(R.id.send);
@@ -146,10 +171,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         final View.OnClickListener buttonClickListener = new View.OnClickListener() {
             public void onClick(final View view) {
                 if (view == toButton) {
-                    showAddRecipientDialog(RecipientType.RECP_TO);
+                    showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_BOTH);
                 }
                 else if (view == ccButton) {
-                    showAddRecipientDialog(RecipientType.RECP_CC);
+                    showAddRecipientDialog(RecipientType.RECP_CC, LookupNameTask.LOOKUP_BOTH);
                 }
                 else if (view == sendButton) {
                     sendMessage();
@@ -164,11 +189,6 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         ccButton.setOnClickListener(buttonClickListener);
         sendButton.setOnClickListener(buttonClickListener);
         cancelButton.setOnClickListener(buttonClickListener);
-
-        for (final Recipient recipient : mRecipients) {
-            mAdapter.add(recipient);
-        }
-        mAdapter.notifyDataSetChanged();
     }
 
     private void showRemoveRecipientDialog(final Recipient recipient) {
@@ -183,7 +203,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         builder.create().show();
     }
 
-    private void showAddRecipientDialog(final RecipientType type) {
+    private void showAddRecipientDialog(final RecipientType type, final int lookupType) {
         final EditText input = new EditText(this);
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add recipient");
@@ -192,7 +212,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         builder.setPositiveButton("OK", new OnClickListener() {
             public void onClick(final DialogInterface dialog, final int which) {
                 final String recip = input.getText().toString();
-                new LookupNameTask(TextCreator.this, mKom, recip, LookupNameTask.LOOKUP_BOTH, new RunOnSuccess() {
+                new LookupNameTask(TextCreator.this, mKom, recip, lookupType, new RunOnSuccess() {
                     public void run(final ConfInfo conf) {
                         add(new Recipient(conf.getNo(), conf.getNameString(), type));
                     }
@@ -240,31 +260,35 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         return mRecipients;
     }
 
-    public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
-        mReplyTo = getIntent().getIntExtra(INTENT_REPLY_TO, -1);
-        if (!getIntent().getBooleanExtra(INTENT_STATE_CONFIGURED, false)) {
-            getIntent().putExtra(INTENT_STATE_CONFIGURED, true);
-            final String subject = getIntent().getStringExtra(INTENT_SUBJECT);
-            if (subject != null) {
-                mSubject.setText(subject);
-            }
-            if (mReplyTo <= 0) {
-                showAddRecipientDialog(RecipientType.RECP_TO);
-            }
-            else {
-                new CopyRecipientsTask().execute(mReplyTo);
-            }
+    private void addInitialRecipients() {
+        final String subject = getIntent().getStringExtra(INTENT_SUBJECT);
+        final int recipient = getIntent().getIntExtra(INTENT_RECIPIENT, -1);
+        final boolean isMail = getIntent().getBooleanExtra(INTENT_IS_MAIL, false);
+
+        if (mReplyTo > 0) {
+            new CopyRecipientsTask().execute(mReplyTo);
         }
-        final int to = getIntent().getIntExtra(INTENT_RECIPIENT, -1);
-        if (to > 0) {
-            add(new Recipient(to, mKom.getConferenceName(to), RecipientType.RECP_TO));
-        }
-        if (mReplyTo <= 0) {
-            setTitle("Create new text");
+        else if (isMail) {
+            add(new Recipient(mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_USERS);
         }
         else {
-            setTitle("Create comment to " + mReplyTo);
+            showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_BOTH);
+        }
+
+        if (subject != null) {
+            mSubject.setText(subject);
+        }
+        if (recipient > 0) {
+            add(new Recipient(recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+        }
+    }
+
+    public void onServiceConnected(final ComponentName name, final IBinder service) {
+        mKom = ((KomServer.LocalBinder) service).getService();
+        if (!getIntent().getBooleanExtra(INTENT_INITIAL_RECIPIENTS_ADDED, false)) {
+            addInitialRecipients();
+            getIntent().putExtra(INTENT_INITIAL_RECIPIENTS_ADDED, true);
         }
     }
 

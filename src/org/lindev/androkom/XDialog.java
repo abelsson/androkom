@@ -58,6 +58,7 @@ public class XDialog extends Dialog
             break;
 		case 2 :
             intent = new Intent(myContext, TextCreator.class);
+            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
             myContext.startActivity(intent);
             break;
 		}

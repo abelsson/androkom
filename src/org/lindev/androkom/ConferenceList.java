@@ -161,6 +161,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		case R.id.menu_createnewmail_id:
 			intent = new Intent(this, TextCreator.class);
+			intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
 			startActivity(intent);
 			return true;
 

@@ -527,7 +527,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 		case R.id.menu_createnewmail_id:
             intent = new Intent(this, TextCreator.class);
-            intent.putExtra("recipient_type", 2);
+            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
             startActivity(intent);
 			return true;
 

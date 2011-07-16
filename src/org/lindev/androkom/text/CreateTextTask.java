@@ -62,7 +62,14 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
 
         for (final Recipient recipient : mRecipients) {
             try {
-                text.addRecipient(recipient.recipientId);
+                switch (recipient.type) {
+                case RECP_TO:
+                    text.addRecipient(recipient.recipientId);
+                    break;
+                case RECP_CC:
+                    text.addCcRecipient(recipient.recipientId);
+                    break;
+                }
                 if (mKom.getSession().isMemberOf(recipient.recipientId)) {
                     mUserIsMemberOfSomeConf = true;
                 }
