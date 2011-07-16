@@ -8,14 +8,12 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Session;
-import nu.dll.lyskom.Text;
 import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;

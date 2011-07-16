@@ -1,8 +1,5 @@
 package org.lindev.androkom;
 
-import java.util.List;
-import java.util.Timer;
-
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.Activity;
@@ -22,10 +19,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**

@@ -2,6 +2,7 @@ package org.lindev.androkom;
 
 import nu.dll.lyskom.ConfInfo;
 
+import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 
 import android.app.Activity;
@@ -100,7 +101,7 @@ public class Endast extends Activity implements ServiceConnection {
             return;
         }
 
-        new LookupNameTask(this, mKom, confName, LookupNameTask.LOOKUP_CONFERENCES, new RunOnSuccess() {
+        new LookupNameTask(this, mKom, confName, LookupType.LOOKUP_CONFERENCES, new RunOnSuccess() {
             public void run(final ConfInfo conf) {
                 Toast.makeText(getApplicationContext(), conf.getNameString(), Toast.LENGTH_SHORT).show();
                 new EndastTask().execute(conf.getNo(), numTexts);

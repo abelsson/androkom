@@ -8,6 +8,7 @@ import nu.dll.lyskom.ConfInfo;
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.LookupNameTask;
+import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
@@ -213,7 +214,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         final String recipient = mRecipientField.getText().toString();
         final String msg = mMessageField.getText().toString();
 
-        new LookupNameTask(this, mKom, recipient, LookupNameTask.LOOKUP_BOTH, new RunOnSuccess() {
+        new LookupNameTask(this, mKom, recipient, LookupType.LOOKUP_BOTH, new RunOnSuccess() {
             public void run(final ConfInfo conf) {
                 new SendMessageTask(IMConversationList.this, mKom, conf.getNo(), conf.getNameString(), msg, new Runnable() {
                     public void run() {

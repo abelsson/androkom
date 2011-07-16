@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.util.List;
+
 import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.TextCreator;
@@ -19,8 +20,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Show a list of persons logged on.

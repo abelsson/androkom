@@ -13,6 +13,7 @@ import nu.dll.lyskom.Text;
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.LookupNameTask;
+import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 import org.lindev.androkom.R;
 import org.lindev.androkom.text.CreateTextTask;
@@ -172,13 +173,13 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         final View.OnClickListener buttonClickListener = new View.OnClickListener() {
             public void onClick(final View view) {
                 if (view == toButton) {
-                    showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_BOTH);
+                    showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_BOTH);
                 }
                 else if (view == ccButton) {
-                    showAddRecipientDialog(RecipientType.RECP_CC, LookupNameTask.LOOKUP_BOTH);
+                    showAddRecipientDialog(RecipientType.RECP_CC, LookupType.LOOKUP_BOTH);
                 }
                 else if (view == bccButton) {
-                    showAddRecipientDialog(RecipientType.RECP_BCC, LookupNameTask.LOOKUP_BOTH);
+                    showAddRecipientDialog(RecipientType.RECP_BCC, LookupType.LOOKUP_BOTH);
                 }
                 else if (view == sendButton) {
                     sendMessage();
@@ -208,7 +209,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         builder.create().show();
     }
 
-    private void showAddRecipientDialog(final RecipientType type, final int lookupType) {
+    private void showAddRecipientDialog(final RecipientType type, final LookupType lookupType) {
         final EditText input = new EditText(this);
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
         builder.setTitle("Add recipient");
@@ -275,10 +276,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         }
         else if (isMail) {
             add(new Recipient(mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
-            showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_USERS);
+            showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_USERS);
         }
         else {
-            showAddRecipientDialog(RecipientType.RECP_TO, LookupNameTask.LOOKUP_BOTH);
+            showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_BOTH);
         }
 
         if (subject != null) {
