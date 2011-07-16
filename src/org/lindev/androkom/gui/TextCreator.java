@@ -165,6 +165,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private void initializeButtons() {
         final Button toButton = (Button) findViewById(R.id.add_to);
         final Button ccButton = (Button) findViewById(R.id.add_cc);
+        final Button bccButton = (Button) findViewById(R.id.add_bcc);
         final Button sendButton = (Button) findViewById(R.id.send);
         final Button cancelButton = (Button) findViewById(R.id.cancel);
 
@@ -175,6 +176,9 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                 }
                 else if (view == ccButton) {
                     showAddRecipientDialog(RecipientType.RECP_CC, LookupNameTask.LOOKUP_BOTH);
+                }
+                else if (view == bccButton) {
+                    showAddRecipientDialog(RecipientType.RECP_BCC, LookupNameTask.LOOKUP_BOTH);
                 }
                 else if (view == sendButton) {
                     sendMessage();
@@ -187,6 +191,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
         toButton.setOnClickListener(buttonClickListener);
         ccButton.setOnClickListener(buttonClickListener);
+        bccButton.setOnClickListener(buttonClickListener);
         sendButton.setOnClickListener(buttonClickListener);
         cancelButton.setOnClickListener(buttonClickListener);
     }

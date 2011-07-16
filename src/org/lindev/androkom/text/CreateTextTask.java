@@ -5,6 +5,7 @@ import java.util.List;
 
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextStat;
 
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
@@ -52,6 +53,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         mDialog.show();
     }
 
+    @SuppressWarnings("deprecation")
     @Override
     protected Object doInBackground(final Void... args) {
         final Text text = new Text();
@@ -68,6 +70,12 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     break;
                 case RECP_CC:
                     text.addCcRecipient(recipient.recipientId);
+                    break;
+                case RECP_BCC:
+                    if (text.getStat().hasRecipient(recipient.recipientId)) {
+                        throw new IllegalArgumentException(recipient.recipientId + " is already a recipient");
+                    }
+                    text.addMiscInfoEntry(TextStat.miscBccRecpt, recipient.recipientId);
                     break;
                 }
                 if (mKom.getSession().isMemberOf(recipient.recipientId)) {

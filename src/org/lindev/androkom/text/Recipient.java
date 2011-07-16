@@ -7,7 +7,8 @@ public class Recipient {
 
     public enum RecipientType {
         RECP_TO,
-        RECP_CC
+        RECP_CC,
+        RECP_BCC,
     }
 
     public Recipient(final int recipientId, final String recipientStr, final RecipientType type) {
@@ -25,6 +26,9 @@ public class Recipient {
             break;
         case RECP_CC:
             sb.append("Cc: ");
+            break;
+        case RECP_BCC:
+            sb.append("Bcc: ");
             break;
         }
         sb.append(recipientStr);
