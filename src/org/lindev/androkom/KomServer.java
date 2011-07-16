@@ -311,6 +311,28 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     /**
+     * Fetch a username from userid
+     * 
+     * @param userid
+     */
+    public String fetchUsername(int persNo) {
+        String username;
+        if (persNo > 0) {
+            try {
+                nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
+                username = confStat.getNameString();
+            } catch (Exception e) {
+                username = getString(R.string.person) + persNo
+                        + getString(R.string.does_not_exist);
+            }
+        } else {
+            Log.d(TAG, "fetchPersons persNo=" + persNo);
+            username = getString(R.string.anonymous);
+        }
+        return username;
+    }
+    
+    /**
      * Fetch a list of persons online
      * @param populatePersonsTask 
      */
@@ -619,7 +641,19 @@ public class KomServer extends Service implements RpcEventListener,
             e.printStackTrace();
         }
     }
-    
+
+    public void subRecipient(int textNo, int confNo) {
+        try {
+            s.subRecipient(textNo, confNo);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public Session getSession()
     {
         return s;

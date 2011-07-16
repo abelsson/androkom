@@ -1,8 +1,13 @@
 package org.lindev.androkom;
 
+import java.io.IOException;
+import java.util.Arrays;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
+
+import nu.dll.lyskom.RpcFailure;
+import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
@@ -565,7 +570,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
             return true;
             
-		default:
+        case R.id.menu_sub_recipient_id:
+            subRecipient();
+            return true;
+
+        default:
             return super.onOptionsItemSelected(item);
         }
     }
@@ -617,6 +626,62 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         mKom.leaveConference(mState.conferenceNo);
         finish();
     }
+
+    public static int[] concatAll(int[] first, int[] second, int[] third) {
+        int totalLength = first.length+second.length+third.length;
+        int[] result = new int[totalLength];
+        System.arraycopy(first, 0, result, 0, first.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        System.arraycopy(third, 0, result, first.length+second.length, third.length);
+        return result;
+      }
+
+    /* show user the recipients of the current text and allow user to select
+     * which recipient to remove.
+     */
+    protected void subRecipient() {
+        try {
+            final int currentTextNo = mState.getCurrent().getTextNo();
+            Text text = mKom.getSession().getText(currentTextNo);
+            int[] recipts = text.getRecipients();
+            int[] ccrecipts = text.getCcRecipients();
+            int[] bccrecipts = text.getBccRecipients();
+            final int[] allrecipts = concatAll(recipts, ccrecipts, bccrecipts);
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(Conference.this);
+            builder.setTitle(getString(R.string.pick_a_name));
+            final String[] vals = new String[allrecipts.length];
+            for (int i = 0; i < allrecipts.length; i++)
+                vals[i] = mKom.fetchUsername(allrecipts[i]);
+            builder.setSingleChoiceItems(vals, -1,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            Toast.makeText(getApplicationContext(),
+                                    vals[item], Toast.LENGTH_SHORT)
+                                    .show();
+                            dialog.cancel();
+                            int selectedUser = allrecipts[item];
+                            Log.d(TAG, "Selected user:" + selectedUser + ":"
+                                    + vals[item]);
+                            doSubRecipient(selectedUser);
+                        }
+
+                        private void doSubRecipient(int selectedUser) {
+                            // TODO Auto-generated method stub
+                            mKom.subRecipient(currentTextNo, selectedUser);
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
 
     protected Dialog onCreateDialog(int id) {
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
