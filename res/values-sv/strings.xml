@@ -177,7 +177,7 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="yes">"Ja"</string>
     <string name="no">"Nej"</string>
 
-    <string name="no_text_loaded">"[no text loaded]"</string>
+    <string name="no_text_loaded">"[ingen text laddad]"</string>
 
     <string name="creating_text">"Skapar text..."</string>
     <string name="no_zero_texts">"tomma texter är inte tillåtna"</string>
@@ -195,20 +195,36 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="im_conversations">" konversationer."</string>
     <string name="im_new_messages">" nya meddelanden."</string>
 
-    <string name="do_joinconference">Join conference</string>
-    <string name="joinconference_label">Join conference</string>
-    <string name="joinconference_shortcut">J</string>
+    <string name="do_joinconference">Gå med i möte</string>
+    <string name="joinconference_label">Gå med i möte</string>
+    <string name="joinconference_shortcut">M</string>
 
-    <string name="do_leaveconference">Leave conference</string>
-    <string name="leaveconference_label">Leave conference</string>
-    <string name="leaveconference_shortcut">L</string>
+    <string name="do_leaveconference">Utträd ur möte</string>
+    <string name="leaveconference_label">Utträd ur möte</string>
+    <string name="leaveconference_shortcut">U</string>
 
-    <string name="title_submenu_others">"More..."</string>
-    <string name="sub_recipient_label">Subtract recipient</string>
-    <string name="sub_recipient_shortcut">S</string>
+    <string name="title_submenu_others">"Mer..."</string>
+    <string name="sub_recipient_label">Ta bort mottagare</string>
+    <string name="sub_recipient_shortcut">T</string>
 
-    <string name="addnewrecipienttotext_title">"addnewrecipienttotext_title"</string>
-    <string name="add_recipient_label">Add recipient</string>
-    <string name="add_recipient_shortcut">A</string>
-    <string name="do_addnewrecipienttotext">"do_addnewrecipienttotext"</string>
+    <string name="addnewrecipienttotext_title">"Lägg till ny mottagare"</string>
+    <string name="add_recipient_label">"Lägg till ny mottagare"</string>
+    <string name="add_recipient_shortcut">N</string>
+    <string name="do_addnewrecipienttotext">"Lägg till ny mottagare"</string>
+    
+    <string name="creator_comment_to">"Skapa kommentar till "</string>
+    <string name="creator_new_text">"Skapa ny text"</string>
+    <string name="creator_text_title">"Text"</string>
+    <string name="creator_recipents_title">"Mottagare"</string>
+    <string name="creator_remove_recipient">"Ta bort mottagare "</string>
+    <string name="creator_add_recipient">"Lägg till mottagare"</string>
+    <string name="creator_no_recipients">"Inga mottagare"</string>
+    
+    <string name="CTT_creating_text">"Skapar text ..."</string>
+    <string name="CTT_already_recipient">" är redan mottagare"</string>
+    <string name="CTT_not_member">"Du är inte medlem i någon mottagare. Lägg till dig?"</string>
+
+    <string name="recipient_to">"Till: "</string>
+    <string name="recipient_cc">"Extra kopia: "</string>
+    <string name="recipient_bcc">"Blind extra kopia: "</string>
 </resources>

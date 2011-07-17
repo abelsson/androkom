@@ -49,7 +49,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
     protected void onPreExecute() {
         mDialog.setCancelable(false);
         mDialog.setIndeterminate(true);
-        mDialog.setMessage("Creating text ...");
+        mDialog.setMessage(mContext.getString(R.string.CTT_creating_text));
         mDialog.show();
     }
 
@@ -73,7 +73,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     break;
                 case RECP_BCC:
                     if (text.getStat().hasRecipient(recipient.recipientId)) {
-                        throw new IllegalArgumentException(recipient.recipientId + " is already a recipient");
+                        throw new IllegalArgumentException(recipient.recipientId + mContext.getString(R.string.CTT_already_recipient));
                     }
                     text.addMiscInfoEntry(TextStat.miscBccRecpt, recipient.recipientId);
                     break;
@@ -134,7 +134,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                 }
             };
             final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle("You aren't member of any recipient. Add yourself?");
+            builder.setTitle(mContext.getString(R.string.CTT_not_member));
             builder.setPositiveButton(mContext.getString(R.string.yes), listener);
             builder.setNegativeButton(mContext.getString(R.string.no), listener);
             builder.setNeutralButton(mContext.getString(R.string.cancel), listener);

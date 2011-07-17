@@ -75,7 +75,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                         recip = confStat.getSuperConf();
                     }
                     final String name = s.toString(s.getConfName(recip));
-                    recipients.add(new Recipient(recip, name, RecipientType.RECP_TO));
+                    recipients.add(new Recipient(mKom.getApplicationContext(), recip, name, RecipientType.RECP_TO));
                 }
             }
             catch (final RpcFailure e) {
@@ -121,10 +121,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         mBody = (EditText) findViewById(R.id.body);
         mReplyTo = getIntent().getIntExtra(INTENT_REPLY_TO, -1);
         if (mReplyTo > 0) {
-            setTitle("Create comment to " + mReplyTo);
+            setTitle(getString(R.string.creator_comment_to) + mReplyTo);
         }
         else {
-            setTitle("Create new text");
+            setTitle(getString(R.string.creator_new_text));
         }
     }
 
@@ -144,12 +144,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private void initializeTabs() {
         final TabHost tabHost = getTabHost();
         final TabSpec textTab = tabHost.newTabSpec(TEXT_TAB_TAG);
-        textTab.setIndicator("Text");
+        textTab.setIndicator(getString(R.string.creator_text_title));
         textTab.setContent(R.id.create_text);
         tabHost.addTab(textTab);
 
         final TabSpec recipientsTab = tabHost.newTabSpec(RECIPIENTS_TAB_TAG);
-        recipientsTab.setIndicator("Recipients");
+        recipientsTab.setIndicator(getString(R.string.creator_recipents_title));
         recipientsTab.setContent(R.id.recipients_view);
         tabHost.addTab(recipientsTab);
 
@@ -212,9 +212,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
     private void showRemoveRecipientDialog(final Recipient recipient) {
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Remove recipient \n" + recipient.recipientStr + "?");
-        builder.setNegativeButton("No", null);
-        builder.setPositiveButton("Yes", new OnClickListener() {
+        builder.setTitle(getString(R.string.creator_remove_recipient)+"\n"
+                + recipient.recipientStr + "?");
+        builder.setNegativeButton(getString(R.string.no), null);
+        builder.setPositiveButton(getString(R.string.yes), new OnClickListener() {
             public void onClick(final DialogInterface dialog, final int which) {
                 remove(recipient);
             }
@@ -225,15 +226,15 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private void showAddRecipientDialog(final RecipientType type, final LookupType lookupType) {
         final EditText input = new EditText(this);
         final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-        builder.setTitle("Add recipient");
+        builder.setTitle(getString(R.string.creator_add_recipient));
         builder.setView(input);
-        builder.setNegativeButton("Cancel", null);
-        builder.setPositiveButton("OK", new OnClickListener() {
+        builder.setNegativeButton(getString(R.string.alert_dialog_cancel), null);
+        builder.setPositiveButton(getString(R.string.alert_dialog_ok), new OnClickListener() {
             public void onClick(final DialogInterface dialog, final int which) {
                 final String recip = input.getText().toString();
                 new LookupNameTask(TextCreator.this, mKom, recip, lookupType, new RunOnSuccess() {
                     public void run(final ConfInfo conf) {
-                        add(new Recipient(conf.getNo(), conf.getNameString(), type));
+                        add(new Recipient(mKom.getApplicationContext(), conf.getNo(), conf.getNameString(), type));
                     }
                 }).execute();
             }
@@ -246,7 +247,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         final String body = mBody.getText().toString();
         if (mRecipients.isEmpty()) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
-            builder.setTitle("There are no recipients");
+            builder.setTitle(getString(R.string.creator_no_recipients));
             builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
             builder.create().show();
             return;
@@ -288,7 +289,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             new CopyRecipientsTask().execute(mReplyTo);
         }
         else if (isMail) {
-            add(new Recipient(mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            add(new Recipient(mKom.getApplicationContext(), mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
             showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_USERS);
         }
         else {
@@ -299,7 +300,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             mSubject.setText(subject);
         }
         if (recipient > 0) {
-            add(new Recipient(recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+            add(new Recipient(mKom.getApplicationContext(), recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
         }
     }
 
