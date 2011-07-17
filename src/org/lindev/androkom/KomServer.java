@@ -644,6 +644,7 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void subRecipient(int textNo, int confNo) {
         try {
+            Log.d(TAG, "Remove confNo:"+confNo+" from textNo:"+textNo);
             s.subRecipient(textNo, confNo);
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
@@ -836,6 +837,22 @@ public class KomServer extends Service implements RpcEventListener,
 		return friendsList;
 	}
 
+    public void addNewRecipientToText(int textNo, int confNo, int texttype) {
+        Log.d(TAG, "Add new recipient (null method)");
+        Log.d(TAG, "-- textNo:" + textNo);
+        Log.d(TAG, "-- confNo:" + confNo);
+        Log.d(TAG, "-- texttype:" + texttype);
+        try {
+            s.addRecipient(textNo, confNo, texttype);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
 	public void rpcEvent(RpcEvent e) {
 		if (mPendingSentTexts.contains(e.getId())) {
 			Log.i("androkom", "Got reply for created text " + e.getId());

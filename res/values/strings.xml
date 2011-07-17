@@ -205,8 +205,11 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="leaveconference_shortcut">L</string>
 
     <string name="title_submenu_others">"More..."</string>
-
     <string name="sub_recipient_label">Subtract recipient</string>
     <string name="sub_recipient_shortcut">S</string>
 
+    <string name="addnewrecipienttotext_title">"addnewrecipienttotext_title"</string>
+    <string name="add_recipient_label">Add recipient</string>
+    <string name="add_recipient_shortcut">A</string>
+    <string name="do_addnewrecipienttotext">"do_addnewrecipienttotext"</string>
 </resources>

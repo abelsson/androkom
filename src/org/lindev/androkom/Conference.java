@@ -570,6 +570,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
             return true;
             
+        case R.id.menu_add_recipient_id:
+            addRecipient();
+            return true;
+
         case R.id.menu_sub_recipient_id:
             subRecipient();
             return true;
@@ -683,6 +687,16 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
 
+    /* start new intent to let user add new recipient to existing text
+     */
+    protected void addRecipient() {
+        final int currentTextNo = mState.getCurrent().getTextNo();
+        
+        Intent intent = new Intent(this, AddNewRecipientToText.class);
+        intent.putExtra(AddNewRecipientToText.INTENT_TEXTNO, currentTextNo);
+        startActivity(intent);
+    }
+    
     protected Dialog onCreateDialog(int id) {
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 

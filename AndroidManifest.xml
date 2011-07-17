@@ -35,6 +35,11 @@
                    android:label="@string/joinconference_label">
          </activity>
         
+         <!--  Add Recipient -->
+         <activity android:name=".AddNewRecipientToText"       
+                   android:label="@string/add_recipient_label">
+         </activity>
+        
          <!--  MessageLog -->
          <activity android:name="gui.MessageLog"
                    android:label="@string/message_log_label">
