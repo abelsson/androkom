@@ -509,6 +509,24 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
+    /* Send message about user active to server.
+     * Will not send more than once every 30 sek to keep from 
+     * flooding server.
+     */
+    public void activateUser() {
+        long long_now = System.currentTimeMillis();
+        
+        if ((lastActivate == 0) ||
+         ((long_now - lastActivate) > (30*1000)))
+        try {
+            s.doUserActive();
+            lastActivate = long_now;
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+    
     /**
      * Log in to server. 
      * 
@@ -940,6 +958,8 @@ public class KomServer extends Service implements RpcEventListener,
 	// This is the object that receives interactions from clients.
 	private final IBinder mBinder = new LocalBinder();
 
+	private long lastActivate = 0;
+	
 	public HashSet<Integer> mPendingSentTexts;
 	ConfInfo usernames[];
 	private int re_userid; // for reconnect, note: none of these are saved during screen rotation

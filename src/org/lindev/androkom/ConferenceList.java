@@ -122,10 +122,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		Toast.makeText(getApplicationContext(), ((TextView) v).getText(),
 				Toast.LENGTH_SHORT).show();
 
+		mKom.activateUser();
+
 		Intent intent = new Intent(this, Conference.class);
 		intent.putExtra("conference-id", mConferences.get((int) id).id);
 		startActivity(intent);
-
 	}
 
 	/**
@@ -146,6 +147,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
 		Log.d(TAG, "onOptionsItemSelected");
+		mKom.activateUser();
+
 		// Handle item selection
 		switch (item.getItemId()) {
 

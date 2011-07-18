@@ -1,7 +1,6 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
-import java.util.Arrays;
 import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -273,6 +272,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         @Override
         public boolean onSingleTapUp(MotionEvent e)
         {
+            mKom.activateUser();
+
         	Display display = getWindowManager().getDefaultDisplay();
         	int width = display.getWidth();  
 
@@ -290,6 +291,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
         {
+            mKom.activateUser();
+
             try {
 	            // Horizontal swipes
             	if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {	                
@@ -400,6 +403,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
+	    mKom.activateUser();
+
 		switch (keyCode) {
 		case android.view.KeyEvent.KEYCODE_B:
 			moveToPrevText();
@@ -478,6 +483,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	float newtextsize;
     	
     	Log.d(TAG, "onOptionsItemSelected");
+    	mKom.activateUser();
+    	
         // Handle item selection
         switch (item.getItemId()) {
 
