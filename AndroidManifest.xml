@@ -41,7 +41,7 @@
          </activity>
         
          <!--  MessageLog -->
-         <activity android:name="gui.MessageLog"
+         <activity android:name=".gui.MessageLog"
                    android:label="@string/message_log_label">
          </activity>
         
