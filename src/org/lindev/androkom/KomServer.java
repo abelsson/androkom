@@ -515,15 +515,15 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public void activateUser() {
         long long_now = System.currentTimeMillis();
-        
-        if ((lastActivate == 0) ||
-         ((long_now - lastActivate) > (30*1000)))
-        try {
-            s.doUserActive();
-            lastActivate = long_now;
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+
+        if ((long_now - lastActivate) > (30 * 1000)) {
+            try {
+                s.doUserActive();
+                lastActivate = long_now;
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
     
@@ -660,17 +660,154 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
-    public void subRecipient(int textNo, int confNo) {
+    public String decodeKomErrorCode(int code) {
+        switch (code) {
+        case 0:
+            return "no-error";
+        case 2:
+            return "not-implemented";
+        case 3:
+            return "obsolete-call";
+        case 4:
+            return "invalid-password";
+        case 5:
+            return "string-too-long";
+        case 6:
+            return "login-first";
+        case 7:
+            return "login-disallowed";
+        case 8:
+            return "conference-zero";
+        case 9:
+            return "undefined-conference";
+        case 10:
+            return "undefined-person";
+        case 11:
+            return "access-denied";
+        case 12:
+            return "permission-denied";
+        case 13:
+            return "not-member";
+        case 14:
+            return "no-such-text";
+        case 15:
+            return "text-zero";
+        case 16:
+            return "no-such-local-text";
+        case 17:
+            return "local-text-zero";
+        case 18:
+            return "bad-name";
+        case 19:
+            return "index-out-of-range";
+        case 20:
+            return "conference-exists";
+        case 21:
+            return "person-exists";
+        case 22:
+            return "secret-public";
+        case 23:
+            return "letterbox";
+        case 24:
+            return "ldb-error";
+        case 25:
+            return "illegal-misc";
+        case 26:
+            return "illegal-info-type";
+        case 27:
+            return "already-recipient";
+        case 28:
+            return "already-comment";
+        case 29:
+            return "already-footnote";
+        case 30:
+            return "not-recipient";
+        case 31:
+            return "not-comment";
+        case 32:
+            return "not-footnote";
+        case 33:
+            return "recipient-limit";
+        case 34:
+            return "comment-limit";
+        case 35:
+            return "footnote-limit";
+        case 36:
+            return "mark-limit";
+        case 37:
+            return "not-author";
+        case 38:
+            return "no-connect";
+        case 39:
+            return "out-of-memory";
+        case 40:
+            return "server-is-crazy";
+        case 41:
+            return "client-is-crazy";
+        case 42:
+            return "undefined-session";
+        case 43:
+            return "regexp-error";
+        case 44:
+            return "not-marked";
+        case 45:
+            return "temporary-failure";
+        case 46:
+            return "long-array";
+        case 47:
+            return "anonymous-rejected";
+        case 48:
+            return "illegal-aux-item";
+        case 49:
+            return "aux-item-permission";
+        case 50:
+            return "unknown-async";
+        case 51:
+            return "internal-error";
+        case 52:
+            return "feature-disabled";
+        case 53:
+            return "message-not-sent";
+        case 54:
+            return "invalid-membership-type";
+        case 55:
+            return "invalid-range";
+        case 56:
+            return "invalid-range-list";
+        case 57:
+            return "undefined-measurement";
+        case 58:
+            return "priority-denied";
+        case 59:
+            return "weight-denied";
+        case 60:
+            return "weight-zero";
+        case 61:
+            return "bad-bool";
+        default:
+            return "Unknown error: " + code;
+        }
+    }
+
+    public String subRecipient(int textNo, int confNo) {
+        String result="";
+        
         try {
             Log.d(TAG, "Remove confNo:"+confNo+" from textNo:"+textNo);
             s.subRecipient(textNo, confNo);
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            Log.d(TAG, "Error: "+e.getError());
+            Log.d(TAG, "ErrorStatus: "+e.getErrorStatus());
+            Log.d(TAG, "Message: "+e.getMessage());
+
+            result = decodeKomErrorCode(e.getError());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        return result;
     }
 
     public Session getSession()
@@ -855,7 +992,9 @@ public class KomServer extends Service implements RpcEventListener,
 		return friendsList;
 	}
 
-    public void addNewRecipientToText(int textNo, int confNo, int texttype) {
+    public String addNewRecipientToText(int textNo, int confNo, int texttype) {
+        String result="";
+        
         Log.d(TAG, "Add new recipient (null method)");
         Log.d(TAG, "-- textNo:" + textNo);
         Log.d(TAG, "-- confNo:" + confNo);
@@ -865,10 +1004,12 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
+            result = decodeKomErrorCode(e.getError());
         } catch (IOException e) {
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
+        return result;
     }
     
 	public void rpcEvent(RpcEvent e) {

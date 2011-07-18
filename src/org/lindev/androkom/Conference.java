@@ -667,9 +667,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             builder.setSingleChoiceItems(vals, -1,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int item) {
-                            Toast.makeText(getApplicationContext(),
-                                    vals[item], Toast.LENGTH_SHORT)
-                                    .show();
                             dialog.cancel();
                             int selectedUser = allrecipts[item];
                             Log.d(TAG, "Selected user:" + selectedUser + ":"
@@ -679,7 +676,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
                         private void doSubRecipient(int selectedUser) {
                             // TODO Auto-generated method stub
-                            mKom.subRecipient(currentTextNo, selectedUser);
+                            String result = mKom.subRecipient(currentTextNo, selectedUser);
+                            if (result != "") {
+                                Toast.makeText(getApplicationContext(),
+                                        result, Toast.LENGTH_SHORT)
+                                        .show();                                
+                            }
                         }
                     });
             AlertDialog alert = builder.create();
