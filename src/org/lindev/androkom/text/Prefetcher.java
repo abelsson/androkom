@@ -14,7 +14,11 @@ import java.util.concurrent.BlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nu.dll.lyskom.Membership;
+import nu.dll.lyskom.Membership.Range;
 import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextMapping;
+import nu.dll.lyskom.UConference;
 
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.KomServer.TextInfo;
@@ -61,6 +65,7 @@ class Prefetcher {
 
         private Iterator<Integer> mMaybeUnreadIter = null;
         private int mCurrConf = -1;
+        private int mCurrConfLastRead = -1;
         private boolean mIsInterrupted = false;
 
         PrefetchNextUnread(final int confNo) {
@@ -102,23 +107,61 @@ class Prefetcher {
             }
         }
 
+        private int lastTextReadFrom(final Membership membership, final int from) {
+            final List<Range> readRanges = membership.getReadRanges();
+            if (from < 0) {
+                return membership.getLastTextRead();
+            }
+            synchronized (readRanges) {
+                for (final Range range : readRanges) {
+                    if (from < range.first) {
+                        return from;
+                    }
+                    else if (from <= range.last) {
+                        return range.last;
+                    }
+                }
+                return readRanges.get(readRanges.size() - 1).last;
+            }
+        }
+
         public Iterator<Integer> askServerForMore() {
             mCurrConf = mUnreadConfs.element();
-            List<Integer> maybeUnread;
+            Log.i(TAG, "PrefetchNextUnread askServerForMore mCurrConf: " + mCurrConf + " mCurrConfLocalNo: " + mCurrConfLastRead);
+            final Membership membership;
+            final TextMapping tm;
+            final List<Integer> maybeUnread = new ArrayList<Integer>();
             try {
-                maybeUnread = mKom.getSession().nextUnreadTexts(mCurrConf, false, ASK_AMOUNT);
+                membership = mKom.getSession().queryReadTexts(mKom.getUserId(), mCurrConf, true);
+                mCurrConfLastRead = lastTextReadFrom(membership, mCurrConfLastRead);
+                Log.i(TAG, "PrefetchNextUnread mCurrConfLastRead: " + mCurrConfLastRead);
+                final UConference conf = mKom.getSession().getUConfStat(mCurrConf);
+                if (mCurrConfLastRead < conf.getHighestLocalNo()) {
+                    tm = mKom.getSession().localToGlobal(mCurrConf, mCurrConfLastRead + 1, ASK_AMOUNT);
+                    Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
+                }
+                else {
+                    Log.i(TAG, "PrefetchNextUnread too high local number in " + mCurrConf);
+                    tm = null;
+                }
             } catch (final IOException e) {
-                maybeUnread = Collections.<Integer>emptyList();
+                Log.i(TAG, "PrefetchNextUnread IOException");
+                return Collections.<Integer>emptyList().iterator();
             }
-            Log.i(TAG, "PrefetchNextUnread asked server about conf " + mCurrConf + ", got " + maybeUnread.size() + " texts");
-            Log.i(TAG, maybeUnread.toString());
-
-            // If we don't get as may texts as we ask for, we can assume that there are no more in the conference,
-            // so we remove the head of mUnreadConfs.
-            if (maybeUnread.size() < ASK_AMOUNT) {
+            while (tm != null && tm.hasMoreElements()) {
+                final int globalNo = (Integer) tm.nextElement();
+                final int localNo = tm.local();
+                if (!membership.isRead(localNo)) {
+                    Log.i(TAG, "PrefetchNextUnread adding localNo " + localNo + " (globalNo " + globalNo + ")");
+                    maybeUnread.add(globalNo);
+                }
+                mCurrConfLastRead = Math.max(mCurrConfLastRead, localNo);
+            }
+            if (tm == null || !tm.laterTextsExists()) {
+                Log.i(TAG, "PrefetchNextUnread no later texts exists in conf " + mCurrConf);
                 mUnreadConfs.remove();
+                mCurrConfLastRead = -1;
             }
-
             return maybeUnread.iterator();
         }
 
