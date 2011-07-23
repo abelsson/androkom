@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_SERVER = "server";
@@ -26,6 +27,18 @@ public class ConferencePrefs extends PreferenceActivity {
 
     private static final String OPT_PREFERREDLANGUAGE = "preferredlanguage";
     private static final String OPT_PREFERREDLANGUAGE_DEF = "";
+
+    private static final String OPT_USERBUTTONS = "userbuttons";
+    private static final Boolean OPT_USERBUTTONS_DEF = false;
+    private static final String OPT_USERBUTTON1 = "userbutton1";
+    private static final String OPT_USERBUTTON1_DEF = "1";
+    private static final String OPT_USERBUTTON2 = "userbutton2";
+    private static final String OPT_USERBUTTON2_DEF = "2";
+    private static final String OPT_USERBUTTON3 = "userbutton3";
+    private static final String OPT_USERBUTTON3_DEF = "3";
+    private static final String OPT_USERBUTTON4 = "userbutton4";
+    private static final String OPT_USERBUTTON4_DEF = "4";
+    private static final String TAG = "Androkom ConferencePrefs";
 
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -58,5 +71,29 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static String getPreferredLanguage(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_PREFERREDLANGUAGE, OPT_PREFERREDLANGUAGE_DEF);
+    }
+
+    public static Boolean getUserButtons(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_USERBUTTONS, OPT_USERBUTTONS_DEF);
+    }
+    public static int getUserButton1val(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON1, OPT_USERBUTTON1_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
+    public static int getUserButton2val(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON2, OPT_USERBUTTON2_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
+    public static int getUserButton3val(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON3, OPT_USERBUTTON3_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
+    public static int getUserButton4val(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON4, OPT_USERBUTTON4_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
     }
 }

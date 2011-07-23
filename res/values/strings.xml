@@ -228,4 +228,21 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="recipient_to">"To: "</string>
     <string name="recipient_cc">"Cc: "</string>
     <string name="recipient_bcc">"Bcc: "</string>
+    
+    <string name="userbutton1">"Button1"</string>
+    <string name="userbutton2">"Button2"</string>
+    <string name="userbutton3">"Button3"</string>
+    <string name="userbutton4">"Button4"</string>
+
+    <string name="userbuttons_title">"User buttons section"</string>
+    <string name="userbuttons_summary">"User selectable buttons when showing text"</string>
+    <string name="userbutton_dialog_title_prefs">"Userbuttons"</string>
+    <string name="userbutton1_title">"Button 1"</string>
+    <string name="userbutton1_summary">"User button 1"</string>
+    <string name="userbutton2_title">"Button 2"</string>
+    <string name="userbutton2_summary">"User button 2"</string>
+    <string name="userbutton3_title">"Button 3"</string>
+    <string name="userbutton3_summary">"User button 3"</string>
+    <string name="userbutton4_title">"Button 4"</string>
+    <string name="userbutton4_summary">"User button 4"</string>
 </resources>

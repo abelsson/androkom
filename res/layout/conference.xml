@@ -1,4 +1,26 @@
 <?xml version="1.0" encoding="utf-8"?>
-
-<TextSwitcher android:id="@+id/flipper" android:layout_width="fill_parent" android:layout_height="fill_parent" xmlns:android="http://schemas.android.com/apk/res/android"> 
-</TextSwitcher>
+<LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
+	android:layout_width="fill_parent" android:layout_height="fill_parent"
+	android:orientation="vertical">
+	<TextSwitcher android:id="@+id/flipper"
+		android:layout_width="fill_parent" android:layout_height="wrap_content"
+		android:layout_weight="10"
+		xmlns:android="http://schemas.android.com/apk/res/android">
+	</TextSwitcher>
+	<LinearLayout android:id="@+id/userbuttons"
+	    android:layout_width="fill_parent"
+		android:layout_height="wrap_content" android:orientation="horizontal">
+		<Button android:id="@+id/userbutton1" android:layout_width="wrap_content"
+			android:layout_height="wrap_content" android:layout_weight="1"
+		    android:text="@string/userbutton1" />
+        <Button android:id="@+id/userbutton2" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="@string/userbutton2" />
+        <Button android:id="@+id/userbutton3" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="@string/userbutton3" />
+        <Button android:id="@+id/userbutton4" android:layout_width="wrap_content"
+            android:layout_height="wrap_content" android:layout_weight="1"
+            android:text="@string/userbutton4" />
+	</LinearLayout>
+</LinearLayout>

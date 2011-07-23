@@ -23,7 +23,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
+import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Rect;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -49,7 +51,9 @@ import android.view.View.OnTouchListener;
 import android.view.Window;
 import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
+import android.widget.Button;
 import android.widget.EditText;
+import android.widget.LinearLayout;
 import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -84,6 +88,49 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         setContentView(R.layout.conference);
 
+        if (ConferencePrefs.getUserButtons(getBaseContext())) {
+            Button userb1 = (Button) findViewById(R.id.userbutton1);
+            int butval = ConferencePrefs.getUserButton1val(getBaseContext());
+            Resources res = getResources();
+            String val = res.getStringArray(R.array.userbutton_entries_list)[butval-1];
+            userb1.setText(val);
+            userb1.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    doButtonClick(1);
+                }
+            });
+            Button userb2 = (Button) findViewById(R.id.userbutton2);
+            butval = ConferencePrefs.getUserButton2val(getBaseContext());
+            val = res.getStringArray(R.array.userbutton_entries_list)[butval-1];
+            userb2.setText(val);
+            userb2.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    doButtonClick(2);
+                }
+            });
+            Button userb3 = (Button) findViewById(R.id.userbutton3);
+            butval = ConferencePrefs.getUserButton3val(getBaseContext());
+            val = res.getStringArray(R.array.userbutton_entries_list)[butval-1];
+            userb3.setText(val);
+            userb3.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    doButtonClick(3);
+                }
+            });
+            Button userb4 = (Button) findViewById(R.id.userbutton4);
+            butval = ConferencePrefs.getUserButton4val(getBaseContext());
+            val = res.getStringArray(R.array.userbutton_entries_list)[butval-1];
+            userb4.setText(val);
+            userb4.setOnClickListener(new View.OnClickListener() {
+                public void onClick(View view) {
+                    doButtonClick(4);
+                }
+            });
+        } else {
+            LinearLayout userbuttonslayout = (LinearLayout) findViewById(R.id.userbuttons);
+            userbuttonslayout.setVisibility(View.GONE);
+        }
+        
         mSwitcher = (TextSwitcher)findViewById(R.id.flipper);
         mSwitcher.setFactory(this);
 
@@ -121,7 +168,58 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 		super.onDestroy();
 		getApp().doUnbindService(this);
 	}
-  
+
+    void doButtonClick(int buttonno) {
+        Log.d(TAG, "Click button:" + buttonno);
+        int butval;
+        switch (buttonno) {
+        case 1:
+            butval = ConferencePrefs.getUserButton1val(getBaseContext());
+            break;
+        case 2:
+            butval = ConferencePrefs.getUserButton2val(getBaseContext());
+            break;
+        case 3:
+            butval = ConferencePrefs.getUserButton3val(getBaseContext());
+            break;
+        case 4:
+            butval = ConferencePrefs.getUserButton4val(getBaseContext());
+            break;
+        default:
+            butval = 1;
+            Log.d(TAG, "Unknown button selection");
+        }
+        Log.d(TAG, "Doing action:" + butval);
+        switch (butval) {
+        case 1: // Svara
+            Intent intent = new Intent(this, TextCreator.class);
+            intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent()
+                    .getSubject());
+            intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent()
+                    .getTextNo());
+            startActivity(intent);
+            break;
+        case 2: // Avmarkera
+            unmarkCurrentText();
+            break;
+        case 3: // Markera
+            markCurrentText();
+            break;
+        case 4: // Vilka vänner
+            seewhoison(2);
+            break;
+        case 5: // IM
+            intent = new Intent(this, IMConversationList.class);
+            startActivity(intent);
+            break;
+        case 6: // SPC
+            moveToNextText();
+            break;
+        default:
+            Log.d(TAG, "Unknown action, doing nothing.");
+        }
+    }
+
     /**
      * Fetch new texts asynchronously, and show a progress spinner
      * while the user is waiting.
@@ -270,22 +368,24 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     class MyGestureDetector extends SimpleOnGestureListener 
     {     
         @Override
-        public boolean onSingleTapUp(MotionEvent e)
-        {
+        public boolean onSingleTapUp(MotionEvent e) {
             mKom.activateUser();
 
-        	Display display = getWindowManager().getDefaultDisplay();
-        	int width = display.getWidth();  
-
-        	if (e.getRawX() > 0.8*width && e.getDownTime() > 500) {
-	             moveToNextText();
-	             return true;
-        	}     	
-        	if (e.getRawX() < 0.2*width && e.getDownTime() > 500) {
-	             moveToPrevText();
-	             return true;
-        	}  
-        	return false;
+            Display display = getWindowManager().getDefaultDisplay();
+            int width = display.getWidth();
+            // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
+            int myLimit = mSwitcher.getBaseline() + mSwitcher.getBottom();
+            if (e.getRawY() < myLimit) {
+                if (e.getRawX() > 0.8 * width && e.getDownTime() > 500) {
+                    moveToNextText();
+                    return true;
+                }
+                if (e.getRawX() < 0.2 * width && e.getDownTime() > 500) {
+                    moveToPrevText();
+                    return true;
+                }
+            }
+            return false;
         }
         
         @Override
@@ -442,7 +542,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     @Override
     public boolean dispatchTouchEvent(MotionEvent event)
-    {       
+    {
         if (mGestureDetector.onTouchEvent(event))
         	return true;
         
@@ -454,7 +554,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     public boolean onTouch(View v, MotionEvent event) 
     {
-        // return onTouchEvent(event);
         if (mGestureDetector.onTouchEvent(event))
             return true;
         
@@ -565,7 +664,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			return true;
 
 		case R.id.menu_seewhoison_id:
-			seewhoison();
+			seewhoison(1);
 			return true;
 
         case R.id.menu_leaveconference_id:
@@ -628,9 +727,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
     }
 
-	protected void seewhoison() {
-        Intent intent = new Intent(this, WhoIsOn.class);    
-        startActivity(intent);
+	protected void seewhoison(int type) {
+		Intent intent = new Intent(this, WhoIsOn.class);
+		intent.putExtra("who_type", type);
+		startActivity(intent);
 	}
 
     protected void leaveconference() {
@@ -827,9 +927,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         t.setGravity(Gravity.TOP | Gravity.LEFT);
         t.setTextColor(ColorStateList.valueOf(Color.WHITE));
 
-        // TODO: Eh. Figure out how calculate our height properly.	
-        t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
-      
+        // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
+        //t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
         return t;
     }
 

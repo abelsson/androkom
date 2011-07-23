@@ -36,4 +36,45 @@
     android:dialogTitle="@string/preferredlanguage_dialog_title_prefs"
     />
   </PreferenceCategory>
+  <PreferenceCategory
+    android:title="@string/userbuttons_title">
+  <CheckBoxPreference
+    android:key="userbuttons"
+    android:title="@string/userbuttons_title"
+    android:summary="@string/userbuttons_summary"
+    android:defaultValue="false"
+    />
+  <ListPreference
+    android:key="userbutton1"
+    android:title="@string/userbutton1_title"
+    android:summary="@string/userbutton1_summary"
+    android:entries="@array/userbutton_entries_list"
+    android:entryValues="@array/userbutton_values_list"
+    android:dialogTitle="@string/userbutton_dialog_title_prefs"
+    />
+  <ListPreference
+    android:key="userbutton2"
+    android:title="@string/userbutton2_title"
+    android:summary="@string/userbutton2_summary"
+    android:entries="@array/userbutton_entries_list"
+    android:entryValues="@array/userbutton_values_list"
+    android:dialogTitle="@string/userbutton_dialog_title_prefs"
+    />
+  <ListPreference
+    android:key="userbutton3"
+    android:title="@string/userbutton3_title"
+    android:summary="@string/userbutton3_summary"
+    android:entries="@array/userbutton_entries_list"
+    android:entryValues="@array/userbutton_values_list"
+    android:dialogTitle="@string/userbutton_dialog_title_prefs"
+    />
+  <ListPreference
+    android:key="userbutton4"
+    android:title="@string/userbutton4_title"
+    android:summary="@string/userbutton4_summary"
+    android:entries="@array/userbutton_entries_list"
+    android:entryValues="@array/userbutton_values_list"
+    android:dialogTitle="@string/userbutton_dialog_title_prefs"
+    />
+  </PreferenceCategory>
 </PreferenceScreen>

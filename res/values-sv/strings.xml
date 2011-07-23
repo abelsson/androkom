@@ -66,7 +66,7 @@
     <string name="autologin_summary">Logga in automatiskt om lösenord är sparat</string>
     
     <string name="showfullheaders_title">Visa text info</string>
-    <string name="showfullheaders_summary">Visa text info som kommentarer</string>
+    <string name="showfullheaders_summary">Visa text info, som kommentarer</string>
 
     <string name="marktextread_title">Läsmarkera</string>
     <string name="marktextread_summary">Markera visade texter som lästa</string>
@@ -227,4 +227,20 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="recipient_to">"Till: "</string>
     <string name="recipient_cc">"Extra kopia: "</string>
     <string name="recipient_bcc">"Blind extra kopia: "</string>
+
+    <string name="userbutton1">"Knapp1"</string>
+    <string name="userbutton2">"Knapp2"</string>
+    <string name="userbutton3">"Knapp3"</string>
+    <string name="userbutton4">"Knapp4"</string>
+
+    <string name="userbuttons_title">"Användarknappar"</string>
+    <string name="userbutton_dialog_title_prefs">"Användarknappar"</string>
+    <string name="userbutton1_title">"Knapp 1"</string>
+    <string name="userbutton1_summary">"Knapp 1"</string>
+    <string name="userbutton2_title">"Knapp 2"</string>
+    <string name="userbutton2_summary">"Knapp 2"</string>
+    <string name="userbutton3_title">"Knapp 3"</string>
+    <string name="userbutton3_summary">"Knapp 3"</string>
+    <string name="userbutton4_title">"Knapp 4"</string>
+    <string name="userbutton4_summary">"Knapp 4"</string>
 </resources>
