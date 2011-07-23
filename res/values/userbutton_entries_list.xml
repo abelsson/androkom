@@ -1,0 +1,19 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="userbutton_entries_list">
+    <item>Svara</item>
+    <item>Avmarkera</item>
+    <item>Markera</item>
+    <item>Vilka vänner</item>
+    <item>IM</item>
+    <item>SPC</item>
+  </array>
+  <array name="userbutton_values_list">
+    <item>"1"</item>
+    <item>"2"</item>
+    <item>"3"</item>
+    <item>"4"</item>
+    <item>"5"</item>
+    <item>"6"</item>
+  </array>
+</resources>
