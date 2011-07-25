@@ -167,6 +167,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	protected void onDestroy() {
 		super.onDestroy();
 		getApp().doUnbindService(this);
+		Log.d(TAG, "Destroyed");
 	}
 
     void doButtonClick(int buttonno) {
@@ -238,7 +239,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             TextInfo text = null;
 
             if (mState.hasCurrent()) {
+                Log.d(TAG, "hasCurrent");
                 if(ConferencePrefs.getMarkTextRead(getBaseContext())) {
+                    Log.d(TAG, "getMarkTextRead");
                     mKom.markTextAsRead(mState.getCurrent().getTextNo());
                 }
             }
@@ -292,12 +295,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 Log.d(TAG, "LoadMessageTask onPostExecute text=null");
             }
             setProgressBarIndeterminateVisibility(false);
-            if (curr > 0) {
-                if (ConferencePrefs.getMarkTextRead(getBaseContext()))
-                {
-                    mKom.markTextAsRead(curr);
-                }
-            }
+//            if (curr > 0) {
+//                if (ConferencePrefs.getMarkTextRead(getBaseContext()))
+//                {
+//                    mKom.markTextAsRead(curr);
+//                }
+//            }
         }
     }
 
@@ -567,7 +570,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     @Override
     public Object onRetainNonConfigurationInstance() 
-    {    	
+    {
+        Log.d(TAG, "onRetainNonConfigurationInstance");
         return mState;
     }
 
@@ -909,7 +913,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     
     public Spannable formatText(String text)
     {
-     
         SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(text);       
         addLinks(spannedText, Pattern.compile("\\d{5,}"), null);
         Linkify.addLinks(spannedText, Linkify.ALL);
@@ -921,6 +924,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      * Return TextViews for switcher.
      */
     public View makeView() {
+        Log.d(TAG, "makeView");
         TextView t = new TextView(this);
         t.setText(getString(R.string.no_text_loaded), TextView.BufferType.SPANNABLE);
         t.setMovementMethod(LinkMovementMethod.getInstance());
@@ -967,10 +971,24 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected start");
         mKom = ((KomServer.LocalBinder)service).getService();
         mKom.setShowFullHeaders(mState.ShowFullHeaders);
         mKom.setConference(mState.conferenceNo);
-        new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+
+        TextInfo currentText = null;
+
+        if((mState!=null)&&(mState.hasCurrent())) {
+            currentText = mState.getCurrent();
+        }
+        if(currentText!=null) {
+            Log.d(TAG, "Getting current text");
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, currentText.getTextNo());
+        } else {
+            Log.d(TAG, "Getting next text");
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+        }
+        Log.d(TAG, "onServiceConnected done");
     }
 
 	public void onServiceDisconnected(ComponentName name) {
