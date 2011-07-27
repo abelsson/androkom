@@ -985,7 +985,19 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         Log.d(TAG, "onServiceConnected start");
         mKom = ((KomServer.LocalBinder)service).getService();
         mKom.setShowFullHeaders(mState.ShowFullHeaders);
-        mKom.setConference(mState.conferenceNo);
+        try {
+            mKom.setConference(mState.conferenceNo);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "onServiceConnected RpcFailure");
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "onServiceConnected IOException");
+            e.printStackTrace();
+            Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+            finish();
+        }
 
         TextInfo currentText = null;
 
