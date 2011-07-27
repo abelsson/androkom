@@ -506,9 +506,20 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (Exception e) {
             Log.i(TAG, "setConference " + e);
             e.printStackTrace();
+            delayed_reconnect();
         }
     }
 
+    public void delayed_reconnect() {
+        try {
+            Thread.sleep(10000);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        reconnect();
+    }
+    
     /* Send message about user active to server.
      * Will not send more than once every 30 sek to keep from 
      * flooding server.
