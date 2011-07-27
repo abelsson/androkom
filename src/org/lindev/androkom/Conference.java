@@ -145,15 +145,26 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         Log.i(TAG, "Got passed conference id: " + confNo);
 
         if (data != null) {
-            mState = (State)data;
-            Spannable spannedText = mState.currentText.elementAt(mState.currentTextIndex).getSpannable();
-            addLinks(spannedText, digits, null);
-            mSwitcher.setText(spannedText);
+            mState = (State) data;
+            if (mState.hasCurrent()) {
+                try {
+                    Spannable spannedText = mState.currentText.elementAt(
+                            mState.currentTextIndex).getSpannable();
+                    addLinks(spannedText, digits, null);
+                    mSwitcher.setText(spannedText);
+                } catch (Exception e) {
+                    Log.d(TAG, "Exception:" + e);
+                    e.printStackTrace();
+                }
+            } else {
+                Log.d(TAG, "Broken error");
+            }
         } else {
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
             mState.currentTextIndex = -1;
-            mState.ShowFullHeaders = ConferencePrefs.getShowFullHeaders(getBaseContext());        
+            mState.ShowFullHeaders = ConferencePrefs
+                    .getShowFullHeaders(getBaseContext());
             mState.conferenceNo = confNo;
             mSwitcher.setText(formatText(getString(R.string.loading_text)));
         }
