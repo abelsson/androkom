@@ -20,7 +20,7 @@ public class ConferencePrefs extends PreferenceActivity {
 	private static final Boolean OPT_SHOWFULLHEADERS_DEF = false;
 
     private static final String OPT_MARKTEXTREAD = "marktextread";
-    private static final Boolean OPT_MARKTEXTREAD_DEF = false;
+    private static final Boolean OPT_MARKTEXTREAD_DEF = true;
 	
     private static final String OPT_TOASTFORASYNCH = "toastforasynch";
     private static final Boolean OPT_TOASTFORASYNCH_DEF = false;
