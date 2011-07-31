@@ -24,6 +24,10 @@ public class ConferencePrefs extends PreferenceActivity {
 	
     private static final String OPT_TOASTFORASYNCH = "toastforasynch";
     private static final Boolean OPT_TOASTFORASYNCH_DEF = false;
+    private static final String OPT_VIBRATEFORASYNCH = "vibrateforasynch";
+    private static final Boolean OPT_VIBRATEFORASYNCH_DEF = false;
+    private static final String OPT_VIBRATETIME = "vibratetime";
+    private static final String OPT_VIBRATETIME_DEF = "500";
 
     private static final String OPT_PREFERREDLANGUAGE = "preferredlanguage";
     private static final String OPT_PREFERREDLANGUAGE_DEF = "";
@@ -93,6 +97,15 @@ public class ConferencePrefs extends PreferenceActivity {
     }
     public static int getUserButton4val(Context context) {
         String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON4, OPT_USERBUTTON4_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
+
+    public static Boolean getVibrateForAsynch(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_VIBRATEFORASYNCH, OPT_VIBRATEFORASYNCH_DEF);
+    }
+    public static int getVibrateTime(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_VIBRATETIME, OPT_VIBRATETIME_DEF);
         int intval = Integer.parseInt(butval);
         return intval;
     }

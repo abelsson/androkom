@@ -243,4 +243,10 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="userbutton3_summary">"Knapp 3"</string>
     <string name="userbutton4_title">"Knapp 4"</string>
     <string name="userbutton4_summary">"Knapp 4"</string>
+
+    <string name="asynch_prefs_title">"Asynch prefs"</string>
+    <string name="vibrateforasynch_title">"Vibrate"</string>
+    <string name="vibrateforasynch_summary">"Vibrate on recivied IM"</string>
+    <string name="vibratetime_title">"Vibrate time"</string>
+    <string name="vibratetime_summary">"Time to vibrate (ms)"</string>
 </resources>

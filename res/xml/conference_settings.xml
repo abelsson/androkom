@@ -19,12 +19,28 @@
     android:summary="@string/marktextread_summary"
     android:defaultValue="true"
     />
+  <PreferenceCategory
+    android:title="@string/asynch_prefs_title">
   <CheckBoxPreference
     android:key="toastforasynch"
     android:title="@string/toastforasynch_title"
     android:summary="@string/toastforasynch_summary"
-    android:defaultValue="true"
+    android:defaultValue="false"
     />
+  <CheckBoxPreference
+    android:key="vibrateforasynch"
+    android:title="@string/vibrateforasynch_title"
+    android:summary="@string/vibrateforasynch_summary"
+    android:defaultValue="false"
+    />
+  <EditTextPreference
+	android:key="vibratetime"
+    android:title="@string/vibratetime_title"
+    android:summary="@string/vibratetime_summary"
+    android:defaultValue="500"
+    android:digits="0123456789"
+    />
+  </PreferenceCategory>
   <PreferenceCategory
     android:title="@string/preferredlanguage_title">
   <ListPreference

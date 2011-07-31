@@ -12,9 +12,11 @@ import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
+import android.content.Context;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
+import android.os.Vibrator;
 import android.util.Log;
 import android.widget.Toast;
 
@@ -93,6 +95,11 @@ public class AsyncMessages implements AsynchMessageReceiver {
                 int length = Toast.LENGTH_SHORT;
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
+                }
+                Context context = app.getBaseContext();
+                if (ConferencePrefs.getVibrateForAsynch(context)) {
+                    Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
+                    vibrator.vibrate(ConferencePrefs.getVibrateTime(context));
                 }
                 if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
                     Toast.makeText(app, str, length).show();
