@@ -67,9 +67,17 @@ public class AsyncMessages implements AsynchMessageReceiver {
             break;
 
         case nu.dll.lyskom.Asynch.send_message:
-            str = msg.getData().getString(ASYNC_MESSAGE_FROM) + app.getString(R.string.x_says_y) +
-                    msg.getData().getString(ASYNC_MESSAGE_MSG) + app.getString(R.string.x_to_y) +
-                    msg.getData().getString(ASYNC_MESSAGE_TO);
+            str = msg.getData().getString(ASYNC_MESSAGE_FROM)
+                    + app.getString(R.string.x_says_y)
+                    + msg.getData().getString(ASYNC_MESSAGE_MSG)
+                    + app.getString(R.string.x_to_y)
+                    + msg.getData().getString(ASYNC_MESSAGE_TO);
+            Context context = app.getBaseContext();
+            if (ConferencePrefs.getVibrateForAsynch(context)) {
+                Vibrator vibrator = (Vibrator) context
+                        .getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(ConferencePrefs.getVibrateTime(context));
+            }
             break;
 
         case nu.dll.lyskom.Asynch.rejected_connection:
@@ -97,10 +105,6 @@ public class AsyncMessages implements AsynchMessageReceiver {
                     length = Toast.LENGTH_LONG;
                 }
                 Context context = app.getBaseContext();
-                if (ConferencePrefs.getVibrateForAsynch(context)) {
-                    Vibrator vibrator = (Vibrator) context.getSystemService(Context.VIBRATOR_SERVICE);
-                    vibrator.vibrate(ConferencePrefs.getVibrateTime(context));
-                }
                 if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
                     Toast.makeText(app, str, length).show();
                 }
