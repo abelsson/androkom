@@ -31,6 +31,7 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.util.Log;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -42,6 +43,8 @@ import android.widget.TabHost;
 import android.widget.TabHost.TabSpec;
 
 public class TextCreator extends TabActivity implements ServiceConnection {
+    public static final String TAG = "Androkom TextCreator";
+
     private static final String TEXT_TAB_TAG = "text-tab-tag";
     private static final String RECIPIENTS_TAB_TAG = "recipients-tab-tag";
 
@@ -270,6 +273,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     }
 
     private void add(final Recipient recipient) {
+        for (final Recipient recpt : mRecipients) {
+            if (recpt.recipientId == recipient.recipientId) {
+                Log.d(TAG, "Remove old recipient");
+                remove(recpt);
+            }
+        }
         mRecipients.add(recipient);
         mAdapter.add(recipient);
         mAdapter.notifyDataSetChanged();
