@@ -28,6 +28,7 @@
     <string name="no_unreads">Nothing to read</string>
     <string name="fetching_conferences">Loading unreads ...</string>
     <string name="local_time">(local)</string>
+    <string name="server_time">(server)</string>
     
 	<string name="login_name">Username:</string>
 	<string name="login_id">UserID: (optional)</string>

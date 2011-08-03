@@ -1,5 +1,6 @@
 package org.lindev.androkom;
 
+import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -122,7 +123,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		Toast.makeText(getApplicationContext(), ((TextView) v).getText(),
 				Toast.LENGTH_SHORT).show();
 
-		mKom.activateUser();
+		activateUser();
 
 		Intent intent = new Intent(this, Conference.class);
 		intent.putExtra("conference-id", mConferences.get((int) id).id);
@@ -147,7 +148,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public boolean onOptionsItemSelected(MenuItem item) {
 		Intent intent;
 		Log.d(TAG, "onOptionsItemSelected");
-		mKom.activateUser();
+		activateUser();
 
 		// Handle item selection
 		switch (item.getItemId()) {
@@ -273,10 +274,27 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 					Log.d(TAG,
 							"mConferences is empty:" + mConferences.isEmpty());
 				}
-				String currentDateTimeString = new Date().toLocaleString();
-				mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-						+ currentDateTimeString + "\n"
-						+ getString(R.string.local_time));
+				//String currentDateTimeString = new Date().toLocaleString();
+				//mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+				//		+ currentDateTimeString + "\n"
+				//		+ getString(R.string.local_time));
+                if ((mKom != null) && (mKom.isConnected())) {
+                    String currentDateTimeString = null;
+                    try {
+                        currentDateTimeString = mKom.getServerTime().toString();
+                    } catch (Exception e) {
+                        // TODO Auto-generated catch block
+                        // e.printStackTrace();
+                        Log.d(TAG, "Populate lost connection");
+                        mKom.logout();
+                        mEmptyView.setText("Not connected");
+                    }
+                    mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+                            + currentDateTimeString + "\n"
+                            + getString(R.string.server_time));
+                } else {
+                    mEmptyView.setText("Not connected");
+                }
 			}
 		}
 
@@ -307,6 +325,18 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		}
 		return retlist;
 	}
+
+    public void activateUser() {
+        try {
+            mKom.activateUser();
+        } catch (Exception e1) {
+            //e1.printStackTrace();
+            Log.d(TAG, "ConferenceList.activateUser caught an exception"+e1);
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+        }
+    }
 
 	App getApp() {
 		return (App) getApplication();

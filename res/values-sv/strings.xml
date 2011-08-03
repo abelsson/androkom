@@ -28,6 +28,7 @@
     <string name="no_unreads">Inga olästa</string>
     <string name="fetching_conferences">Laddar olästalistan ...</string>
     <string name="local_time">(lokal)</string>
+    <string name="server_time">(server)</string>
     
 	<string name="login_name">Användarnamn:</string>
 	<string name="login_id">AnvändarID: (vid behov)</string>

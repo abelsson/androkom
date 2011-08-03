@@ -372,7 +372,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         return hasMatches;
     }
-
+    
     /**
      * A gesture detector that is used to navigate within and between texts.
      * 
@@ -383,7 +383,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     {     
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            mKom.activateUser();
+            activateUser();
 
             Display display = getWindowManager().getDefaultDisplay();
             int width = display.getWidth();
@@ -405,7 +405,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
         {
-            mKom.activateUser();
+            activateUser();     
 
             try {
 	            // Horizontal swipes
@@ -441,6 +441,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mSwitcher.setInAnimation(mSlideRightIn);
             mSwitcher.setOutAnimation(mSlideRightOut);
             mSwitcher.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+        }
+    }
+
+    public void activateUser() {
+        try {
+            mKom.activateUser();
+        } catch (Exception e1) {
+            e1.printStackTrace();
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
         }
     }
 
@@ -517,7 +528,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-	    mKom.activateUser();
+        try {
+            mKom.activateUser();
+        } catch (Exception e1) {
+            //e1.printStackTrace();
+            Log.d(TAG, "onKeyUp caught exception, bailing out");
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+        }
 
 		switch (keyCode) {
 		case android.view.KeyEvent.KEYCODE_B:
@@ -597,7 +616,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	float newtextsize;
     	
     	Log.d(TAG, "onOptionsItemSelected");
-    	mKom.activateUser();
+        try {
+            mKom.activateUser();
+        } catch (Exception e1) {
+            //e1.printStackTrace();
+            Log.d(TAG, "onOptionsItem caught exception, bailing out");
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+        }
     	
         // Handle item selection
         switch (item.getItemId()) {

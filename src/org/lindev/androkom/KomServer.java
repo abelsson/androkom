@@ -3,6 +3,7 @@ package org.lindev.androkom;
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -10,6 +11,7 @@ import java.util.Set;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
+import nu.dll.lyskom.KomTime;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -510,17 +512,14 @@ public class KomServer extends Service implements RpcEventListener,
      * Will not send more than once every 30 sek to keep from 
      * flooding server.
      */
-    public void activateUser() {
+    public void activateUser() throws Exception {
         long long_now = System.currentTimeMillis();
-
+        if (s==null) {
+            throw new Exception("Not logged in");
+        }
         if ((long_now - lastActivate) > (30 * 1000)) {
-            try {
-                s.doUserActive();
-                lastActivate = long_now;
-            } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
-            }
+            s.doUserActive();
+            lastActivate = long_now;
         }
     }
     
@@ -1068,6 +1067,14 @@ public class KomServer extends Service implements RpcEventListener,
 		return null;
 	}
 
+	public Date getServerTime() throws Exception {
+	    if(s!=null) {
+	        return s.getTime().getTime();
+	    } else {
+	        throw new Exception("Not connected");
+	    }
+	}
+	
     public int getUserId() {
         return re_userid;
     }
