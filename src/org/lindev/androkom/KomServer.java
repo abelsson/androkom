@@ -11,7 +11,6 @@ import java.util.Set;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
-import nu.dll.lyskom.KomTime;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -25,9 +24,13 @@ import org.lindev.androkom.im.IMNotification;
 import org.lindev.androkom.text.TextFetcher;
 
 import android.app.Service;
+import android.content.BroadcastReceiver;
 import android.content.Context;
 import android.content.Intent;
+import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.net.ConnectivityManager;
+import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
 import android.text.Spannable;
@@ -47,7 +50,26 @@ public class KomServer extends Service implements RpcEventListener,
 	public static final String TAG = "Androkom KomServer";
 	public static boolean RELEASE_BUILD = false;
 
-    /**
+	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
+	    @Override
+        public void onReceive(Context context, Intent intent) {
+            ConnectivityManager connectivityManager = (ConnectivityManager) context
+                    .getSystemService(Context.CONNECTIVITY_SERVICE);
+            NetworkInfo activeNetInfo = connectivityManager
+                    .getActiveNetworkInfo();
+            NetworkInfo mobNetInfo = connectivityManager
+                    .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            if (activeNetInfo != null) {
+                Log.d(TAG, "mConnReceiver isConnected:"+activeNetInfo.isConnected());
+                setConnected(activeNetInfo.isConnected());
+            } else {
+                Log.d(TAG, "mConnReceiver is not Connected:");
+                setConnected(false);
+            }
+	    }
+	};
+	
+	/**
      * Class for clients to access.  Because we assume this service always
      * runs in the same process as its clients, we don't deal with IPC.
      */
@@ -181,7 +203,10 @@ public class KomServer extends Service implements RpcEventListener,
             s = new Session();
             s.addRpcEventListener(this);
         }
-    }
+        
+        registerReceiver(mConnReceiver, new IntentFilter(
+                ConnectivityManager.CONNECTIVITY_ACTION));
+   }
 
     @Override
     public IBinder onBind(Intent arg0) 
@@ -212,24 +237,27 @@ public class KomServer extends Service implements RpcEventListener,
         // Tell the user we stopped.
         Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
 
-        try {
-            if (s.getState() == Session.STATE_LOGIN)
-                s.logout(true);
-            Log.i("androkom","logged out");
+        unregisterReceiver(mConnReceiver);
 
-            if (s.getState() == Session.STATE_CONNECTED)
-                s.disconnect(false);
+        if (s != null) {
+            try {
+                if (s.getState() == Session.STATE_LOGIN)
+                    s.logout(true);
+                Log.i("androkom", "logged out");
 
-            Log.i("androkom","disconnected");           
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "onDestroy "+e);
-            e.printStackTrace();
+                if (s.getState() == Session.STATE_CONNECTED)
+                    s.disconnect(false);
+
+                Log.i("androkom", "disconnected");
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "onDestroy " + e);
+                e.printStackTrace();
+            }
+
+            s.removeRpcEventListener(this);
+            s = null;
         }
-
-        s.removeRpcEventListener(this);        
-        s = null;
-
         getApp().shutdown();
         
         super.onDestroy();
@@ -1080,12 +1108,16 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
 	public boolean isConnected() {
-		if (s == null) {
+		if ((s == null) || (!connected)) {
 			return false;
 		}
 		return s.getConnected();
 	}
 
+	public void setConnected(boolean val) {
+	    connected = val;
+	}
+	
 	public void error(String s) {
 		Log.e("androkom", s);
 	}
@@ -1096,6 +1128,8 @@ public class KomServer extends Service implements RpcEventListener,
 
 	private Session s = null;
 
+	private boolean connected = false;
+	
 	private int mLastTextNo = 0;
 	HashMap<String, String> mElispUserAreaProps = null;
     HashMap<String, String> mCommonUserAreaProps = null;
