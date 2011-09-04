@@ -8,6 +8,7 @@ import java.util.TimerTask;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
@@ -338,6 +339,26 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         }
     }
 
+    private class cacheNamesTask extends
+            AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "cacheNamesTask 1");
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Void doInBackground(final Void... args) {
+            List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
+            Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+            return null;
+        }
+
+        protected void onPostExecute() {
+            Log.d(TAG, "cacheNamesTask 2");
+        }
+    }
+    
 	App getApp() {
 		return (App) getApplication();
 	}
@@ -361,6 +382,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         Log.d(TAG, "onServiceConnected");
         mKom = ((KomServer.LocalBinder) service).getService();
         mKom.addAsyncSubscriber(this);
+        new cacheNamesTask().execute();
     }
 
 	public void onServiceDisconnected(ComponentName name) {

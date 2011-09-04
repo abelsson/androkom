@@ -53,18 +53,25 @@ public class KomServer extends Service implements RpcEventListener,
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
         public void onReceive(Context context, Intent intent) {
+	        Log.d(TAG, "onReceive1");
             ConnectivityManager connectivityManager = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
+            Log.d(TAG, "onReceive2");
             NetworkInfo activeNetInfo = connectivityManager
                     .getActiveNetworkInfo();
+            Log.d(TAG, "onReceive3");
             NetworkInfo mobNetInfo = connectivityManager
                     .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
+            Log.d(TAG, "onReceive4");
             if (activeNetInfo != null) {
+                Log.d(TAG, "onReceive5");
                 Log.d(TAG, "mConnReceiver isConnected:"+activeNetInfo.isConnected());
                 setConnected(activeNetInfo.isConnected());
+                Log.d(TAG, "onReceive6");
             } else {
                 Log.d(TAG, "mConnReceiver is not Connected:");
                 setConnected(false);
+                Log.d(TAG, "onReceive7");
             }
 	    }
 	};
@@ -377,7 +384,9 @@ public class KomServer extends Service implements RpcEventListener,
         
         try {
             DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
-            populatePersonsT.changeMax(persons.length);
+            if (populatePersonsT != null) {
+                populatePersonsT.changeMax(persons.length);
+            }
             
 			for (int i = 0; i < persons.length; i++) {
 				int persNo = persons[i].getPerson();
@@ -404,8 +413,10 @@ public class KomServer extends Service implements RpcEventListener,
 
 					arr.add(info);
 				}
-				populatePersonsT
-				.updateProgress((int) ((i / (float) persons.length) * 100));
+                if (populatePersonsT != null) {
+                    populatePersonsT
+                            .updateProgress((int) ((i / (float) persons.length) * 100));
+                }
 			}
         } catch (IOException e) {
             // TODO Auto-generated catch block
