@@ -34,6 +34,39 @@ class TextCache {
         this.mTextCache = new ConcurrentHashMap<Integer, TextInfo>();
     }
 
+    private String getAuthorName(int textNo) {
+        Text text = null;
+        try {
+            Log.d(TAG, "getAuthorName:" + textNo);
+            text = mKom.getSession().getText(textNo);
+        } catch (final RpcFailure e) {
+            e.printStackTrace();
+            return null;
+        } catch (final IOException e) {
+            e.printStackTrace();
+            return null;
+        }
+        String username;
+        int authorid = text.getAuthor();
+        if (authorid > 0) {
+            try {
+                nu.dll.lyskom.Conference confStat = mKom
+                        .getSession().getConfStat(authorid);
+                username = confStat.getNameString();
+            } catch (final Exception e) {
+                username = mKom.getString(R.string.person)
+                        + authorid
+                        + mKom
+                                .getString(R.string.does_not_exist);
+            }
+        } else {
+            Log.d(TAG, "Text " + textNo + " authorid:"
+                    + authorid);
+            username = mKom.getString(R.string.anonymous);
+        }
+        return username;
+    }
+
     private class TextFetcherTask extends AsyncTask<Integer, Void, Void> {
         private int mTextNo;
 
@@ -117,6 +150,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_to));
                         headersString.append(items[i]);
+                        headersString.append(" by " + getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
@@ -125,6 +159,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_in));
                         headersString.append(items[i]);
+                        headersString.append(" by " + getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
