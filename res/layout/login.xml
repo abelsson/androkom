@@ -17,6 +17,7 @@ android:text="@string/login_name"
 android:id="@+id/username"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
+android:inputType="textPersonName"
 android:text=""
 android:textSize="18sp"
 >

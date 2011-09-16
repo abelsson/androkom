@@ -1,14 +1,11 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
-import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
-import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;

@@ -1007,6 +1007,21 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         return str;
     }
 
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState");
+
+        if (savedInstanceState != null) {
+            Log.d(TAG, "got a bundle");
+        }
+    }
+
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected start");
         mKom = ((KomServer.LocalBinder)service).getService();
