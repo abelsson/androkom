@@ -25,9 +25,13 @@ import org.lindev.androkom.text.SendTextTask;
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.content.ServiceConnection;
+import android.location.Location;
+import android.location.LocationListener;
+import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -60,7 +64,10 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private int mReplyTo;
     private EditText mSubject;
     private EditText mBody;
-
+    private double mLat, mLon, mPrecision=-1;
+    LocationManager mlocManager=null;
+    LocationListener mlocListener=null;
+    
     public class CopyRecipientsTask extends AsyncTask<Integer, Void, List<Recipient>> {
         @Override
         protected List<Recipient> doInBackground(final Integer... args) {
@@ -105,6 +112,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.create_new_text_layout);
 
+        /* Use the LocationManager class to obtain GPS locations */
+
+        mlocManager = (LocationManager)getSystemService(Context.LOCATION_SERVICE);
+        mlocListener = new MyLocationListener();
+        mlocManager.requestLocationUpdates( LocationManager.GPS_PROVIDER, 0, 0, mlocListener);
+        
         initializeCommon();
         initializeRecipients();
         initializeTabs();
@@ -115,6 +128,9 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
     @Override
     protected void onDestroy() {
+        if(mlocManager != null) {
+            mlocManager.removeUpdates(mlocListener);
+        }
         getApp().doUnbindService(this);
         super.onDestroy();
     }
@@ -255,7 +271,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             builder.create().show();
             return;
         }
-        new CreateTextTask(this, mKom, subject, body, mReplyTo, mRecipients, new CreateTextRunnable() {
+
+        new CreateTextTask(this, mKom, subject, body, mLat, mLon, mPrecision, mReplyTo, mRecipients, new CreateTextRunnable() {
             public void run(final Text text) {
                 new SendTextTask(TextCreator.this, mKom, text, new Runnable() {
                     public void run() {
@@ -329,4 +346,30 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     private App getApp() {
         return (App) getApplication();
     }
+
+    /* Class My Location Listener */
+    public class MyLocationListener implements LocationListener {
+
+        public void onLocationChanged(Location loc) {
+            mLat = loc.getLatitude();
+            mLon = loc.getLongitude();
+            mPrecision = loc.getAccuracy();
+            String Text = "My current location is: " + "Latitud = "
+                    + loc.getLatitude() + "Longitud = " + loc.getLongitude();
+            Log.i(TAG, Text);
+        }
+
+        public void onProviderDisabled(String provider) {
+            Log.i(TAG, "Gps Disabled");
+        }
+
+        public void onProviderEnabled(String provider) {
+            Log.i(TAG, "Gps Enabled");
+        }
+
+        public void onStatusChanged(String provider, int status, Bundle extras) {
+            Log.i(TAG, "Gps status changed");
+        }
+
+    }/* End of Class MyLocationListener */
 }

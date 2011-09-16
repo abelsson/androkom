@@ -5,10 +5,12 @@ import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
+import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
@@ -176,6 +178,14 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_footnote_to));
                         headersString.append(items[i]);
+                        headersString.append('\n');
+                    }
+                }
+                List<AuxItem> aux_items = text.getAuxItems(AuxItem.tagCreationLocation);
+                if (aux_items.size() > 0) {
+                    for (int i = 0; i < aux_items.size(); i++) {
+                        headersString.append(mKom.getString(R.string.header_aux_location));
+                        headersString.append(aux_items.get(i));
                         headersString.append('\n');
                     }
                 }

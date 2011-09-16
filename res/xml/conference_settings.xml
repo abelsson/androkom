@@ -40,6 +40,12 @@
     android:defaultValue="500"
     android:digits="0123456789"
     />
+  <CheckBoxPreference
+    android:key="includelocation"
+    android:title="@string/includelocation_title"
+    android:summary="@string/includelocation_summary"
+    android:defaultValue="false"
+    />
   </PreferenceCategory>
   <PreferenceCategory
     android:title="@string/preferredlanguage_title">

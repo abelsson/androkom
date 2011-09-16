@@ -7,6 +7,7 @@ import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.Text;
 import nu.dll.lyskom.TextStat;
 
+import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
 
@@ -16,12 +17,18 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class CreateTextTask extends AsyncTask<Void, Void, Object> {
+    private static final String TAG = "CreateTextTask";
+    
     private final ProgressDialog mDialog;
     private final Context mContext;
     private final KomServer mKom;
     private final String mSubject;
+    private final double mLat;
+    private final double mLon;
+    private final double mPrecision;
     private final String mBody;
     private final int mInReplyTo;
     private final List<Recipient> mRecipients;
@@ -33,11 +40,15 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
     }
 
     public CreateTextTask(final Context context, final KomServer kom, final String subject, final String body,
+            final double loc_lat, final double loc_lon, final double loc_precision,
             final int inReplyTo, final List<Recipient> recipients, final CreateTextRunnable runnable) {
         this.mDialog = new ProgressDialog(context);
         this.mContext = context;
         this.mKom = kom;
         this.mSubject = subject;
+        this.mLat = loc_lat;
+        this.mLon = loc_lon;
+        this.mPrecision = loc_precision;
         this.mBody = body;
         this.mInReplyTo = inReplyTo;
         this.mRecipients = recipients;
@@ -101,6 +112,11 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         text.setContents(contents);
         text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
+        if(ConferencePrefs.getIncludeLocation(mContext)) {
+            String tagvalue = ""+mLat+" "+mLon+" "+mPrecision;
+            Log.i(TAG, "aux pos="+tagvalue);
+            text.getStat().setAuxItem(new AuxItem(AuxItem.tagCreationLocation, tagvalue)); 
+        }
         return text;
     }
 

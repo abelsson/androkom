@@ -44,6 +44,9 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_USERBUTTON4_DEF = "4";
     private static final String TAG = "Androkom ConferencePrefs";
 
+    private static final String OPT_INCLUDELOCATION = "includelocation";
+    private static final Boolean OPT_INCLUDELOCATION_DEF = false;
+
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
@@ -108,5 +111,9 @@ public class ConferencePrefs extends PreferenceActivity {
         String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_VIBRATETIME, OPT_VIBRATETIME_DEF);
         int intval = Integer.parseInt(butval);
         return intval;
+    }
+    
+    public static Boolean getIncludeLocation(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_INCLUDELOCATION, OPT_INCLUDELOCATION_DEF);
     }
 }

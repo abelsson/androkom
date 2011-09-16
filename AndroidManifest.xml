@@ -81,6 +81,7 @@
 <uses-permission android:name="android.permission.WAKE_LOCK" />
 <uses-permission android:name="android.permission.VIBRATE" />
 <uses-permission android:name="org.openintents.safe.ACCESS_INTENTS"	/>
+<uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
 
 <!-- Needed to check when the network connection changes -->
 <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>

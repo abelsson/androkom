@@ -252,4 +252,8 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="vibrateforasynch_summary">"Vibrate on recivied IM"</string>
     <string name="vibratetime_title">"Vibrate time"</string>
     <string name="vibratetime_summary">"Time to vibrate (ms)"</string>
+
+    <string name="header_aux_location">"Location:"</string>
+    <string name="includelocation_title">"Location:"</string>
+    <string name="includelocation_summary">"Include location in texts."</string>
 </resources>
