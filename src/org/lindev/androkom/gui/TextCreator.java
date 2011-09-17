@@ -272,7 +272,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         case R.id.menu_insertlocation_id:
             Log.i(TAG, "insertlocation");
             if(mPrecision > 0) {
-                mBody.append("<" + mLat + " " + mLon + " " + mPrecision + ">");
+                mBody.append("<geo:"+mLat+","+mLon+";u="+mPrecision+">"); // ref RFC580
             } else {
                 Toast.makeText(getApplicationContext(),
                         "No location", Toast.LENGTH_SHORT)
