@@ -11,7 +11,6 @@ import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
-import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.Login;
 import org.lindev.androkom.LookupNameTask;
@@ -50,7 +49,6 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 
@@ -272,7 +270,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         case R.id.menu_insertlocation_id:
             Log.i(TAG, "insertlocation");
             if(mPrecision > 0) {
-                mBody.append("<geo:"+mLat+","+mLon+";u="+mPrecision+">"); // ref RFC580
+                String textToInsert = "<geo:"+mLat+","+mLon+";u="+mPrecision+">"; // ref RFC580
+                int start = mBody.getSelectionStart();
+                int end = mBody.getSelectionEnd();
+                mBody.getText().replace(Math.min(start, end), Math.max(start, end),
+                        textToInsert, 0, textToInsert.length());
+
             } else {
                 Toast.makeText(getApplicationContext(),
                         "No location", Toast.LENGTH_SHORT)

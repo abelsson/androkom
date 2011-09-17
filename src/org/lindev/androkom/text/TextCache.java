@@ -185,7 +185,7 @@ class TextCache {
                 if (aux_items.size() > 0) {
                     for (int i = 0; i < aux_items.size(); i++) {
                         headersString.append(mKom.getString(R.string.header_aux_location));
-                        headersString.append(aux_items.get(i));
+                        headersString.append(aux_items.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }
