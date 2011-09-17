@@ -11,7 +11,9 @@ import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
+import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.Login;
 import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
@@ -27,6 +29,7 @@ import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.content.ServiceConnection;
 import android.location.Location;
@@ -36,6 +39,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
+import android.view.Menu;
+import android.view.MenuInflater;
+import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -44,6 +50,8 @@ import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ListView;
 import android.widget.TabHost;
+import android.widget.TextView;
+import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 
 public class TextCreator extends TabActivity implements ServiceConnection {
@@ -227,6 +235,54 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         ((Button) findViewById(R.id.add_cc)).setEnabled(true);
         ((Button) findViewById(R.id.add_bcc)).setEnabled(true);
         ((Button) findViewById(R.id.send)).setEnabled(true);
+    }
+
+    /**
+     * The menu key has been pressed, instantiate the requested
+     * menu.
+     */
+    @Override 
+    public boolean onCreateOptionsMenu(Menu menu)
+    {
+        MenuInflater inflater = getMenuInflater();
+        inflater.inflate(R.menu.textcreator, menu);
+        return true;
+    }
+
+    /**
+     * Called when user has selected a menu item from the 
+     * menu button popup. 
+     */
+    @Override
+    public boolean onOptionsItemSelected(MenuItem item) {
+        Log.d(TAG, "onOptionsItemSelected");
+        try {
+            mKom.activateUser();
+        } catch (Exception e1) {
+            // e1.printStackTrace();
+            Log.d(TAG, "onOptionsItem caught exception, bailing out");
+            Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+        }
+
+        // Handle item selection
+        switch (item.getItemId()) {
+
+        case R.id.menu_insertlocation_id:
+            Log.i(TAG, "insertlocation");
+            if(mPrecision > 0) {
+                mBody.append("<" + mLat + " " + mLon + " " + mPrecision + ">");
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        "No location", Toast.LENGTH_SHORT)
+                        .show();                                
+            }
+            return true;
+
+        default:
+            return super.onOptionsItemSelected(item);
+        }
     }
 
     private void showRemoveRecipientDialog(final Recipient recipient) {

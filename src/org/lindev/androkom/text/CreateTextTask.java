@@ -112,7 +112,8 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         text.setContents(contents);
         text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
 
-        if(ConferencePrefs.getIncludeLocation(mContext)) {
+        if((ConferencePrefs.getIncludeLocation(mContext)) &&
+                (mPrecision>0.0)) {
             String tagvalue = ""+mLat+" "+mLon+" "+mPrecision;
             Log.i(TAG, "aux pos="+tagvalue);
             text.getStat().setAuxItem(new AuxItem(AuxItem.tagCreationLocation, tagvalue)); 

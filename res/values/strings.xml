@@ -256,4 +256,5 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="header_aux_location">"Location:"</string>
     <string name="includelocation_title">"Location:"</string>
     <string name="includelocation_summary">"Include location in texts."</string>
+    <string name="insertlocation_menu">"Insert location"</string>
 </resources>
