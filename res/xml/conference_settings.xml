@@ -19,6 +19,12 @@
     android:summary="@string/marktextread_summary"
     android:defaultValue="true"
     />
+  <CheckBoxPreference
+    android:key="includelocation"
+    android:title="@string/includelocation_title"
+    android:summary="@string/includelocation_summary"
+    android:defaultValue="false"
+    />
   <PreferenceCategory
     android:title="@string/asynch_prefs_title">
   <CheckBoxPreference
@@ -39,12 +45,6 @@
     android:summary="@string/vibratetime_summary"
     android:defaultValue="500"
     android:digits="0123456789"
-    />
-  <CheckBoxPreference
-    android:key="includelocation"
-    android:title="@string/includelocation_title"
-    android:summary="@string/includelocation_summary"
-    android:defaultValue="false"
     />
   </PreferenceCategory>
   <PreferenceCategory

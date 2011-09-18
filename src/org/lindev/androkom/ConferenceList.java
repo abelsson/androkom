@@ -252,30 +252,30 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		}
 
 		@Override
-		protected void onPostExecute(final List<ConferenceInfo> fetched) {
-			setProgressBarIndeterminateVisibility(false);
+        protected void onPostExecute(final List<ConferenceInfo> fetched) {
+            setProgressBarIndeterminateVisibility(false);
 
-			mAdapter.clear();
-			mConferences = fetched;
+            mAdapter.clear();
+            mConferences = fetched;
 
-			if (mConferences != null && (!mConferences.isEmpty())) {
-				for (ConferenceInfo elem : mConferences) {
-					String str = "(" + elem.numUnread + ") " + elem.name;
-					mAdapter.add(str);
-				}
+            if (mConferences != null && (!mConferences.isEmpty())) {
+                for (ConferenceInfo elem : mConferences) {
+                    String str = "(" + elem.numUnread + ") " + elem.name;
+                    mAdapter.add(str);
+                }
 
-				mAdapter.notifyDataSetChanged();
-			} else {
-				Log.d(TAG, "populateConferences failed, no Conferences");
-				Log.d(TAG, "mConferences is null:" + (mConferences == null));
-				if (mConferences != null) {
-					Log.d(TAG,
-							"mConferences is empty:" + mConferences.isEmpty());
-				}
-				//String currentDateTimeString = new Date().toLocaleString();
-				//mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-				//		+ currentDateTimeString + "\n"
-				//		+ getString(R.string.local_time));
+                mAdapter.notifyDataSetChanged();
+            } else {
+                Log.d(TAG, "populateConferences failed, no Conferences");
+                Log.d(TAG, "mConferences is null:" + (mConferences == null));
+                if (mConferences != null) {
+                    Log.d(TAG, "mConferences is empty:"
+                            + mConferences.isEmpty());
+                }
+                // String currentDateTimeString = new Date().toLocaleString();
+                // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+                // + currentDateTimeString + "\n"
+                // + getString(R.string.local_time));
                 if ((mKom != null) && (mKom.isConnected())) {
                     String currentDateTimeString = null;
                     try {
@@ -286,6 +286,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                         Log.d(TAG, "Populate lost connection");
                         mKom.logout();
                         mEmptyView.setText("Not connected");
+                        // logout...
+                        Intent intent = new Intent(getApplicationContext(),
+                                Login.class);
+                        startActivity(intent);
+                        finish();
                     }
                     mEmptyView.setText(getString(R.string.no_unreads) + "\n"
                             + currentDateTimeString + "\n"
@@ -293,7 +298,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 } else {
                     mEmptyView.setText("Not connected");
                 }
-			}
+            }
 		}
 
 	}
