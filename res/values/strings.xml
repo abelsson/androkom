@@ -257,4 +257,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="includelocation_title">"Location:"</string>
     <string name="includelocation_summary">"Include location in texts."</string>
     <string name="insertlocation_menu">"Insert location"</string>
+
+    <string name="pick_an_action">Pick an action</string>
+    <string name="person_stat_label">Person info</string>
 </resources>

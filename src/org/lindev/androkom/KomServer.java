@@ -11,6 +11,8 @@ import java.util.Set;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.DynamicSessionInfo;
+import nu.dll.lyskom.KomTime;
+import nu.dll.lyskom.Person;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -85,22 +87,6 @@ public class KomServer extends Service implements RpcEventListener,
         public KomServer getService()
         {
             return KomServer.this;
-        }
-    }
-
-    /**
-     * Small helper class which maps conference names and LysKOM id's.
-     */
-    public class ConferenceInfo 
-    {
-        public int id;
-        public String name;
-        public int numUnread;
-
-        @Override
-        public String toString() 
-        {
-            return name + " <" + id + ">";
         }
     }
 
@@ -371,62 +357,54 @@ public class KomServer extends Service implements RpcEventListener,
     
     /**
      * Fetch a list of persons online
-     * @param populatePersonsTask 
+     * 
+     * @param populatePersonsTask
+     * @throws IOException 
      */
-    public List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT, int who_type)
-    {
-    	Set<Integer> friendsList=new HashSet<Integer>();
-    	
+    public List<ConferenceInfo> fetchPersons(
+            populatePersonsTask populatePersonsT, int who_type) throws IOException {
+        Set<Integer> friendsList = new HashSet<Integer>();
+
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-        if(who_type==2) {
-        	friendsList = getFriends();
+        if (who_type == 2) {
+            friendsList = getFriends();
         }
-        
-        try {
-            DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30*60);
-            if (populatePersonsT != null) {
-                populatePersonsT.changeMax(persons.length);
-            }
-            
-			for (int i = 0; i < persons.length; i++) {
-				int persNo = persons[i].getPerson();
-				if ((who_type == 1) || (friendsList.contains(persNo))) {
-					String username;
-					if (persNo > 0) {
-						try {
-							nu.dll.lyskom.Conference confStat = s
-									.getConfStat(persNo);
-							username = confStat.getNameString();
-						} catch (Exception e) {
-							username = getString(R.string.person) + persNo
-									+ getString(R.string.does_not_exist);
-						}
-					} else {
-					    Log.d(TAG, "fetchPersons persNo="+persNo);
-						username = getString(R.string.anonymous);
-					}
-					Log.i("androkom", username + " <" + persNo + ">");
 
-					ConferenceInfo info = new ConferenceInfo();
-					info.id = persNo;
-					info.name = username;
+        DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30 * 60);
+        if (populatePersonsT != null) {
+            populatePersonsT.changeMax(persons.length);
+        }
 
-					arr.add(info);
-				}
-                if (populatePersonsT != null) {
-                    populatePersonsT
-                            .updateProgress((int) ((i / (float) persons.length) * 100));
+        for (int i = 0; i < persons.length; i++) {
+            int persNo = persons[i].getPerson();
+            if ((who_type == 1) || (friendsList.contains(persNo))) {
+                String username;
+                if (persNo > 0) {
+                    try {
+                        nu.dll.lyskom.Conference confStat = s
+                                .getConfStat(persNo);
+                        username = confStat.getNameString();
+                    } catch (Exception e) {
+                        username = getString(R.string.person) + persNo
+                                + getString(R.string.does_not_exist);
+                    }
+                } else {
+                    Log.d(TAG, "fetchPersons persNo=" + persNo);
+                    username = getString(R.string.anonymous);
                 }
-			}
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchPersons1 "+e);
-            e.printStackTrace();
-            reconnect();
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-        	Log.d(TAG, "fetchPersons2 "+e);
-            e.printStackTrace();
+                Log.i("androkom", username + " <" + persNo + ">");
+
+                ConferenceInfo info = new ConferenceInfo();
+                info.id = persNo;
+                info.name = username;
+                info.sessionNo = persons[i].session;
+                
+                arr.add(info);
+            }
+            if (populatePersonsT != null) {
+                populatePersonsT
+                        .updateProgress((int) ((i / (float) persons.length) * 100));
+            }
         }
 
         return arr;
@@ -448,22 +426,20 @@ public class KomServer extends Service implements RpcEventListener,
 
     /**
      * Fetch a list of conferences with unread texts.
+     * @throws IOException 
+     * @throws RpcFailure 
+     * @throws UnsupportedEncodingException 
      */
-    public List<ConferenceInfo> fetchConferences() {
+    public List<ConferenceInfo> fetchConferences() throws UnsupportedEncodingException, RpcFailure, IOException {
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-        try {
-            for (int conf : s.getMyUnreadConfsList(true)) {
-                final String name = s.toString(s.getConfName(conf));
-                Log.i(TAG, name + " <" + conf + ">");
-                final ConferenceInfo info = new ConferenceInfo();
-                info.id = conf;
-                info.name = name;
-                info.numUnread = s.getUnreadCount(conf);
-                arr.add(info);
-            }
-        }
-        catch (final IOException e) {
-            e.printStackTrace();
+        for (int conf : s.getMyUnreadConfsList(true)) {
+            final String name = s.toString(s.getConfName(conf));
+            Log.i(TAG, name + " <" + conf + ">");
+            final ConferenceInfo info = new ConferenceInfo();
+            info.id = conf;
+            info.name = name;
+            info.numUnread = s.getUnreadCount(conf);
+            arr.add(info);
         }
         return arr;
     }
@@ -1113,7 +1089,66 @@ public class KomServer extends Service implements RpcEventListener,
 	        throw new Exception("Not connected");
 	    }
 	}
-	
+
+    public Person getPersonStat(Integer arg0) {
+        Person pers = null;
+        try {
+            pers = s.getPersonStat(arg0);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return pers;
+    }
+
+    public String getClientName(int sessionNo) {
+        String clientName = "";
+        try {
+            byte[] clientBytes = s.getClientName(sessionNo);
+            clientName = s.toString(clientBytes);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return clientName;
+    }
+
+    public String getClientVersion(int sessionNo) {
+        String clientName = "";
+        try {
+            byte[] clientBytes = s.getClientVersion(sessionNo);
+            clientName = s.toString(clientBytes);
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return clientName;
+    }
+
+    public String getConnectionTime(int sessionNo) {
+        KomTime ctime = null;
+        try {
+            ctime = s.getStaticSessionInfo(sessionNo).getConnectionTime();
+            return ctime.toString();
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+        return "";
+    }
+
     public int getUserId() {
         return re_userid;
     }

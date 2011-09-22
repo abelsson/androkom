@@ -1,11 +1,11 @@
 package org.lindev.androkom;
 
+import java.io.IOException;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
-import org.lindev.androkom.KomServer.ConferenceInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
@@ -325,6 +325,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
+			Intent intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
 		}
 		return retlist;
 	}
@@ -351,8 +354,13 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         // worker thread (separate from UI thread)
         @Override
         protected Void doInBackground(final Void... args) {
-            List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
-            Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+            try {
+                List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
+                Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+            } catch (IOException e) {
+                Log.d(TAG, "cacheNamesTask got IOException:" + e);
+                e.printStackTrace();
+            }
             return null;
         }
 

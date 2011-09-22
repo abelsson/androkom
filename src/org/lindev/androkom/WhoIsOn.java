@@ -2,7 +2,8 @@ package org.lindev.androkom;
 
 import java.util.List;
 
-import org.lindev.androkom.KomServer.ConferenceInfo;
+import nu.dll.lyskom.Person;
+
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.TextCreator;
 
@@ -93,12 +94,15 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     protected void onListItemClick(ListView l, View v, int position, long id)
     {
         selected_user = ((ConferenceInfo) l.getItemAtPosition(position)).name;
-
+        final int selected_user_id = ((ConferenceInfo) l.getItemAtPosition(position)).id;
+        selected_sessionNo = ((ConferenceInfo) l.getItemAtPosition(position)).sessionNo;
+        
         AlertDialog.Builder builder = new AlertDialog.Builder(WhoIsOn.this);
-        builder.setTitle(getString(R.string.pick_a_name));
+        builder.setTitle(getString(R.string.pick_an_action));
         String vals[] = {
                 getString(R.string.createnewmail_label),
-                getString(R.string.create_new_IM)
+                getString(R.string.create_new_IM),
+                getString(R.string.person_stat_label)
                 };
         builder.setSingleChoiceItems(vals, -1,
                 new DialogInterface.OnClickListener()
@@ -123,6 +127,9 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
                             intent.putExtra(IMConversationList.INTENT_CONVERSATION_LIST_RECIPIENT, selected_user);
                             startActivity(intent);
                             finish();
+                            break;
+                        case 2: // Person info
+                            new person_info_task().execute(selected_user_id);
                             break;
                         }
                     }
@@ -227,7 +234,64 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 		}
 		return retlist;
     }
-    
+
+    /**
+     * Attempt to get all persons online.
+     */
+    public class person_info_task extends AsyncTask<Integer, Void, Person> {
+        private final ProgressDialog dialog = new ProgressDialog(WhoIsOn.this);
+        private String clientName = "";
+        private String clientVersion = "";
+        private String userName = "";
+        private String connectionTime = "";
+        
+        protected void onPreExecute() {
+            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            this.dialog.setCancelable(true);
+            this.dialog.setIndeterminate(false);
+            this.dialog.setMessage(getString(R.string.loading));
+            this.dialog.show();
+        }
+
+        protected Person doInBackground(Integer... arg0) {
+            Log.d(TAG, "person_info_task stat on " + arg0);
+            Person pers = mKom.getPersonStat(arg0[0]);
+            userName = mKom.fetchUsername(arg0[0]);
+            clientName = mKom.getClientName(selected_sessionNo);
+            clientVersion = mKom.getClientVersion(selected_sessionNo);
+            connectionTime = mKom.getConnectionTime(selected_sessionNo);
+            return pers;
+        }
+
+        protected void onPostExecute(final Person pers) {
+            this.dialog.dismiss();
+            String pstat = "";
+
+            pstat += "Name: " + userName + "\n";
+            pstat += "Last login: " + pers.getLastLogin() + "\n";
+            pstat += "Time present: " + pers.getTotalTimePresent() + "\n";
+            pstat += "Number of sessions: " + pers.getSessions() + "\n";
+            pstat += "Created lines: " + pers.getCreatedLines() + "\n";
+
+            if(selected_sessionNo > 0) {
+                pstat += "Client name: " + clientName + "\n";
+                pstat += "Client version: " + clientVersion + "\n";
+                pstat += "Connection time: " + connectionTime + "\n";                
+            } else {
+                pstat += "No session no: "+selected_sessionNo;
+            }
+            
+            new AlertDialog.Builder(WhoIsOn.this).setTitle("Person info!")
+                    .setMessage(pstat).setNeutralButton("Ok",
+                            new DialogInterface.OnClickListener() {
+                                public void onClick(DialogInterface dialog,
+                                        int which) {
+                                }
+                            }).show();
+
+        }
+    }
+
     App getApp() 
     {
         return (App)getApplication();
@@ -245,6 +309,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     private ArrayAdapter<ConferenceInfo> mAdapter;
     
     private String selected_user = null;
+    private int selected_sessionNo = 0;
     
     private int who_type = 0; // type 1 = all, type 2 = friends
 

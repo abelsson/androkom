@@ -256,4 +256,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="includelocation_summary">"Include location in texts."</string>
     <string name="insertlocation_menu">"Insert location"</string>
     
+    <string name="pick_an_action">Välj</string>
+    <string name="person_stat_label">Person info</string>
 </resources>
