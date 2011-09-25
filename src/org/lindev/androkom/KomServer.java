@@ -2,6 +2,7 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.io.UnsupportedEncodingException;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
@@ -1138,7 +1139,9 @@ public class KomServer extends Service implements RpcEventListener,
         KomTime ctime = null;
         try {
             ctime = s.getStaticSessionInfo(sessionNo).getConnectionTime();
-            return ctime.toString();
+            Date CreationTime = ctime.getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
+            return sdf.format(CreationTime);
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             e.printStackTrace();

@@ -1,5 +1,7 @@
 package org.lindev.androkom;
 
+import java.text.SimpleDateFormat;
+import java.util.Date;
 import java.util.List;
 
 import nu.dll.lyskom.Person;
@@ -268,7 +270,9 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
             String pstat = "";
 
             pstat += "Name: " + userName + "\n";
-            pstat += "Last login: " + pers.getLastLogin() + "\n";
+            Date CreationTime = pers.getLastLogin().getTime();
+            SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
+            pstat += "Last login: " + sdf.format(CreationTime) + "\n";
             pstat += "Time present: " + pers.getTotalTimePresent() + "\n";
             pstat += "Number of sessions: " + pers.getSessions() + "\n";
             pstat += "Created lines: " + pers.getCreatedLines() + "\n";
