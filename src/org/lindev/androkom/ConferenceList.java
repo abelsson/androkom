@@ -192,6 +192,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             
         case R.id.menu_logout_id:
             mKom.logout();
+            Log.i(TAG, "User opted back to login");
             intent = new Intent(this, Login.class);
             startActivity(intent);
             finish();
@@ -248,6 +249,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		// worker thread (separate from UI thread)
 		@Override
 		protected List<ConferenceInfo> doInBackground(final Void... args) {
+            if((mKom!=null) && (!mKom.isConnected())) {
+                mKom.reconnect();
+            }
 			return fetchConferences();
 		}
 
@@ -286,17 +290,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                         Log.d(TAG, "Populate lost connection");
                         mKom.logout();
                         mEmptyView.setText("Not connected");
-                        // logout...
-                        Intent intent = new Intent(getApplicationContext(),
-                                Login.class);
-                        startActivity(intent);
-                        finish();
                     }
                     mEmptyView.setText(getString(R.string.no_unreads) + "\n"
                             + currentDateTimeString + "\n"
                             + getString(R.string.server_time));
                 } else {
                     mEmptyView.setText("Not connected");
+                }
+                if((mKom!=null) && (!mKom.isConnected())) {
+                    new reconnectTask();
                 }
             }
 		}
@@ -325,9 +327,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
-			Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+			mKom.logout();
 		}
 		return retlist;
 	}
@@ -338,9 +338,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         } catch (Exception e1) {
             //e1.printStackTrace();
             Log.d(TAG, "ConferenceList.activateUser caught an exception"+e1);
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+            mKom.logout();
         }
     }
 
@@ -374,6 +372,24 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 
+    private class reconnectTask extends AsyncTask<Void, Void, Integer> {
+        protected void onPreExecute() {
+            Log.d(TAG, "starting reconnectTask");
+            setProgressBarIndeterminateVisibility(true);
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Integer doInBackground(final Void... args) {
+            mKom.reconnect();
+            return 0;
+        }
+
+        protected void onPostExecute(Integer foo) {
+            Log.d(TAG, "reconnect done");
+        }
+
+    }
 
 	public void asyncMessage(Message msg) {
 		if (msg.what == nu.dll.lyskom.Asynch.new_text) {
@@ -397,7 +413,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 	public void onServiceDisconnected(ComponentName name) {
         Log.d(TAG, "onServiceDisconnected");
-		mKom = null;		
+		mKom=null;
 	}
 	
 	

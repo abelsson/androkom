@@ -72,6 +72,9 @@ public class LookupNameTask extends AsyncTask<Void, Void, ConfInfo[]> {
         catch (final IOException e) {
             return null;
         }
+        catch (final NullPointerException e) {
+            return null;
+        }
     }
 
     @Override

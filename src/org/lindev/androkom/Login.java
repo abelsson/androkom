@@ -174,7 +174,15 @@ public class Login extends Activity implements ServiceConnection
         			selectedUser=0;
             		return msg;
         		} else {
-            		return mKom.login(username, password, server);
+        		    String result = "default";
+        		    
+        		    try {
+        		        result = mKom.login(username, password, server);
+        		    }
+        		    catch(NullPointerException e) {
+        		        result = "Failed to login";
+        		    }
+            		return result;
         		}
         	}
        		return getString(R.string.No_server_selected);

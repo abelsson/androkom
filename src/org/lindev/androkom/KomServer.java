@@ -260,13 +260,16 @@ public class KomServer extends Service implements RpcEventListener,
     public void logout() {
         Log.d(TAG, "KomServer logout");
         try {
-            if (s.getState() == Session.STATE_LOGIN)
-                s.logout(true);
-            Log.i("androkom", "logged out");
+            if (s != null) {
+                if (s.getState() == Session.STATE_LOGIN)
+                    s.logout(true);
+                Log.i("androkom", "logged out");
 
-            if (s.getState() == Session.STATE_CONNECTED)
-                s.disconnect(false);
+                if (s.getState() == Session.STATE_CONNECTED)
+                    s.disconnect(false);
 
+                s.removeRpcEventListener(this);
+            }
             Log.i("androkom", "disconnected");
         } catch (Exception e) {
             // TODO Auto-generated catch block
@@ -274,14 +277,14 @@ public class KomServer extends Service implements RpcEventListener,
             e.printStackTrace();
         }
 
-        s.removeRpcEventListener(this);
         s = null;
     }
     
     public void reconnect() {
+        Log.d(TAG, "KomServer trying to reconnect 1");
     	logout();
     	
-        Log.d(TAG, "KomServer trying to reconnect");
+        Log.d(TAG, "KomServer trying to reconnect 2");
 
         s = new Session();
         s.addRpcEventListener(this);

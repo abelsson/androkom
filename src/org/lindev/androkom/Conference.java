@@ -452,9 +452,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mKom.activateUser();
         } catch (Exception e1) {
             e1.printStackTrace();
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+            Log.i(TAG, "Failed to activate user");
+            mKom.logout();
         }
     }
 
@@ -536,9 +535,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } catch (Exception e1) {
             //e1.printStackTrace();
             Log.d(TAG, "onKeyUp caught exception, bailing out");
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+            mKom.logout();
         }
 
 		switch (keyCode) {
@@ -624,9 +621,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } catch (Exception e1) {
             //e1.printStackTrace();
             Log.d(TAG, "onOptionsItem caught exception, bailing out");
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+            mKom.logout();
         }
     	
         // Handle item selection

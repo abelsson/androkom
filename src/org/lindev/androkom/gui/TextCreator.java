@@ -259,9 +259,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         } catch (Exception e1) {
             // e1.printStackTrace();
             Log.d(TAG, "onOptionsItem caught exception, bailing out");
-            Intent intent = new Intent(this, Login.class);
-            startActivity(intent);
-            finish();
+            mKom.logout();
         }
 
         // Handle item selection
