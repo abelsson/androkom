@@ -288,6 +288,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             }
             if (text != null && text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
+                if(text.getTextNo() < -1) {
+                    /* error fetching text, probably lost connection */
+                    finish();
+                }
             }
             else if (text != null) {
                 mState.currentText.push(text);
@@ -878,6 +882,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     	return alert.create();
     }
+
     /**
      * The menu key has been pressed, instantiate the requested
      * menu.

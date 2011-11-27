@@ -118,7 +118,7 @@ public class KomServer extends Service implements RpcEventListener,
                         .getString(R.string.all_read), false);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
-                return new TextInfo(context, -1, "", "", "", "", context
+                return new TextInfo(context, -2, "", "", "", "", context
                         .getString(R.string.error_fetching_text), false);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
@@ -126,7 +126,7 @@ public class KomServer extends Service implements RpcEventListener,
                         .getString(R.string.error_no_parent), false);
             default:
                 Log.d(TAG, "createText default");
-                return new TextInfo(context, -1, "", "", "", "", context
+                return new TextInfo(context, -2, "", "", "", "", context
                         .getString(R.string.error_fetching_text), false);
             }
         }

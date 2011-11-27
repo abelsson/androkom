@@ -175,6 +175,9 @@ class Prefetcher {
                 else if (!mUnreadConfs.isEmpty()) {
                     // Ask the server for more (possibly) unread texts
                     mMaybeUnreadIter = askServerForMore();
+                    if(!mMaybeUnreadIter.hasNext()) {
+                        mIsInterrupted=true; /* might be more to read but connection is probably gone */
+                    }
                 }
                 else {
                     // No more unread in conference, and no more unread conferences
