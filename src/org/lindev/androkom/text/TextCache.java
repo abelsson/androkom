@@ -22,7 +22,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 class TextCache {
-    private static final String TAG = "Androkom";
+    private static final String TAG = "Androkom TextCache";
 
     private final KomServer mKom;
     private final Set<Integer> mSent;
@@ -37,6 +37,10 @@ class TextCache {
     }
 
     private String getAuthorName(int textNo) {
+        if(!mKom.isConnected()) {
+            Log.d(TAG, " getAuthorName not connected");
+            return null;
+        }
         Text text = null;
         try {
             Log.d(TAG, "getAuthorName:" + textNo);
@@ -73,6 +77,11 @@ class TextCache {
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
+            Log.d(TAG, "getTextFromServer textno:"+textNo);
+            if(!mKom.isConnected()) {
+                Log.d(TAG, " getTextFromServer not connected");
+                return null;
+            }
             Text text = null;
             try {
                 Log.d(TAG, "TextFetcherTask:"+textNo);
@@ -190,20 +199,37 @@ class TextCache {
                     }
                 }
             }
+            Log.d(TAG, "getTextFromServer returning");
             return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, headersString.toString(),
                     SubjectString, BodyString, mShowFullHeaders);
         }
 
         protected Void doInBackground(final Integer... args) {
+            TextInfo text = null;
             mTextNo = args[0];
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
-            TextInfo text = getTextFromServer(mTextNo);
+            if(!mKom.isConnected()) {
+                Log.d(TAG, " TextFetcherTask not connected");
+                return null;
+            }
+            try {
+                text = getTextFromServer(mTextNo);
+            } catch (Exception e) {
+                Log.d(TAG, "TextFetcherTask.background caught error");
+                e.printStackTrace();
+                text = null;
+            }
             if (text == null) {
                 text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
-            }
-            mTextCache.put(mTextNo, text);
-            synchronized(mTextCache) {
-                mTextCache.notifyAll();
+                synchronized(mTextCache) {
+                    mTextCache.clear();
+                    mTextCache.notifyAll();
+                }
+            } else {
+                mTextCache.put(mTextNo, text);
+                synchronized(mTextCache) {
+                    mTextCache.notifyAll();
+                }
             }
             return null;
         }
@@ -232,14 +258,23 @@ class TextCache {
     * @param textNo global text number to fetch
     */
     TextInfo getText(final int textNo) {
+        if(!mKom.isConnected()) {
+            Log.d(TAG, " getText not connected");
+            return null;
+        }
+        Log.d(TAG, "getText:"+textNo);
         TextInfo text = mTextCache.get(textNo);
         if (text == null) {
+            Log.d(TAG, "getText doGetText:"+textNo);
             doGetText(textNo);
         }
+        Log.d(TAG, "getText gotText");
 
         final Thread currentThread = Thread.currentThread();
-        while (!currentThread.isInterrupted() && text == null) {
+        int MaxWaits = 10;
+        while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
             synchronized(mTextCache) {
+                Log.d(TAG, "getText waiting for mTextCache:"+textNo);
                 text = mTextCache.get(textNo);
                 if (text == null) {
                     try {
@@ -249,8 +284,10 @@ class TextCache {
                     }
                 }
             }
+            MaxWaits--;
         }
 
+        Log.d(TAG, "getText returning");
         return text;
     }
 

@@ -349,6 +349,8 @@ public class KomServer extends Service implements RpcEventListener,
                 nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
                 username = confStat.getNameString();
             } catch (Exception e) {
+                Log.d(TAG, "fetchUsername caught exception from getConfStat");
+                e.printStackTrace();
                 username = getString(R.string.person) + persNo
                         + getString(R.string.does_not_exist);
             }

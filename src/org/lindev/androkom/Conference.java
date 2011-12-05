@@ -290,7 +290,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 if(text.getTextNo() < -1) {
                     /* error fetching text, probably lost connection */
+                    Log.d(TAG, "error fetching text, probably lost connection");
                     finish();
+                } else {
+                    Log.d(TAG, "error fetching text, recoverable error?");
                 }
             }
             else if (text != null) {
@@ -307,6 +310,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 setTitle(mKom.getConferenceName());
             } else {
                 Log.d(TAG, "LoadMessageTask onPostExecute text=null");
+                finish();
             }
             setProgressBarIndeterminateVisibility(false);
 //            if (curr > 0) {
@@ -530,13 +534,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            //e1.printStackTrace();
-            Log.d(TAG, "onKeyUp caught exception, bailing out");
-            mKom.logout();
-        }
+        activateUser();
 
 		switch (keyCode) {
 		case android.view.KeyEvent.KEYCODE_B:
@@ -616,13 +614,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	float newtextsize;
     	
     	Log.d(TAG, "onOptionsItemSelected");
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            //e1.printStackTrace();
-            Log.d(TAG, "onOptionsItem caught exception, bailing out");
-            mKom.logout();
-        }
+        activateUser();
     	
         // Handle item selection
         switch (item.getItemId()) {
@@ -1037,6 +1029,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             Log.d(TAG, "onServiceConnected IOException");
             e.printStackTrace();
             Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+            mKom.logout();
             finish();
         }
 

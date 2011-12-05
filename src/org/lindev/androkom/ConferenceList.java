@@ -295,7 +295,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                             + currentDateTimeString + "\n"
                             + getString(R.string.server_time));
                 } else {
-                    mEmptyView.setText("Not connected");
+                    mEmptyView.setText("Not connected\nPlease wait");
                 }
                 if((mKom!=null) && (!mKom.isConnected())) {
                     new reconnectTask();
@@ -405,14 +405,14 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
     public void onServiceConnected(ComponentName name, IBinder service) {
-        Log.d(TAG, "onServiceConnected");
+        Log.d(TAG, "ConfList onServiceConnected");
         mKom = ((KomServer.LocalBinder) service).getService();
         mKom.addAsyncSubscriber(this);
         new cacheNamesTask().execute();
     }
 
 	public void onServiceDisconnected(ComponentName name) {
-        Log.d(TAG, "onServiceDisconnected");
+        Log.d(TAG, "ConfList onServiceDisconnected");
 		mKom=null;
 	}
 	
