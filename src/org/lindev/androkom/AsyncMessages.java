@@ -104,7 +104,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
                 }
-                Context context = app.getBaseContext();
+                //Context context = app.getBaseContext();
                 if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
                     Toast.makeText(app, str, length).show();
                 }
@@ -224,7 +224,10 @@ public class AsyncMessages implements AsynchMessageReceiver {
     private class AsyncHandlerTask extends AsyncTask<AsynchMessage, Void, Message> {
         @Override
         protected Message doInBackground(final AsynchMessage... message) {
-            return processMessage(message[0]);
+            Log.d(TAG, "AsyncHandlerTask doInBackground");
+            Message msg = processMessage(message[0]);
+            Log.d(TAG, "AsyncHandlerTask doInBackground done");
+            return msg;
         }
 
         /**
@@ -237,6 +240,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
             for (AsyncMessageSubscriber subscriber : subscribers) {
                 subscriber.asyncMessage(msg);
             }
+            Log.d(TAG, "AsyncHandlerTask onPostExecute done");
         }
     }
 

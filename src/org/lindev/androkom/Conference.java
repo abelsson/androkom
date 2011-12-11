@@ -144,6 +144,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         Log.i(TAG, "Got passed conference id: " + confNo);
 
         if (data != null) {
+            Log.d(TAG, "Got data!");
             mState = (State) data;
             if (mState.hasCurrent()) {
                 try {
@@ -240,6 +241,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private class LoadMessageTask extends AsyncTask<Integer, Void, TextInfo>
     {
         protected void onPreExecute() {
+            Log.d(TAG, "LoadMessageTask.onPreExecute");
             setProgressBarIndeterminateVisibility(true);
         }
 
@@ -282,15 +284,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         protected void onPostExecute(final TextInfo text) 
         {
-            int curr = -1;
-            if (mState.hasCurrent()) {
-                curr = mState.getCurrent().getTextNo();
-            }
+            Log.d(TAG, "LoadMessageTask.onPostExecute");
+            //int curr = -1;
+            //if (mState.hasCurrent()) {
+            //    curr = mState.getCurrent().getTextNo();
+            //}
             if (text != null && text.getTextNo() < 0) {
                 Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
                 if(text.getTextNo() < -1) {
                     /* error fetching text, probably lost connection */
                     Log.d(TAG, "error fetching text, probably lost connection");
+                    mKom.logout();
                     finish();
                 } else {
                     Log.d(TAG, "error fetching text, recoverable error?");
@@ -309,7 +313,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 widget.scrollTo(0, 0);
                 setTitle(mKom.getConferenceName());
             } else {
+                Log.d(TAG, "error fetching text, probably lost connection");
                 Log.d(TAG, "LoadMessageTask onPostExecute text=null");
+                mKom.logout();
                 finish();
             }
             setProgressBarIndeterminateVisibility(false);

@@ -46,6 +46,10 @@ public class ReadMarker {
 
     private void markToServer(final int textNo) {
         Log.i(TAG, "Mark as read: " + textNo);
+        if(!mKom.isConnected()) {
+            Log.d(TAG, " markToServer not connected");
+            return;
+        }
         try {
             final TextStat stat = mKom.getSession().getTextStat(textNo, true);
             final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };

@@ -81,12 +81,16 @@ class Prefetcher {
         }
 
         private void initialize(final int confNo) {
-            final List<Integer> unreadConfList = mKom.getSession().getUnreadConfsListCached();
-            int startIdx = unreadConfList.indexOf(confNo);
             if(!mKom.isConnected()) {
                 Log.d(TAG, "PrefetchNextUnread.initialize not connected");
                 return;
             }
+            final List<Integer> unreadConfList = mKom.getSession().getUnreadConfsListCached();
+            if(unreadConfList==null) {
+                Log.d(TAG, "initialize unreadConfList==null");
+                return;
+            }
+            int startIdx = unreadConfList.indexOf(confNo);
             if (startIdx < 0) {
                 startIdx = 0;
             }
@@ -200,7 +204,7 @@ class Prefetcher {
                 else if (!mUnreadConfs.isEmpty()) {
                     // Ask the server for more (possibly) unread texts
                     mMaybeUnreadIter = askServerForMore();
-                    if(!mMaybeUnreadIter.hasNext()) {
+                    if((mMaybeUnreadIter==null) || (!mMaybeUnreadIter.hasNext())) {
                         mIsInterrupted=true; /* might be more to read but connection is probably gone */
                     }
                 }
@@ -273,6 +277,9 @@ class Prefetcher {
         Log.d(TAG, " getNextUnreadText get text from cache:"+tc.textNo);
         final TextInfo text = mTextCache.getText(tc.textNo);
 
+        if(text==null) {
+            Log.d(TAG, "Got null text!?!?");
+        }
         // Cache relevant info both for this text and for the next in the queue (if available)
         if (cacheRelevant) {
             Log.d(TAG, " getNextUnreadText cache relevant");
@@ -294,6 +301,7 @@ class Prefetcher {
             Log.i(TAG, "TextFetcher restartPrefetcher(), interrupting old PrefetchRunner");
             mPrefetchRunner.mIsInterrupted = true;
             mPrefetchRunner.interrupt();
+            mTextCache.clearCacheStat();
         }
         mUnreadQueue.clear();
         mPrefetchRunner = new PrefetchNextUnread(confNo);
@@ -303,16 +311,17 @@ class Prefetcher {
     private class CacheRelevantTask extends AsyncTask<Integer, Void, Void> {
         @Override
         protected Void doInBackground(final Integer... args) {
-            final int textNo = args[0];
-            final TextInfo textInfo = mTextCache.getText(textNo);
-            final Text text;
             if(!mKom.isConnected()) {
                 Log.d(TAG, " CacheRelevantTask.doInBackground not connected");
                 return null;
             }
+            final int textNo = args[0];
+            final TextInfo textInfo = mTextCache.getText(textNo);
+            final Text text;
             try {
                 text = mKom.getSession().getText(textNo);
             } catch (final Exception e) {
+                Log.d(TAG, "CacheRelevantTask getText failed");
                 e.printStackTrace();
                 return null;
             }

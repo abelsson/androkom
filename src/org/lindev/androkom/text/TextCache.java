@@ -221,10 +221,7 @@ class TextCache {
             }
             if (text == null) {
                 text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
-                synchronized(mTextCache) {
-                    mTextCache.clear();
-                    mTextCache.notifyAll();
-                }
+                clearCacheStat();
             } else {
                 mTextCache.put(mTextNo, text);
                 synchronized(mTextCache) {
@@ -267,14 +264,20 @@ class TextCache {
         if (text == null) {
             Log.d(TAG, "getText doGetText:"+textNo);
             doGetText(textNo);
+        } else {
+            Log.d(TAG, "getText gotText, returning");
+            return text;
         }
-        Log.d(TAG, "getText gotText");
 
         final Thread currentThread = Thread.currentThread();
-        int MaxWaits = 10;
+        int MaxWaits = 20;
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
             synchronized(mTextCache) {
                 Log.d(TAG, "getText waiting for mTextCache:"+textNo);
+                if(!mKom.isConnected()) {
+                    Log.d(TAG, " getText not connected in loop");
+                    currentThread.interrupt();
+                }
                 text = mTextCache.get(textNo);
                 if (text == null) {
                     try {
@@ -286,12 +289,28 @@ class TextCache {
             }
             MaxWaits--;
         }
-
+        if(MaxWaits<1) {
+            Log.d(TAG, "MaxWaits:"+MaxWaits);
+        }
+        if(text==null) {
+            Log.d(TAG, "Could not find text");
+            clearCacheStat();
+        }
         Log.d(TAG, "getText returning");
         return text;
     }
 
     void setShowFullHeaders(final boolean showFullHeaders) {
         this.mShowFullHeaders = showFullHeaders;
+    }
+    
+    void clearCacheStat() {
+        synchronized (mTextCache) {
+            mTextCache.clear();
+            mTextCache.notifyAll();
+        }
+        synchronized (mSent) {
+            mSent.clear();
+        }
     }
 }

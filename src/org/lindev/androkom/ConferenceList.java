@@ -298,7 +298,13 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     mEmptyView.setText("Not connected\nPlease wait");
                 }
                 if((mKom!=null) && (!mKom.isConnected())) {
-                    new reconnectTask();
+                    if(mKom.getUserId()>0) {
+                        Log.d(TAG, "Got userid, trying to reconnect");
+                        new reconnectTask();
+                    } else {
+                        Log.d(TAG, "No userid, bailing out");
+                        finish();
+                    }
                 }
             }
 		}
