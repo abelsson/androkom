@@ -11,6 +11,7 @@ import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Dialog to enter commands by keyboard.
@@ -21,7 +22,7 @@ import android.widget.TextView;
 public class XDialog extends Dialog 
 {
 
-	private static final String TAG = "Androkom";
+	private static final String TAG = "Androkom XDialog";
 	
 	public XDialog(Context context) {
 		super(context);
@@ -61,6 +62,14 @@ public class XDialog extends Dialog
             intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
             myContext.startActivity(intent);
             break;
+		case 3 : 
+		    Toast.makeText(myContext, myContext.getString(R.string.appreciation_text),
+                    Toast.LENGTH_LONG).show();
+		    break;
+		case 4 :
+		    Toast.makeText(myContext, myContext.getString(R.string.abuse_text),
+                    Toast.LENGTH_LONG).show();
+		    break;
 		}
 		dismiss();
 	}
@@ -130,6 +139,8 @@ public class XDialog extends Dialog
 	
 	String[] keycommands = {"Sända meddelande",
 			"Skriva ett inlägg",
-			"Skicka brev"
+			"Skicka brev",
+			"Få uppmuntran",
+			"Få skäll"
 			};
 }
