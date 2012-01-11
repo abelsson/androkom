@@ -195,37 +195,61 @@ public class Login extends Activity implements ServiceConnection
             if (result.length() > 0) {
             	// Login failed, check why
             	final ConferenceInfo[] users = mKom.getUserNames();
-            	if (users != null && users.length > 1) {
-            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            		builder.setTitle(getString(R.string.pick_a_name));
-            		String[] vals = new String[users.length];
-            		for(int i=0;i<users.length;i++)
-            			vals[i] = users[i].name;
-             		builder.setSingleChoiceItems(vals, -1, new DialogInterface.OnClickListener() {
-            			public void onClick(DialogInterface dialog, int item) {
-            				Toast.makeText(getApplicationContext(), users[item].name, Toast.LENGTH_SHORT).show();
-            				dialog.cancel();
-            				selectedUser = users[item].id;
-            				Log.d(TAG, "Selected user:"+selectedUser+":"+new String(users[item].name));
-            				doLogin();
-            			}
-            		});
-            		AlertDialog alert = builder.create();
-            		alert.show();
-
-            	} else {
-            		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            		builder.setMessage(result)
-            		.setCancelable(false)
-            		.setNegativeButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
-            			public void onClick(DialogInterface dialog, int id) {
-            				dialog.cancel();
-            			}
-            		});
-            		AlertDialog alert = builder.create();
-            		alert.show();
-            		loginFailed = true;
-            	}
+                if (users != null && users.length > 1) {
+                    // Ambiguous name
+                    selectedUser = 0;
+                    // Check for exact match
+                    for (ConferenceInfo user : users) {
+                        if (user.name.compareToIgnoreCase(username) == 0) {
+                            Log.d(TAG, "Exact username found, id: "+user.id);
+                            selectedUser = user.id;
+                            doLogin();
+                        }
+                    }
+                    if (selectedUser == 0) {
+                        // Exact match not found
+                        AlertDialog.Builder builder = new AlertDialog.Builder(
+                                Login.this);
+                        builder.setTitle(getString(R.string.pick_a_name));
+                        String[] vals = new String[users.length];
+                        for (int i = 0; i < users.length; i++)
+                            vals[i] = users[i].name;
+                        builder.setSingleChoiceItems(vals, -1,
+                                new DialogInterface.OnClickListener() {
+                                    public void onClick(DialogInterface dialog,
+                                            int item) {
+                                        Toast.makeText(getApplicationContext(),
+                                                users[item].name,
+                                                Toast.LENGTH_SHORT).show();
+                                        dialog.cancel();
+                                        selectedUser = users[item].id;
+                                        Log.d(TAG, "Selected user:"
+                                                + selectedUser + ":"
+                                                + new String(users[item].name));
+                                        doLogin();
+                                    }
+                                });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                    }
+                } else {
+                    // User not found or such error
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            Login.this);
+                    builder.setMessage(result)
+                            .setCancelable(false)
+                            .setNegativeButton(
+                                    getString(R.string.alert_dialog_ok),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(
+                                                DialogInterface dialog, int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                    loginFailed = true;
+                }
             }
             else {
             	// Login succeded: Store psw, start new activity and kill this.

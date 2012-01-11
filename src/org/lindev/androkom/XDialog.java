@@ -7,6 +7,7 @@ import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
@@ -87,7 +88,12 @@ public class XDialog extends Dialog
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		switch(keyCode) {
+	    Log.d(TAG, "keyCode:"+keyCode);
+	    Log.d(TAG, "event.DisplayLabel:"+event.getDisplayLabel());
+        Log.d(TAG, "event.getUnicodeChar:"+event.getUnicodeChar());
+        Log.d(TAG, "event.getCharacters:"+event.getCharacters());
+
+        switch(keyCode) {
 		case KeyEvent.KEYCODE_DEL :
 		case KeyEvent.KEYCODE_BACK :
 		case KeyEvent.KEYCODE_CLEAR :
