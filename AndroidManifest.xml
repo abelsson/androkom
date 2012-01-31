@@ -66,6 +66,11 @@
                   android:label="@string/settings_title">
         </activity>
         
+        <activity android:name=".imagesactivity"
+                  android:label="imagesactivity">
+        </activity>
+            imagesactivity
+            
         <!--  Connection to the KOM server -->
         <service android:name=".KomServer"
         		 android:label="@string/app_name">        	

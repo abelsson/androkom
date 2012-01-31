@@ -305,13 +305,29 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mState.currentTextIndex = mState.currentText.size() - 1;
                 Log.i(TAG, stackAsString());
 
-                final Spannable spannedText = text.getSpannable();
-                addLinks(spannedText, digits, null);
-                mSwitcher.setText(spannedText);
+                Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
+                Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
+                Log.d(TAG, "AUTHOR: "+text.getAuthor());
+                Log.d(TAG, "SUBJECT: "+text.getSubject());
+                //Log.d(TAG, "BODY: "+text.getBody());
+                if (text.getAllHeaders().contains("ContentType:image/")) {
+                    mSwitcher.setText("Text "+text.getTextNo()+" is image");
+                    
+                    Intent intent = new Intent(getApplicationContext(), imagesactivity.class);
+                    intent.putExtra("bilden", text.getRawBody());
+                    startActivity(intent);
+                    
+                    TextView widget = (TextView) mSwitcher.getCurrentView();
+                    widget.scrollTo(0, 0);
+                } else {
+                    final Spannable spannedText = text.getSpannable();
+                    addLinks(spannedText, digits, null);
+                    mSwitcher.setText(spannedText);
 
-                TextView widget = (TextView) mSwitcher.getCurrentView();
-                widget.scrollTo(0, 0);
-                setTitle(mKom.getConferenceName());
+                    TextView widget = (TextView) mSwitcher.getCurrentView();
+                    widget.scrollTo(0, 0);
+                }
+                setTitle(mKom.getConferenceName());                
             } else {
                 Log.d(TAG, "error fetching text, probably lost connection");
                 Log.d(TAG, "LoadMessageTask onPostExecute text=null");
@@ -907,7 +923,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             body.append("<br/>");
 
 			if (ShowFullHeaders) {
-				String[] headerlines = text.getHeaders().split("\n");
+				String[] headerlines = text.getVisibleHeaders().split("\n");
 				for (String line : headerlines) {
 					body.append(line);
 					body.append("<br/>");

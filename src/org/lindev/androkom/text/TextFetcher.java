@@ -23,7 +23,9 @@ public class TextFetcher {
 
     public TextInfo getKomText(final int textNo) {
         final TextInfo text = mTextCache.getText(textNo);
-        mPrefetcher.doCacheRelevant(text.getTextNo());
+        if(text!=null) {
+            mPrefetcher.doCacheRelevant(text.getTextNo());
+        }
         return text;
     }
 

@@ -199,9 +199,13 @@ class TextCache {
                     }
                 }
             }
+            StringBuilder allHeadersString = new StringBuilder();
+            allHeadersString.append("ContentType:"+text.getContentType());
+            
             Log.d(TAG, "getTextFromServer returning");
-            return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, headersString.toString(),
-                    SubjectString, BodyString, mShowFullHeaders);
+            return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, allHeadersString.toString(),
+                    headersString.toString(),
+                    SubjectString, BodyString, text.getBody(), mShowFullHeaders);
         }
 
         protected Void doInBackground(final Integer... args) {
@@ -270,7 +274,7 @@ class TextCache {
         }
 
         final Thread currentThread = Thread.currentThread();
-        int MaxWaits = 20;
+        int MaxWaits = 40;
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
             synchronized(mTextCache) {
                 Log.d(TAG, "getText waiting for mTextCache:"+textNo);

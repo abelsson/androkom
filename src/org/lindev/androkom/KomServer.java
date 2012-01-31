@@ -100,34 +100,40 @@ public class KomServer extends Service implements RpcEventListener,
         public static final int ERROR_FETCHING_TEXT=2;
         public static final int NO_PARENT=3;
 
-        public TextInfo(Context context, int textNo, String author, String date, String headers, String subject, String body, boolean showFullHeaders) {
+        public TextInfo(Context context, int textNo, String author,
+                String date, String all_headers, String visible_headers,
+                String subject, String body, byte[] rawBody,
+                boolean showFullHeaders) {
             this.textNo = textNo;
             this.author = author;
             this.date = date;
-            this.headers = headers;
+            this.visible_headers = visible_headers;
+            this.all_headers = all_headers;
             this.subject = subject;
             this.body = body;
-            this.spannable = Conference.formatText(context, this, showFullHeaders);
+            this.rawBody = rawBody;
+            this.spannable = Conference.formatText(context, this,
+                    showFullHeaders);
         }
 
         public static TextInfo createText(Context context, int id) {
             switch (id) {
             case ALL_READ:
                 Log.d(TAG, "createText ALL_READ");
-                return new TextInfo(context, -1, "", "", "", "", context
-                        .getString(R.string.all_read), false);
+                return new TextInfo(context, -1, "", "", "", "", "", context
+                        .getString(R.string.all_read), null, false);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
-                return new TextInfo(context, -2, "", "", "", "", context
-                        .getString(R.string.error_fetching_text), false);
+                return new TextInfo(context, -2, "", "", "", "", "", context
+                        .getString(R.string.error_fetching_text), null, false);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
-                return new TextInfo(context, -1, "", "", "", "", context
-                        .getString(R.string.error_no_parent), false);
+                return new TextInfo(context, -1, "", "", "", "", "", context
+                        .getString(R.string.error_no_parent), null, false);
             default:
                 Log.d(TAG, "createText default");
-                return new TextInfo(context, -2, "", "", "", "", context
-                        .getString(R.string.error_fetching_text), false);
+                return new TextInfo(context, -2, "", "", "", "", "", context
+                        .getString(R.string.error_fetching_text), null, false);
             }
         }
 
@@ -139,9 +145,17 @@ public class KomServer extends Service implements RpcEventListener,
 			return body;
 		}
 
-		public String getHeaders() {
-			return headers;
+        public byte[] getRawBody() {
+            return rawBody;
+        }
+
+		public String getVisibleHeaders() {
+			return visible_headers;
 		}
+
+        public String getAllHeaders() {
+            return all_headers;
+        }
 
 		public String getSubject() {
 			return subject;
@@ -162,8 +176,10 @@ public class KomServer extends Service implements RpcEventListener,
         private int textNo;
         private String date;
         private String subject;
-        private String headers;
+        private String visible_headers;
+        private String all_headers;
         private String body;
+        private byte[] rawBody;
         private String author;
         private Spannable spannable;
     }
