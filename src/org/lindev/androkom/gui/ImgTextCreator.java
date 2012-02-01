@@ -151,46 +151,65 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         if (Intent.ACTION_SEND.equals(action)) {
             if (extras.containsKey(Intent.EXTRA_STREAM)) {
                 try {
+                    ImageView imgView = (ImageView) findViewById(R.id.imageView1);
                     // Get resource path from intent callee
                     Uri uri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
 
                     // Query gallery for camera picture via
                     // Android ContentResolver interface
                     ContentResolver cr = getContentResolver();
-                    InputStream is = cr.openInputStream(uri);
-                    // Get binary bytes for encode
-                    imgdata = getBytesFromFile(is);
-
-                    ImageView imgView = (ImageView) findViewById(R.id.imageView1);
                     
-                    Bitmap bmImg = BitmapFactory.decodeByteArray(imgdata, 0, imgdata.length);
-                    if(bmImg != null) {
-                        imgView.setImageBitmap(bmImg);
-                        double imgHeight = bmImg.getHeight();
-                        double imgWidth = bmImg.getWidth();
-                        double scaleFactor;
-                        int maxLength=200;
-                        if((imgHeight>maxLength)||(imgWidth>maxLength)) {
-                            Log.d(TAG, "Too big image:"+imgHeight+" x "+imgWidth);
-                            if(imgHeight>imgWidth) {
-                                scaleFactor = imgHeight/maxLength; 
-                            } else {
-                                scaleFactor = imgWidth/maxLength;                                 
+                    // Get binary bytes for encode
+/*                    imgdata = getBytesFromFile(is);
+
+                    try {
+                        Bitmap bmImg = BitmapFactory.decodeByteArray(imgdata,
+                                0, imgdata.length);
+                        if (bmImg != null) {
+                            imgView.setImageBitmap(bmImg);
+                            double imgHeight = bmImg.getHeight();
+                            double imgWidth = bmImg.getWidth();
+                            double scaleFactor;
+                            int maxLength = 200;
+                            if ((imgHeight > maxLength)
+                                    || (imgWidth > maxLength)) {
+                                Log.d(TAG, "Too big image:" + imgHeight + " x "
+                                        + imgWidth);
+                                if (imgHeight > imgWidth) {
+                                    scaleFactor = imgHeight / maxLength;
+                                } else {
+                                    scaleFactor = imgWidth / maxLength;
+                                }
+                                Log.d(TAG, "scaleFactor:" + scaleFactor);
+                                int newHeight = (int) (imgHeight / scaleFactor);
+                                int newWidth = (int) (imgWidth / scaleFactor);
+                                Log.d(TAG, "newHeight:" + newHeight);
+                                Log.d(TAG, "newWidth:" + newWidth);
+                                Bitmap scaledBitmap = Bitmap
+                                        .createScaledBitmap(bmImg, newWidth,
+                                                newHeight, true);
+                                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                                scaledBitmap.compress(
+                                        Bitmap.CompressFormat.JPEG, 85, buffer);
+                                buffer.flush();
+                                imgdata = buffer.toByteArray();
                             }
-                            Log.d(TAG, "scaleFactor:"+scaleFactor);
-                            int newHeight = (int) (imgHeight / scaleFactor);
-                            int newWidth = (int) (imgWidth / scaleFactor);
-                            Log.d(TAG, "newHeight:"+newHeight);
-                            Log.d(TAG, "newWidth:"+newWidth);
-                            Bitmap scaledBitmap = Bitmap.createScaledBitmap(bmImg, newWidth, newHeight, true);
-                            ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                            scaledBitmap.compress(Bitmap.CompressFormat.JPEG, 85, buffer);
-                            buffer.flush();
-                            imgdata = buffer.toByteArray();
+                        } else {
+                            Toast.makeText(getApplicationContext(),
+                                    "Failed to decode image", Toast.LENGTH_LONG)
+                                    .show();
                         }
-                    } else {
-                        Toast.makeText(getApplicationContext(), "Failed to decode image", Toast.LENGTH_LONG).show();
+                    } catch (java.lang.OutOfMemoryError e) {
+
                     }
+                    */
+                    Bitmap bmImg = getBitmap(cr, uri);
+                    imgView.setImageBitmap(bmImg);
+                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+                    bmImg.compress(
+                            Bitmap.CompressFormat.JPEG, 85, buffer);
+                    buffer.flush();
+                    imgdata = buffer.toByteArray();
                     return;
                 } catch (Exception e) {
                     Log.e(this.getClass().getName(), e.toString());
@@ -199,6 +218,64 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             } else if (extras.containsKey(Intent.EXTRA_TEXT)) {
                 return;
             }
+        }
+    }
+
+    private Bitmap getBitmap(ContentResolver cr, Uri uri) {
+        try {
+            InputStream is = cr.openInputStream(uri);
+            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
+
+            // Decode image size
+            BitmapFactory.Options o = new BitmapFactory.Options();
+            o.inJustDecodeBounds = true;
+            BitmapFactory.decodeStream(is, null, o);
+            is.close();
+
+            int scale = 1;
+            while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) > IMAGE_MAX_SIZE) {
+                scale++;
+            }
+            Log.d(TAG, "scale = " + scale + ", orig-width: " + o.outWidth
+                    + ", orig-height: " + o.outHeight);
+
+            Bitmap b = null;
+            is = cr.openInputStream(uri);
+            if (scale > 1) {
+                scale--;
+                // scale to max possible inSampleSize that still yields an image
+                // larger than target
+                o = new BitmapFactory.Options();
+                o.inSampleSize = scale;
+                b = BitmapFactory.decodeStream(is, null, o);
+
+                // resize to desired dimensions
+                int height = b.getHeight();
+                int width = b.getWidth();
+                Log.d(TAG, "1th scale operation dimensions - width: " + width
+                        + ", height: " + height);
+
+                double y = Math.sqrt(IMAGE_MAX_SIZE
+                        / (((double) width) / height));
+                double x = (y / height) * width;
+
+                Bitmap scaledBitmap = Bitmap.createScaledBitmap(b, (int) x,
+                        (int) y, true);
+                b.recycle();
+                b = scaledBitmap;
+
+                System.gc();
+            } else {
+                b = BitmapFactory.decodeStream(is);
+            }
+            is.close();
+
+            Log.d(TAG, "bitmap size - width: " + b.getWidth() + ", height: "
+                    + b.getHeight());
+            return b;
+        } catch (IOException e) {
+            Log.e(TAG, e.getMessage(), e);
+            return null;
         }
     }
 
@@ -282,41 +359,6 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         ((Button) findViewById(R.id.add_cc)).setEnabled(true);
         ((Button) findViewById(R.id.add_bcc)).setEnabled(true);
         ((Button) findViewById(R.id.send)).setEnabled(true);
-    }
-
-    /**
-     * The menu key has been pressed, instantiate the requested
-     * menu.
-     */
-    @Override 
-    public boolean onCreateOptionsMenu(Menu menu)
-    {
-        MenuInflater inflater = getMenuInflater();
-        inflater.inflate(R.menu.textcreator, menu);
-        return true;
-    }
-
-    /**
-     * Called when user has selected a menu item from the 
-     * menu button popup. 
-     */
-    @Override
-    public boolean onOptionsItemSelected(MenuItem item) {
-        Log.d(TAG, "onOptionsItemSelected");
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            // e1.printStackTrace();
-            Log.d(TAG, "onOptionsItem caught exception, bailing out");
-            mKom.logout();
-        }
-
-        // Handle item selection
-        switch (item.getItemId()) {
-
-        default:
-            return super.onOptionsItemSelected(item);
-        }
     }
 
     private void showRemoveRecipientDialog(final Recipient recipient) {

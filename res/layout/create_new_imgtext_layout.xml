@@ -25,21 +25,25 @@
                     android:id="@+id/label"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:text="@string/subject"/>
                 <EditText
                     android:id="@+id/subject"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:background="@android:drawable/editbox_background"
                     android:singleLine="true"/>
                 <ImageView android:id="@+id/imageView1"
                     android:layout_height="wrap_content"
                     android:layout_width="fill_parent"
+                    android:layout_weight="2"
                     android:src="@drawable/icon"
                     android:scaleType="fitCenter"/>
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
+                    android:layout_weight="1"
                     android:orientation="horizontal">
                     <Button
                         android:id="@+id/send"
