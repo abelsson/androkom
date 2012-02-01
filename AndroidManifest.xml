@@ -69,7 +69,6 @@
         <activity android:name=".imagesactivity"
                   android:label="imagesactivity">
         </activity>
-            imagesactivity
             
         <!--  Connection to the KOM server -->
         <service android:name=".KomServer"
@@ -78,8 +77,15 @@
         <activity android:name=".gui.IMConversationList" android:label="@string/im_conversations_list_label" android:launchMode="singleTop"></activity>
         <activity android:name=".gui.IMConversation" android:launchMode="singleTop"></activity>
         <activity android:name=".gui.TextCreator"></activity>
-
-    </application>
+        
+        <activity android:name=".gui.ImgTextCreator" >
+            <intent-filter >
+                <action android:name="android.intent.action.SEND" />
+                <category android:name="android.intent.category.DEFAULT" />
+                <data android:mimeType="image/*" />
+            </intent-filter>
+        </activity>
+</application>
 
 <uses-sdk android:minSdkVersion="3" android:targetSdkVersion="8"/>
 <uses-permission android:name="android.permission.INTERNET" />

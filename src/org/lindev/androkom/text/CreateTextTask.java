@@ -30,6 +30,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
     private final double mLon;
     private final double mPrecision;
     private final String mBody;
+    private final byte[] imgData;
     private final int mInReplyTo;
     private final List<Recipient> mRecipients;
     private final CreateTextRunnable mRunnable;
@@ -50,6 +51,41 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         this.mLon = loc_lon;
         this.mPrecision = loc_precision;
         this.mBody = body;
+        this.imgData = null;
+        this.mInReplyTo = inReplyTo;
+        this.mRecipients = recipients;
+        this.mRunnable = runnable;
+        this.mUserIsMemberOfSomeConf = false;
+    }
+
+    public CreateTextTask(final Context context, final KomServer kom, final String subject, final String body,
+            final int inReplyTo, final List<Recipient> recipients, final CreateTextRunnable runnable) {
+        this.mDialog = new ProgressDialog(context);
+        this.mContext = context;
+        this.mKom = kom;
+        this.mSubject = subject;
+        this.mLat = 0;
+        this.mLon = 0;
+        this.mPrecision = 0;
+        this.mBody = body;
+        this.imgData = null;
+        this.mInReplyTo = inReplyTo;
+        this.mRecipients = recipients;
+        this.mRunnable = runnable;
+        this.mUserIsMemberOfSomeConf = false;
+    }
+
+    public CreateTextTask(final Context context, final KomServer kom, final String subject, final byte[] imgdata,
+            final int inReplyTo, final List<Recipient> recipients, final CreateTextRunnable runnable) {
+        this.mDialog = new ProgressDialog(context);
+        this.mContext = context;
+        this.mKom = kom;
+        this.mSubject = subject;
+        this.mLat = 0;
+        this.mLon = 0;
+        this.mPrecision = 0;
+        this.mBody = "";
+        this.imgData = imgdata;
         this.mInReplyTo = inReplyTo;
         this.mRecipients = recipients;
         this.mRunnable = runnable;
@@ -101,16 +137,34 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
             }
         }
 
-        final byte[] subjectBytes = mSubject.getBytes();
-        final byte[] bodyBytes = mBody.getBytes();
+        if (imgData == null) {
+            final byte[] subjectBytes = mSubject.getBytes();
+            final byte[] bodyBytes = mBody.getBytes();
 
-        byte[] contents = new byte[subjectBytes.length + bodyBytes.length + 1];
-        System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
-        System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1, bodyBytes.length);
-        contents[subjectBytes.length] = (byte) '\n';
+            byte[] contents = new byte[subjectBytes.length + bodyBytes.length
+                    + 1];
+            System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+            System.arraycopy(bodyBytes, 0, contents, subjectBytes.length + 1,
+                    bodyBytes.length);
+            contents[subjectBytes.length] = (byte) '\n';
 
-        text.setContents(contents);
-        text.getStat().setAuxItem(new AuxItem(AuxItem.tagContentType, "text/x-kom-basic;charset=utf-8")); 
+            text.setContents(contents);
+            text.getStat().setAuxItem(
+                    new AuxItem(AuxItem.tagContentType,
+                            "text/x-kom-basic;charset=utf-8"));
+        } else {
+            final byte[] subjectBytes = mSubject.getBytes();
+            byte[] contents = new byte[subjectBytes.length + imgData.length + 1];
+            System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);
+            System.arraycopy(imgData, 0, contents, subjectBytes.length + 1,
+                    imgData.length);
+            contents[subjectBytes.length] = (byte) '\n';
+
+            text.setContents(contents);
+            text.getStat().setAuxItem(
+                    new AuxItem(AuxItem.tagContentType,
+                            "image/jpeg; name=dummy.jpg"));
+        }
 
         if((ConferencePrefs.getIncludeLocation(mContext)) &&
                 (mPrecision>0.0)) {
