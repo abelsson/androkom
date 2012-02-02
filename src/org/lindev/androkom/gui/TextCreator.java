@@ -12,7 +12,6 @@ import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
-import org.lindev.androkom.Login;
 import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
@@ -28,7 +27,6 @@ import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
-import android.content.Intent;
 import android.content.DialogInterface.OnClickListener;
 import android.content.ServiceConnection;
 import android.location.Location;

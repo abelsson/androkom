@@ -20,7 +20,7 @@ import android.os.AsyncTask;
 import android.util.Log;
 
 public class CreateTextTask extends AsyncTask<Void, Void, Object> {
-    private static final String TAG = "CreateTextTask";
+    private static final String TAG = "Androkom CreateTextTask";
     
     private final ProgressDialog mDialog;
     private final Context mContext;
@@ -138,6 +138,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         }
 
         if (imgData == null) {
+            // Regular text
             final byte[] subjectBytes = mSubject.getBytes();
             final byte[] bodyBytes = mBody.getBytes();
 
@@ -153,6 +154,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     new AuxItem(AuxItem.tagContentType,
                             "text/x-kom-basic;charset=utf-8"));
         } else {
+            // image
             final byte[] subjectBytes = mSubject.getBytes();
             byte[] contents = new byte[subjectBytes.length + imgData.length + 1];
             System.arraycopy(subjectBytes, 0, contents, 0, subjectBytes.length);

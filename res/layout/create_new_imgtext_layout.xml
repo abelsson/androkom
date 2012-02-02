@@ -17,7 +17,7 @@
             android:layout_width="fill_parent"
             android:layout_height="fill_parent">
             <LinearLayout
-                android:id="@+id/create_text"
+                android:id="@+id/create_img_text"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:orientation="vertical">
@@ -25,26 +25,32 @@
                     android:id="@+id/label"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:text="@string/subject"/>
+
                 <EditText
                     android:id="@+id/subject"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
+                    android:layout_weight="2"
                     android:background="@android:drawable/editbox_background"
-                    android:singleLine="true"/>
+                    android:singleLine="true" >
+
+                    <requestFocus />
+                </EditText>
+
                 <ImageView android:id="@+id/imageView1"
                     android:layout_height="wrap_content"
                     android:layout_width="fill_parent"
-                    android:layout_weight="2"
                     android:src="@drawable/icon"
                     android:scaleType="fitCenter"/>
+
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="1"
-                    android:orientation="horizontal">
+                    android:layout_weight="2"
+                    android:orientation="horizontal" >
+
                     <Button
                         android:id="@+id/send"
                         android:layout_width="wrap_content"
@@ -60,7 +66,7 @@
                 </LinearLayout>
             </LinearLayout>
             <LinearLayout
-                android:id="@+id/recipients_view"
+                android:id="@+id/img_recipients_view"
                 android:layout_width="fill_parent"
                 android:layout_height="fill_parent"
                 android:orientation="vertical">

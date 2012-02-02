@@ -39,9 +39,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.util.Log;
-import android.view.Menu;
-import android.view.MenuInflater;
-import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
@@ -51,7 +48,6 @@ import android.widget.EditText;
 import android.widget.ImageView;
 import android.widget.ListView;
 import android.widget.TabHost;
-import android.widget.Toast;
 import android.widget.TabHost.TabSpec;
 
 public class ImgTextCreator extends TabActivity implements ServiceConnection {
@@ -210,6 +206,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
                             Bitmap.CompressFormat.JPEG, 85, buffer);
                     buffer.flush();
                     imgdata = buffer.toByteArray();
+                    Log.d(TAG, "compressed imagesize:"+imgdata.length);
                     return;
                 } catch (Exception e) {
                     Log.e(this.getClass().getName(), e.toString());
@@ -224,8 +221,9 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     private Bitmap getBitmap(ContentResolver cr, Uri uri) {
         try {
             InputStream is = cr.openInputStream(uri);
-            final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-
+            //final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
+            final int IMAGE_MAX_SIZE = 50000; // 50KP
+            
             // Decode image size
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;
@@ -296,12 +294,12 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         final TabHost tabHost = getTabHost();
         final TabSpec textTab = tabHost.newTabSpec(TEXT_TAB_TAG);
         textTab.setIndicator(getString(R.string.creator_text_title));
-        textTab.setContent(R.id.create_text);
+        textTab.setContent(R.id.create_img_text);
         tabHost.addTab(textTab);
 
         final TabSpec recipientsTab = tabHost.newTabSpec(RECIPIENTS_TAB_TAG);
         recipientsTab.setIndicator(getString(R.string.creator_recipents_title));
-        recipientsTab.setContent(R.id.recipients_view);
+        recipientsTab.setContent(R.id.img_recipients_view);
         tabHost.addTab(recipientsTab);
 
         final ListView recipientsView = (ListView) findViewById(R.id.recipients);
@@ -394,19 +392,23 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     private void sendMessage() {
+        Log.d(TAG, "sendMessage 1");
         final String subject = mSubject.getText().toString();
         if (mRecipients.isEmpty()) {
+            Log.d(TAG, "sendMessage 2");
             final AlertDialog.Builder builder = new AlertDialog.Builder(this);
             builder.setTitle(getString(R.string.creator_no_recipients));
             builder.setPositiveButton(getString(R.string.alert_dialog_ok), null);
             builder.create().show();
             return;
         }
+        Log.d(TAG, "sendMessage 3");
 
         new CreateTextTask(this, mKom, subject, imgdata, mReplyTo, mRecipients, new CreateTextRunnable() {
             public void run(final Text text) {
                 new SendTextTask(ImgTextCreator.this, mKom, text, new Runnable() {
                     public void run() {
+                        Log.d(TAG, "sendMessage 4");
                         finish();
                     }
                 }).execute();
@@ -482,6 +484,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
+        Log.d(TAG, "onServiceConnected 1");
         mKom = ((KomServer.LocalBinder) service).getService();
         if (!getIntent().getBooleanExtra(INTENT_INITIAL_RECIPIENTS_ADDED, false)) {
             addInitialRecipients();
@@ -491,6 +494,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     public void onServiceDisconnected(final ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected 1");
         mKom = null;
     }
 
