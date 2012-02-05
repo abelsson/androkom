@@ -1,5 +1,7 @@
 package org.lindev.androkom;
 
+import org.lindev.androkom.gui.ImgTextCreator;
+
 import android.app.Activity;
 import android.app.AlertDialog;
 import android.app.ProgressDialog;
@@ -9,6 +11,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -19,6 +22,7 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -42,6 +46,19 @@ public class Login extends Activity implements ServiceConnection
 
         getApp().doBindService(this);
 
+        // if this is from the share menu
+        Intent intent = getIntent();
+        Bundle extras = intent.getExtras();
+        String action = intent.getAction();
+        if (Intent.ACTION_SEND.equals(action)) {
+            if (extras.containsKey(Intent.EXTRA_STREAM)) {
+                // Get resource path from intent callee
+                share_uri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+                Log.d(TAG, "Called from Share");
+            }
+        }
+        create_image();
+
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
 
@@ -54,7 +71,7 @@ public class Login extends Activity implements ServiceConnection
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
-        });
+        });        
     }
 
 	@Override
@@ -77,6 +94,15 @@ public class Login extends Activity implements ServiceConnection
 			doLogin();
 		}
 	}
+
+    void create_image() {
+        if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
+            Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
+            img_intent.putExtra("bild_uri", share_uri.toString());
+            startActivity(img_intent);
+            finish();
+        }        
+    }
 
     private String getPsw() {
     	String password;
@@ -269,9 +295,16 @@ public class Login extends Activity implements ServiceConnection
                 // Commit the edits!
                 editor.commit();
 
-                Intent intent = new Intent(Login.this, ConferenceList.class);
-                startActivity(intent);
-                finish();
+                if (share_uri == null) {
+                    Intent intent = new Intent(Login.this, ConferenceList.class);
+                    startActivity(intent);
+                    finish();
+                } else {
+                    Intent intent = new Intent(Login.this, ImgTextCreator.class);
+                    intent.putExtra("bild_uri", share_uri.toString());
+                    startActivity(intent);
+                    finish();
+                }
             }
         }
     }
@@ -332,7 +365,9 @@ public class Login extends Activity implements ServiceConnection
     }
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();		
+		mKom = ((KomServer.LocalBinder)service).getService();
+
+		create_image();
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
@@ -342,5 +377,6 @@ public class Login extends Activity implements ServiceConnection
     private int selectedUser=0;
     private EditText mUsername;
     private EditText mPassword;	
-	private KomServer mKom;	
+	private KomServer mKom = null;
+	private Uri share_uri=null;
 }

@@ -3,6 +3,7 @@ package org.lindev.androkom.gui;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -139,83 +140,30 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     private void initializeImg() {
-        Intent intent = getIntent();
-        Bundle extras = intent.getExtras();
-        String action = intent.getAction();
+        String uri_string = getIntent().getStringExtra("bild_uri");
+        Uri uri = Uri.parse(uri_string);
 
-        // if this is from the share menu
-        if (Intent.ACTION_SEND.equals(action)) {
-            if (extras.containsKey(Intent.EXTRA_STREAM)) {
-                try {
-                    ImageView imgView = (ImageView) findViewById(R.id.imageView1);
-                    // Get resource path from intent callee
-                    Uri uri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
+        Log.d(TAG, "got filename="+uri.getPath());
+        
+        ImageView imgView = (ImageView) findViewById(R.id.imageView1);
 
-                    // Query gallery for camera picture via
-                    // Android ContentResolver interface
-                    ContentResolver cr = getContentResolver();
-                    
-                    // Get binary bytes for encode
-/*                    imgdata = getBytesFromFile(is);
+        // Query gallery for camera picture via
+        // Android ContentResolver interface
+        ContentResolver cr = getContentResolver();
 
-                    try {
-                        Bitmap bmImg = BitmapFactory.decodeByteArray(imgdata,
-                                0, imgdata.length);
-                        if (bmImg != null) {
-                            imgView.setImageBitmap(bmImg);
-                            double imgHeight = bmImg.getHeight();
-                            double imgWidth = bmImg.getWidth();
-                            double scaleFactor;
-                            int maxLength = 200;
-                            if ((imgHeight > maxLength)
-                                    || (imgWidth > maxLength)) {
-                                Log.d(TAG, "Too big image:" + imgHeight + " x "
-                                        + imgWidth);
-                                if (imgHeight > imgWidth) {
-                                    scaleFactor = imgHeight / maxLength;
-                                } else {
-                                    scaleFactor = imgWidth / maxLength;
-                                }
-                                Log.d(TAG, "scaleFactor:" + scaleFactor);
-                                int newHeight = (int) (imgHeight / scaleFactor);
-                                int newWidth = (int) (imgWidth / scaleFactor);
-                                Log.d(TAG, "newHeight:" + newHeight);
-                                Log.d(TAG, "newWidth:" + newWidth);
-                                Bitmap scaledBitmap = Bitmap
-                                        .createScaledBitmap(bmImg, newWidth,
-                                                newHeight, true);
-                                ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                                scaledBitmap.compress(
-                                        Bitmap.CompressFormat.JPEG, 85, buffer);
-                                buffer.flush();
-                                imgdata = buffer.toByteArray();
-                            }
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    "Failed to decode image", Toast.LENGTH_LONG)
-                                    .show();
-                        }
-                    } catch (java.lang.OutOfMemoryError e) {
-
-                    }
-                    */
-                    Bitmap bmImg = getBitmap(cr, uri);
-                    imgView.setImageBitmap(bmImg);
-                    ByteArrayOutputStream buffer = new ByteArrayOutputStream();
-                    bmImg.compress(
-                            Bitmap.CompressFormat.JPEG, 85, buffer);
-                    buffer.flush();
-                    imgdata = buffer.toByteArray();
-                    Log.d(TAG, "compressed imagesize:"+imgdata.length);
-                    return;
-                } catch (Exception e) {
-                    Log.e(this.getClass().getName(), e.toString());
-                }
-
-            } else if (extras.containsKey(Intent.EXTRA_TEXT)) {
-                return;
-            }
+        Bitmap bmImg = getBitmap(cr, uri);
+        imgView.setImageBitmap(bmImg);
+        ByteArrayOutputStream buffer = new ByteArrayOutputStream();
+        bmImg.compress(Bitmap.CompressFormat.JPEG, 85, buffer);
+        try {
+            buffer.flush();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
+        imgdata = buffer.toByteArray();
+        Log.d(TAG, "compressed imagesize:" + imgdata.length);
+        return;
     }
 
     private Bitmap getBitmap(ContentResolver cr, Uri uri) {
