@@ -203,7 +203,12 @@ class Prefetcher {
                 }
                 else if (!mUnreadConfs.isEmpty()) {
                     // Ask the server for more (possibly) unread texts
-                    mMaybeUnreadIter = askServerForMore();
+                    try {
+                        mMaybeUnreadIter = askServerForMore();
+                    } catch (NullPointerException e) {
+                        Log.d(TAG, " run not connected (NullPointer)");
+                        mMaybeUnreadIter = null;
+                    }
                     if((mMaybeUnreadIter==null) || (!mMaybeUnreadIter.hasNext())) {
                         mIsInterrupted=true; /* might be more to read but connection is probably gone */
                     }
