@@ -72,6 +72,11 @@ public class ReadMarker {
             }
         }
         catch (final IOException e) {
+            Log.d(TAG, "Handled an IOException:");
+            e.printStackTrace();
+        }
+        catch (NullPointerException e) {
+            Log.d(TAG, "Handled a NullPointerException:");
             e.printStackTrace();
         }
         Log.i(TAG, "Mark as read finished: " + textNo);
