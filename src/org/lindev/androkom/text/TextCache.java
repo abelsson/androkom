@@ -46,10 +46,12 @@ class TextCache {
             Log.d(TAG, "getAuthorName:" + textNo);
             text = mKom.getSession().getText(textNo);
         } catch (final RpcFailure e) {
-            e.printStackTrace();
+            Log.d(TAG, "getAuthorName: "+e);
+            //e.printStackTrace();
             return null;
         } catch (final IOException e) {
-            e.printStackTrace();
+            Log.d(TAG, "getAuthorName: "+e);
+            //e.printStackTrace();
             return null;
         }
         String username;
@@ -87,10 +89,12 @@ class TextCache {
                 Log.d(TAG, "TextFetcherTask:"+textNo);
                 text = mKom.getSession().getText(textNo);
             } catch (final RpcFailure e) {
-                e.printStackTrace();
+                Log.d(TAG, "getTextFromServer: "+e);
+                //e.printStackTrace();
                 return null;
             } catch (final IOException e) {
-                e.printStackTrace();
+                Log.d(TAG, "getTextFromServer: "+e);
+                //e.printStackTrace();
                 return null;
             }
             String username;
@@ -219,8 +223,8 @@ class TextCache {
             try {
                 text = getTextFromServer(mTextNo);
             } catch (Exception e) {
-                Log.d(TAG, "TextFetcherTask.background caught error");
-                e.printStackTrace();
+                Log.d(TAG, "TextFetcherTask.background caught error:"+e);
+                //e.printStackTrace();
                 text = null;
             }
             if (text == null) {

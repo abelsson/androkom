@@ -72,12 +72,12 @@ public class ReadMarker {
             }
         }
         catch (final IOException e) {
-            Log.d(TAG, "Handled an IOException:");
-            e.printStackTrace();
+            Log.d(TAG, "markToServer Handled an IOException:"+e);
+            //e.printStackTrace();
         }
         catch (NullPointerException e) {
-            Log.d(TAG, "Handled a NullPointerException:");
-            e.printStackTrace();
+            Log.d(TAG, "markToServer Handled a NullPointerException:"+e);
+            //e.printStackTrace();
         }
         Log.i(TAG, "Mark as read finished: " + textNo);
     }

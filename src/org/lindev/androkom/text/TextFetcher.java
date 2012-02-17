@@ -42,7 +42,7 @@ public class TextFetcher {
             text = mKom.getSession().getText(textNo);
         } catch (final Exception e) {
             Log.d(TAG, "getParentToText " + e);
-            e.printStackTrace();
+            //e.printStackTrace();
             mKom.reconnect();
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
@@ -51,7 +51,9 @@ public class TextFetcher {
         if (commented.length > 0) {
             Log.d(TAG, "number of parents:"+commented.length);
             final TextInfo textInfo = mTextCache.getText(commented[0]);
-            mPrefetcher.doCacheRelevant(textInfo.getTextNo());
+            if (textInfo != null) {
+                mPrefetcher.doCacheRelevant(textInfo.getTextNo());
+            }
             return textInfo;
         }
         Log.d(TAG, "No parent found");

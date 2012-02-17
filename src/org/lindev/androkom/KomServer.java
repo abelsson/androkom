@@ -261,8 +261,8 @@ public class KomServer extends Service implements RpcEventListener,
                 Log.i("androkom", "disconnected");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                Log.d(TAG, "onDestroy " + e);
-                e.printStackTrace();
+                Log.d(TAG, "onDestroy1 " + e);
+                //e.printStackTrace();
             }
 
             s.removeRpcEventListener(this);
@@ -289,8 +289,8 @@ public class KomServer extends Service implements RpcEventListener,
             Log.i("androkom", "disconnected");
         } catch (Exception e) {
             // TODO Auto-generated catch block
-            Log.d(TAG, "onDestroy " + e);
-            e.printStackTrace();
+            Log.d(TAG, "onDestroy2 " + e);
+            //e.printStackTrace();
         }
 
         s = null;
@@ -328,13 +328,13 @@ public class KomServer extends Service implements RpcEventListener,
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect1 "+e);
 
-            e.printStackTrace();
+            //e.printStackTrace();
             return -1;
         } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect2 "+e);
 
-            e.printStackTrace();
+            //e.printStackTrace();
             return -1;
         }
 
@@ -345,11 +345,11 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
     		s.disconnect(true);
 		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "disconnect RpcFailure"+e);
+			//e.printStackTrace();
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "disconnect "+e);
+			//e.printStackTrace();
 		}
     }
 
@@ -365,8 +365,8 @@ public class KomServer extends Service implements RpcEventListener,
                 nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
                 username = confStat.getNameString();
             } catch (Exception e) {
-                Log.d(TAG, "fetchUsername caught exception from getConfStat");
-                e.printStackTrace();
+                Log.d(TAG, "fetchUsername caught exception from getConfStat"+e);
+                //e.printStackTrace();
                 username = getString(R.string.person) + persNo
                         + getString(R.string.does_not_exist);
             }
@@ -477,7 +477,7 @@ public class KomServer extends Service implements RpcEventListener,
 			// TODO Auto-generated catch block
         	Log.d(TAG, "getConferenceName "+e);
 
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return "";
     }
@@ -504,11 +504,11 @@ public class KomServer extends Service implements RpcEventListener,
 			try {
 				return s.getConfStat(confNo).getPresentation();
 			} catch (RpcFailure e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+			    Log.d(TAG, "getConferencePres RpcFailure"+e);
+				//e.printStackTrace();
 			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
+                Log.d(TAG, "getConferencePres IOException"+e);
+				//e.printStackTrace();
 			}
 		}
 		return 0;
@@ -523,11 +523,11 @@ public class KomServer extends Service implements RpcEventListener,
             try {
                 return s.getUnreadCount(confNo);
             } catch (RpcFailure e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.d(TAG, "getConferenceUnreadsNo RpcFailure:"+e);
+                //e.printStackTrace();
             } catch (IOException e) {
-                // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.d(TAG, "getConferenceUnreadsNo IOException:"+e);
+                //e.printStackTrace();
             }
         }
         Log.d(TAG, "getConferenceUnreadsNo no current conference (or exception)");
@@ -583,7 +583,7 @@ public class KomServer extends Service implements RpcEventListener,
     		}
         } catch (Exception e) {
             Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
-            e.printStackTrace();
+            //e.printStackTrace();
             return getString(R.string.error_unknown);
         }
 
@@ -600,7 +600,7 @@ public class KomServer extends Service implements RpcEventListener,
             }
         } catch (Exception e) {
             Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
-            e.printStackTrace();
+            //e.printStackTrace();
             return getString(R.string.error_unknown);
         }
         try {
@@ -608,7 +608,7 @@ public class KomServer extends Service implements RpcEventListener,
             s.setLatteName("AndroKOM " + getVersionName());
         } catch (Exception e) {
         	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
-        	e.printStackTrace();
+        	//e.printStackTrace();
         }
         re_userid = usernames[0].confNo;
         re_password = password;
@@ -640,7 +640,8 @@ public class KomServer extends Service implements RpcEventListener,
         	}
         	s.setClientVersion("Androkom", getVersionName());
         } catch (Exception e) {
-            Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
+            Log.e("androkom", "Login.id Caught " + e.getClass().getName());
+            //Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
             return "Unknown error";
         }
         re_userid = userid;
@@ -663,11 +664,11 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
 			s.endast(confNo, no);
 		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "endast RpcFailure:"+e);
+		    //e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            Log.d(TAG, "endast IOException:"+e);
+			//e.printStackTrace();
 		}
     }
 
@@ -675,11 +676,11 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             s.joinConference(confNo);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "joinconference RpcFailure:"+e);
+            //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "joinconference IOException:"+e);
+            //e.printStackTrace();
         }
     }
 
@@ -687,11 +688,11 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             s.leaveConference(confNo);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "leaveConference RpcFailure:"+e);
+            //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "leaveConference IOException:"+e);
+            //e.printStackTrace();
         }
     }
 
@@ -831,16 +832,16 @@ public class KomServer extends Service implements RpcEventListener,
             Log.d(TAG, "Remove confNo:"+confNo+" from textNo:"+textNo);
             s.subRecipient(textNo, confNo);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "subRecipient RpcFailure:"+e);
+            //e.printStackTrace();
             Log.d(TAG, "Error: "+e.getError());
             Log.d(TAG, "ErrorStatus: "+e.getErrorStatus());
             Log.d(TAG, "Message: "+e.getMessage());
 
             result = decodeKomErrorCode(e.getError());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "subRecipient IOException:"+e);
+            //e.printStackTrace();
         }
         return result;
     }
@@ -880,11 +881,11 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
 			s.markText(textNo, 100);
 		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            Log.d(TAG, "markText RpcFailure:"+e);
+			//e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            Log.d(TAG, "markText IOException:"+e);
+            //e.printStackTrace();
 		}
     }
 
@@ -893,11 +894,11 @@ public class KomServer extends Service implements RpcEventListener,
     	try {
 			s.unmarkText(textNo);
 		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            Log.d(TAG, "unmarkText RpcFailure:"+e);
+			//e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+            Log.d(TAG, "unmarkText IOException:"+e);
+            //e.printStackTrace();
 		}
     }
 
@@ -953,10 +954,8 @@ public class KomServer extends Service implements RpcEventListener,
 
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			Log.d(TAG, "parseCommonUserArea " + e);
-
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -1001,10 +1000,8 @@ public class KomServer extends Service implements RpcEventListener,
 
 			}
 		} catch (Exception e) {
-			// TODO Auto-generated catch block
 			Log.d(TAG, "parseElispUserArea " + e);
-
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 	}
 
@@ -1037,12 +1034,12 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             s.addRecipient(textNo, confNo, texttype);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "addNewRecipientToText " + e);
+            //e.printStackTrace();
             result = decodeKomErrorCode(e.getError());
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "addNewRecipientToText " + e);
+            //e.printStackTrace();
         }
         return result;
     }
@@ -1094,14 +1091,14 @@ public class KomServer extends Service implements RpcEventListener,
 			}
 
 		} catch (UnsupportedEncodingException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "getUserNames " + e);
+		    //e.printStackTrace();
 		} catch (RpcFailure e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "getUserNames " + e);
+		    //e.printStackTrace();
 		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+		    Log.d(TAG, "getUserNames " + e);
+		    //e.printStackTrace();
 		}
 		return null;
 	}
@@ -1119,11 +1116,11 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             pers = s.getPersonStat(arg0);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getUserNames " + e);
+            //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getUserNames " + e);
+            //e.printStackTrace();
         }
         return pers;
     }
@@ -1134,11 +1131,11 @@ public class KomServer extends Service implements RpcEventListener,
             byte[] clientBytes = s.getClientName(sessionNo);
             clientName = s.toString(clientBytes);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
+            Log.d(TAG, "getClientName " + e);
             e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getClientName " + e);
+            //e.printStackTrace();
         }
         return clientName;
     }
@@ -1149,11 +1146,11 @@ public class KomServer extends Service implements RpcEventListener,
             byte[] clientBytes = s.getClientVersion(sessionNo);
             clientName = s.toString(clientBytes);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getClientVersion " + e);
+            //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getClientVersion " + e);
+            //e.printStackTrace();
         }
         return clientName;
     }
@@ -1166,11 +1163,11 @@ public class KomServer extends Service implements RpcEventListener,
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
             return sdf.format(CreationTime);
         } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getConnectionTime " + e);
+            //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "getConnectionTime " + e);
+            //e.printStackTrace();
         }
         return "";
     }

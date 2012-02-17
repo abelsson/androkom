@@ -153,8 +153,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                     addLinks(spannedText, digits, null);
                     mSwitcher.setText(spannedText);
                 } catch (Exception e) {
-                    Log.d(TAG, "Exception:" + e);
-                    e.printStackTrace();
+                    Log.d(TAG, "onCreate Exception:" + e);
+                    //e.printStackTrace();
                 }
             } else {
                 Log.d(TAG, "Broken error");
@@ -477,8 +477,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         try {
             mKom.activateUser();
         } catch (Exception e1) {
-            e1.printStackTrace();
-            Log.i(TAG, "Failed to activate user");
+            Log.i(TAG, "Failed to activate user exception:"+e1);
+            //e1.printStackTrace();
             mKom.logout();
         }
     }
@@ -842,10 +842,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             alert.show();
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "subRecipient RPcFailure:"+e);
+            //e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "subRecipient IOException:"+e);
+            //e.printStackTrace();
         }
     }
 
@@ -1045,11 +1047,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             Log.d(TAG, "onServiceConnected RpcFailure");
-            e.printStackTrace();
+            //e.printStackTrace();
         } catch (IOException e) {
             // TODO Auto-generated catch block
             Log.d(TAG, "onServiceConnected IOException");
-            e.printStackTrace();
+            //e.printStackTrace();
             Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
             mKom.logout();
             finish();

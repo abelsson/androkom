@@ -84,7 +84,8 @@ public class App extends Application implements ServiceConnection
                 Thread.sleep(5000);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
-                e.printStackTrace();
+                Log.d(TAG, "DelayedUnbindTask doInBackground interrupted:"+e);
+                //e.printStackTrace();
             }
             return args[0];
         }

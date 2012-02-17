@@ -158,8 +158,8 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         try {
             buffer.flush();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
-            e.printStackTrace();
+            Log.d(TAG, "initializeImg " + e);
+            //e.printStackTrace();
         }
         imgdata = buffer.toByteArray();
         Log.d(TAG, "compressed imagesize:" + imgdata.length);

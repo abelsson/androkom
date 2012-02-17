@@ -185,10 +185,12 @@ public class AsyncMessages implements AsynchMessageReceiver {
                 mKom.getSession().getText(params[0].intValue());
             }
             catch (RpcFailure e) {
-                e.printStackTrace();
+                Log.d(TAG, "processMessage new_text RpcFailure:"+e);
+                //e.printStackTrace();
             }
             catch (IOException e) {
-                e.printStackTrace();
+                Log.d(TAG, "processMessage new_text IOException:"+e);
+                //e.printStackTrace();
             }
             break;
 

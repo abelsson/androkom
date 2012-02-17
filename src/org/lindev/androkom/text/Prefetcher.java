@@ -193,15 +193,19 @@ class Prefetcher {
         @Override
         public void run() {
             while (!mIsInterrupted) {
-                if(!mKom.isConnected()) {
+                if (!mKom.isConnected()) {
                     Log.d(TAG, " run not connected");
                     mIsInterrupted = true;
                 }
-                if (mMaybeUnreadIter.hasNext()) {
+                if (mMaybeUnreadIter == null) {
+                    Log.d(TAG, " run not connected (is null)");
+                    Log.i(TAG,
+                            "PrefetchNextUnread is exiting because it was interrupted");
+                    mIsInterrupted = true;
+                } else if (mMaybeUnreadIter.hasNext()) {
                     final int textNo = mMaybeUnreadIter.next();
                     enqueueAndPrefetch(textNo, mCurrConf);
-                }
-                else if (!mUnreadConfs.isEmpty()) {
+                } else if (!mUnreadConfs.isEmpty()) {
                     // Ask the server for more (possibly) unread texts
                     try {
                         mMaybeUnreadIter = askServerForMore();
@@ -209,26 +213,35 @@ class Prefetcher {
                         Log.d(TAG, " run not connected (NullPointer)");
                         mMaybeUnreadIter = null;
                     }
-                    if((mMaybeUnreadIter==null) || (!mMaybeUnreadIter.hasNext())) {
-                        mIsInterrupted=true; /* might be more to read but connection is probably gone */
+                    if ((mMaybeUnreadIter == null)
+                            || (!mMaybeUnreadIter.hasNext())) {
+                        mIsInterrupted = true; /*
+                                                * might be more to read but
+                                                * connection is probably gone
+                                                */
                     }
-                }
-                else {
-                    // No more unread in conference, and no more unread conferences
+                } else {
+                    // No more unread in conference, and no more unread
+                    // conferences
                     break;
                 }
             }
 
-            // If the thread wasn't interrupted, we should put an end marker on the queue.
+            // If the thread wasn't interrupted, we should put an end marker on
+            // the queue.
             if (!mIsInterrupted) {
                 try {
                     // Enqueue the marker that there are no more unread texts
-                    Log.i(TAG, "PrefetchNextUnread found no more unread. Exiting.");
+                    Log.i(TAG,
+                            "PrefetchNextUnread found no more unread. Exiting.");
                     mUnreadQueue.put(new TextConf(-1, -1));
-                } catch (final InterruptedException e) { }
-            }
-            else {
-                Log.i(TAG, "PrefetchNextUnread is exiting because it was interrupted");
+                } catch (final InterruptedException e) {
+                    Log.i(TAG,
+                            "PrefetchNextUnread is exiting because it was interrupted by exception");
+                }
+            } else {
+                Log.i(TAG,
+                        "PrefetchNextUnread is exiting because it was interrupted");
             }
         }
     }
@@ -326,8 +339,8 @@ class Prefetcher {
             try {
                 text = mKom.getSession().getText(textNo);
             } catch (final Exception e) {
-                Log.d(TAG, "CacheRelevantTask getText failed");
-                e.printStackTrace();
+                Log.d(TAG, "CacheRelevantTask getText failed:"+e);
+                //e.printStackTrace();
                 return null;
             }
 

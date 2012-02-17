@@ -164,7 +164,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 					Thread.sleep(50);
 				} catch (InterruptedException e) {
 					// TODO Auto-generated catch block
-					e.printStackTrace();
+		            Log.d(TAG, "populatePersonsTask background interrupted:"+e);
+		            //e.printStackTrace();
 				}
     		}
     		Log.d(TAG, "populatePersonsTask slept "+i);
@@ -232,7 +233,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 			}
 		} catch (Exception e) {
 			Log.d(TAG, "fetchPersons failed:" + e);
-			e.printStackTrace();
+			//e.printStackTrace();
 		}
 		return retlist;
     }

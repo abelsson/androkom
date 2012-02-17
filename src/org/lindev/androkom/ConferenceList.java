@@ -276,8 +276,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                         currentDateTimeString = mKom.getServerTime().toString();
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
-                        // e.printStackTrace();
                         Log.d(TAG, "Populate lost connection");
+                        // e.printStackTrace();
                         mKom.logout();
                         mEmptyView.setText("Not connected");
                     }
@@ -322,7 +322,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			}
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
-			e.printStackTrace();
+			//e.printStackTrace();
 			mKom.logout();
 		}
 		return retlist;
@@ -332,8 +332,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         try {
             mKom.activateUser();
         } catch (Exception e1) {
-            //e1.printStackTrace();
             Log.d(TAG, "ConferenceList.activateUser caught an exception"+e1);
+            //e1.printStackTrace();
             mKom.logout();
         }
     }
@@ -353,7 +353,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
             } catch (IOException e) {
                 Log.d(TAG, "cacheNamesTask got IOException:" + e);
-                e.printStackTrace();
+                //e.printStackTrace();
             }
             return null;
         }

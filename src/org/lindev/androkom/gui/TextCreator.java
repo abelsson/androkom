@@ -255,8 +255,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         try {
             mKom.activateUser();
         } catch (Exception e1) {
-            // e1.printStackTrace();
             Log.d(TAG, "onOptionsItem caught exception, bailing out");
+            // e1.printStackTrace();
             mKom.logout();
         }
 
