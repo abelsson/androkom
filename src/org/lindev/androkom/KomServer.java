@@ -59,22 +59,22 @@ public class KomServer extends Service implements RpcEventListener,
 	        Log.d(TAG, "onReceive1");
             ConnectivityManager connectivityManager = (ConnectivityManager) context
                     .getSystemService(Context.CONNECTIVITY_SERVICE);
-            Log.d(TAG, "onReceive2");
+            //Log.d(TAG, "onReceive2");
             NetworkInfo activeNetInfo = connectivityManager
                     .getActiveNetworkInfo();
-            Log.d(TAG, "onReceive3");
+            //Log.d(TAG, "onReceive3");
             NetworkInfo mobNetInfo = connectivityManager
                     .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
-            Log.d(TAG, "onReceive4");
+            //Log.d(TAG, "onReceive4");
             if (activeNetInfo != null) {
-                Log.d(TAG, "onReceive5");
+                //Log.d(TAG, "onReceive5");
                 Log.d(TAG, "mConnReceiver isConnected:"+activeNetInfo.isConnected());
                 setConnected(activeNetInfo.isConnected());
-                Log.d(TAG, "onReceive6");
+                //Log.d(TAG, "onReceive6");
             } else {
                 Log.d(TAG, "mConnReceiver is not Connected:");
                 setConnected(false);
-                Log.d(TAG, "onReceive7");
+                //Log.d(TAG, "onReceive7");
             }
 	    }
 	};
@@ -831,6 +831,27 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             Log.d(TAG, "Remove confNo:"+confNo+" from textNo:"+textNo);
             s.subRecipient(textNo, confNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "subRecipient RpcFailure:"+e);
+            //e.printStackTrace();
+            Log.d(TAG, "Error: "+e.getError());
+            Log.d(TAG, "ErrorStatus: "+e.getErrorStatus());
+            Log.d(TAG, "Message: "+e.getMessage());
+
+            result = decodeKomErrorCode(e.getError());
+        } catch (IOException e) {
+            Log.d(TAG, "subRecipient IOException:"+e);
+            //e.printStackTrace();
+        }
+        return result;
+    }
+
+    public String subComment(int textNo, int commentNo) {
+        String result="";
+        
+        try {
+            Log.d(TAG, "Remove textNo:"+textNo+" from commentNo:"+commentNo);
+            s.subComment(textNo, commentNo);
         } catch (RpcFailure e) {
             Log.d(TAG, "subRecipient RpcFailure:"+e);
             //e.printStackTrace();

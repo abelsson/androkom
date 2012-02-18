@@ -62,6 +62,7 @@
           <menu>
             <item android:title="@string/add_recipient_label" android:id="@+id/menu_add_recipient_id"></item>
             <item android:title="@string/sub_recipient_label" android:id="@+id/menu_sub_recipient_id"></item>
+            <item android:title="@string/sub_comment_label" android:id="@+id/menu_sub_comment_id"></item>
             <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
             <item android:title="@string/leaveconference_label" android:id="@+id/menu_leaveconference_id"></item>
           </menu>

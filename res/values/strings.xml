@@ -208,7 +208,9 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="title_submenu_others">"More..."</string>
     <string name="sub_recipient_label">Subtract recipient</string>
     <string name="sub_recipient_shortcut">S</string>
-
+    <string name="sub_comment_label">Subtract comment</string>
+    <string name="sub_comment_shortcut">C</string>
+        
     <string name="addnewrecipienttotext_title">"Add new recipient"</string>
     <string name="add_recipient_label">Add recipient</string>
     <string name="add_recipient_shortcut">A</string>

@@ -207,7 +207,9 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="title_submenu_others">"Mer..."</string>
     <string name="sub_recipient_label">Ta bort mottagare</string>
     <string name="sub_recipient_shortcut">T</string>
-
+    <string name="sub_comment_label">Ta bort kommentar</string>
+    <string name="sub_comment_shortcut">K</string>
+        
     <string name="addnewrecipienttotext_title">"Lägg till ny mottagare"</string>
     <string name="add_recipient_label">"Lägg till ny mottagare"</string>
     <string name="add_recipient_shortcut">N</string>

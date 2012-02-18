@@ -738,6 +738,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             subRecipient();
             return true;
 
+        case R.id.menu_sub_comment_id:
+            subComment();
+            return true;
+
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -792,14 +796,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         finish();
     }
 
-    public static int[] concatAll(int[] first, int[] second, int[] third) {
-        int totalLength = first.length+second.length+third.length;
+    public static int[] concatAll(int[] first, int[] second) {
+        int totalLength = first.length + second.length;
         int[] result = new int[totalLength];
         System.arraycopy(first, 0, result, 0, first.length);
         System.arraycopy(second, 0, result, first.length, second.length);
-        System.arraycopy(third, 0, result, first.length+second.length, third.length);
         return result;
-      }
+    }
+
+    public static int[] concatAll(int[] first, int[] second, int[] third) {
+        int totalLength = first.length + second.length + third.length;
+        int[] result = new int[totalLength];
+        System.arraycopy(first, 0, result, 0, first.length);
+        System.arraycopy(second, 0, result, first.length, second.length);
+        System.arraycopy(third, 0, result, first.length + second.length,
+                third.length);
+        return result;
+    }
 
     /* show user the recipients of the current text and allow user to select
      * which recipient to remove.
@@ -893,6 +906,56 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     	return alert.create();
     }
+
+    /* show user the recipients of the current text and allow user to select
+     * which recipient to remove.
+     */
+    protected void subComment() {
+        try {
+            final int currentTextNo = mState.getCurrent().getTextNo();
+            Text text = mKom.getSession().getText(currentTextNo);
+            final int[] commented = text.getCommented();
+            final int[] comments = text.getComments();
+            final int[] allComments = concatAll(commented, comments);
+            
+            AlertDialog.Builder builder = new AlertDialog.Builder(Conference.this);
+            builder.setTitle(getString(R.string.pick_a_name));
+            final String[] vals = new String[allComments.length];
+            for (int i=0;i<allComments.length;i++) {
+                vals[i]=Integer.toString(allComments[i]);
+            }
+            builder.setSingleChoiceItems(vals, -1,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            dialog.cancel();
+                            int selectedComment = allComments[item];
+                            Log.d(TAG, "Selected comment:" + selectedComment);
+                            String result="no result";
+                            if(item<commented.length) {
+                                result = mKom.subComment(currentTextNo, selectedComment);
+                            } else {
+                                result = mKom.subComment(selectedComment, currentTextNo);                                
+                            }
+                            if (result != "") {
+                                Toast.makeText(getApplicationContext(),
+                                        result, Toast.LENGTH_SHORT)
+                                        .show();                                
+                            }
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "subComment RPcFailure:"+e);
+            //e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "subComment IOException:"+e);
+            //e.printStackTrace();
+        }
+    }
+
 
     /**
      * The menu key has been pressed, instantiate the requested
