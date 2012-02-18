@@ -738,6 +738,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             subRecipient();
             return true;
 
+        case R.id.menu_add_comment_id:
+            addComment();
+            return true;
+
         case R.id.menu_sub_comment_id:
             subComment();
             return true;
@@ -907,8 +911,18 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	return alert.create();
     }
 
-    /* show user the recipients of the current text and allow user to select
-     * which recipient to remove.
+    /* start new intent to let user add new comment to existing text
+     */
+    protected void addComment() {
+        final int currentTextNo = mState.getCurrent().getTextNo();
+        
+        Intent intent = new Intent(this, AddNewCommentToText.class);
+        intent.putExtra(AddNewCommentToText.INTENT_TEXTNO, currentTextNo);
+        startActivity(intent);
+    }
+    
+    /* show user the comments of the current text and allow user to select
+     * which comment to remove.
      */
     protected void subComment() {
         try {

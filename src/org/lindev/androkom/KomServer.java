@@ -1065,6 +1065,25 @@ public class KomServer extends Service implements RpcEventListener,
         return result;
     }
     
+    public String addNewCommentToText(int textNo, int commentNo) {
+        String result="";
+        
+        Log.d(TAG, "Add new comment (null method)");
+        Log.d(TAG, "-- textNo:" + textNo);
+        Log.d(TAG, "-- commentNo:" + commentNo);
+        try {
+            s.addComment(textNo, commentNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "addNewCommentToText " + e);
+            //e.printStackTrace();
+            result = decodeKomErrorCode(e.getError());
+        } catch (IOException e) {
+            Log.d(TAG, "addNewCommentToText " + e);
+            //e.printStackTrace();
+        }
+        return result;
+    }
+    
 	public void rpcEvent(RpcEvent e) {
 		if (mPendingSentTexts.contains(e.getId())) {
 			Log.i("androkom", "Got reply for created text " + e.getId());

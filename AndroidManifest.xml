@@ -41,7 +41,12 @@
                    android:label="@string/add_recipient_label">
          </activity>
         
-         <!--  MessageLog -->
+         <!--  Add Comment -->
+         <activity android:name=".AddNewCommentToText"       
+                   android:label="@string/add_comment_label">
+         </activity>
+        
+             <!--  MessageLog -->
          <activity android:name=".gui.MessageLog"
                    android:label="@string/message_log_label">
          </activity>

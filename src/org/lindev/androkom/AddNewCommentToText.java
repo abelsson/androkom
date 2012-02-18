@@ -22,34 +22,34 @@ import android.widget.Toast;
 import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
- * Add new recipient dialog. 
+ * Add new comment dialog. 
  * 
  * @author jonas
  *
  */
-public class AddNewRecipientToText extends Activity implements ServiceConnection {
+public class AddNewCommentToText extends Activity implements ServiceConnection {
     public static final String INTENT_TEXTNO = "textno";
 
-    public static final String TAG = "Androkom AddNewRecipientToText";
+    public static final String TAG = "Androkom AddNewCommentToText";
 
     private KomServer mKom;
-    private EditText mConfName;
+    private EditText mCommentNo;
 
-    private class AddNewRecipientToTextTask extends AsyncTask<Integer, Void, String> {
+    private class AddNewCommentToTextTask extends AsyncTask<Integer, Void, String> {
         private ProgressDialog mDialog;
 
         @Override
         protected void onPreExecute() {
-            mDialog = new ProgressDialog(AddNewRecipientToText.this);
+            mDialog = new ProgressDialog(AddNewCommentToText.this);
             mDialog.setCancelable(false);
             mDialog.setIndeterminate(true);
-            mDialog.setMessage(getString(R.string.addnewrecipienttotext_title));
+            mDialog.setMessage(getString(R.string.addnewcommenttotext_title));
             mDialog.show();
         }
 
         @Override
         protected String doInBackground(final Integer... args) {
-            return mKom.addNewRecipientToText(mTextNo, args[0], mTextType);
+            return mKom.addNewCommentToText(mTextNo, args[0]);
         }
 
         @Override
@@ -60,44 +60,24 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
                         arg, Toast.LENGTH_SHORT)
                         .show();                                
             }
-            AddNewRecipientToText.this.finish();
+            AddNewCommentToText.this.finish();
         }
     }
 
-    public class MyOnItemSelectedListener implements OnItemSelectedListener {
-
-        public void onItemSelected(AdapterView<?> parent,
-            View view, int pos, long id) {
-          mTextType = pos;
-        }
-
-        @SuppressWarnings("unchecked")
-        public void onNothingSelected(AdapterView parent) {
-          // Do nothing.
-        }
-    }
-    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
-        setContentView(R.layout.addnewrecipienttotext);
+        setContentView(R.layout.addnewcommenttotext);
         getApp().doBindService(this);
 
         mTextNo = (Integer) getIntent().getExtras().get(INTENT_TEXTNO);
 
-        mConfName = (EditText) findViewById(R.id.confname);
+        mCommentNo = (EditText) findViewById(R.id.commentno);
         
-        Spinner spinner = (Spinner) findViewById(R.id.textType_id);
-        ArrayAdapter<CharSequence> adapter = ArrayAdapter.createFromResource(
-                this, R.array.texttype_array, android.R.layout.simple_spinner_item);
-        adapter.setDropDownViewResource(android.R.layout.simple_spinner_dropdown_item);
-        spinner.setAdapter(adapter);
-        spinner.setOnItemSelectedListener(new MyOnItemSelectedListener());
-        
-        Button doButton = (Button) findViewById(R.id.do_addnewrecipienttotext);
+        Button doButton = (Button) findViewById(R.id.do_addnewcommenttotext);
         doButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
-                doAddNewRecipientToText();
+                doAddNewCommentToText();
             }
         });
     }
@@ -108,15 +88,10 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
         super.onDestroy();
     }
 
-    void doAddNewRecipientToText() {
-        final String confName = mConfName.getText().toString();
+    void doAddNewCommentToText() {
+        final String commentno = mCommentNo.getText().toString();
 
-        new LookupNameTask(this, mKom, confName, LookupType.LOOKUP_CONFERENCES, new RunOnSuccess() {
-            public void run(final ConfInfo conf) {
-                Toast.makeText(getApplicationContext(), conf.getNameString(), Toast.LENGTH_SHORT).show();
-                new AddNewRecipientToTextTask().execute(conf.getNo());
-            }
-        }).execute();
+        new AddNewCommentToTextTask().execute(Integer.parseInt(commentno));
     }
 
     App getApp() {
@@ -132,5 +107,4 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
     }
     
     int mTextNo = 0;
-    int mTextType = 0;
 }
