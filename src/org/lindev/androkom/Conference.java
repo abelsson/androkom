@@ -824,7 +824,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     protected void subRecipient() {
         try {
             final int currentTextNo = mState.getCurrent().getTextNo();
-            Text text = mKom.getSession().getText(currentTextNo);
+            Text text = mKom.getTextbyNo(currentTextNo);
             int[] recipts = text.getRecipients();
             int[] ccrecipts = text.getCcRecipients();
             int[] bccrecipts = text.getBccRecipients();
@@ -860,10 +860,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             Log.d(TAG, "subRecipient RPcFailure:"+e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.d(TAG, "subRecipient IOException:"+e);
             //e.printStackTrace();
         }
     }
@@ -927,7 +923,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     protected void subComment() {
         try {
             final int currentTextNo = mState.getCurrent().getTextNo();
-            Text text = mKom.getSession().getText(currentTextNo);
+            Text text = mKom.getTextbyNo(currentTextNo);
             final int[] commented = text.getCommented();
             final int[] comments = text.getComments();
             final int[] allComments = concatAll(commented, comments);
@@ -962,10 +958,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } catch (RpcFailure e) {
             // TODO Auto-generated catch block
             Log.d(TAG, "subComment RPcFailure:"+e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            // TODO Auto-generated catch block
-            Log.d(TAG, "subComment IOException:"+e);
             //e.printStackTrace();
         }
     }

@@ -85,7 +85,7 @@ class Prefetcher {
                 Log.d(TAG, "PrefetchNextUnread.initialize not connected");
                 return;
             }
-            final List<Integer> unreadConfList = mKom.getSession().getUnreadConfsListCached();
+            final List<Integer> unreadConfList = mKom.getUnreadConfsListCached();
             if(unreadConfList==null) {
                 Log.d(TAG, "initialize unreadConfList==null");
                 return;
@@ -156,22 +156,17 @@ class Prefetcher {
             final Membership membership;
             final TextMapping tm;
             final List<Integer> maybeUnread = new ArrayList<Integer>();
-            try {
-                membership = mKom.getSession().queryReadTexts(mKom.getUserId(), mCurrConf, true);
-                mCurrConfLastRead = lastTextReadFrom(membership, mCurrConfLastRead);
-                Log.i(TAG, "PrefetchNextUnread mCurrConfLastRead: " + mCurrConfLastRead);
-                final UConference conf = mKom.getSession().getUConfStat(mCurrConf);
-                if (mCurrConfLastRead < conf.getHighestLocalNo()) {
-                    tm = mKom.getSession().localToGlobal(mCurrConf, mCurrConfLastRead + 1, ASK_AMOUNT);
-                    Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
-                }
-                else {
-                    Log.i(TAG, "PrefetchNextUnread too high local number in " + mCurrConf);
-                    tm = null;
-                }
-            } catch (final IOException e) {
-                Log.i(TAG, "PrefetchNextUnread IOException");
-                return Collections.<Integer>emptyList().iterator();
+            membership = mKom.queryReadTexts(mKom.getUserId(), mCurrConf, true);
+            mCurrConfLastRead = lastTextReadFrom(membership, mCurrConfLastRead);
+            Log.i(TAG, "PrefetchNextUnread mCurrConfLastRead: " + mCurrConfLastRead);
+            final UConference conf = mKom.getUConfStat(mCurrConf);
+            if (mCurrConfLastRead < conf.getHighestLocalNo()) {
+                tm = mKom.localToGlobal(mCurrConf, mCurrConfLastRead + 1, ASK_AMOUNT);
+                Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
+            }
+            else {
+                Log.i(TAG, "PrefetchNextUnread too high local number in " + mCurrConf);
+                tm = null;
             }
             while (tm != null && tm.hasMoreElements()) {
                 final int globalNo = (Integer) tm.nextElement();
@@ -337,7 +332,7 @@ class Prefetcher {
             final TextInfo textInfo = mTextCache.getText(textNo);
             final Text text;
             try {
-                text = mKom.getSession().getText(textNo);
+                text = mKom.getTextbyNo(textNo);
             } catch (final Exception e) {
                 Log.d(TAG, "CacheRelevantTask getText failed:"+e);
                 //e.printStackTrace();

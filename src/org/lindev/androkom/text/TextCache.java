@@ -44,12 +44,8 @@ class TextCache {
         Text text = null;
         try {
             Log.d(TAG, "getAuthorName:" + textNo);
-            text = mKom.getSession().getText(textNo);
+            text = mKom.getTextbyNo(textNo);
         } catch (final RpcFailure e) {
-            Log.d(TAG, "getAuthorName: "+e);
-            //e.printStackTrace();
-            return null;
-        } catch (final IOException e) {
             Log.d(TAG, "getAuthorName: "+e);
             //e.printStackTrace();
             return null;
@@ -59,7 +55,7 @@ class TextCache {
         if (authorid > 0) {
             try {
                 nu.dll.lyskom.Conference confStat = mKom
-                        .getSession().getConfStat(authorid);
+                        .getConfStat(authorid);
                 username = confStat.getNameString();
             } catch (final Exception e) {
                 username = mKom.getString(R.string.person)
@@ -87,28 +83,27 @@ class TextCache {
             Text text = null;
             try {
                 Log.d(TAG, "TextFetcherTask:"+textNo);
-                text = mKom.getSession().getText(textNo);
+                text = mKom.getTextbyNo(textNo);
             } catch (final RpcFailure e) {
                 Log.d(TAG, "getTextFromServer: "+e);
                 //e.printStackTrace();
                 return null;
-            } catch (final IOException e) {
-                Log.d(TAG, "getTextFromServer: "+e);
-                //e.printStackTrace();
-                return null;
             }
-            String username;
+            String username=mKom.getString(R.string.anonymous);
             int authorid = text.getAuthor();
             if (authorid > 0) {
                 try {
-                    nu.dll.lyskom.Conference confStat = mKom.getSession().getConfStat(authorid);
-                    username = confStat.getNameString();
+                    nu.dll.lyskom.Conference confStat = mKom.getConfStat(authorid);
+                    if(confStat!=null) {
+                        username = confStat.getNameString();
+                    } else {
+                        Log.d(TAG, "getTextFromServer Failed to get username");
+                    }
                 } catch (final Exception e) {
                     username = mKom.getString(R.string.person) + authorid + mKom.getString(R.string.does_not_exist);
                 }
             } else {
                 Log.d(TAG, "Text "+textNo+" authorid:"+authorid);
-                username = mKom.getString(R.string.anonymous);
             }
             Date CreationTime = text.getCreationTime();
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
@@ -135,9 +130,12 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.androkom_header_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom.getSession()
-                                    .getConfStat(items[i]);
-                            headersString.append(confStat.getNameString());
+                            nu.dll.lyskom.Conference confStat = mKom.getConfStat(items[i]);
+                            if(confStat!=null) {
+                                headersString.append(confStat.getNameString());
+                            } else {
+                                Log.d(TAG, "Failed to append header");
+                            }
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);
@@ -150,9 +148,12 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_cc_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom.getSession()
-                                    .getConfStat(items[i]);
-                            headersString.append(confStat.getNameString());
+                            nu.dll.lyskom.Conference confStat = mKom.getConfStat(items[i]);
+                            if(confStat!=null) {
+                                headersString.append(confStat.getNameString());
+                            } else {
+                                Log.d(TAG, "Failed to appen headers2");
+                            }
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person) + authorid
                                     + mKom.getString(R.string.does_not_exist);

@@ -125,12 +125,9 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     text.addMiscInfoEntry(TextStat.miscBccRecpt, recipient.recipientId);
                     break;
                 }
-                if (mKom.getSession().isMemberOf(recipient.recipientId)) {
+                if (mKom.isMemberOf(recipient.recipientId)) {
                     mUserIsMemberOfSomeConf = true;
                 }
-            }
-            catch (final IOException e) {
-                return "IOException";
             }
             catch (final IllegalArgumentException e) {
                 // Conference is already recipient. Just ignore.

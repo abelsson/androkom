@@ -51,7 +51,11 @@ public class ReadMarker {
             return;
         }
         try {
-            final TextStat stat = mKom.getSession().getTextStat(textNo, true);
+            final TextStat stat = mKom.getTextStat(textNo, true);
+            if(stat==null) {
+                Log.d(TAG, "Failed to getTextStat");
+                return;
+            }
             final int[] tags = { TextStat.miscRecpt, TextStat.miscCcRecpt, TextStat.miscBccRecpt };
             List<Selection> recipientSelections = new ArrayList<Selection>();
             for (final int tag : tags) {
@@ -67,13 +71,9 @@ public class ReadMarker {
                 if (rcpt > 0) {
                     int local = selection.getIntValue(TextStat.miscLocNo);
                     Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-                    mKom.getSession().doMarkAsRead(rcpt, new int[] { local });
+                    mKom.doMarkAsRead(rcpt, new int[] { local });
                 }
             }
-        }
-        catch (final IOException e) {
-            Log.d(TAG, "markToServer Handled an IOException:"+e);
-            //e.printStackTrace();
         }
         catch (NullPointerException e) {
             Log.d(TAG, "markToServer Handled a NullPointerException:"+e);

@@ -11,8 +11,10 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.Context;
 import android.os.AsyncTask;
+import android.util.Log;
 
 public class SendTextTask extends AsyncTask<Void, Void, String> {
+    private static final String TAG = "Androkom SendTextTask";
     private final ProgressDialog mDialog;
     private final Context mContext;
     private final KomServer mKom;
@@ -38,8 +40,12 @@ public class SendTextTask extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(final Void... args) {
         try {
-            final int id = mKom.getSession().doCreateText(mText).getId();
-            mKom.mPendingSentTexts.add(id);
+            final int id = mKom.createText(mText);
+            if(id!=0) {
+                mKom.mPendingSentTexts.add(id);
+            } else {
+                Log.d(TAG, "Failed to create text");
+            }
         }
         catch (final IOException e) {
             return "IOException";

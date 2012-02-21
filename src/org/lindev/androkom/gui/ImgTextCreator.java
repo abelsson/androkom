@@ -72,27 +72,27 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     public class CopyRecipientsTask extends AsyncTask<Integer, Void, List<Recipient>> {
         @Override
         protected List<Recipient> doInBackground(final Integer... args) {
-            final Session s = mKom.getSession();
             final List<Recipient> recipients = new ArrayList<Recipient>();
 
             try {
-                final Text text = s.getText(args[0]);
+                final Text text = mKom.getTextbyNo(args[0]);
                 if (text == null) {
                     return null;
                 }
                 for (int recip : text.getRecipients()) {
-                    final Conference confStat = s.getConfStat(recip);
-                    if (confStat.getConfInfo().confType.original()) {
-                        recip = confStat.getSuperConf();
+                    final Conference confStat = mKom.getConfStat(recip);
+                    if (confStat != null) {
+                        if (confStat.getConfInfo().confType.original()) {
+                            recip = confStat.getSuperConf();
+                        }
+                        final String name = mKom.toString(mKom.getConfName(recip));
+                        recipients.add(new Recipient(mKom
+                                .getApplicationContext(), recip, name,
+                                RecipientType.RECP_TO));
                     }
-                    final String name = s.toString(s.getConfName(recip));
-                    recipients.add(new Recipient(mKom.getApplicationContext(), recip, name, RecipientType.RECP_TO));
                 }
             }
             catch (final RpcFailure e) {
-                return null;
-            }
-            catch (final IOException e) {
                 return null;
             }
             return recipients;

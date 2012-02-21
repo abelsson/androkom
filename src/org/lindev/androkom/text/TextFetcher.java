@@ -39,7 +39,7 @@ public class TextFetcher {
         try {
             // We can assume this is cached
             Log.d(TAG, "getParentToText:"+textNo);
-            text = mKom.getSession().getText(textNo);
+            text = mKom.getTextbyNo(textNo);
         } catch (final Exception e) {
             Log.d(TAG, "getParentToText " + e);
             //e.printStackTrace();
@@ -61,7 +61,7 @@ public class TextFetcher {
     }
 
     public void restartPrefetcher() {
-        mPrefetcher.restart(mKom.getSession().getCurrentConference());
+        mPrefetcher.restart(mKom.getCurrentConference());
     }
 
     public void setShowFullHeaders(final boolean showFullHeaders) {

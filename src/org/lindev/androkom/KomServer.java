@@ -11,13 +11,20 @@ import java.util.List;
 import java.util.Set;
 
 import nu.dll.lyskom.ConfInfo;
+//import nu.dll.lyskom.Conference;
 import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.KomTime;
+import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.Person;
+import nu.dll.lyskom.RpcCall;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Session;
+import nu.dll.lyskom.Text;
+import nu.dll.lyskom.TextMapping;
+import nu.dll.lyskom.TextStat;
+import nu.dll.lyskom.UConference;
 import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
@@ -867,11 +874,6 @@ public class KomServer extends Service implements RpcEventListener,
         return result;
     }
 
-    public Session getSession()
-    {
-        return s;
-    }
-
     /**
      * Fetch next unread text, as a HTML formatted string. 
      */
@@ -1210,6 +1212,239 @@ public class KomServer extends Service implements RpcEventListener,
             //e.printStackTrace();
         }
         return "";
+    }
+
+    public Text getTextbyNo(int textNo) {
+        Text text=null;
+        if(s==null) {
+            return null;
+        }
+        try {
+            text=s.getText(textNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.getTextbyNo new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+    
+    public ConfInfo[] lookupName(String name, boolean wantPersons, boolean wantConfs) {
+        ConfInfo[] text=null;
+        if(s==null) {
+            return null;
+        }
+        try {
+            text=s.lookupName(name, wantPersons, wantConfs);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.lookupName new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.lookupName new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public TextStat getTextStat(int textNo, boolean refreshCache) {
+        TextStat text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.getTextStat(textNo, refreshCache);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getTextStat new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.getTextStat new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+    
+    public RpcCall doMarkAsRead(int confNo, int[] localTextNo) {
+        RpcCall text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.doMarkAsRead(confNo, localTextNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.doMarkAsRead new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.doMarkAsRead new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+ 
+    public nu.dll.lyskom.Conference getConfStat(int confNo) {
+        nu.dll.lyskom.Conference text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.getConfStat(confNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getConfStat new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.getConfStat new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public byte[] getConfName(int confNo) {
+        byte[] text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.getConfName(confNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getConfName new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.getConfName new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public String toString(byte[] buf) {
+        String text = null;
+        if ((s == null)||(buf==null)) {
+            return null;
+        }
+        try {
+            text = s.toString(buf);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.toString new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.toString new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public boolean isMemberOf(int confNo) {
+        boolean text = false;
+        if (s == null) {
+            return false;
+        }
+        try {
+            text = s.isMemberOf(confNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.isMemberOf new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.isMemberOf new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public List<Integer> getUnreadConfsListCached() {
+        List<Integer> text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.getUnreadConfsListCached();
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getUnreadConfsListCached new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public Membership queryReadTexts(int persNo, int confNo, boolean refresh) {
+        Membership text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.queryReadTexts(persNo, confNo, refresh);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.queryReadTexts new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.queryReadTexts new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public UConference getUConfStat(int confNo) {
+        UConference text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.getUConfStat(confNo);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getUConfStat new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.getUConfStat new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public TextMapping localToGlobal(int confNo, int firstLocalNo,
+            int noOfExistingTexts) {
+        TextMapping text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.localToGlobal(confNo, firstLocalNo, noOfExistingTexts);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.localToGlobal new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.localToGlobal new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public int createText(Text t) throws IOException {
+        int text = 0;
+        if (s == null) {
+            return 0;
+        }
+        try {
+            text = s.createText(t);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.localToGlobal new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.localToGlobal new_text IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public int getCurrentConference() {
+        int text = 0;
+        if (s == null) {
+            return 0;
+        }
+        try {
+            text = s.getCurrentConference();
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.getCurrentConference new_text RpcFailure:" + e);
+            // e.printStackTrace();
+        }
+        return text;
     }
 
     public int getUserId() {

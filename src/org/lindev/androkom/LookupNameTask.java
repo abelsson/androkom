@@ -57,19 +57,16 @@ public class LookupNameTask extends AsyncTask<Void, Void, ConfInfo[]> {
         try {
             switch (mLookupType) {
             case LOOKUP_USERS:
-                return mKom.getSession().lookupName(mRecip, true, false);
+                return mKom.lookupName(mRecip, true, false);
             case LOOKUP_CONFERENCES:
-                return mKom.getSession().lookupName(mRecip, false, true);
+                return mKom.lookupName(mRecip, false, true);
             case LOOKUP_BOTH:
-                return mKom.getSession().lookupName(mRecip, true, true);
+                return mKom.lookupName(mRecip, true, true);
             default:
                 return null;
             }
         }
         catch (final RpcFailure e) {
-            return null;
-        }
-        catch (final IOException e) {
             return null;
         }
         catch (final NullPointerException e) {

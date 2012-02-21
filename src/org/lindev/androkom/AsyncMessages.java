@@ -7,17 +7,22 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.lindev.androkom.KomServer.TextInfo;
+
 import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
 import android.content.Context;
+import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Vibrator;
+import android.text.Spannable;
 import android.util.Log;
+import android.widget.TextView;
 import android.widget.Toast;
 
 public class AsyncMessages implements AsynchMessageReceiver {
@@ -180,18 +185,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
 
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
-            Log.d(TAG, "Trying to cache text " + params[0].intValue());
-            try {
-                mKom.getSession().getText(params[0].intValue());
-            }
-            catch (RpcFailure e) {
-                Log.d(TAG, "processMessage new_text RpcFailure:"+e);
-                //e.printStackTrace();
-            }
-            catch (IOException e) {
-                Log.d(TAG, "processMessage new_text IOException:"+e);
-                //e.printStackTrace();
-            }
+            new LoadMessageTask().execute(params[0]);
             break;
 
         case nu.dll.lyskom.Asynch.new_recipient:
@@ -213,6 +207,27 @@ public class AsyncMessages implements AsynchMessageReceiver {
         msg.setData(b);
 
         return msg;
+    }
+
+    /**
+     * Fetch a text only to cache it
+     * 
+     */
+    private class LoadMessageTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "LoadMessageTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                Log.d(TAG, "Trying to cache text " + args[0].intValue());
+                mKom.getTextbyNo(args[0].intValue());
+            } catch (Exception e) {
+                Log.d(TAG, "Discarded exception:" + e);
+            }
+            return null;
+        }
     }
 
     public void subscribe(AsyncMessageSubscriber sub) {
