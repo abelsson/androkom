@@ -5,6 +5,8 @@ import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
 
+import nu.dll.lyskom.KomToken;
+
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
@@ -329,12 +331,28 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
     public void activateUser() {
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            Log.d(TAG, "ConferenceList.activateUser caught an exception"+e1);
-            //e1.printStackTrace();
-            mKom.logout();
+        new ActivateUserTask().execute();
+    }
+
+    /**
+     * No need to wait for activate
+     * 
+     */
+    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "LoadMessageTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                mKom.activateUser();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to activate user exception:"+e1);
+                //e1.printStackTrace();
+                mKom.logout();
+            }
+            return null;
         }
     }
 

@@ -5,6 +5,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
@@ -474,12 +475,28 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     public void activateUser() {
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            Log.i(TAG, "Failed to activate user exception:"+e1);
-            //e1.printStackTrace();
-            mKom.logout();
+        new ActivateUserTask().execute();
+    }
+
+    /**
+     * No need to wait for activate
+     * 
+     */
+    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "LoadMessageTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                mKom.activateUser();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to activate user exception:"+e1);
+                //e1.printStackTrace();
+                mKom.logout();
+            }
+            return null;
         }
     }
 

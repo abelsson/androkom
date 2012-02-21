@@ -1,28 +1,21 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import org.lindev.androkom.KomServer.TextInfo;
-
 import nu.dll.lyskom.AsynchMessage;
 import nu.dll.lyskom.AsynchMessageReceiver;
 import nu.dll.lyskom.Hollerith;
 import nu.dll.lyskom.KomToken;
-import nu.dll.lyskom.RpcFailure;
 import android.content.Context;
-import android.content.Intent;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Vibrator;
-import android.text.Spannable;
 import android.util.Log;
-import android.widget.TextView;
 import android.widget.Toast;
 
 public class AsyncMessages implements AsynchMessageReceiver {
