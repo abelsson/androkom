@@ -646,6 +646,7 @@ public class KomServer extends Service implements RpcEventListener,
         		return getString(R.string.error_invalid_password);
         	}
         	s.setClientVersion("Androkom", getVersionName());
+        	s.setLatteName("AndroKOM " + getVersionName());
         } catch (Exception e) {
             Log.e("androkom", "Login.id Caught " + e.getClass().getName());
             //Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
