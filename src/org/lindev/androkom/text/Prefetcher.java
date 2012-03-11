@@ -1,6 +1,5 @@
 package org.lindev.androkom.text;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -241,6 +240,45 @@ class Prefetcher {
         }
     }
 
+    int getNextUnreadTextNo() {
+        if(!mKom.isConnected()) {
+            Log.d(TAG, " getNextUnreadTextNo not connected");
+            return 0;
+        }
+        // If mPrefetchRunner is null, we have already reached the end of the queue
+        if (mPrefetchRunner == null) {
+            Log.d(TAG, " getNextUnreadTextNo end of queue");
+            return 0;
+        }
+
+        // Get the next unread text from the queue
+        TextConf tc = null;
+        int i=0;
+        Log.d(TAG, " getNextUnreadTextNo take1");
+        while((tc == null) && (i <20)) {
+            tc = mUnreadQueue.peek();
+            if(tc == null) {
+                Log.d(TAG, "getNextUnreadTextNo waiting for textno. loop#"+i);
+                try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    Log.d(TAG, "getNextUnreadTextNo wait interrupted");
+                    //e.printStackTrace();
+                }
+            }
+            i++;
+        }
+        Log.d(TAG, " getNextUnreadTextNo take2");
+        if(tc==null) {
+            Log.d(TAG, " getNextUnreadTextNo next text would be kind of null?");
+            return 0;
+        } else {
+            Log.d(TAG, " getNextUnreadTextNo next text would be:" + tc.textNo);
+        }
+        
+        return tc.textNo;
+    }
+    
     TextInfo getNextUnreadText(final boolean cacheRelevant) {
         if(!mKom.isConnected()) {
             Log.d(TAG, " getNextUnreadText not connected");
@@ -278,7 +316,7 @@ class Prefetcher {
 
         // If the text is already locally marked as read, get the next one instead
         if (mKom.isLocalRead(tc.textNo)) {
-            Log.d(TAG, " getNextUnreadText already read get another");
+            Log.d(TAG, " getNextUnreadText already read, get another");
             return getNextUnreadText(cacheRelevant);
         }
 

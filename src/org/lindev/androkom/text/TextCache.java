@@ -37,7 +37,8 @@ class TextCache {
     }
 
     private String getAuthorName(int textNo) {
-        if(!mKom.isConnected()) {
+        Log.d(TAG, "getAuthorName:"+textNo);
+        if (!mKom.isConnected()) {
             Log.d(TAG, " getAuthorName not connected");
             return null;
         }
@@ -46,29 +47,31 @@ class TextCache {
             Log.d(TAG, "getAuthorName:" + textNo);
             text = mKom.getTextbyNo(textNo);
         } catch (final RpcFailure e) {
-            Log.d(TAG, "getAuthorName: "+e);
-            //e.printStackTrace();
+            Log.d(TAG, "getAuthorName: " + e);
+            // e.printStackTrace();
             return null;
         }
-        String username;
-        int authorid = text.getAuthor();
-        if (authorid > 0) {
-            try {
-                nu.dll.lyskom.Conference confStat = mKom
-                        .getConfStat(authorid);
-                username = confStat.getNameString();
-            } catch (final Exception e) {
-                username = mKom.getString(R.string.person)
-                        + authorid
-                        + mKom
-                                .getString(R.string.does_not_exist);
+        if (text != null) {
+            String username;
+            int authorid = text.getAuthor();
+            if (authorid > 0) {
+                try {
+                    nu.dll.lyskom.Conference confStat = mKom
+                            .getConfStat(authorid);
+                    username = confStat.getNameString();
+                } catch (final Exception e) {
+                    username = mKom.getString(R.string.person) + authorid
+                            + mKom.getString(R.string.does_not_exist);
+                }
+            } else {
+                Log.d(TAG, "Text " + textNo + " authorid:" + authorid);
+                username = mKom.getString(R.string.anonymous);
             }
+            return username;
         } else {
-            Log.d(TAG, "Text " + textNo + " authorid:"
-                    + authorid);
-            username = mKom.getString(R.string.anonymous);
+            Log.d(TAG, "Could not get a authorname for textNo:" + textNo);
+            return "";
         }
-        return username;
     }
 
     private class TextFetcherTask extends AsyncTask<Integer, Void, Void> {
@@ -166,7 +169,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_to));
                         headersString.append(items[i]);
-                        headersString.append(" by " + getAuthorName(items[i]));
+                        conditionalAppend(headersString, " by ", getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
@@ -175,7 +178,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_in));
                         headersString.append(items[i]);
-                        headersString.append(" by " + getAuthorName(items[i]));
+                        conditionalAppend(headersString," by ", getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
@@ -211,6 +214,19 @@ class TextCache {
             return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, allHeadersString.toString(),
                     headersString.toString(),
                     SubjectString, BodyString, text.getBody(), mShowFullHeaders);
+        }
+
+        private void conditionalAppend(StringBuilder headersString,
+                String string, String authorName) {
+            if(string == null) 
+                return;
+            if(authorName == null)
+                return;
+            if(string.length()<1)
+                return;
+            if(authorName.length()<1)
+                return;
+            headersString.append(string+authorName);
         }
 
         protected Void doInBackground(final Integer... args) {
@@ -279,7 +295,7 @@ class TextCache {
         }
 
         final Thread currentThread = Thread.currentThread();
-        int MaxWaits = 40;
+        int MaxWaits = 140;
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
             synchronized(mTextCache) {
                 Log.d(TAG, "getText waiting for mTextCache:"+textNo);

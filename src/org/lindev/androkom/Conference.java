@@ -167,7 +167,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mState.ShowFullHeaders = ConferencePrefs
                     .getShowFullHeaders(getBaseContext());
             mState.conferenceNo = confNo;
-            mSwitcher.setText(formatText(getString(R.string.loading_text)));
+            mSwitcher.setText(formatText(getString(R.string.loading_text)+" "));
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
@@ -272,6 +272,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
             case MESSAGE_TYPE_NEXT:
                 Log.i(TAG, "Trying to get next unread text");
+                /* runOnUiThread(new Runnable() {
+                    public void run() {
+                        int textNo = mKom.getNextUnreadTextNo();
+                        if (textNo > 0) {
+                            mSwitcher.setText(formatText(getString(R.string.loading_text)+" "+textNo));
+                        }
+                    }
+                });*/
+
                 text = mKom.getNextUnreadText();
                 break;
 
@@ -484,7 +493,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
      */
     private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
         protected void onPreExecute() {
-            Log.d(TAG, "LoadMessageTask.onPreExecute");
+            Log.d(TAG, "ActivateUserTask.onPreExecute");
         }
 
         // worker thread (separate from UI thread)

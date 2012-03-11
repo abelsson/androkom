@@ -883,6 +883,10 @@ public class KomServer extends Service implements RpcEventListener,
         return textFetcher.getKomText(textNo);
     }
 
+    public int getNextUnreadTextNo() {
+        return textFetcher.getNextUnreadTextNo();
+    }
+
     public TextInfo getNextUnreadText() {
         return textFetcher.getNextUnreadText();
     }
@@ -1223,11 +1227,21 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             text=s.getText(textNo);
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
+            if(e.getError()==14) {
+                Log.d(TAG, "komserver.getTextbyNo No such text#:" + e.getErrorStatus());
+                
+            } else {
+                Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
+            }
             // e.printStackTrace();
         } catch (IOException e) {
             Log.d(TAG, "komserver.getTextbyNo new_text IOException:" + e);
             // e.printStackTrace();
+        }
+        if(text==null){
+            Log.d(TAG, "getTextbyNo could not get a text for "+textNo);
+        } else {
+            Log.d(TAG, "getTextbyNo returning a text for "+textNo);
         }
         return text;
     }

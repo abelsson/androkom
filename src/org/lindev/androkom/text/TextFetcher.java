@@ -29,6 +29,10 @@ public class TextFetcher {
         return text;
     }
 
+    public int getNextUnreadTextNo() {
+        return mPrefetcher.getNextUnreadTextNo();
+    }
+
     public TextInfo getNextUnreadText() {
         boolean doCacheRelevant = true;
         return mPrefetcher.getNextUnreadText(doCacheRelevant);
