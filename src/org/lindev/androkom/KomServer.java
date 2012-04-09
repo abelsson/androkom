@@ -392,6 +392,10 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public List<ConferenceInfo> fetchPersons(
             populatePersonsTask populatePersonsT, int who_type) throws IOException {
+        if (s == null) {
+            return null;
+        }
+
         Set<Integer> friendsList = new HashSet<Integer>();
 
         ArrayList<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
@@ -399,43 +403,47 @@ public class KomServer extends Service implements RpcEventListener,
             friendsList = getFriends();
         }
 
-        DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false, 30 * 60);
-        if (populatePersonsT != null) {
-            populatePersonsT.changeMax(persons.length);
-        }
-
-        for (int i = 0; i < persons.length; i++) {
-            int persNo = persons[i].getPerson();
-            if ((who_type == 1) || (friendsList.contains(persNo))) {
-                String username;
-                if (persNo > 0) {
-                    try {
-                        nu.dll.lyskom.Conference confStat = s
-                                .getConfStat(persNo);
-                        username = confStat.getNameString();
-                    } catch (Exception e) {
-                        username = getString(R.string.person) + persNo
-                                + getString(R.string.does_not_exist);
-                    }
-                } else {
-                    Log.d(TAG, "fetchPersons persNo=" + persNo);
-                    username = getString(R.string.anonymous);
-                }
-                Log.i("androkom", username + " <" + persNo + ">");
-
-                ConferenceInfo info = new ConferenceInfo();
-                info.id = persNo;
-                info.name = username;
-                info.sessionNo = persons[i].session;
-                
-                arr.add(info);
-            }
+        try {
+            DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false,
+                    30 * 60);
             if (populatePersonsT != null) {
-                populatePersonsT
-                        .updateProgress((int) ((i / (float) persons.length) * 100));
+                populatePersonsT.changeMax(persons.length);
             }
-        }
 
+            for (int i = 0; i < persons.length; i++) {
+                int persNo = persons[i].getPerson();
+                if ((who_type == 1) || (friendsList.contains(persNo))) {
+                    String username;
+                    if (persNo > 0) {
+                        try {
+                            nu.dll.lyskom.Conference confStat = s
+                                    .getConfStat(persNo);
+                            username = confStat.getNameString();
+                        } catch (Exception e) {
+                            username = getString(R.string.person) + persNo
+                                    + getString(R.string.does_not_exist);
+                        }
+                    } else {
+                        Log.d(TAG, "fetchPersons persNo=" + persNo);
+                        username = getString(R.string.anonymous);
+                    }
+                    Log.i("androkom", username + " <" + persNo + ">");
+
+                    ConferenceInfo info = new ConferenceInfo();
+                    info.id = persNo;
+                    info.name = username;
+                    info.sessionNo = persons[i].session;
+
+                    arr.add(info);
+                }
+                if (populatePersonsT != null) {
+                    populatePersonsT
+                            .updateProgress((int) ((i / (float) persons.length) * 100));
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "fetchPersons caught an exception:" + e);
+        }
         return arr;
     }
     
@@ -1122,33 +1130,38 @@ public class KomServer extends Service implements RpcEventListener,
 		textFetcher.setShowFullHeaders(h);
 	}
 
-	public ConferenceInfo[] getUserNames() {
-		try {
-			if (usernames != null && usernames.length > 1) {
-				final ConferenceInfo[] items = new ConferenceInfo[usernames.length];
-				Log.d(TAG, "Ambigous name");
-				for (int i = 0; i < usernames.length; i++) {
-					items[i] = new ConferenceInfo();
-					items[i].name = s.toString(s
-							.getConfName(usernames[i].confNo));
-					items[i].id = usernames[i].confNo;
-					Log.d(TAG, "Name " + i + ":" + items[i]);
-				}
-				return items;
-			}
+    public ConferenceInfo[] getUserNames() {
+        if (s != null) {
+            try {
+                if (usernames != null && usernames.length > 1) {
+                    final ConferenceInfo[] items = new ConferenceInfo[usernames.length];
+                    Log.d(TAG, "Ambigous name");
+                    for (int i = 0; i < usernames.length; i++) {
+                        items[i] = new ConferenceInfo();
+                        items[i].name = s.toString(s
+                                .getConfName(usernames[i].confNo));
+                        items[i].id = usernames[i].confNo;
+                        Log.d(TAG, "Name " + i + ":" + items[i]);
+                    }
+                    return items;
+                }
 
-		} catch (UnsupportedEncodingException e) {
-		    Log.d(TAG, "getUserNames " + e);
-		    //e.printStackTrace();
-		} catch (RpcFailure e) {
-		    Log.d(TAG, "getUserNames " + e);
-		    //e.printStackTrace();
-		} catch (IOException e) {
-		    Log.d(TAG, "getUserNames " + e);
-		    //e.printStackTrace();
-		}
-		return null;
-	}
+            } catch (UnsupportedEncodingException e) {
+                Log.d(TAG, "getUserNames " + e);
+                // e.printStackTrace();
+            } catch (RpcFailure e) {
+                Log.d(TAG, "getUserNames " + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "getUserNames " + e);
+                // e.printStackTrace();
+            } catch (Exception e) {
+                Log.d(TAG, "getUserNames " + e);
+                // e.printStackTrace();
+            }
+        }
+        return null;
+    }
 
 	public Date getServerTime() throws Exception {
 	    if(s!=null) {

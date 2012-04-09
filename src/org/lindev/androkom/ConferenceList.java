@@ -368,7 +368,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         protected Void doInBackground(final Void... args) {
             try {
                 List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
-                Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+                if(pers != null) {
+                    Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+                } else {
+                    Log.d(TAG, "cacheNamesTask num persons = null");                    
+                }
             } catch (IOException e) {
                 Log.d(TAG, "cacheNamesTask got IOException:" + e);
                 //e.printStackTrace();
