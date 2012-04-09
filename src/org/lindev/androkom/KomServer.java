@@ -1479,7 +1479,25 @@ public class KomServer extends Service implements RpcEventListener,
         return re_userid;
     }
 
-	public boolean isConnected() {
+    public String getUserPassword() {
+        return re_password;
+    }
+
+    public String getServer() {
+        return re_server;
+    }
+
+
+    public void setUser(int userId, String userPSW, String server) {
+        if((userId>0)&&(userPSW!=null)&&(userPSW.length()>0)){
+            re_userid=userId;
+            re_password=userPSW;
+            re_server=server;
+            Log.d(TAG, "setting userid:"+userId+" server:"+server);
+        }
+    }
+
+    public boolean isConnected() {
 		if ((s == null) || (!connected)) {
 			return false;
 		}

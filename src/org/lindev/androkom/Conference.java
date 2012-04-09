@@ -172,6 +172,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
        
+        if (savedInstanceState != null) {
+            Log.d(TAG, "Got a bundle");
+            restoreBundle(savedInstanceState);
+        }
     }
     
 
@@ -1122,21 +1126,83 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     protected void onSaveInstanceState(Bundle outState) {
         Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
+
+        // Save UI state changes to the savedInstanceState.
+        // This bundle will be passed to onCreate if the process is
+        // killed and restarted.
+        if (mKom != null) {
+            int userId = mKom.getUserId();
+            if (userId > 0) {
+                Log.d(TAG, "Store userid:"+userId);
+                outState.putInt("UserId", userId);
+                outState.putString("UserPSW", mKom.getUserPassword());
+                outState.putString("UserServer", mKom.getServer());
+            } else {
+                Log.d(TAG, "No userid, bailing out");
+                finish();
+            }
+        }
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.d(TAG, "onRestoreInstanceState");
+        Log.d(TAG, "Conference onRestoreInstanceState");
 
         if (savedInstanceState != null) {
             Log.d(TAG, "got a bundle");
+            restoreBundle(savedInstanceState);
         }
     }
 
+    private void restoreBundle(Bundle savedInstanceState) {
+        if (savedInstanceState != null) {
+            Log.d(TAG, "ConferenceList restoreBundle got a bundle");
+            // Restore UI state from the savedInstanceState.
+            // This bundle has also been passed to onCreate.
+            re_userId = savedInstanceState.getInt("UserId");
+            re_userPSW = savedInstanceState.getString("UserPSW");
+            re_server = savedInstanceState.getString("UserServer");
+            if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
+                mKom.setUser(re_userId, re_userPSW, re_server);
+            } else {
+                if(mKom==null) {
+                    Log.d(TAG, "mKom == null");
+                }
+                if(re_userId<1){
+                    Log.d(TAG, "no userId");
+                }
+                if(re_userPSW==null){
+                    Log.d(TAG, "null password");
+                } else {
+                    if(re_userPSW.length()<1){
+                        Log.d(TAG, "short password");
+                    }
+                }
+            }
+        }        
+    }
+    
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected start");
         mKom = ((KomServer.LocalBinder)service).getService();
         mKom.setShowFullHeaders(mState.ShowFullHeaders);
+        if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
+            mKom.setUser(re_userId, re_userPSW, re_server);
+        } else {
+            if(mKom==null) {
+                Log.d(TAG, "mKom == null");
+            }
+            if(re_userId<1){
+                Log.d(TAG, "no userId");
+            }
+            if(re_userPSW==null){
+                Log.d(TAG, "null password");
+            } else {
+                if(re_userPSW.length()<1){
+                    Log.d(TAG, "short password");
+                }
+            }
+        }
         try {
             mKom.setConference(mState.conferenceNo);
         } catch (RpcFailure e) {
@@ -1182,6 +1248,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private Animation mSlideRightOut;
     private TextSwitcher mSwitcher;
 
+    private int re_userId = 0;
+    private String re_userPSW = null;
+    private String re_server = null;
+    
     private static final int DIALOG_NUMBER_ENTRY = 7;
     private static final int MESSAGE_TYPE_PARENT_TO = 1;
     private static final int MESSAGE_TYPE_TEXTNO = 2;
