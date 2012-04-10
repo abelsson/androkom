@@ -33,6 +33,8 @@ import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.im.IMNotification;
 import org.lindev.androkom.text.TextFetcher;
 
+import android.accounts.Account;
+import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -43,6 +45,7 @@ import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.Binder;
 import android.os.IBinder;
+import android.provider.Settings;
 import android.text.Spannable;
 import android.util.Log;
 import android.widget.Toast;
@@ -70,6 +73,7 @@ public class KomServer extends Service implements RpcEventListener,
             NetworkInfo activeNetInfo = connectivityManager
                     .getActiveNetworkInfo();
             //Log.d(TAG, "onReceive3");
+            @SuppressWarnings("unused")
             NetworkInfo mobNetInfo = connectivityManager
                     .getNetworkInfo(ConnectivityManager.TYPE_MOBILE);
             //Log.d(TAG, "onReceive4");
@@ -328,7 +332,43 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public int connect(String server) 
     {
+        String  ANDROID         =   android.os.Build.VERSION.RELEASE;       //The current development codename, or the string "REL" if this is a release build.
+        String  BOARD           =   android.os.Build.BOARD;                 //The name of the underlying board, like "goldfish".    
+        String  BOOTLOADER      =   android.os.Build.BOOTLOADER;            //  The system bootloader version number.
+        String  BRAND           =   android.os.Build.BRAND;                 //The brand (e.g., carrier) the software is customized for, if any.
+        String  CPU_ABI         =   android.os.Build.CPU_ABI;               //The name of the instruction set (CPU type + ABI convention) of native code.
+        String  CPU_ABI2        =   android.os.Build.CPU_ABI2;              //  The name of the second instruction set (CPU type + ABI convention) of native code.
+        String  DEVICE          =   android.os.Build.DEVICE;                //  The name of the industrial design.
+        String  DISPLAY         =   android.os.Build.DISPLAY;               //A build ID string meant for displaying to the user
+        String  FINGERPRINT     =   android.os.Build.FINGERPRINT;           //A string that uniquely identifies this build.
+        String  HARDWARE        =   android.os.Build.HARDWARE;              //The name of the hardware (from the kernel command line or /proc).
+        String  HOST            =   android.os.Build.HOST;  
+        String  ID              =   android.os.Build.ID;                    //Either a changelist number, or a label like "M4-rc20".
+        String  MANUFACTURER    =   android.os.Build.MANUFACTURER;          //The manufacturer of the product/hardware.
+        String  MODEL           =   android.os.Build.MODEL;                 //The end-user-visible name for the end product.
+        String  PRODUCT         =   android.os.Build.PRODUCT;               //The name of the overall product.
+        String  RADIO           =   android.os.Build.PRODUCT;               //The radio firmware version number.
+        String  TAGS            =   android.os.Build.TAGS;                  //Comma-separated tags describing the build, like "unsigned,debug".
+        String  TYPE            =   android.os.Build.TYPE;                  //The type of build, like "user" or "eng".
+        String  USER            =   android.os.Build.USER;                  //
+
         try {
+            
+            try {
+                String hostName = MANUFACTURER.replace(' ', '_') + "_" + MODEL.replace(' ', '_');
+                s.setClientHost(hostName);
+            } catch (Exception e) {
+            }
+
+            try {
+                AccountManager accountManager = AccountManager.get(this);
+                Account[] accounts = accountManager.getAccountsByType("com.google");
+                String userName = accounts[0].name;
+                int splitIndex = userName.indexOf("@");
+                s.setClientUser(userName.substring(0, splitIndex));
+            } catch (Exception e) {
+            }
+            
             s.connect(server);
             s.addAsynchMessageReceiver(asyncMessagesHandler);
         } catch (IOException e) {
