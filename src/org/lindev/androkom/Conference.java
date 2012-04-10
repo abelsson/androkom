@@ -26,6 +26,7 @@ import android.content.SharedPreferences;
 import android.content.res.ColorStateList;
 import android.content.res.Resources;
 import android.graphics.Color;
+import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
@@ -714,6 +715,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			
 			storeFontSize(newtextsize);
 			return true;
+
+		case R.id.menu_monospaced_id :
+            Log.d(TAG, "Change to monospaced");
+            t1 = (TextView) mSwitcher.getChildAt(0);
+            t1.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
+            t1.invalidate();
+            return true;
 
 		case R.id.menu_createnewtext_id:
             intent = new Intent(this, TextCreator.class);

@@ -54,7 +54,10 @@
             <item android:title="@string/smallerfontsize_label"
                   android:alphabeticShortcut="@string/smallerfontsize_shortcut"
                   android:id="@+id/menu_smallerfontsize_id"/>
-          </menu>
+            <item android:title="@string/monospaced_label"
+                  android:alphabeticShortcut="@string/monospaced_shortcut"
+                  android:id="@+id/menu_monospaced_id"/>
+            </menu>
     </item>
     <item android:id="@+id/menu_submenu_others"
           android:title="@string/title_submenu_others" >
