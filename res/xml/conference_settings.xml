@@ -99,4 +99,13 @@
     android:dialogTitle="@string/userbutton_dialog_title_prefs"
     />
   </PreferenceCategory>
+  <PreferenceCategory
+    android:title="@string/other_prefs_title">
+  <CheckBoxPreference
+    android:key="force646decode"
+    android:title="@string/force646decode_title"
+    android:summary="@string/force646decode_summary"
+    android:defaultValue="false"
+    />
+  </PreferenceCategory>
 </PreferenceScreen>

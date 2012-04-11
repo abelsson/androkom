@@ -1,6 +1,5 @@
 package org.lindev.androkom.text;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -92,6 +91,7 @@ class TextCache {
                 //e.printStackTrace();
                 return null;
             }
+
             String username=mKom.getString(R.string.anonymous);
             int authorid = text.getAuthor();
             if (authorid > 0) {

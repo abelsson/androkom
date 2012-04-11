@@ -47,6 +47,10 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_INCLUDELOCATION = "includelocation";
     private static final Boolean OPT_INCLUDELOCATION_DEF = false;
 
+    private static final String OPT_FORCE646DECODE = "force646decode";
+    private static final Boolean OPT_FORCE646DECODE_DEF = false;
+    
+    
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		addPreferencesFromResource(R.xml.conference_settings);
@@ -116,4 +120,7 @@ public class ConferencePrefs extends PreferenceActivity {
     public static Boolean getIncludeLocation(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_INCLUDELOCATION, OPT_INCLUDELOCATION_DEF);
     }
+
+    public static boolean getforce646decode(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_FORCE646DECODE, OPT_FORCE646DECODE_DEF);    }
 }

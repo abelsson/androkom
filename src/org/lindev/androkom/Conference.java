@@ -1017,7 +1017,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private static final Pattern digits = Pattern.compile("\\d{5,}");
     public static Spannable formatText(Context context, TextInfo text, boolean ShowFullHeaders)
     {
-        String[] lines = text.getBody().split("\n");
+        //String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
 
         // Some simple heuristics to reflow and htmlize KOM texts.
@@ -1060,7 +1060,28 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
         body.append("</p>");
         */
-        FillMessage fm = new FillMessage(text.getBody());
+
+        String rawbody = text.getBody();
+        String cookedbody;
+        
+        boolean force646decode = ConferencePrefs.getforce646decode(context);
+        if (force646decode) {
+            cookedbody = rawbody.replace("$", "¤")
+                    .replace("@", "É")
+                    .replace("[", "Ä")
+                    .replace("\\", "Ö")
+                    .replace("[", "Ä")
+                    .replace("]", "Å")
+                    .replace("^", "Ü")
+                    .replace("`", "é")
+                    .replace("{", "ä")
+                    .replace("|", "ö")
+                    .replace("}", "å")
+                    .replace("~", "ü");
+        } else {
+            cookedbody = rawbody;
+        }
+        FillMessage fm = new FillMessage(cookedbody);
         body.append(fm.run());
 
         //Log.i(TAG, body.toString());

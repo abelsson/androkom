@@ -268,4 +268,8 @@ Be ashamed of being You! You have a very good reason."</string>
 
     <string name="pick_an_action">Pick an action</string>
     <string name="person_stat_label">Person info</string>
+
+    <string name="other_prefs_title">Others</string>
+    <string name="force646decode_title">"force646decode:"</string>
+    <string name="force646decode_summary">"Force ISO-646-SE decode in textbodies."</string>
 </resources>

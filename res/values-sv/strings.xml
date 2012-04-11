@@ -87,6 +87,8 @@
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
     <string name="biggerfontsize_shortcut">+</string>
+    <string name="monospaced_label">Monospaced</string>
+    <string name="monospaced_shortcut">m</string>
     <string name="reconnect_label">Starta om</string>
     <string name="reconnect_shortcut">R</string>
     
@@ -264,4 +266,8 @@ Guran vill helst sätta en giftpil i dig."</string>
     
     <string name="pick_an_action">Välj</string>
     <string name="person_stat_label">Person info</string>
+
+    <string name="other_prefs_title">Annat</string>
+    <string name="force646decode_title">"force646decode:"</string>
+    <string name="force646decode_summary">"Force ISO-646-SE decode in textbodies."</string>
 </resources>
