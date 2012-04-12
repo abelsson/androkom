@@ -27,6 +27,9 @@
           <item android:title="@string/unmarktext_label"
                 android:alphabeticShortcut="@string/unmarktext_shortcut"
                 android:id="@+id/menu_unmarktext_id"/>
+          <item android:title="@string/next_no_readmark_label"
+                android:alphabeticShortcut="@string/next_no_readmark_shortcut"
+                android:id="@+id/menu_next_no_readmark_id"/>
           </menu>
     </item>
     <item android:id="@+id/menu_submenu_seeagain"

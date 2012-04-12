@@ -108,6 +108,8 @@
     <string name="marktext_shortcut">M</string>
     <string name="unmarktext_label">Unmark text</string>
     <string name="unmarktext_shortcut">U</string>
+    <string name="next_no_readmark_label">Next text, without mark read</string>
+    <string name="next_no_readmark_shortcut">F</string>
     
     <string name="title_submenu_seeagain">See again...</string>
     <string name="seetextagain_label">See text</string>

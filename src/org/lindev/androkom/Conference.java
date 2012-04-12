@@ -231,7 +231,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             startActivity(intent);
             break;
         case 6: // SPC
-            moveToNextText();
+            moveToNextText(true);
             break;
         default:
             Log.d(TAG, "Unknown action, doing nothing.");
@@ -252,13 +252,16 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
 
         // worker thread (separate from UI thread)
+        // args[0] = text type
+        // args[1] = text#
+        // args[2] = mark current text as read
         protected TextInfo doInBackground(final Integer... args) {
             Log.d(TAG, "LoadMessageTask doInBackground BEGIN");
             TextInfo text = null;
 
             if (mState.hasCurrent()) {
                 Log.d(TAG, "hasCurrent");
-                if(ConferencePrefs.getMarkTextRead(getBaseContext())) {
+                if((args[2]==0) && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
                     Log.d(TAG, "getMarkTextRead");
                     mKom.markTextAsRead(mState.getCurrent().getTextNo());
                 }
@@ -435,7 +438,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             int myLimit = mSwitcher.getBaseline() + mSwitcher.getBottom();
             if (e.getRawY() < myLimit) {
                 if (e.getRawX() > 0.8 * width && e.getDownTime() > 500) {
-                    moveToNextText();
+                    moveToNextText(true);
                     return true;
                 }
                 if (e.getRawX() < 0.2 * width && e.getDownTime() > 500) {
@@ -456,7 +459,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             	if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {	                
 	                // right to left swipe
 	                if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY)            
-	                    moveToNextText();     
+	                    moveToNextText(true);     
 	                 else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) 
 	                    moveToPrevText();  	                
                 }
@@ -514,13 +517,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
     }
 
-    private void moveToNextText() {
+    private void moveToNextText(boolean markTextAsRead) {
         Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size());
-
+        int markTextAsReadint = markTextAsRead ? 0 : 1;
+        
         if ((mState.currentTextIndex + 1) >= mState.currentText.size()) {
             // At end of list. load new text from server
             Log.i(TAG, "fetching new text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
             mSwitcher.setInAnimation(mSlideLeftIn);
             mSwitcher.setOutAnimation(mSlideLeftOut);
         }
@@ -537,7 +541,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private void moveToParentText() {
         int current = mState.getCurrent().getTextNo();
         Log.i(TAG, "fetching parent to text " + current);
-        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current);
+        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
 
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
@@ -545,7 +549,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
     private void moveToText(final int textNo) {
         Log.i(TAG, "fetching text " + textNo);
-        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
     }
@@ -598,7 +602,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 			return true;
 		case android.view.KeyEvent.KEYCODE_F:
 		case android.view.KeyEvent.KEYCODE_SPACE:
-			moveToNextText();
+			moveToNextText(true);
 			return true;
 		case android.view.KeyEvent.KEYCODE_U:
 		case 115: //PgUp on Toshiba AC100-10D
@@ -784,6 +788,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             subComment();
             return true;
 
+        case R.id.menu_next_no_readmark_id:
+            moveToNextText(false);
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -820,7 +827,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         int textNo = mKom.getConferencePres();
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
                     Toast.LENGTH_SHORT).show();
@@ -929,7 +936,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
   		  Log.i(TAG, "trying to parse " + textvalue);
 		  int textNo = Integer.parseInt(textvalue);
 		  Log.i(TAG, "fetching text " + textNo);
-		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo);
+		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
 
 		  mSwitcher.setInAnimation(mSlideLeftIn);
 		  mSwitcher.setOutAnimation(mSlideLeftOut);
@@ -1254,10 +1261,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         }
         if(currentText!=null) {
             Log.d(TAG, "Getting current text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, currentText.getTextNo());
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, currentText.getTextNo(), 0);
         } else {
             Log.d(TAG, "Getting next text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0);
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
         }
         Log.d(TAG, "onServiceConnected done");
     }
