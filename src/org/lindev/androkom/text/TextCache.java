@@ -128,6 +128,11 @@ class TextCache {
             StringBuilder headersString = new StringBuilder();
             if (mShowFullHeaders) {
                 int[] items;
+                
+                int marks = text.getMarks();
+                if (marks>0) {
+                    headersString.append("Marked by "+marks+" persons\n");
+                }
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
