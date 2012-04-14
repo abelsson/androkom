@@ -50,15 +50,17 @@ public class TextFetcher {
             mKom.reconnect();
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
-
-        final int commented[] = text.getCommented();
-        if (commented.length > 0) {
-            Log.d(TAG, "number of parents:"+commented.length);
-            final TextInfo textInfo = mTextCache.getText(commented[0]);
-            if (textInfo != null) {
-                mPrefetcher.doCacheRelevant(textInfo.getTextNo());
+        
+        if (text != null) {
+            final int commented[] = text.getCommented();
+            if (commented.length > 0) {
+                Log.d(TAG, "number of parents:" + commented.length);
+                final TextInfo textInfo = mTextCache.getText(commented[0]);
+                if (textInfo != null) {
+                    mPrefetcher.doCacheRelevant(textInfo.getTextNo());
+                }
+                return textInfo;
             }
-            return textInfo;
         }
         Log.d(TAG, "No parent found");
         return TextInfo.createText(mKom.getBaseContext(), TextInfo.NO_PARENT);

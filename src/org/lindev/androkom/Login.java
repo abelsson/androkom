@@ -22,7 +22,6 @@ import android.view.MenuItem;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.ImageView;
 import android.widget.Toast;
 
 /**
@@ -259,22 +258,28 @@ public class Login extends Activity implements ServiceConnection
                         alert.show();
                     }
                 } else {
-                    // User not found or such error
-                    AlertDialog.Builder builder = new AlertDialog.Builder(
-                            Login.this);
-                    builder.setMessage(result)
-                            .setCancelable(false)
-                            .setNegativeButton(
-                                    getString(R.string.alert_dialog_ok),
-                                    new DialogInterface.OnClickListener() {
-                                        public void onClick(
-                                                DialogInterface dialog, int id) {
-                                            dialog.cancel();
-                                        }
-                                    });
-                    AlertDialog alert = builder.create();
-                    alert.show();
-                    loginFailed = true;
+                    try {
+                        // User not found or such error
+                        AlertDialog.Builder builder = new AlertDialog.Builder(
+                                Login.this);
+                        builder.setMessage(result)
+                                .setCancelable(false)
+                                .setNegativeButton(
+                                        getString(R.string.alert_dialog_ok),
+                                        new DialogInterface.OnClickListener() {
+                                            public void onClick(
+                                                    DialogInterface dialog,
+                                                    int id) {
+                                                dialog.cancel();
+                                            }
+                                        });
+                        AlertDialog alert = builder.create();
+                        alert.show();
+                        loginFailed = true;
+                    } catch (Exception e) {
+                        Log.d(TAG, "Something bad happened:" + e);
+                        finish();
+                    }
                 }
             }
             else {
