@@ -236,6 +236,7 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public boolean onUnbind (Intent intent) {
+        Log.d(TAG, "onUnbind");
         return false;
     }
     

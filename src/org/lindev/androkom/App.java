@@ -30,6 +30,8 @@ public class App extends Application implements ServiceConnection
 
     private Locale locale = null;
 
+    private int nrServiceUsers = 0;
+    
 	@Override
 	public void onCreate()
 	{
@@ -63,11 +65,15 @@ public class App extends Application implements ServiceConnection
     public void doBindService(ServiceConnection connection) 
     {
     	bindService(new Intent(App.this, KomServer.class), connection, Context.BIND_AUTO_CREATE);
+    	nrServiceUsers++;
+    	Log.d(TAG, "SERVICE more users:"+nrServiceUsers);
     }
     
     public void doUnbindService(ServiceConnection connection)
     {
         new DelayedUnbindTask().execute(connection);
+        nrServiceUsers--;
+        Log.d(TAG, "SERVICE fewer users:"+nrServiceUsers);
    }
 
     
