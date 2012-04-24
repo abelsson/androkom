@@ -30,7 +30,7 @@ class Prefetcher {
     private static final String TAG = "Androkom Prefetcher";
 
     private static final Pattern TEXT_LINK_FINDER = Pattern.compile("\\d{5,}");
-    private static final int MAX_PREFETCH = 10;
+    private static final int MAX_PREFETCH = 50;
     private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
     private static boolean ENABLE_CACHE_RELEVANT = false;
 
