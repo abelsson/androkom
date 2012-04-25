@@ -261,7 +261,12 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="vibratetime_title">"Vibrate time"</string>
     <string name="vibratetime_summary">"Time to vibrate (ms)"</string>
 
-    <string name="header_aux_location">"Plats: "</string>
+    <string name="contentType_aux_label">"Content type: "</string>
+    <string name="creatorsw_aux_label">"Creator sw: "</string>
+    <string name="faq_aux_label">"FAQ: "</string>
+    <string name="fast_aux_label">"Fast reply: "</string>
+    <string name="location_aux_label">"Plats: "</string>
+
     <string name="includelocation_title">"Location:"</string>
     <string name="includelocation_summary">"Include location in texts."</string>
     <string name="insertlocation_menu">"Insert location"</string>

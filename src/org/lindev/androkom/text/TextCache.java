@@ -203,11 +203,43 @@ class TextCache {
                         headersString.append('\n');
                     }
                 }
-                List<AuxItem> aux_items = text.getAuxItems(AuxItem.tagCreationLocation);
-                if (aux_items.size() > 0) {
-                    for (int i = 0; i < aux_items.size(); i++) {
-                        headersString.append(mKom.getString(R.string.header_aux_location));
-                        headersString.append(aux_items.get(i).getDataString());
+                List<AuxItem> location_item = text.getAuxItems(AuxItem.tagCreationLocation);
+                if (location_item.size() > 0) {
+                    for (int i = 0; i < location_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.location_aux_label));
+                        headersString.append(location_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                List<AuxItem> contentType_item = text.getAuxItems(AuxItem.tagContentType);
+                if (contentType_item.size() > 0) {
+                    for (int i = 0; i < contentType_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.contentType_aux_label));
+                        headersString.append(contentType_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                List<AuxItem> creatorsw_item = text.getAuxItems(AuxItem.tagCreatingSoftware);
+                if (creatorsw_item.size() > 0) {
+                    for (int i = 0; i < creatorsw_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.creatorsw_aux_label));
+                        headersString.append(creatorsw_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                List<AuxItem> faq_item = text.getAuxItems(AuxItem.tagFaqText);
+                if (faq_item.size() > 0) {
+                    for (int i = 0; i < faq_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.faq_aux_label));
+                        headersString.append(faq_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                List<AuxItem> fast_item = text.getAuxItems(AuxItem.tagFastReply);
+                if (fast_item.size() > 0) {
+                    for (int i = 0; i < fast_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.fast_aux_label));
+                        headersString.append(fast_item.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }
