@@ -223,6 +223,10 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="add_recipient_label">Add recipient</string>
     <string name="add_recipient_shortcut">A</string>
     <string name="do_addnewrecipienttotext">"Add new recipient"</string>
+
+    <string name="do_gilla">Leave conference</string>
+    <string name="gilla_label">Leave conference</string>
+    <string name="gilla_shortcut">G</string>
     
     <string name="creator_comment_to">"Create comment to "</string>
     <string name="creator_new_text">"Create new text"</string>

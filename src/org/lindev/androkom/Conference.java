@@ -5,6 +5,7 @@ import java.util.Stack;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
@@ -788,6 +789,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             subComment();
             return true;
 
+        case R.id.menu_gilla_id:
+            gilla_current_text();
+            return true;
+
         case R.id.menu_next_no_readmark_id:
             moveToNextText(false);
             return true;
@@ -795,6 +800,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             return super.onOptionsItemSelected(item);
         }
     }
+
+    private void gilla_current_text() {
+        // TODO Auto-generated method stub
+        int CurrentText = mState.getCurrent().getTextNo();
+        
+        mKom.addAuxItem(CurrentText, AuxItem.tagFastReply, "Gilla");
+    }
+
 
     protected void storeFontSize(float size) {
         SharedPreferences settings = getPreferences(MODE_PRIVATE);

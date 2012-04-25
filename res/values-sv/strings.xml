@@ -223,6 +223,10 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="add_recipient_shortcut">N</string>
     <string name="do_addnewrecipienttotext">"Lägg till ny mottagare"</string>
     
+    <string name="do_gilla">Gilla</string>
+    <string name="gilla_label">Gilla</string>
+    <string name="gilla_shortcut">G</string>
+    
     <string name="creator_comment_to">"Skapa kommentar till "</string>
     <string name="creator_new_text">"Skapa ny text"</string>
     <string name="creator_text_title">"Text"</string>

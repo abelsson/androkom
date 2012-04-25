@@ -11,7 +11,7 @@ import java.util.List;
 import java.util.Set;
 
 import nu.dll.lyskom.ConfInfo;
-//import nu.dll.lyskom.Conference;
+import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.KomTime;
 import nu.dll.lyskom.Membership;
@@ -902,6 +902,26 @@ public class KomServer extends Service implements RpcEventListener,
         return result;
     }
 
+    /*
+     * Add an aux item of type auxtype to text number textno with content content.
+     * Note: textno must be pointing on an text not a conference/person.
+     */
+    public void addAuxItem(int textno, int auxType, String content) {
+        Log.d(TAG, "addAuxItem textno" + textno);
+        Log.d(TAG, "addAuxItem axutype" + auxType);
+        Log.d(TAG, "addAuxItem content" + content);
+
+        try {
+            AuxItem auxItem = new AuxItem(auxType, content);
+            AuxItem[] add_items = { auxItem };
+            int[] del_items = {};
+
+            s.modifyAuxInfo(false, textno, del_items, add_items);
+        } catch (Exception e) {
+            Log.d(TAG, "Failed to add aux item. Exception:" + e);
+        }
+    }
+            
     public String subComment(int textNo, int commentNo) {
         String result="";
         
