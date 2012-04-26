@@ -282,13 +282,13 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                         Log.d(TAG, "Populate lost connection");
                         // e.printStackTrace();
                         mKom.logout();
-                        mEmptyView.setText("Not connected");
+                        mEmptyView.setText(getString(R.string.not_connected));
                     }
                     mEmptyView.setText(getString(R.string.no_unreads) + "\n"
                             + currentDateTimeString + "\n"
                             + getString(R.string.server_time));
                 } else {
-                    mEmptyView.setText("Not connected\nPlease wait");
+                    mEmptyView.setText(getString(R.string.not_connected));
                 }
                 if((mKom!=null) && (!mKom.isConnected())) {
                     if(mKom.getUserId()>0) {

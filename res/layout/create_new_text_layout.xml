@@ -78,19 +78,19 @@
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add To"/>
+                        android:text="@string/addto_button_label"/>
                     <Button
                         android:id="@+id/add_cc"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add Cc"/>
+                        android:text="@string/addcc_button_label"/>
                     <Button
                         android:id="@+id/add_bcc"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
                         android:layout_weight="1"
-                        android:text="Add Bcc"/>
+                        android:text="@string/addbcc_button_label"/>
                 </LinearLayout>
             </LinearLayout>
         </FrameLayout>

@@ -31,7 +31,7 @@ public class imagesactivity extends Activity {
         if(bmImg != null) {
             imgView.setImageBitmap(bmImg);
         } else {
-            Toast.makeText(getApplicationContext(), "Failed to decode image", Toast.LENGTH_LONG).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.image_decode_failed), Toast.LENGTH_LONG).show();
         }
         
         imgView.setOnTouchListener(new OnTouchListener() {

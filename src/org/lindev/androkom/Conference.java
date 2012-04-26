@@ -330,7 +330,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 Log.d(TAG, "SUBJECT: "+text.getSubject());
                 //Log.d(TAG, "BODY: "+text.getBody());
                 if (text.getAllHeaders().contains("ContentType:image/")) {
-                    mSwitcher.setText("Text "+text.getTextNo()+" is image");
+                    mSwitcher.setText("Text "+text.getTextNo()+getString(R.string.is_image));
                     
                     Intent intent = new Intent(getApplicationContext(), imagesactivity.class);
                     intent.putExtra("bilden", text.getRawBody());
@@ -1262,7 +1262,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             // TODO Auto-generated catch block
             Log.d(TAG, "onServiceConnected IOException");
             //e.printStackTrace();
-            Toast.makeText(getApplicationContext(), "Connection lost", Toast.LENGTH_SHORT).show();
+            Toast.makeText(getApplicationContext(), getString(R.string.connection_lost), Toast.LENGTH_SHORT).show();
             mKom.logout();
             finish();
         }

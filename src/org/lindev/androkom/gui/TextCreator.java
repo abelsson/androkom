@@ -1,13 +1,11 @@
 package org.lindev.androkom.gui;
 
-import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.Conference;
 import nu.dll.lyskom.RpcFailure;
-import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
@@ -276,7 +274,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
             } else {
                 Toast.makeText(getApplicationContext(),
-                        "No location", Toast.LENGTH_SHORT)
+                        getString(R.string.no_location), Toast.LENGTH_SHORT)
                         .show();                                
             }
             return true;
@@ -411,7 +409,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             mLat = loc.getLatitude();
             mLon = loc.getLongitude();
             mPrecision = loc.getAccuracy();
-            String Text = "My current location is: " + "Latitud = "
+            String Text = getString(R.string.my_location) + "Latitud = "
                     + loc.getLatitude() + "Longitud = " + loc.getLongitude();
             Log.i(TAG, Text);
         }

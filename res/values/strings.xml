@@ -1,7 +1,6 @@
-<?xml version="1.0" encoding="utf-8"?>
+<?xml version="1.0" encoding="utf-8" standalone="no"?>
 <resources>
-	<string name="app_name">Androkom</string>
-
+    <string name="app_name">Androkom</string>
     <string name="pick_a_name">Pick a name</string>
     <string name="komserver_connected">KomServer connected</string>
     <string name="komserver_disconnected">KomServer disconnected</string>
@@ -29,59 +28,42 @@
     <string name="fetching_conferences">Loading unreads ...</string>
     <string name="local_time">(local)</string>
     <string name="server_time">(server)</string>
-    
-	<string name="login_name">Username:</string>
-	<string name="login_id">UserID: (optional)</string>
-	<string name="login_password">Password:</string>
-	<string name="login_login">Login</string>
-	<string name="login_clearpsw">Clear saved password</string>
+    <string name="login_name">Username:</string>
+    <string name="login_id">UserID: (optional)</string>
+    <string name="login_password">Password:</string>
+    <string name="login_login">Login</string>
+    <string name="login_clearpsw">Clear saved password</string>
     <string name="clearpsw_shortcut">p</string>
-
-	<string name="login_save_oisafe_psw">Save user/password to OISafe</string>
-	<string name="save_oisafe_psw_id_shortcut">o</string>
-
-	<string name="No_server_selected">No server selected, press menu key to select one in preferences.</string>
-
+    <string name="login_save_oisafe_psw">Save user/password to OISafe</string>
+    <string name="save_oisafe_psw_id_shortcut">o</string>
+    <string name="No_server_selected">No server selected, press menu key to select one in preferences.</string>
     <string name="settings_label">Settings</string>
     <string name="settings_title">Settings for Androkom</string>
     <string name="settings_shortcut">i</string>
-
     <string name="servercat_title">Server settings</string>
-
     <string name="server_title">Server</string>
     <string name="server_summary">Select server</string>
     <string name="server_dialog_title_prefs">Server dialog title</string>
-
     <string name="otherserver_title">Other server</string>
     <string name="otherserver_summary">Specify server</string>
-
     <string name="othercat_title">Other settings</string>
-
     <string name="save_psw_title">Password</string>
     <string name="save_psw_summary">Save password (as preferences)</string>
-    
     <string name="use_oisafe_title">OISafe</string>
     <string name="use_oisafe_summary">Get username and password from OISafe</string>
-
     <string name="autologin_title">Autologin</string>
     <string name="autologin_summary">Automaticly login if password is saved</string>
-
     <string name="showfullheaders_title">Show full headers</string>
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
-
     <string name="marktextread_title">Mark texts read</string>
     <string name="marktextread_summary">Mark texts read</string>
-
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
-
     <string name="preferredlanguage_title">Language</string>
     <string name="preferredlanguage_summary">Select language.</string>
     <string name="preferredlanguage_dialog_title_prefs">Language dialog title</string>
-
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
-
     <string name="title_submenu_textsize">Text size...</string>
     <string name="smallerfontsize_label">Smaller fontsize</string>
     <string name="smallerfontsize_shortcut">-</string>
@@ -91,10 +73,8 @@
     <string name="monospaced_shortcut">m</string>
     <string name="reconnect_label">Reconnect</string>
     <string name="reconnect_shortcut">R</string>
-
     <string name="logout_label">Logout</string>
     <string name="logout_shortcut">O</string>
-    
     <string name="title_submenu_create">Create ...</string>
     <string name="createnewtext_label">New text</string>
     <string name="createnewtext_shortcut">N</string>
@@ -102,7 +82,6 @@
     <string name="createnewmail_shortcut">M</string>
     <string name="messaging_label">Messaging</string>
     <string name="messaging_shortcut">I</string>
-
     <string name="title_submenu_mark">Mark ...</string>
     <string name="marktext_label">Mark text</string>
     <string name="marktext_shortcut">M</string>
@@ -110,7 +89,6 @@
     <string name="unmarktext_shortcut">U</string>
     <string name="next_no_readmark_label">Next text, without mark read</string>
     <string name="next_no_readmark_shortcut">F</string>
-    
     <string name="title_submenu_seeagain">See again...</string>
     <string name="seetextagain_label">See text</string>
     <string name="seetextagain_shortcut">T</string>
@@ -124,7 +102,6 @@
     <string name="alert_dialog_text_entry">Enter text number</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Cancel</string>
-    
     <string name="subject">"Subject: "</string>
     <string name="send">Send</string>
     <string name="cancel">Cancel</string>
@@ -136,38 +113,31 @@
     <string name="create_new_text">Create text</string>
     <string name="create_new_mail">Create mail</string>
     <string name="create_new_IM">Create IM</string>
-    
     <string name="positiveButton">Do</string>
     <string name="cancelButton">Cancel</string>
     <string name="lyskomPrompt">Lyskom:</string>
-    
     <string name="conf_name">Conference:</string>
     <string name="num_texts">Number of texts:</string>
     <string name="do_endast">Only the last!</string>
     <string name="endast_label">Only the last</string>
     <string name="endast_shortcut">O</string>
-    
     <string name="message_log_label">Message Log</string>
     <string name="no_messages">No messages</string>
     <string name="im_conversations_list_label">IM Conversations</string>
-
     <string name="androkom_header_recipient">"Recipient: "</string>
     <string name="header_cc_recipient">"CarbonCopy: "</string>
     <string name="header_comment_to">"Comment to: "</string>
     <string name="header_comment_in">"Comment in: "</string>
     <string name="header_footnote_in">"Footnote in: "</string>
     <string name="header_footnote_to">"Footnote to: "</string>
-    
     <string name="appreciation_label">(Please) pat my head</string>
     <string name="appreciation_shortcut">H</string>
     <string name="abuse_label">(Please) kick my butt</string>
     <string name="abuse_shortcut">B</string>
     <string name="appreciation_text">"You are a very special person, beautiful and wise, respected by everybody around you. You are doing a splendid job. Many people love you, body and soul. You make life easier for others. You are a very warm and sensitive person. 
 Be proud of being You! You have a very good reason."</string>
-
     <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around you. You are doing a worthless job. Many people hate you, body and soul. You make life harder for others. You are a very cold and unfeeling person.
 Be ashamed of being You! You have a very good reason."</string>
-
     <string name="im_you">"You: "</string>
     <string name="im_prompt">": "</string>
     <string name="im_sending_message">"Sending message ..."</string>
@@ -179,36 +149,28 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="im_isnt_logged_in">" isn't logged in."</string>
     <string name="im_network_error">"Network error occured while sending message."</string>
     <string name="im_clear_history_q">"Clear conversation history?"</string>
-
     <string name="yes">"Yes"</string>
     <string name="no">"No"</string>
-    
     <string name="no_text_loaded">"[no text loaded]"</string>
-
     <string name="creating_text">"Creating text..."</string>
     <string name="no_zero_texts">"zero texts is not implemented"</string>
     <string name="error_could_not_connect">"Couldn't connect to server"</string>
     <string name="error_unknown">"Unknown error"</string>
     <string name="error_ambigious_name">"Invalid/ambigious username"</string>
     <string name="error_invalid_password">"Invalid password"</string>
-    
     <string name="not_a_number">"Not a number: "</string>
     <string name="must_not_be_negative">"Number of texts must be positive"</string>
-    
     <string name="error_oisafe_not_found">"OISafe not found"</string>
     <string name="im_new_messages_title">"New Messages"</string>
     <string name="im_new_messages_in">" new messages in "</string>
     <string name="im_conversations">" conversations."</string>
     <string name="im_new_messages">" new messages."</string>
-
     <string name="do_joinconference">Join conference</string>
     <string name="joinconference_label">Join conference</string>
     <string name="joinconference_shortcut">J</string>
-
     <string name="do_leaveconference">Leave conference</string>
     <string name="leaveconference_label">Leave conference</string>
     <string name="leaveconference_shortcut">L</string>
-
     <string name="title_submenu_others">"More..."</string>
     <string name="sub_recipient_label">Subtract recipient</string>
     <string name="sub_recipient_shortcut">S</string>
@@ -218,16 +180,13 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="do_addnewcommenttotext">"Add new commented"</string>
     <string name="sub_comment_label">Subtract comment</string>
     <string name="sub_comment_shortcut">C</string>
-        
     <string name="addnewrecipienttotext_title">"Add new recipient"</string>
     <string name="add_recipient_label">Add recipient</string>
     <string name="add_recipient_shortcut">A</string>
     <string name="do_addnewrecipienttotext">"Add new recipient"</string>
-
     <string name="do_gilla">Leave conference</string>
-    <string name="gilla_label">Leave conference</string>
-    <string name="gilla_shortcut">G</string>
-    
+    <string name="gilla_label">Like</string>
+    <string name="gilla_shortcut">L</string>
     <string name="creator_comment_to">"Create comment to "</string>
     <string name="creator_new_text">"Create new text"</string>
     <string name="creator_text_title">"Text"</string>
@@ -235,20 +194,16 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="creator_remove_recipient">"Remove recipient "</string>
     <string name="creator_add_recipient">"Add recipient"</string>
     <string name="creator_no_recipients">"There are no recipients"</string>
-    
     <string name="CTT_creating_text">"Creating text ..."</string>
     <string name="CTT_already_recipient">" is already a recipient"</string>
     <string name="CTT_not_member">"You aren't member of any recipient. Add yourself?"</string>
-    
     <string name="recipient_to">"To: "</string>
     <string name="recipient_cc">"Cc: "</string>
     <string name="recipient_bcc">"Bcc: "</string>
-    
     <string name="userbutton1">"Button1"</string>
     <string name="userbutton2">"Button2"</string>
     <string name="userbutton3">"Button3"</string>
     <string name="userbutton4">"Button4"</string>
-
     <string name="userbuttons_title">"User buttons section"</string>
     <string name="userbuttons_summary">"User selectable buttons when showing text"</string>
     <string name="userbutton_dialog_title_prefs">"Userbuttons"</string>
@@ -260,27 +215,33 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="userbutton3_summary">"User button 3"</string>
     <string name="userbutton4_title">"Button 4"</string>
     <string name="userbutton4_summary">"User button 4"</string>
-    
     <string name="asynch_prefs_title">"Asynch prefs"</string>
     <string name="vibrateforasynch_title">"Vibrate"</string>
     <string name="vibrateforasynch_summary">"Vibrate on recivied IM"</string>
     <string name="vibratetime_title">"Vibrate time"</string>
     <string name="vibratetime_summary">"Time to vibrate (ms)"</string>
-
     <string name="contentType_aux_label">"Content type: "</string>
     <string name="creatorsw_aux_label">"Creator sw: "</string>
     <string name="faq_aux_label">"FAQ: "</string>
     <string name="fast_aux_label">"Fast reply: "</string>
     <string name="location_aux_label">"Location: "</string>
-    
     <string name="includelocation_title">"Location:"</string>
     <string name="includelocation_summary">"Include location in texts."</string>
     <string name="insertlocation_menu">"Insert location"</string>
-
     <string name="pick_an_action">Pick an action</string>
     <string name="person_stat_label">Person info</string>
-
     <string name="other_prefs_title">Others</string>
     <string name="force646decode_title">"force646decode:"</string>
     <string name="force646decode_summary">"Force ISO-646-SE decode in textbodies."</string>
+    <string name="createnewIM_shortcut">I</string>
+    <string name="createnewIM_label">New IM</string>
+    <string name="addbcc_button_label">Add BCC</string>
+    <string name="addcc_button_label">Add CC</string>
+    <string name="addto_button_label">Add To</string>
+    <string name="is_image">" is image"</string>
+    <string name="connection_lost">"Connection lost"</string>
+    <string name="not_connected">"Not connected\nPlease wait"</string>
+    <string name="image_decode_failed">"Failed to decode image"</string>
+    <string name="no_location">"No location"</string>
+    <string name="my_location">"My current location is: "</string>
 </resources>
