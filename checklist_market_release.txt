@@ -1,3 +1,2 @@
 - Bump versionName and versionCode in AndroidManifest.xml
-- set lattekom.debug to false in KomServer.java
-- set hidden_session to false in KomServer.java
+- set RELEASE_BUILD to true in KomServer.java
