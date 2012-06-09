@@ -828,8 +828,13 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
     
     protected void unmarkCurrentText() {
-    	int CurrentTextNo = mState.getCurrent().getTextNo();
-    	mKom.unmarkText(CurrentTextNo);
+        TextInfo currentText = mState.getCurrent();
+        if (currentText != null) {
+            int CurrentTextNo = currentText.getTextNo();
+            mKom.unmarkText(CurrentTextNo);
+        } else {
+            Log.d(TAG, "Failed to unmark due to null");
+        }
     }
 
     protected void seetextagain() {
