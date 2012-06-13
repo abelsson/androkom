@@ -176,7 +176,11 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
 
     @Override
     protected void onPostExecute(final Object arg) {
-        mDialog.dismiss();
+        try {
+            mDialog.dismiss();
+        } catch (Exception e) {
+            Log.d(TAG, "Failed to dismiss dialog " + e);
+        }
         if (arg instanceof String) {
             final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
             builder.setTitle((String) arg);

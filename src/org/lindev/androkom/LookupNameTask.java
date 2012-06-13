@@ -1,7 +1,5 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
-
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.RpcFailure;
 import android.app.Activity;

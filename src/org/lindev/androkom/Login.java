@@ -215,8 +215,37 @@ public class Login extends Activity implements ServiceConnection
 
         protected void onPostExecute(final String result) 
         { 
-            this.dialog.dismiss();
-                       
+            try {
+                this.dialog.dismiss();
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to dismiss dialog " + e);
+            }
+            if (mKom == null) {
+                try {
+                    // Got no komserver
+                    AlertDialog.Builder builder = new AlertDialog.Builder(
+                            Login.this);
+                    builder.setMessage("No connection process.")
+                            .setCancelable(false)
+                            .setNegativeButton(
+                                    getString(R.string.alert_dialog_ok),
+                                    new DialogInterface.OnClickListener() {
+                                        public void onClick(
+                                                DialogInterface dialog,
+                                                int id) {
+                                            dialog.cancel();
+                                        }
+                                    });
+                    AlertDialog alert = builder.create();
+                    alert.show();
+                    loginFailed = true;
+                } catch (Exception e) {
+                    Log.d(TAG, "Something bad happened:" + e);
+                    finish();
+                }
+                return;
+            }
+            
             if (result.length() > 0) {
             	// Login failed, check why
             	final ConferenceInfo[] users = mKom.getUserNames();
@@ -370,9 +399,14 @@ public class Login extends Activity implements ServiceConnection
     }
 
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();
+	    try {
+	        mKom = ((KomServer.LocalBinder)service).getService();
 
 		create_image();
+	    } catch (Exception e) {
+	        Log.d(TAG, "Exception: "+e);
+	        e.printStackTrace();
+	    }
 	}
 
 	public void onServiceDisconnected(ComponentName name) {
