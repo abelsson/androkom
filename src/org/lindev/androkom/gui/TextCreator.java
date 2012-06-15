@@ -19,6 +19,7 @@ import org.lindev.androkom.text.CreateTextTask.CreateTextRunnable;
 import org.lindev.androkom.text.Recipient;
 import org.lindev.androkom.text.Recipient.RecipientType;
 import org.lindev.androkom.text.SendTextTask;
+import org.lindev.androkom.Rot13;
 
 import android.app.AlertDialog;
 import android.app.TabActivity;
@@ -33,12 +34,16 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.text.ClipboardManager;
+import android.text.Editable;
 import android.util.Log;
+import android.view.ContextMenu;
 import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
+import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
@@ -141,7 +146,11 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
     private void initializeCommon() {
         mSubject = (EditText) findViewById(R.id.subject);
+
         mBody = (EditText) findViewById(R.id.body);
+        //registerForContextMenu (mBody);
+        mBody.setOnCreateContextMenuListener(this);
+        
         mReplyTo = getIntent().getIntExtra(INTENT_REPLY_TO, -1);
         if (mReplyTo > 0) {
             setTitle(getString(R.string.creator_comment_to) + mReplyTo);
@@ -245,6 +254,25 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         return true;
     }
 
+//    public void onPopulateContextMenu(ContextMenu menu, View view, Object o) {
+//        MenuItem menuitem1 = menu.add(R.string.menu_rot13_label);
+//        rot13menuid = menuitem1.getItemId();
+//    }
+    
+    public void onCreateContextMenu(ContextMenu menu, View view,
+            ContextMenu.ContextMenuInfo menuInfo) {
+        super.onCreateContextMenu(menu, view, menuInfo);
+        
+//        if (view.getId() == R.id.body) {
+            //MenuItem menuitem1 = menu.add(R.string.menu_rot13_label);
+            //rot13menuid = menuitem1.getItemId();
+//            MenuItem menuitem2 = menu.add(R.string.menu_copy_label);
+//            copymenuid = menuitem2.getItemId();
+//            MenuItem menuitem3 = menu.add(R.string.menu_paste_label);
+//            pastemenuid = menuitem3.getItemId();
+//        }
+    }
+
     /**
      * Called when user has selected a menu item from the 
      * menu button popup. 
@@ -262,25 +290,73 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
         // Handle item selection
         switch (item.getItemId()) {
-
         case R.id.menu_insertlocation_id:
             Log.i(TAG, "insertlocation");
-            if(mPrecision > 0) {
-                String textToInsert = "<geo:"+mLat+","+mLon+";u="+mPrecision+">"; // ref RFC580
+            if (mPrecision > 0) {
+                String textToInsert = "<geo:" + mLat + "," + mLon + ";u="
+                        + mPrecision + ">"; // ref RFC580
                 int start = mBody.getSelectionStart();
                 int end = mBody.getSelectionEnd();
-                mBody.getText().replace(Math.min(start, end), Math.max(start, end),
-                        textToInsert, 0, textToInsert.length());
-
+                mBody.getText().replace(Math.min(start, end),
+                        Math.max(start, end), textToInsert, 0,
+                        textToInsert.length());
             } else {
                 Toast.makeText(getApplicationContext(),
                         getString(R.string.no_location), Toast.LENGTH_SHORT)
-                        .show();                                
+                        .show();
             }
             return true;
-
+        case R.id.menu_rot13paste_id :
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            CharSequence text = clipboard.getText();
+            Log.d(TAG, "CharSequence from clipboard:"+text);
+            String textstring = text.toString();
+            Log.d(TAG, "String from clipboard:"+textstring);
+            if (text.length() > 0) {
+                String rotated = org.lindev.androkom.Rot13.cipher(textstring
+                        .toString());
+                int selectionStart = mBody.getSelectionStart();
+                int selectionEnd = mBody.getSelectionEnd();
+                Log.d(TAG, "selectionStart:"+selectionStart);
+                Log.d(TAG, "selectionEnd:"+selectionEnd);
+                mBody.append(rotated);
+            }
+            return true;
+        case R.id.menu_rot13all_id :
+            String currentText = mBody.getText().toString();
+            String rotated = org.lindev.androkom.Rot13.cipher(currentText);
+            mBody.setText(rotated);
+            return true;
         default:
             return super.onOptionsItemSelected(item);
+        }
+    }
+
+    public boolean onContextItemSelected(MenuItem item) {
+        Log.d(TAG, "===============================================");
+        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+                .getMenuInfo();
+        if (item.getItemId() == rot13menuid) {
+            Log.i(TAG, "rot13 menu selected");
+            return true;
+        } else if (item.getItemId() == copymenuid) {
+            int selectionStart = mBody.getSelectionStart();
+            int selectionEnd = mBody.getSelectionEnd();
+            CharSequence bodyContent= mBody.getText().subSequence(selectionStart, selectionEnd);
+            if (bodyContent.length()>0) {
+                ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+                clipboard.setText(bodyContent);
+            }
+            return true;
+        } else if (item.getItemId() == pastemenuid) {
+            int selectionStart = mBody.getSelectionStart();
+            int selectionEnd = mBody.getSelectionEnd();
+            ClipboardManager clipboard = (ClipboardManager) getSystemService(CLIPBOARD_SERVICE);
+            CharSequence text = clipboard.getText();
+            mBody.append(text, selectionStart, selectionEnd);
+            return true;
+        } else {
+            return super.onContextItemSelected(item);
         }
     }
 
@@ -427,4 +503,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         }
 
     }/* End of Class MyLocationListener */
+    
+    int rot13menuid=0;
+    int copymenuid=0;
+    int pastemenuid=0;
 }

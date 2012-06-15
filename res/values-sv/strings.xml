@@ -243,4 +243,9 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="image_decode_failed">"Kunde inte tolka bilden"</string>
     <string name="no_location">"Ingen position"</string>
     <string name="my_location">"Min position är: "</string>
+    <string name="menu_rot13_label">Rot13</string>
+    <string name="menu_copy_label">Kopiera</string>
+    <string name="menu_paste_label">Klistra in</string>
+    <string name="rot13paste_menu">Rot13 klistra in</string>
+    <string name="rot13all_menu">Rot13 text</string>
 </resources>

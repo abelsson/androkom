@@ -1,7 +1,20 @@
 <?xml version="1.0" encoding="utf-8"?>
-<menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:visible="true"
-	      android:enabled="true"
-	      android:id="@+id/menu_insertlocation_id"
-	      android:title="@string/insertlocation_menu" />            
+<menu xmlns:android="http://schemas.android.com/apk/res/android" >
+
+    <item
+        android:id="@+id/menu_insertlocation_id"
+        android:enabled="true"
+        android:title="@string/insertlocation_menu"
+        android:visible="true"/>
+    <item
+        android:id="@+id/menu_rot13all_id"
+        android:enabled="true"
+        android:title="@string/rot13all_menu"
+        android:visible="true"/>
+    <item
+        android:id="@+id/menu_rot13paste_id"
+        android:enabled="true"
+        android:title="@string/rot13paste_menu"
+        android:visible="true"/>
+
 </menu>

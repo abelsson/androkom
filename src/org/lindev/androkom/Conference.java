@@ -728,6 +728,15 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             t1.invalidate();
             return true;
 
+        case R.id.menu_rot13_id :
+            Log.d(TAG, "Toggle rot13");
+            t1 = (TextView) mSwitcher.getChildAt(0);
+            CharSequence content = t1.getText();
+            CharSequence rot13_content = Rot13.cipher(content.toString());
+            t1.setText(rot13_content);
+            t1.invalidate();
+            return true;
+
 		case R.id.menu_createnewtext_id:
             intent = new Intent(this, TextCreator.class);
             startActivity(intent);
