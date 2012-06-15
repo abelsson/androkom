@@ -60,7 +60,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = false;
+	public static boolean RELEASE_BUILD = true;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
