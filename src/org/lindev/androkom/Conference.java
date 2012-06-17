@@ -753,7 +753,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         case R.id.menu_rot13_id :
             Log.d(TAG, "Toggle rot13");
-            t1 = (TextView) mSwitcher.getChildAt(0);
+            t1 = (TextView) mSwitcher.getCurrentView();
             CharSequence content = t1.getText();
             CharSequence rot13_content = Rot13.cipher(content.toString());
             t1.setText(rot13_content);

@@ -54,7 +54,6 @@ public class Login extends Activity implements ServiceConnection
                 Log.d(TAG, "Called from Share");
             }
         }
-        create_image();
 
         mUsername = (EditText) findViewById(R.id.username);
         mPassword = (EditText) findViewById(R.id.password);
