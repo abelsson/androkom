@@ -60,7 +60,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -94,14 +94,15 @@ public class KomServer extends Service implements RpcEventListener,
      * Class for clients to access.  Because we assume this service always
      * runs in the same process as its clients, we don't deal with IPC.
      */
-    public class LocalBinder extends Binder
+/*    public class LocalBinder extends Binder
     {
         public KomServer getService()
         {
             return KomServer.this;
         }
     }
-
+*/
+	
     /**
      * Small helper class to manage texts.
      */
@@ -233,7 +234,7 @@ public class KomServer extends Service implements RpcEventListener,
     public IBinder onBind(Intent arg0) 
     {
         Log.d(TAG, "onBind");
-        return mBinder;
+        return new LocalBinder<KomServer>(this);
     }
 
     public boolean onUnbind (Intent intent) {
@@ -1548,7 +1549,6 @@ public class KomServer extends Service implements RpcEventListener,
         return re_server;
     }
 
-
     public void setUser(int userId, String userPSW, String server) {
         if((userId>0)&&(userPSW!=null)&&(userPSW.length()>0)){
             re_userid=userId;
@@ -1586,7 +1586,7 @@ public class KomServer extends Service implements RpcEventListener,
     HashMap<String, String> mCommonUserAreaProps = null;
 
 	// This is the object that receives interactions from clients.
-	private final IBinder mBinder = new LocalBinder();
+    //private final IBinder mBinder = new LocalBinder();
 
 	private long lastActivate = 0;
 	

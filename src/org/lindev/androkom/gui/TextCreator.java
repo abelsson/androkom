@@ -10,6 +10,7 @@ import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
@@ -19,8 +20,6 @@ import org.lindev.androkom.text.CreateTextTask.CreateTextRunnable;
 import org.lindev.androkom.text.Recipient;
 import org.lindev.androkom.text.Recipient.RecipientType;
 import org.lindev.androkom.text.SendTextTask;
-import org.lindev.androkom.Rot13;
-
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.ComponentName;
@@ -35,7 +34,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.text.ClipboardManager;
-import android.text.Editable;
 import android.util.Log;
 import android.view.ContextMenu;
 import android.view.Menu;
@@ -134,7 +132,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
         getApp().doBindService(this);
     }
-
+    
     @Override
     protected void onDestroy() {
         if(mlocManager != null) {
@@ -462,7 +460,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
+
         if (!getIntent().getBooleanExtra(INTENT_INITIAL_RECIPIENTS_ADDED, false)) {
             addInitialRecipients();
             getIntent().putExtra(INTENT_INITIAL_RECIPIENTS_ADDED, true);

@@ -7,6 +7,7 @@ import nu.dll.lyskom.ConfInfo;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
@@ -107,6 +108,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
         mMessageField = (EditText) findViewById(R.id.message);
 
         mSendButton.setOnClickListener(this);
+
         getApp().doBindService(this);
     }
 
@@ -250,7 +252,7 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         initialize(getIntent());
     }
 

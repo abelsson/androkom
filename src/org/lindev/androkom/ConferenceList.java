@@ -52,8 +52,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
-        getApp().doBindService(this);
-
         if (savedInstanceState != null) {
             Log.d(TAG, "Got a bundle");
             restoreBundle(savedInstanceState);
@@ -65,6 +63,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
+
+		getApp().doBindService(this);
 	}
 
 	/**
@@ -76,6 +76,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		super.onResume();
 
         Log.d(TAG, "onResume");
+
 		mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -107,12 +108,12 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     @Override
     protected void onDestroy() {
-        super.onDestroy();
         Log.d(TAG, "onDestroy");
+        getApp().doUnbindService(this);
+        super.onDestroy();
         if (mKom != null) {
             mKom.removeAsyncSubscriber(this);
         }
-        getApp().doUnbindService(this);
     }
 
 	/**
@@ -425,7 +426,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "ConfList onServiceConnected");
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         mKom.addAsyncSubscriber(this);
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
             mKom.setUser(re_userId, re_userPSW, re_server);
@@ -455,21 +456,28 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "Conference onSaveInstanceState");
+        Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
 
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        if (mKom != null) {
-            int userId = mKom.getUserId();
-            if (userId > 0) {
-                Log.d(TAG, "Store userid:"+userId);
-                outState.putInt("UserId", userId);
-                outState.putString("UserPSW", mKom.getUserPassword());
-                outState.putString("UserServer", mKom.getServer());
-            } else {
-                Log.d(TAG, "No userid to store");
+        if ((re_userId > 0) && (re_userPSW != null)
+                && (re_userPSW.length() > 0)) {
+            outState.putInt("UserId", re_userId);
+            outState.putString("UserPSW", re_userPSW);
+            outState.putString("UserServer", re_server);
+        } else {
+            if (mKom != null) {
+                int userId = mKom.getUserId();
+                if (userId > 0) {
+                    Log.d(TAG, "Store userid:" + userId);
+                    outState.putInt("UserId", userId);
+                    outState.putString("UserPSW", mKom.getUserPassword());
+                    outState.putString("UserServer", mKom.getServer());
+                } else {
+                    Log.d(TAG, "No userid to store");
+                }
             }
         }
     }

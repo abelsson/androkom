@@ -1,9 +1,12 @@
 package org.lindev.androkom;
 
 import android.app.Activity;
+import android.content.ComponentName;
+import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
 import android.os.Bundle;
+import android.os.IBinder;
 import android.util.Log;
 import android.view.MotionEvent;
 import android.view.View;
@@ -12,7 +15,7 @@ import android.view.View.OnTouchListener;
 import android.widget.ImageView;
 import android.widget.Toast;
 
-public class imagesactivity extends Activity {
+public class imagesactivity extends Activity implements ServiceConnection {
     private static final boolean DEBUG_TITLE = true;
     
     private static final String TAG = "Androkom imagesactivity";
@@ -41,8 +44,16 @@ public class imagesactivity extends Activity {
                 return false;
             }
         });
+        getApp().doBindService(this);
     }
 
+    @Override
+    protected void onDestroy() {
+        getApp().doUnbindService(this);
+        super.onDestroy();
+    }
+
+    @Override
     public void onStart() {
         super.onStart();
         if (DEBUG_TITLE) {
@@ -50,6 +61,7 @@ public class imagesactivity extends Activity {
         }
     }
     
+    @Override
     public void onRestart() {
         super.onRestart();
         if (DEBUG_TITLE) {
@@ -57,5 +69,22 @@ public class imagesactivity extends Activity {
         }        
     }
     
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+
     Bitmap bmImg;
+
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected start");
+        mKom = ((LocalBinder<KomServer>) service).getService();
+    }
+
+    public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
+        mKom = null;        
+    }
+    
+    KomServer mKom;   
 }

@@ -1,10 +1,5 @@
 package org.lindev.androkom;
 
-import nu.dll.lyskom.ConfInfo;
-
-import org.lindev.androkom.LookupNameTask.LookupType;
-import org.lindev.androkom.LookupNameTask.RunOnSuccess;
-
 import android.app.Activity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
@@ -13,13 +8,9 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.view.View;
-import android.widget.AdapterView;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.Spinner;
 import android.widget.Toast;
-import android.widget.AdapterView.OnItemSelectedListener;
 
 /**
  * Add new comment dialog. 
@@ -68,7 +59,6 @@ public class AddNewCommentToText extends Activity implements ServiceConnection {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addnewcommenttotext);
-        getApp().doBindService(this);
 
         mTextNo = (Integer) getIntent().getExtras().get(INTENT_TEXTNO);
 
@@ -80,6 +70,7 @@ public class AddNewCommentToText extends Activity implements ServiceConnection {
                 doAddNewCommentToText();
             }
         });
+        getApp().doBindService(this);
     }
 
     @Override
@@ -99,7 +90,7 @@ public class AddNewCommentToText extends Activity implements ServiceConnection {
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mKom = ((KomServer.LocalBinder)service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
     }
 
     public void onServiceDisconnected(ComponentName name) {

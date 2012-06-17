@@ -60,7 +60,6 @@ public class Endast extends Activity implements ServiceConnection {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.endast);
-        getApp().doBindService(this);
 
         mConfName = (EditText) findViewById(R.id.confname);
         mTexts = (EditText) findViewById(R.id.num_texts);
@@ -70,6 +69,7 @@ public class Endast extends Activity implements ServiceConnection {
                 doEndast();
             }
         });
+        getApp().doBindService(this);
     }
 
     @Override
@@ -114,7 +114,7 @@ public class Endast extends Activity implements ServiceConnection {
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mKom = ((KomServer.LocalBinder)service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
     }
 
     public void onServiceDisconnected(ComponentName name) {

@@ -44,8 +44,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         super.onCreate(savedInstanceState);
 
 		setContentView(R.layout.whoison);
-        getApp().doBindService(this);
-        who_type = (Integer) getIntent().getExtras().get("who_type");
+
+		who_type = (Integer) getIntent().getExtras().get("who_type");
 
         // Set Window Title
         switch(who_type) {
@@ -61,6 +61,8 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         
         ListView lv = getListView();
         lv.setTextFilterEnabled(true);
+
+        getApp().doBindService(this);
     }
     
     /**
@@ -68,6 +70,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
      */
     @Override
 	public void onResume() {
+        Log.d(TAG, "onResume");
 		super.onResume();
 
 		new populatePersonsTask().execute();
@@ -79,6 +82,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     @Override
     public void onPause()
     {
+        Log.d(TAG, "onPause");
         super.onPause();
     }
     
@@ -303,7 +307,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     }
     
 	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();		
+        mKom = ((LocalBinder<KomServer>) service).getService();
 	}
 
 	public void onServiceDisconnected(ComponentName name) {

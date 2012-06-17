@@ -3,18 +3,17 @@ package org.lindev.androkom.gui;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.URI;
 import java.util.ArrayList;
 import java.util.List;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.Conference;
 import nu.dll.lyskom.RpcFailure;
-import nu.dll.lyskom.Session;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
@@ -31,7 +30,6 @@ import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
-import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -118,10 +116,10 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         initializeTabs();
         initializeButtons();
         initializeImg();
-        
+
         getApp().doBindService(this);
     }
-
+    
     @Override
     protected void onDestroy() {
         getApp().doUnbindService(this);
@@ -433,7 +431,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
         Log.d(TAG, "onServiceConnected 1");
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         if (!getIntent().getBooleanExtra(INTENT_INITIAL_RECIPIENTS_ADDED, false)) {
             addInitialRecipients();
             getIntent().putExtra(INTENT_INITIAL_RECIPIENTS_ADDED, true);

@@ -86,7 +86,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
     	
         super.onCreate(savedInstanceState);
-        getApp().doBindService(this);
 
         setContentView(R.layout.conference);
 
@@ -175,16 +174,40 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         mGestureDetector = new GestureDetector(new MyGestureDetector());
        
         if (savedInstanceState != null) {
-            Log.d(TAG, "Got a bundle");
+            Log.d(TAG, "onCreate Got a bundle");
             restoreBundle(savedInstanceState);
         }
+        getApp().doBindService(this);
     }
     
 
+    protected void onResume() {
+        Log.d(TAG, "onResume");
+        super.onResume();
+
+        if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
+            mKom.setUser(re_userId, re_userPSW, re_server);
+        } else {
+            if(mKom==null) {
+                Log.d(TAG, "mKom == null");
+            }
+            if(re_userId<1){
+                Log.d(TAG, "no userId");
+            }
+            if(re_userPSW==null){
+                Log.d(TAG, "null password");
+            } else {
+                if(re_userPSW.length()<1){
+                    Log.d(TAG, "short password");
+                }
+            }
+        }
+    }
+    
 	@Override
 	protected void onDestroy() {
+        getApp().doUnbindService(this);
 		super.onDestroy();
-		getApp().doUnbindService(this);
 		Log.d(TAG, "Destroyed");
 	}
 
@@ -322,12 +345,12 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             else if (text != null) {
                 mState.currentText.push(text);
                 mState.currentTextIndex = mState.currentText.size() - 1;
-                Log.i(TAG, stackAsString());
+                //Log.i(TAG, stackAsString());
 
-                Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
-                Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
-                Log.d(TAG, "AUTHOR: "+text.getAuthor());
-                Log.d(TAG, "SUBJECT: "+text.getSubject());
+                //Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
+                //Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
+                //Log.d(TAG, "AUTHOR: "+text.getAuthor());
+                //Log.d(TAG, "SUBJECT: "+text.getSubject());
                 //Log.d(TAG, "BODY: "+text.getBody());
                 if (text.getAllHeaders().contains("ContentType:image/")) {
                     mSwitcher.setText("Text "+text.getTextNo()+getString(R.string.is_image));
@@ -1193,33 +1216,41 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is
         // killed and restarted.
-        if (mKom != null) {
-            int userId = mKom.getUserId();
-            if (userId > 0) {
-                Log.d(TAG, "Store userid:"+userId);
-                outState.putInt("UserId", userId);
-                outState.putString("UserPSW", mKom.getUserPassword());
-                outState.putString("UserServer", mKom.getServer());
-            } else {
-                Log.d(TAG, "No userid, bailing out");
-                finish();
+        if ((re_userId > 0) && (re_userPSW != null)
+                && (re_userPSW.length() > 0)) {
+            outState.putInt("UserId", re_userId);
+            outState.putString("UserPSW", re_userPSW);
+            outState.putString("UserServer", re_server);
+        } else {
+            if (mKom != null) {
+                int userId = mKom.getUserId();
+                if (userId > 0) {
+                    Log.d(TAG, "Store userid:" + userId);
+                    outState.putInt("UserId", userId);
+                    outState.putString("UserPSW", mKom.getUserPassword());
+                    outState.putString("UserServer", mKom.getServer());
+                } else {
+                    Log.d(TAG, "No userid, bailing out");
+                    finish();
+                }
             }
         }
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {
         super.onRestoreInstanceState(savedInstanceState);
-        Log.d(TAG, "Conference onRestoreInstanceState");
+        Log.d(TAG, "onRestoreInstanceState");
 
         if (savedInstanceState != null) {
-            Log.d(TAG, "got a bundle");
+            Log.d(TAG, "on RestoreInstanceState got a bundle");
             restoreBundle(savedInstanceState);
         }
     }
 
     private void restoreBundle(Bundle savedInstanceState) {
+        Log.d(TAG, "restoreBundle start");
         if (savedInstanceState != null) {
-            Log.d(TAG, "ConferenceList restoreBundle got a bundle");
+            Log.d(TAG, "restoreBundle got a bundle");
             // Restore UI state from the savedInstanceState.
             // This bundle has also been passed to onCreate.
             re_userId = savedInstanceState.getInt("UserId");
@@ -1247,7 +1278,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected start");
-        mKom = ((KomServer.LocalBinder)service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         mKom.setShowFullHeaders(mState.ShowFullHeaders);
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
             mKom.setUser(re_userId, re_userPSW, re_server);

@@ -43,8 +43,6 @@ public class Login extends Activity implements ServiceConnection
         super.onCreate(savedInstanceState);
         setContentView(R.layout.login);
 
-        getApp().doBindService(this);
-
         // if this is from the share menu
         Intent intent = getIntent();
         Bundle extras = intent.getExtras();
@@ -71,12 +69,13 @@ public class Login extends Activity implements ServiceConnection
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });        
+        getApp().doBindService(this);
     }
-
+    
 	@Override
 	protected void onDestroy() {
 	    Log.d(TAG, "onDestroy");
-		getApp().doUnbindService(this);
+        getApp().doUnbindService(this);
 		super.onDestroy();
 	}
    
@@ -398,16 +397,16 @@ public class Login extends Activity implements ServiceConnection
         return (App)getApplication();
     }
 
-	public void onServiceConnected(ComponentName name, IBinder service) {
-	    try {
-	        mKom = ((KomServer.LocalBinder)service).getService();
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        try {
+            mKom = ((LocalBinder<KomServer>) service).getService();
 
-		create_image();
-	    } catch (Exception e) {
-	        Log.d(TAG, "Exception: "+e);
-	        e.printStackTrace();
-	    }
-	}
+            create_image();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception: " + e);
+            e.printStackTrace();
+        }
+    }
 
 	public void onServiceDisconnected(ComponentName name) {
 		mKom = null;		

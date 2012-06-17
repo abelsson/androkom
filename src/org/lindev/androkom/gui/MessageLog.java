@@ -2,6 +2,7 @@ package org.lindev.androkom.gui;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.AsyncMessages;
+import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
@@ -32,25 +33,6 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
         mLogIndex = 0;
 
         getApp().doBindService(this);
-    }
-
-    @Override
-    public void onResume() {
-        super.onResume();
-
-        if (mKom != null) {
-            mKom.addAsyncSubscriber(this);
-            update();
-        }
-    }
-
-    @Override
-    public void onPause() {
-        if (mKom != null) {
-            mKom.removeAsyncSubscriber(this);
-        }
-
-        super.onPause();
     }
 
     @Override
@@ -88,7 +70,7 @@ public class MessageLog extends ListActivity implements AsyncMessageSubscriber, 
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         mKom.addAsyncSubscriber(this);
         update();
     }

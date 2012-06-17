@@ -6,7 +6,6 @@ import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 
 import android.app.Activity;
-import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.ServiceConnection;
@@ -59,7 +58,6 @@ public class JoinConference extends Activity implements ServiceConnection {
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.joinconference);
-        getApp().doBindService(this);
 
         mConfName = (EditText) findViewById(R.id.confname);
         Button joinButton = (Button) findViewById(R.id.do_joinconference);
@@ -68,8 +66,9 @@ public class JoinConference extends Activity implements ServiceConnection {
                 doJoinConference();
             }
         });
+        getApp().doBindService(this);
     }
-
+    
     @Override
     public void onDestroy() {
         getApp().doUnbindService(this);
@@ -92,7 +91,7 @@ public class JoinConference extends Activity implements ServiceConnection {
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mKom = ((KomServer.LocalBinder)service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
     }
 
     public void onServiceDisconnected(ComponentName name) {

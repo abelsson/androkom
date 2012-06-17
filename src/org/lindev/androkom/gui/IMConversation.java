@@ -5,6 +5,7 @@ import java.util.Observer;
 
 import org.lindev.androkom.App;
 import org.lindev.androkom.KomServer;
+import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.R;
 import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.im.SendMessageTask;
@@ -107,6 +108,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         }
     }
 
+    
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -268,7 +270,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
     }
 
     public void onServiceConnected(final ComponentName name, final IBinder service) {
-        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
         initialize(getIntent());
     }
 

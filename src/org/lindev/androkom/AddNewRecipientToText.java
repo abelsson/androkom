@@ -71,7 +71,6 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
           mTextType = pos;
         }
 
-        @SuppressWarnings("unchecked")
         public void onNothingSelected(AdapterView parent) {
           // Do nothing.
         }
@@ -81,7 +80,6 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.addnewrecipienttotext);
-        getApp().doBindService(this);
 
         mTextNo = (Integer) getIntent().getExtras().get(INTENT_TEXTNO);
 
@@ -100,6 +98,7 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
                 doAddNewRecipientToText();
             }
         });
+        getApp().doBindService(this);
     }
 
     @Override
@@ -124,7 +123,7 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
-        mKom = ((KomServer.LocalBinder)service).getService();
+        mKom = ((LocalBinder<KomServer>) service).getService();
     }
 
     public void onServiceDisconnected(ComponentName name) {

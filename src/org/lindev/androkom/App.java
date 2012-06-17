@@ -87,7 +87,7 @@ public class App extends Application implements ServiceConnection
         protected ServiceConnection doInBackground(final ServiceConnection... args) {
             Log.d(TAG, "waiting to doUnbind");
             try {
-                Thread.sleep(5000);
+                Thread.sleep(500);
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
                 Log.d(TAG, "DelayedUnbindTask doInBackground interrupted:"+e);
@@ -97,8 +97,12 @@ public class App extends Application implements ServiceConnection
         }
 
         protected void onPostExecute(ServiceConnection connection) {
-            Log.d(TAG, "doing delayed doUnbind");
-            unbindService(connection);
+            Log.d(TAG, "doing delayed doUnbind: "+connection.toString());
+            try {
+                unbindService(connection);
+            } catch (Exception e) {
+                Log.d(TAG, "Couldn't unbind service:" + e);
+            }
         }
 
     }
@@ -107,13 +111,13 @@ public class App extends Application implements ServiceConnection
 
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
-        Log.d(TAG, "onServiceConnected");
+        Log.d(TAG, "onServiceConnected:"+name);
         		
 	}
 
 	public void onServiceDisconnected(ComponentName name) 
 	{
-        Log.d(TAG, "onServiceDisconnected");
+        Log.d(TAG, "onServiceDisconnected"+name);
 	}
 
     /**
