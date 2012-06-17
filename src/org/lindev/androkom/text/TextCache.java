@@ -131,7 +131,7 @@ class TextCache {
                 
                 int marks = text.getMarks();
                 if (marks>0) {
-                    headersString.append("Marked by "+marks+" persons\n");
+                    headersString.append(mKom.getString(R.string.marked_by)+marks+mKom.getString(R.string.marked_by_persons));
                 }
                 items = text.getRecipients();
                 if (items.length > 0) {
@@ -174,7 +174,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_to));
                         headersString.append(items[i]);
-                        conditionalAppend(headersString, " by ", getAuthorName(items[i]));
+                        conditionalAppend(headersString, mKom.getString(R.string.by_author), getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
@@ -183,7 +183,7 @@ class TextCache {
                     for (int i = 0; i < items.length; i++) {
                         headersString.append(mKom.getString(R.string.header_comment_in));
                         headersString.append(items[i]);
-                        conditionalAppend(headersString," by ", getAuthorName(items[i]));
+                        conditionalAppend(headersString,mKom.getString(R.string.by_author), getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
@@ -283,7 +283,7 @@ class TextCache {
             }
             if (text == null) {
                 text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
-                clearCacheStat();
+                //clearCacheStat();
             } else {
                 mTextCache.put(mTextNo, text);
                 synchronized(mTextCache) {
@@ -356,7 +356,7 @@ class TextCache {
         }
         if(text==null) {
             Log.d(TAG, "Could not find text");
-            clearCacheStat();
+            //clearCacheStat();
         }
         Log.d(TAG, "getText returning");
         return text;
@@ -366,7 +366,7 @@ class TextCache {
         this.mShowFullHeaders = showFullHeaders;
     }
     
-    void clearCacheStat() {
+/*    void clearCacheStat() {
         synchronized (mTextCache) {
             mTextCache.clear();
             mTextCache.notifyAll();
@@ -375,4 +375,5 @@ class TextCache {
             mSent.clear();
         }
     }
+    */
 }

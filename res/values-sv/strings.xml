@@ -248,4 +248,7 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="menu_paste_label">Klistra in</string>
     <string name="rot13paste_menu">Rot13 klistra in</string>
     <string name="rot13all_menu">Rot13 text</string>
+    <string name="by_author">" av "</string>
+    <string name="marked_by">"Markerad av "</string>
+    <string name="marked_by_persons">" personer\n"</string>
 </resources>

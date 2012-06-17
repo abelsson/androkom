@@ -684,6 +684,10 @@ public class KomServer extends Service implements RpcEventListener,
     public String login(int userid, String password, String server) 
     {
     	Log.d(TAG, "Trying to login userid:"+userid);
+        if (s == null) {
+            s = new Session();
+            s.addRpcEventListener(this);
+        }
         usernames = new ConfInfo[0];
         if (!s.getConnected()) {
             if (connect(server) != 0)
