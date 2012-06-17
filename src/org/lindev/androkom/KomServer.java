@@ -14,6 +14,7 @@ import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.KomTime;
+import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.Person;
 import nu.dll.lyskom.RpcCall;
@@ -43,6 +44,7 @@ import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
+import android.os.AsyncTask;
 import android.os.Binder;
 import android.os.IBinder;
 import android.text.Spannable;
@@ -82,7 +84,7 @@ public class KomServer extends Service implements RpcEventListener,
                 setConnected(activeNetInfo.isConnected());
                 //Log.d(TAG, "onReceive6");
             } else {
-                Log.d(TAG, "mConnReceiver is not Connected:");
+                Log.d(TAG, "mConnReceiver is not Connected.");
                 setConnected(false);
                 //Log.d(TAG, "onReceive7");
             }
@@ -308,7 +310,29 @@ public class KomServer extends Service implements RpcEventListener,
 
         s = null;
     }
-    
+
+    /**
+     * When no need to wait for reconnect
+     * 
+     */
+    private class ReconnectTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "ReconnectTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                reconnect();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to reconnect exception:"+e1);
+                //e1.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+
     public void reconnect() {
         Log.d(TAG, "KomServer trying to reconnect 1");
     	logout();
@@ -1338,6 +1362,9 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (IOException e) {
             Log.d(TAG, "komserver.lookupName new_text IOException:" + e);
             // e.printStackTrace();
+        } catch (ArrayIndexOutOfBoundsException e) {
+            Log.d(TAG, "Ran out of index, trying to recover. name="+name+" wantPersons="+wantPersons+" wantConfs="+wantConfs);
+            e.printStackTrace();
         }
         return text;
     }
@@ -1350,11 +1377,13 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             text = s.getTextStat(textNo, refreshCache);
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getTextStat new_text RpcFailure:" + e);
+            Log.d(TAG, "komserver.getTextStat RpcFailure:" + e);
             // e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "komserver.getTextStat new_text IOException:" + e);
+            Log.d(TAG, "komserver.getTextStat IOException:" + e);
             // e.printStackTrace();
+        } catch (ClassCastException e) {
+            Log.d(TAG, "komserver.getTextStat ClassCastException:" + e);
         }
         return text;
     }
@@ -1569,9 +1598,20 @@ public class KomServer extends Service implements RpcEventListener,
 		return s.getConnected();
 	}
 
-	public void setConnected(boolean val) {
-	    connected = val;
-	}
+    public void setConnected(boolean val) {
+        connected = val;
+        if (val) {
+            new ReconnectTask().execute();
+        } else {
+            if (s != null) {
+                try {
+                    s.disconnect(true);
+                } catch (Exception e) {
+                    Log.d(TAG, "setConnected False failed:" + e);
+                }
+            }
+        }
+    }
 	
 	public void error(String s) {
 		Log.e("androkom", s);

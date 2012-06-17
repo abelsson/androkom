@@ -339,6 +339,7 @@ class TextCache {
                 if(!mKom.isConnected()) {
                     Log.d(TAG, " getText not connected in loop");
                     currentThread.interrupt();
+                    MaxWaits=0;
                 }
                 text = mTextCache.get(textNo);
                 if (text == null) {

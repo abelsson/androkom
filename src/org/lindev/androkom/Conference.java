@@ -327,6 +327,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         protected void onPostExecute(final TextInfo text) 
         {
             Log.d(TAG, "LoadMessageTask.onPostExecute");
+            setProgressBarIndeterminateVisibility(false);
             //int curr = -1;
             //if (mState.hasCurrent()) {
             //    curr = mState.getCurrent().getTextNo();
@@ -376,7 +377,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 mKom.logout();
                 finish();
             }
-            setProgressBarIndeterminateVisibility(false);
 //            if (curr > 0) {
 //                if (ConferencePrefs.getMarkTextRead(getBaseContext()))
 //                {
