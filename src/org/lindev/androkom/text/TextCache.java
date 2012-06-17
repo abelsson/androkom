@@ -283,7 +283,7 @@ class TextCache {
             }
             if (text == null) {
                 text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
-                //clearCacheStat();
+                clearCacheStat();
             } else {
                 mTextCache.put(mTextNo, text);
                 synchronized(mTextCache) {
@@ -357,7 +357,7 @@ class TextCache {
         }
         if(text==null) {
             Log.d(TAG, "Could not find text");
-            //clearCacheStat();
+            clearCacheStat();
         }
         Log.d(TAG, "getText returning");
         return text;
@@ -367,7 +367,7 @@ class TextCache {
         this.mShowFullHeaders = showFullHeaders;
     }
     
-/*    void clearCacheStat() {
+    void clearCacheStat() {
         synchronized (mTextCache) {
             mTextCache.clear();
             mTextCache.notifyAll();
@@ -376,5 +376,4 @@ class TextCache {
             mSent.clear();
         }
     }
-    */
 }

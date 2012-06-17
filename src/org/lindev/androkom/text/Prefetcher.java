@@ -352,7 +352,7 @@ class Prefetcher {
             Log.i(TAG, "TextFetcher restartPrefetcher(), interrupting old PrefetchRunner");
             mPrefetchRunner.mIsInterrupted = true;
             mPrefetchRunner.interrupt();
-            //mTextCache.clearCacheStat();
+            mTextCache.clearCacheStat();
         }
         mUnreadQueue.clear();
         mPrefetchRunner = new PrefetchNextUnread(confNo);
