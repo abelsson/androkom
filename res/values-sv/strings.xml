@@ -251,4 +251,7 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="by_author">" av "</string>
     <string name="marked_by">"Markerad av "</string>
     <string name="marked_by_persons">" personer\n"</string>
+    <string name="showheaderslevel_title">Huvudnivå</string>
+    <string name="showheaderslevel_summary">Mängd "brevhuvud" att visa om en text</string>
+    <string name="showheaderslevel_dialog_title_prefs">Brevhuvud nivå</string>
 </resources>

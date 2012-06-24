@@ -27,7 +27,7 @@ class TextCache {
     private final Set<Integer> mSent;
     private final Map<Integer, TextInfo> mTextCache;
 
-    private boolean mShowFullHeaders = true;
+    private int mShowHeadersLevel = 1;
 
     TextCache(final KomServer kom) {
         this.mKom = kom;
@@ -126,8 +126,8 @@ class TextCache {
                 BodyString = text.getBodyString8();
             }
             StringBuilder headersString = new StringBuilder();
-            if (mShowFullHeaders) {
-                int[] items;
+            int[] items;
+            if (mShowHeadersLevel > 0) {
                 
                 int marks = text.getMarks();
                 if (marks>0) {
@@ -211,6 +211,8 @@ class TextCache {
                         headersString.append('\n');
                     }
                 }
+            }
+                if (mShowHeadersLevel > 1) {
                 List<AuxItem> contentType_item = text.getAuxItems(AuxItem.tagContentType);
                 if (contentType_item.size() > 0) {
                     for (int i = 0; i < contentType_item.size(); i++) {
@@ -235,22 +237,22 @@ class TextCache {
                         headersString.append('\n');
                     }
                 }
+            }
                 List<AuxItem> fast_item = text.getAuxItems(AuxItem.tagFastReply);
-                if (fast_item.size() > 0) {
-                    for (int i = 0; i < fast_item.size(); i++) {
+                    if (fast_item.size() > 0) {
+                        for (int i = 0; i < fast_item.size(); i++) {
                         headersString.append(mKom.getString(R.string.fast_aux_label));
                         headersString.append(fast_item.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }
-            }
             StringBuilder allHeadersString = new StringBuilder();
             allHeadersString.append("ContentType:"+text.getContentType());
             
             Log.d(TAG, "getTextFromServer returning");
             return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, allHeadersString.toString(),
                     headersString.toString(),
-                    SubjectString, BodyString, text.getBody(), mShowFullHeaders);
+                    SubjectString, BodyString, text.getBody(), mShowHeadersLevel);
         }
 
         private void conditionalAppend(StringBuilder headersString,
@@ -363,8 +365,8 @@ class TextCache {
         return text;
     }
 
-    void setShowFullHeaders(final boolean showFullHeaders) {
-        this.mShowFullHeaders = showFullHeaders;
+    void setShowHeadersLevel(final int mShowHeadersLevel) {
+        this.mShowHeadersLevel = mShowHeadersLevel;
     }
     
     void clearCacheStat() {

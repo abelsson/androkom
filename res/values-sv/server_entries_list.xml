@@ -1,0 +1,35 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="server_entries_list">
+    <item>Other</item>
+    <item>LysKOM</item>
+    <item>LysCOM (LysKOM in English)</item>
+    <item>LuddKOM</item>
+    <item>RydKOM</item>
+    <item>UppKOM</item>
+    <item>MdS-KOM</item>
+    <item>TokKOM</item>
+    <item>HesaKOM</item>
+    <item>CD-KOM</item>
+    <item>Roxen Community KOM</item>
+    <item>DSKOM</item>
+    <item>SnoppKOM</item>
+    <item>MysKOM</item>
+  </array>
+  <array name="server_values_list">
+    <item>"@"</item>
+    <item>kom.lysator.liu.se</item>
+    <item>com.lysator.liu.se</item>
+    <item>kom.ludd.luth.se</item>
+    <item>kom.hem.liu.se</item>
+    <item>kom.update.uu.se</item>
+    <item>kom.mds.mdh.se</item>
+    <item>kom.stacken.kth.se</item>
+    <item>com.helsinki.fi</item>
+    <item>kom.cd.chalmers.se</item>
+    <item>community.roxen.com</item>
+    <item>kom.ds.hj.se</item>
+    <item>kom.sno.pp.se</item>
+    <item>myskom.kfib.org</item>
+  </array>
+</resources>

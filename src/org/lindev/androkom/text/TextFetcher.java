@@ -47,7 +47,7 @@ public class TextFetcher {
         } catch (final Exception e) {
             Log.d(TAG, "getParentToText " + e);
             //e.printStackTrace();
-            mKom.reconnect();
+            //mKom.reconnect();
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
         
@@ -70,7 +70,7 @@ public class TextFetcher {
         mPrefetcher.restart(mKom.getCurrentConference());
     }
 
-    public void setShowFullHeaders(final boolean showFullHeaders) {
-        mTextCache.setShowFullHeaders(showFullHeaders);
+    public void setShowHeadersLevel(final int mShowHeadersLevel) {
+        mTextCache.setShowHeadersLevel(mShowHeadersLevel);
     }
 }

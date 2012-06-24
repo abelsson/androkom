@@ -45,7 +45,6 @@ import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Binder;
 import android.os.IBinder;
 import android.text.Spannable;
 import android.util.Log;
@@ -117,7 +116,7 @@ public class KomServer extends Service implements RpcEventListener,
         public TextInfo(Context context, int textNo, String author,
                 String date, String all_headers, String visible_headers,
                 String subject, String body, byte[] rawBody,
-                boolean showFullHeaders) {
+                int ShowHeadersLevel) {
             this.textNo = textNo;
             this.author = author;
             this.date = date;
@@ -127,7 +126,7 @@ public class KomServer extends Service implements RpcEventListener,
             this.body = body;
             this.rawBody = rawBody;
             this.spannable = Conference.formatText(context, this,
-                    showFullHeaders);
+                    ShowHeadersLevel);
         }
 
         public static TextInfo createText(Context context, int id) {
@@ -135,19 +134,19 @@ public class KomServer extends Service implements RpcEventListener,
             case ALL_READ:
                 Log.d(TAG, "createText ALL_READ");
                 return new TextInfo(context, -1, "", "", "", "", "", context
-                        .getString(R.string.all_read), null, false);
+                        .getString(R.string.all_read), null, 1);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
                 return new TextInfo(context, -2, "", "", "", "", "", context
-                        .getString(R.string.error_fetching_text), null, false);
+                        .getString(R.string.error_fetching_text), null, 1);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
                 return new TextInfo(context, -1, "", "", "", "", "", context
-                        .getString(R.string.error_no_parent), null, false);
+                        .getString(R.string.error_no_parent), null, 1);
             default:
                 Log.d(TAG, "createText default");
                 return new TextInfo(context, -2, "", "", "", "", "", context
-                        .getString(R.string.error_fetching_text), null, false);
+                        .getString(R.string.error_fetching_text), null, 1);
             }
         }
 
@@ -254,58 +253,74 @@ public class KomServer extends Service implements RpcEventListener,
      * we want to log out and close the connection now.
      */
     @Override
-    public void onDestroy() 
-    {
+    public void onDestroy() {
         Log.d(TAG, "onDestroy");
 
         imLogger.close();
         // Tell the user we stopped.
-        Toast.makeText(this, getString(R.string.komserver_stopped), Toast.LENGTH_SHORT).show();
+        Toast.makeText(this, getString(R.string.komserver_stopped),
+                Toast.LENGTH_SHORT).show();
 
         unregisterReceiver(mConnReceiver);
 
+        logout();
+        getApp().shutdown();
+
+        super.onDestroy();
+    }
+
+    /**
+     * When no need to wait for logout
+     * 
+     */
+    private class LogoutTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "LogoutTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                logout();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to logout exception:"+e1);
+                //e1.printStackTrace();
+            }
+            return null;
+        }
+    }
+
+    public void logout() {
+        Log.d(TAG, "KomServer logout");
         if (s != null) {
             try {
                 if (s.getState() == Session.STATE_LOGIN)
                     s.logout(true);
                 Log.i("androkom", "logged out");
-
-                if (s.getState() == Session.STATE_CONNECTED)
-                    s.disconnect(false);
-
-                Log.i("androkom", "disconnected");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
-                Log.d(TAG, "onDestroy1 " + e);
-                //e.printStackTrace();
+                Log.d(TAG, "logout1 " + e);
+                // e.printStackTrace();
             }
 
-            s.removeRpcEventListener(this);
-            s = null;
-        }
-        getApp().shutdown();
-        
-        super.onDestroy();
-    }
+            try {
+                s.disconnect(true);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "logout2 " + e);
+                // e.printStackTrace();
+            }
 
-    public void logout() {
-        Log.d(TAG, "KomServer logout");
-        try {
-            if (s != null) {
-                if (s.getState() == Session.STATE_LOGIN)
-                    s.logout(true);
-                Log.i("androkom", "logged out");
-
-                if (s.getState() == Session.STATE_CONNECTED)
-                    s.disconnect(false);
-
-                s.removeRpcEventListener(this);
+            if(s!=null) {
+                try {
+                    s.removeRpcEventListener(this);
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "logout3 " + e);
+                    // e.printStackTrace();
+                }
             }
             Log.i("androkom", "disconnected");
-        } catch (Exception e) {
-            // TODO Auto-generated catch block
-            Log.d(TAG, "onDestroy2 " + e);
-            //e.printStackTrace();
         }
 
         s = null;
@@ -335,7 +350,7 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void reconnect() {
         Log.d(TAG, "KomServer trying to reconnect 1");
-    	logout();
+        new LogoutTask().execute();
     	
         Log.d(TAG, "KomServer trying to reconnect 2");
 
@@ -659,11 +674,23 @@ public class KomServer extends Service implements RpcEventListener,
 
     	try {
     		if (!s.getConnected()) {
-    			if (connect(server) != 0)
-    				return getString(R.string.error_could_not_connect);
+    			if (connect(server) != 0) {
+                    if (s != null) {
+                        s.disconnect(true);
+                    }
+    				s = null;
+                    return getString(R.string.error_could_not_connect);
+    			}
     		}
         } catch (Exception e) {
             Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+            try {
+                s.disconnect(true);
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                //e1.printStackTrace();
+            }
+            s = null;
             //e.printStackTrace();
             return getString(R.string.error_unknown);
         }
@@ -714,8 +741,18 @@ public class KomServer extends Service implements RpcEventListener,
         }
         usernames = new ConfInfo[0];
         if (!s.getConnected()) {
-            if (connect(server) != 0)
+            if (connect(server) != 0) {
+                try {
+                    if (s != null) {
+                        s.disconnect(true);
+                    }
+                } catch (IOException e) {
+                    // TODO Auto-generated catch block
+                    //e.printStackTrace();
+                }
+                s = null;
                 return getString(R.string.error_could_not_connect);
+            }
         }
 
         try {
@@ -1216,8 +1253,8 @@ public class KomServer extends Service implements RpcEventListener,
 		return res;
 	}
 
-	public void setShowFullHeaders(final boolean h) {
-		textFetcher.setShowFullHeaders(h);
+	public void setShowHeadersLevel(final int h) {
+		textFetcher.setShowHeadersLevel(h);
 	}
 
     public ConferenceInfo[] getUserNames() {
@@ -1601,7 +1638,7 @@ public class KomServer extends Service implements RpcEventListener,
     public void setConnected(boolean val) {
         connected = val;
         if (val) {
-            new ReconnectTask().execute();
+            //new ReconnectTask().execute();
         } else {
             if (s != null) {
                 try {
@@ -1609,6 +1646,7 @@ public class KomServer extends Service implements RpcEventListener,
                 } catch (Exception e) {
                     Log.d(TAG, "setConnected False failed:" + e);
                 }
+                s = null;
             }
         }
     }

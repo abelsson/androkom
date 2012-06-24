@@ -4,6 +4,7 @@ import android.content.Context;
 import android.os.Bundle;
 import android.preference.PreferenceActivity;
 import android.preference.PreferenceManager;
+import android.util.Log;
 
 public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_SERVER = "server";
@@ -15,8 +16,8 @@ public class ConferencePrefs extends PreferenceActivity {
 	private static final String OPT_AUTOLOGIN = "autologin";
 	private static final Boolean OPT_AUTOLOGIN_DEF = false;
 
-	private static final String OPT_SHOWFULLHEADERS = "showfullheaders";
-	private static final Boolean OPT_SHOWFULLHEADERS_DEF = false;
+	private static final String OPT_SHOWHEADERSLEVEL = "showheaderslevel";
+	private static final String OPT_SHOWHEADERSLEVEL_DEF = "1";
 
     private static final String OPT_MARKTEXTREAD = "marktextread";
     private static final Boolean OPT_MARKTEXTREAD_DEF = true;
@@ -67,9 +68,9 @@ public class ConferencePrefs extends PreferenceActivity {
 		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_AUTOLOGIN, OPT_AUTOLOGIN_DEF);
 	}
 
-	public static Boolean getShowFullHeaders(Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_SHOWFULLHEADERS, OPT_SHOWFULLHEADERS_DEF);
-	}
+    public static String getShowHeadersLevel(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_SHOWHEADERSLEVEL, OPT_SHOWHEADERSLEVEL_DEF);
+    }
 
     public static Boolean getMarkTextRead(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_MARKTEXTREAD, OPT_MARKTEXTREAD_DEF);
@@ -122,4 +123,5 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static boolean getforce646decode(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_FORCE646DECODE, OPT_FORCE646DECODE_DEF);    }
+
 }

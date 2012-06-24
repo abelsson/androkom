@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="showheaderslevel_entries_list">
+    <item>Minimal</item>
+    <item>Normal</item>
+    <item>All</item>
+  </array>
+  <array name="showheaderslevel_values_list">
+    <item>"0"</item>
+    <item>"1"</item>
+    <item>"2"</item>
+  </array>
+</resources>

@@ -230,7 +230,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
 					retlist = mKom.fetchPersons(populatePersonsT, whoType);
 				} else {
 					Log.d(TAG, "Can't fetch persons when no connection");
-					mKom.reconnect();
+					//mKom.reconnect();
 				}
 			} else {
 				Log.d(TAG, "mKom is null");

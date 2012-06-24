@@ -7,11 +7,13 @@
     android:summary="@string/autologin_summary"
     android:defaultValue="false"
     />
-  <CheckBoxPreference
-    android:key="showfullheaders"
-    android:title="@string/showfullheaders_title"
-    android:summary="@string/showfullheaders_summary"
-    android:defaultValue="false"
+  <ListPreference
+    android:key="showheaderslevel"
+    android:title="@string/showheaderslevel_title"
+    android:summary="@string/showheaderslevel_summary"
+    android:entries="@array/showheaderslevel_entries_list"
+    android:entryValues="@array/showheaderslevel_values_list"
+    android:dialogTitle="@string/showheaderslevel_dialog_title_prefs"
     />
   <CheckBoxPreference
     android:key="marktextread"

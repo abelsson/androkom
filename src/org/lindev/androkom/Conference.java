@@ -165,8 +165,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
             mState.currentTextIndex = -1;
-            mState.ShowFullHeaders = ConferencePrefs
-                    .getShowFullHeaders(getBaseContext());
+            mState.ShowHeadersLevel = Integer.parseInt(ConferencePrefs
+                    .getShowHeadersLevel(getBaseContext()));
             mState.conferenceNo = confNo;
             mSwitcher.setText(formatText(getString(R.string.loading_text)+" "));
         }
@@ -1072,7 +1072,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private static final Pattern digits = Pattern.compile("\\d{5,}");
-    public static Spannable formatText(Context context, TextInfo text, boolean ShowFullHeaders)
+    public static Spannable formatText(Context context, TextInfo text, int showHeadersLevel)
     {
         //String[] lines = text.getBody().split("\n");
         StringBuilder body = new StringBuilder();
@@ -1088,7 +1088,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         	body.append(text.getDate());
             body.append("<br/>");
 
-			if (ShowFullHeaders) {
+			if (showHeadersLevel>0) {
 				String[] headerlines = text.getVisibleHeaders().split("\n");
 				for (String line : headerlines) {
 					body.append(line);
@@ -1173,22 +1173,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         //t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
         return t;
     }
-
-    App getApp() 
-    {
-        return (App)getApplication();
-    }
-
-    private class State {
-        public int conferenceNo;
-		int currentTextIndex;
-        Stack<TextInfo> currentText;
-        boolean hasCurrent() { return currentTextIndex >= 0; }
-        TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
-        boolean ShowFullHeaders;
-    };
-    
-    State mState;
 
     private String stackAsString()
     {
@@ -1279,7 +1263,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected start");
         mKom = ((LocalBinder<KomServer>) service).getService();
-        mKom.setShowFullHeaders(mState.ShowFullHeaders);
+        mKom.setShowHeadersLevel(mState.ShowHeadersLevel);
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
             mKom.setUser(re_userId, re_userPSW, re_server);
         } else {
@@ -1330,7 +1314,23 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	public void onServiceDisconnected(ComponentName name) {
 		mKom = null;		
 	}
-	
+
+    App getApp() 
+    {
+        return (App)getApplication();
+    }
+
+    private class State {
+        public int conferenceNo;
+        int currentTextIndex;
+        Stack<TextInfo> currentText;
+        boolean hasCurrent() { return currentTextIndex >= 0; }
+        TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
+        int ShowHeadersLevel;
+    };
+    
+    State mState;
+
 	KomServer mKom;   
     // For gestures and animations
 

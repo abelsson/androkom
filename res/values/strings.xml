@@ -252,4 +252,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="by_author">" by "</string>
     <string name="marked_by">"Marked by "</string>
     <string name="marked_by_persons">" persons\n"</string>
+    <string name="showheaderslevel_title">Show Headers Level</string>
+    <string name="showheaderslevel_summary">Amount of headers to show for texts</string>
+    <string name="showheaderslevel_dialog_title_prefs">Headers level</string>
 </resources>

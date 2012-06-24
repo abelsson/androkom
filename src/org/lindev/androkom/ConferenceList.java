@@ -316,7 +316,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 						retlist = mKom.fetchConferences();
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
-						mKom.reconnect();
 					}
 				} else {
 				    Log.d(TAG, "mKom==null");
@@ -401,7 +400,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         // worker thread (separate from UI thread)
         @Override
         protected Integer doInBackground(final Void... args) {
-            mKom.reconnect();
+            //mKom.reconnect();
             return 0;
         }
 
