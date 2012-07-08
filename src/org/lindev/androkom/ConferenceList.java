@@ -67,6 +67,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		getApp().doBindService(this);
 	}
 
+    int localtimer = 60;
+
 	/**
 	 * While activity is active, keep a timer running to periodically refresh
 	 * the list of conferences with unread messages.
@@ -85,14 +87,21 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 				// Must populate list in UI thread.
 				runOnUiThread(new Runnable() {
-					public void run() {
-						new PopulateConferenceTask().execute();
-					}
-
+                    public void run() {
+                        if (localtimer > 0) {
+                            mEmptyView
+                                    .setText(getString(R.string.not_connected)
+                                            + " " + localtimer);
+                            localtimer--;
+                        } else {
+                            new PopulateConferenceTask().execute();
+                            localtimer = 60;
+                        }
+                    }
 				});
 			}
 
-		}, 0, 60000);
+		}, 0, 1000);
 
 	}
 

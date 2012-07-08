@@ -29,6 +29,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
     public static final String ASYNC_MESSAGE_TO_ID = "to-id";
     public static final String ASYNC_MESSAGE_TO = "to";
     public static final String ASYNC_MESSAGE_MSG = "msg";
+    public static final String ASYNC_TEXT_NO = "textno";
 
     private final App app;
     private final Set<AsyncMessageSubscriber> subscribers;
@@ -84,6 +85,9 @@ public class AsyncMessages implements AsynchMessageReceiver {
 
         case nu.dll.lyskom.Asynch.sync_db:
             str = app.getString(R.string.sync_db_msg);
+            break;
+        case nu.dll.lyskom.Asynch.new_text:
+            str = "New text:"+msg.getData().getInt(ASYNC_TEXT_NO);
             break;
         }
 
@@ -178,6 +182,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
 
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
+            b.putInt(ASYNC_TEXT_NO, params[0].intValue());
             new LoadMessageTask().execute(params[0]);
             break;
 
@@ -261,6 +266,11 @@ public class AsyncMessages implements AsynchMessageReceiver {
      * the message.
      */
     public void asynchMessage(final AsynchMessage m) {
-        new AsyncHandlerTask().execute(m);
+        AsyncHandlerTask handler = new AsyncHandlerTask();
+        if(handler != null) { 
+            handler.execute(m);
+        } else {
+            Log.d(TAG, "Fatal error: handler = null.");
+        }
     }
 }

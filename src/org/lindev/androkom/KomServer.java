@@ -61,7 +61,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -740,21 +740,26 @@ public class KomServer extends Service implements RpcEventListener,
             s.addRpcEventListener(this);
         }
         usernames = new ConfInfo[0];
-        if (!s.getConnected()) {
-            if (connect(server) != 0) {
-                try {
-                    if (s != null) {
-                        s.disconnect(true);
+        try {
+            if (!s.getConnected()) {
+                if (connect(server) != 0) {
+                    try {
+                        if (s != null) {
+                            s.disconnect(true);
+                        }
+                    } catch (IOException e) {
+                        // TODO Auto-generated catch block
+                        // e.printStackTrace();
                     }
-                } catch (IOException e) {
-                    // TODO Auto-generated catch block
-                    //e.printStackTrace();
+                    s = null;
+                    return getString(R.string.error_could_not_connect);
                 }
-                s = null;
-                return getString(R.string.error_could_not_connect);
             }
+        } catch (Exception e) {
+            s = null;
+            return getString(R.string.error_could_not_connect);
         }
-
+        
         try {
         	// login as hidden
         	if (!s.login(userid, password, hidden_session, false)) {
