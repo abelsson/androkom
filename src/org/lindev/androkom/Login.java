@@ -115,7 +115,12 @@ public class Login extends Activity implements ServiceConnection
     			Toast.makeText(getBaseContext(),
     					getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
-    			Log.e(TAG, "failed to store password in OISafe");
+    			Log.e(TAG, "failed to get password from OISafe(1)");
+    		} catch (java.lang.SecurityException e) {
+                Toast.makeText(getBaseContext(),
+                        getString(R.string.error_oisafe_not_error),
+                        Toast.LENGTH_LONG).show();
+                Log.e(TAG, "failed to get password from OISafe(2)");
     		}
     		Log.d(TAG, "Finished activity for result");
     		password = "";
@@ -366,7 +371,12 @@ public class Login extends Activity implements ServiceConnection
     			        getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
-    		}
+            } catch (java.lang.SecurityException e) {
+                Toast.makeText(getBaseContext(),
+                        getString(R.string.error_oisafe_not_error),
+                        Toast.LENGTH_LONG).show();
+                Log.e(TAG, "failed to store password in OISafe(2)");
+            }
     		Log.d(TAG, "password cleared in OISafe");        	
         }
         

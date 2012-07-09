@@ -42,14 +42,17 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_USERBUTTON3_DEF = "3";
     private static final String OPT_USERBUTTON4 = "userbutton4";
     private static final String OPT_USERBUTTON4_DEF = "4";
-    private static final String TAG = "Androkom ConferencePrefs";
 
     private static final String OPT_INCLUDELOCATION = "includelocation";
     private static final Boolean OPT_INCLUDELOCATION_DEF = false;
 
+    private static final String OPT_DIRECTTOUNREADS = "directtounreads";
+    private static final String OPT_DIRECTTOUNREADS_DEF = "0";
+    
     private static final String OPT_FORCE646DECODE = "force646decode";
     private static final Boolean OPT_FORCE646DECODE_DEF = false;
     
+    private static final String TAG = "Androkom ConferencePrefs";
     
     protected void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
@@ -119,6 +122,12 @@ public class ConferencePrefs extends PreferenceActivity {
     
     public static Boolean getIncludeLocation(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_INCLUDELOCATION, OPT_INCLUDELOCATION_DEF);
+    }
+
+    public static int getDirectToUnreads(Context context) {
+        String dtu = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_DIRECTTOUNREADS, OPT_DIRECTTOUNREADS_DEF);
+        int intval = Integer.parseInt(dtu);
+        return intval;
     }
 
     public static boolean getforce646decode(Context context) {

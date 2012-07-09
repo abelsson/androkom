@@ -2,11 +2,9 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
-
 import nu.dll.lyskom.KomToken;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
+import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
@@ -34,13 +32,10 @@ import android.widget.Toast;
 /**
  * Show a list of all conferences with unread texts.
  * 
- * @author henrik
  * 
  */
-public class ConferenceList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
-	public static final String TAG = "Androkom ConferenceList";
-
-	 boolean unreads_or_subjects = false;
+public class ConferenceTextList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
+	public static final String TAG = "Androkom ConferenceTextList";
 
 	/**
 	 * Instantiate activity.
@@ -52,6 +47,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
+
+	    mConfNo = (Integer) getIntent().getExtras().get("conference-id");
 
         if (savedInstanceState != null) {
             Log.d(TAG, "Got a bundle");
@@ -68,8 +65,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		getApp().doBindService(this);
 	}
 
-    int localtimer = 60;
-
 	/**
 	 * While activity is active, keep a timer running to periodically refresh
 	 * the list of conferences with unread messages.
@@ -80,29 +75,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
         Log.d(TAG, "onResume");
 
-		mTimer = new Timer();
-		mTimer.scheduleAtFixedRate(new TimerTask() {
-
-			@Override
-			public void run() {
-
-				// Must populate list in UI thread.
-				runOnUiThread(new Runnable() {
-                    public void run() {
-                        if (localtimer > 0) {
-                            mEmptyView
-                                    .setText(getString(R.string.not_connected)
-                                            + " " + localtimer);
-                            localtimer--;
-                        } else {
-                            new PopulateConferenceTask().execute();
-                            localtimer = 60;
-                        }
-                    }
-				});
-			}
-
-		}, 0, 1000);
         new PopulateConferenceTask().execute();
 	}
 
@@ -113,7 +85,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onPause() {
 		super.onPause();
         Log.d(TAG, "onPause");
-		mTimer.cancel();
 	}
 
     @Override
@@ -137,18 +108,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		activateUser();
 		
-		final int directtounreads = ConferencePrefs.getDirectToUnreads(getBaseContext());
-		if(directtounreads==0) {
-		    Intent intent = new Intent(this, Conference.class);
-		    intent.putExtra("conference-id", mConferences.get((int) id).id);
-		    startActivity(intent);
-		} else if (directtounreads==1) {
-            Intent intent = new Intent(this, ConferenceTextList.class);
-            intent.putExtra("conference-id", mConferences.get((int) id).id);
-            startActivity(intent);
-		} else {
-		    //TODO: ASK!
-		}
+		Intent intent = new Intent(this, Conference.class);
+        intent.putExtra("conference-id", mConfNo);
+		intent.putExtra("textNo", mTexts.get((int) id).getTextNo());
+		startActivity(intent);
 	}
 
 	/**
@@ -253,7 +216,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 	private class PopulateConferenceTask extends
-			AsyncTask<Void, Void, List<ConferenceInfo>> {
+			AsyncTask<Void, Void, List<TextInfo>> {
 		@Override
 		protected void onPreExecute() {
 			setProgressBarIndeterminateVisibility(true);
@@ -261,33 +224,49 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		// worker thread (separate from UI thread)
 		@Override
-		protected List<ConferenceInfo> doInBackground(final Void... args) {
-            if((mKom!=null) && (!mKom.isConnected())) {
-                mKom.reconnect();
-            }
-			return fetchConferences();
+		protected List<TextInfo> doInBackground(final Void... args) {
+		    int max_sleep = 60;
+		    while(mKom == null) {
+		        max_sleep--;
+		        if(max_sleep<1) {
+		            Log.d(TAG, "PopulateConferenceTask timeout");
+		            return null;
+		        }
+		        Log.d(TAG, "PopulateConferenceTask sleeps");
+		        try {
+                    Thread.sleep(1000);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "PopulateConferenceTask sleep interrupted");
+                    //e.printStackTrace();
+                }
+		    }
+            //if((mKom!=null) && (!mKom.isConnected())) {
+            //    mKom.reconnect();
+            //}
+			return fetchTextHeaders();
 		}
 
 		@Override
-        protected void onPostExecute(final List<ConferenceInfo> fetched) {
+        protected void onPostExecute(final List<TextInfo> fetched) {
             setProgressBarIndeterminateVisibility(false);
 
             mAdapter.clear();
-            mConferences = fetched;
+            mTexts = fetched;
 
-            if (mConferences != null && (!mConferences.isEmpty())) {
-                for (ConferenceInfo elem : mConferences) {
-                    String str = "(" + elem.numUnread + ") " + elem.name;
+            if (mTexts != null && (!mTexts.isEmpty())) {
+                for (TextInfo elem : mTexts) {
+                    String str = elem.getDate() +" " + elem.getSubject() + " " + elem.getAuthor();
                     mAdapter.add(str);
                 }
 
                 mAdapter.notifyDataSetChanged();
             } else {
                 Log.d(TAG, "populateConferences failed, no Conferences");
-                Log.d(TAG, "mConferences is null:" + (mConferences == null));
-                if (mConferences != null) {
+                Log.d(TAG, "mConferences is null:" + (mTexts == null));
+                if (mTexts != null) {
                     Log.d(TAG, "mConferences is empty:"
-                            + mConferences.isEmpty());
+                            + mTexts.isEmpty());
                 }
                 // String currentDateTimeString = new Date().toLocaleString();
                 // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
@@ -324,15 +303,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 	}
 
-	private List<ConferenceInfo> fetchConferences() {
-		List<ConferenceInfo> retlist = null;
+	private List<TextInfo> fetchTextHeaders() {
+		List<TextInfo> retlist = null;
 
 		try {
 			App app = getApp();
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.fetchConferences();
+						retlist = mKom.nextUnreadTexts(mConfNo);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -344,8 +323,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			}
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
-			//e.printStackTrace();
-			mKom.logout();
+			e.printStackTrace();
+			//mKom.logout();
 		}
 		return retlist;
 	}
@@ -446,27 +425,24 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         Log.d(TAG, "ConfList onServiceConnected");
         mKom = ((LocalBinder<KomServer>) service).getService();
         mKom.addAsyncSubscriber(this);
-        if ((re_userId > 0) && (re_userPSW != null)
-                && (re_userPSW.length() > 0) && mKom != null) {
+        if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
             mKom.setUser(re_userId, re_userPSW, re_server);
         } else {
-            if (mKom == null) {
+            if(mKom==null) {
                 Log.d(TAG, "mKom == null");
             }
-            if (re_userId < 1) {
+            if(re_userId<1){
                 Log.d(TAG, "no userId");
             }
-            if (re_userPSW == null) {
+            if(re_userPSW==null){
                 Log.d(TAG, "null password");
             } else {
-                if (re_userPSW.length() < 1) {
+                if(re_userPSW.length()<1){
                     Log.d(TAG, "short password");
                 }
             }
         }
         new cacheNamesTask().execute();
-        Log.d(TAG, "onServiceConnected populate");
-        new PopulateConferenceTask().execute();
     }
 
 	public void onServiceDisconnected(ComponentName name) {
@@ -537,10 +513,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         }        
     }
 
-    private List<ConferenceInfo> mConferences;
+    private List<TextInfo> mTexts;
 	private ArrayAdapter<String> mAdapter;
-	private Timer mTimer;
-
+	private int mConfNo;
+	
 	private int re_userId = 0;
     private String re_userPSW = null;
     private String re_server = null;

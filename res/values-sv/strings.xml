@@ -254,4 +254,9 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="showheaderslevel_title">Huvudnivå</string>
     <string name="showheaderslevel_summary">Mängd "brevhuvud" att visa om en text</string>
     <string name="showheaderslevel_dialog_title_prefs">Brevhuvud nivå</string>
+    <string name="conference_text_list">Olästa texter</string>
+    <string name="error_oisafe_not_error">Fick inte tillgång till OISafe</string>
+    <string name="directtounreads_title">Direkt till olästa</string>
+    <string name="directtounreads_summary">Direkt till olästa</string>
+    <string name="directtounreads_dialog_title_prefs">Direkt till olästa</string>
 </resources>

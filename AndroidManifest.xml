@@ -13,7 +13,12 @@
                   android:label="@string/conference_list">          
         </activity>
         
-         <!--  A single conference -->
+        <!--  List of unread texts in current conference -->
+        <activity android:name=".ConferenceTextList"
+                  android:label="@string/conference_text_list">          
+        </activity>
+        
+        <!--  A single conference -->
          <activity android:name=".Conference"       
                    android:label="@string/conference">
         </activity>

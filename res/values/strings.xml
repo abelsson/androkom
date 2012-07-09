@@ -255,4 +255,9 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="showheaderslevel_title">Show Headers Level</string>
     <string name="showheaderslevel_summary">Amount of headers to show for texts</string>
     <string name="showheaderslevel_dialog_title_prefs">Headers level</string>
+    <string name="conference_text_list">Unread texts</string>
+    <string name="error_oisafe_not_error">Not allowed to use OISafe</string>
+    <string name="directtounreads_title">Direct to unreads</string>
+    <string name="directtounreads_summary">Direct to unreads</string>
+    <string name="directtounreads_dialog_title_prefs">Direct to unreads</string>
 </resources>

@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Date;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
 
@@ -375,14 +376,14 @@ public class KomServer extends Service implements RpcEventListener,
     {
         String  ANDROID         =   android.os.Build.VERSION.RELEASE;       //The current development codename, or the string "REL" if this is a release build.
         String  BOARD           =   android.os.Build.BOARD;                 //The name of the underlying board, like "goldfish".    
-        String  BOOTLOADER      =   android.os.Build.BOOTLOADER;            //  The system bootloader version number.
+        //String  BOOTLOADER      =   android.os.Build.BOOTLOADER;            //  The system bootloader version number.
         String  BRAND           =   android.os.Build.BRAND;                 //The brand (e.g., carrier) the software is customized for, if any.
         String  CPU_ABI         =   android.os.Build.CPU_ABI;               //The name of the instruction set (CPU type + ABI convention) of native code.
-        String  CPU_ABI2        =   android.os.Build.CPU_ABI2;              //  The name of the second instruction set (CPU type + ABI convention) of native code.
+        //String  CPU_ABI2        =   android.os.Build.CPU_ABI2;              //  The name of the second instruction set (CPU type + ABI convention) of native code.
         String  DEVICE          =   android.os.Build.DEVICE;                //  The name of the industrial design.
         String  DISPLAY         =   android.os.Build.DISPLAY;               //A build ID string meant for displaying to the user
         String  FINGERPRINT     =   android.os.Build.FINGERPRINT;           //A string that uniquely identifies this build.
-        String  HARDWARE        =   android.os.Build.HARDWARE;              //The name of the hardware (from the kernel command line or /proc).
+        //String  HARDWARE        =   android.os.Build.HARDWARE;              //The name of the hardware (from the kernel command line or /proc).
         String  HOST            =   android.os.Build.HOST;  
         String  ID              =   android.os.Build.ID;                    //Either a changelist number, or a label like "M4-rc20".
         String  MANUFACTURER    =   android.os.Build.MANUFACTURER;          //The manufacturer of the product/hardware.
@@ -692,7 +693,7 @@ public class KomServer extends Service implements RpcEventListener,
             }
             s = null;
             //e.printStackTrace();
-            return getString(R.string.error_unknown);
+            return getString(R.string.error_unknown)+"(1)";
         }
 
         usernames = new ConfInfo[0];
@@ -709,21 +710,33 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (Exception e) {
             Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
             //e.printStackTrace();
-            return getString(R.string.error_unknown);
+            return getString(R.string.error_unknown)+"(2)";
         }
         try {
             s.setClientVersion("Androkom", getVersionName());
             s.setLatteName("AndroKOM " + getVersionName());
         } catch (Exception e) {
-        	Log.e("androkom", "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+        	Log.e(TAG, "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
         	//e.printStackTrace();
         }
-        re_userid = usernames[0].confNo;
-        re_password = password;
-        re_server = server;
+        try {
+            re_userid = usernames[0].confNo;
+            re_password = password;
+            re_server = server;
+        } catch (Exception e) {
+            Log.e(TAG, "Login.name3 Caught " + e.getClass().getName() + ":" + e
+                    + ":" + e.getCause());
+            return getString(R.string.error_unknown)+"(3)";
+        }
 
-        parseCommonUserArea();
-        parseElispUserArea();
+        try {
+            parseCommonUserArea();
+            parseElispUserArea();
+        } catch (Exception e) {
+            Log.e(TAG, "Login.name4 Caught " + e.getClass().getName() + ":" + e
+                    + ":" + e.getCause());
+            return getString(R.string.error_unknown)+"(4)";
+        }
         return "";
     }
 
@@ -1611,6 +1624,40 @@ public class KomServer extends Service implements RpcEventListener,
         }
         return text;
     }
+
+    public List<TextInfo> nextUnreadTexts(int ConfNo) {
+        List<TextInfo> ret_data = new ArrayList<TextInfo>();
+        List<Integer> data = null;
+
+        if (s == null) {
+            return null;
+        }
+        try {
+            data = s.nextUnreadTexts(ConfNo, false, 20);
+            Iterator<Integer> iter = data.iterator();
+            while(iter.hasNext()) {
+                Integer textno = iter.next();
+                Log.d(TAG, "nextUnreadTexts Next text: "+textno);
+                TextInfo text = getKomText(textno);
+                if (text != null) {
+                    ret_data.add(text);
+                } else {
+                    Log.d(TAG, "nextUnreadTexts could not find textno "+textno);
+                }
+                Log.d(TAG, "nextUnreadTexts Author: "+text.getAuthor());
+                Log.d(TAG, "nextUnreadTexts Date: "+text.getDate());
+                Log.d(TAG, "nextUnreadTexts Subject: "+text.getSubject());
+            }
+        } catch (RpcFailure e) {
+            Log.d(TAG, "queryReadTextsCached " + e);
+            //e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "queryReadTextsCached " + e);
+            //e.printStackTrace();
+        }
+        return ret_data;
+    }
+
 
     public int getUserId() {
         return re_userid;

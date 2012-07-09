@@ -1,7 +1,9 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.Queue;
 import java.util.Stack;
+import java.util.concurrent.ArrayBlockingQueue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -141,9 +143,30 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         mSlideRightOut = AnimationUtils.loadAnimation(this, R.anim.slide_right_out);
 
         final Object data = getLastNonConfigurationInstance();
-        final int confNo = (Integer) getIntent().getExtras().get("conference-id");
-
-        Log.i(TAG, "Got passed conference id: " + confNo);
+        final Intent intent = getIntent();
+        
+        int confNo = 0;
+        int textNo = 0;
+        if (intent != null) {
+            final Bundle extras = intent.getExtras();
+            if (extras != null) {
+                Object confid = extras.get("conference-id");
+                if (confid == null) {
+                    confNo = 0;
+                } else {
+                confNo = (Integer) confid;
+                }                
+                Log.i(TAG, "Got passed conference id: " + confNo);
+                
+                Object textNo_obj = extras.get("textNo");
+                if (textNo_obj == null) {
+                    textNo = 0;
+                } else {
+                    textNo = (Integer) textNo_obj;
+                }
+                Log.i(TAG, "Got passed text no: " + textNo);
+            }
+        }
 
         if (data != null) {
             Log.d(TAG, "Got data!");
@@ -164,6 +187,11 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         } else {
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
+            if(textNo > 0) {
+                //mState.currentText.add(mKom.getKomText(textNo)); NULL!
+                mState.textQueue = new ArrayBlockingQueue<Integer>(10);
+                mState.textQueue.offer(textNo);
+            }
             mState.currentTextIndex = -1;
             mState.ShowHeadersLevel = Integer.parseInt(ConferencePrefs
                     .getShowHeadersLevel(getBaseContext()));
@@ -1298,15 +1326,22 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
         TextInfo currentText = null;
 
-        if((mState!=null)&&(mState.hasCurrent())) {
-            currentText = mState.getCurrent();
-        }
-        if(currentText!=null) {
-            Log.d(TAG, "Getting current text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, currentText.getTextNo(), 0);
+        if (mState.textQueue == null || mState.textQueue.isEmpty()) {
+            if ((mState != null) && (mState.hasCurrent())) {
+                currentText = mState.getCurrent();
+            }
+            if (currentText != null) {
+                Log.d(TAG, "Getting current text");
+                new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                        currentText.getTextNo(), 0);
+            } else {
+                Log.d(TAG, "Getting next text");
+                new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
+            }
         } else {
-            Log.d(TAG, "Getting next text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
+            Log.d(TAG, "Getting text from queue");
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                    mState.textQueue.poll(), 0);
         }
         Log.d(TAG, "onServiceConnected done");
     }
@@ -1324,6 +1359,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         public int conferenceNo;
         int currentTextIndex;
         Stack<TextInfo> currentText;
+        Queue<Integer> textQueue;
         boolean hasCurrent() { return currentTextIndex >= 0; }
         TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
         int ShowHeadersLevel;

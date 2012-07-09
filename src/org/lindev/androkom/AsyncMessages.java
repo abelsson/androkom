@@ -38,7 +38,8 @@ public class AsyncMessages implements AsynchMessageReceiver {
     private final List<Message> publicLog;
 
     private KomServer mKom;
-
+    private final boolean sniper = true;
+    
     public static interface AsyncMessageSubscriber {
         public void asyncMessage(Message msg);
     }
@@ -87,7 +88,11 @@ public class AsyncMessages implements AsynchMessageReceiver {
             str = app.getString(R.string.sync_db_msg);
             break;
         case nu.dll.lyskom.Asynch.new_text:
-            str = "New text:"+msg.getData().getInt(ASYNC_TEXT_NO);
+            if(sniper) {
+                str = "New text:"+msg.getData().getInt(ASYNC_TEXT_NO);
+            } else {
+                str = "";
+            }
             break;
         }
 

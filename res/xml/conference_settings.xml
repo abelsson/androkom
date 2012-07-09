@@ -15,6 +15,14 @@
     android:entryValues="@array/showheaderslevel_values_list"
     android:dialogTitle="@string/showheaderslevel_dialog_title_prefs"
     />
+  <ListPreference
+    android:key="directtounreads"
+    android:title="@string/directtounreads_title"
+    android:summary="@string/directtounreads_summary"
+    android:entries="@array/directtounreads_entries_list"
+    android:entryValues="@array/directtounreads_values_list"
+    android:dialogTitle="@string/directtounreads_dialog_title_prefs"
+    />
   <CheckBoxPreference
     android:key="marktextread"
     android:title="@string/marktextread_title"
