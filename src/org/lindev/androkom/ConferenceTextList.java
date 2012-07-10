@@ -256,7 +256,7 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
 
             if (mTexts != null && (!mTexts.isEmpty())) {
                 for (TextInfo elem : mTexts) {
-                    String str = elem.getDate() +" " + elem.getSubject() + " " + elem.getAuthor();
+                    String str = elem.getDate()+ " " + elem.getAuthor() +"\n" + elem.getSubject() ;
                     mAdapter.add(str);
                 }
 

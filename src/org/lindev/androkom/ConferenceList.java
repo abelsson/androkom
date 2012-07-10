@@ -11,8 +11,10 @@ import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
 
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.content.ComponentName;
+import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
@@ -138,18 +140,48 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		activateUser();
 		
 		final int directtounreads = ConferencePrefs.getDirectToUnreads(getBaseContext());
+		final int confNo = mConferences.get((int) id).id;
+		
 		if(directtounreads==0) {
 		    Intent intent = new Intent(this, Conference.class);
-		    intent.putExtra("conference-id", mConferences.get((int) id).id);
+		    intent.putExtra("conference-id", confNo);
 		    startActivity(intent);
 		} else if (directtounreads==1) {
             Intent intent = new Intent(this, ConferenceTextList.class);
-            intent.putExtra("conference-id", mConferences.get((int) id).id);
+            intent.putExtra("conference-id", confNo);
             startActivity(intent);
-		} else {
-		    //TODO: ASK!
-		}
-	}
+        } else {
+            AlertDialog.Builder builder = new AlertDialog.Builder(
+                    ConferenceList.this);
+            builder.setTitle(getString(R.string.pick_an_action));
+            builder.setPositiveButton(getString(R.string.directtounreads_title),
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            Intent intent = new Intent(ConferenceList.this, Conference.class);
+                            intent.putExtra("conference-id", confNo);
+                            startActivity(intent);
+                        }
+                    });
+            builder.setNeutralButton(getString(R.string.subject_list_title),
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                            Intent intent = new Intent(ConferenceList.this, ConferenceTextList.class);
+                            intent.putExtra("conference-id", confNo);
+                            startActivity(intent);
+                        }
+                    });
+            builder.setNegativeButton("cancel",
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int which) {
+                            dialog.dismiss();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        }
+    }
 
 	/**
 	 * Show options menu. Currently does nothing useful.
