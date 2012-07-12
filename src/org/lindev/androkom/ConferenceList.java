@@ -42,8 +42,6 @@ import android.widget.Toast;
 public class ConferenceList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
 	public static final String TAG = "Androkom ConferenceList";
 
-	 boolean unreads_or_subjects = false;
-
 	/**
 	 * Instantiate activity.
 	 */
@@ -92,9 +90,19 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 				runOnUiThread(new Runnable() {
                     public void run() {
                         if (localtimer > 0) {
-                            mEmptyView
-                                    .setText(getString(R.string.not_connected)
-                                            + " " + localtimer);
+                            if ((mKom!=null) && mKom.isConnected()) {
+                                mEmptyView
+                                        .setText(getString(R.string.no_unreads)
+                                                + "\n"
+                                                + currentDateTimeString
+                                                + "\n"
+                                                + getString(R.string.server_time)
+                                                + "\n" + localtimer);
+                            } else {
+                                mEmptyView
+                                        .setText(getString(R.string.not_connected)
+                                                + " " + localtimer);
+                            }
                             localtimer--;
                         } else {
                             new PopulateConferenceTask().execute();
@@ -105,6 +113,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			}
 
 		}, 0, 1000);
+        localtimer = 60;
         new PopulateConferenceTask().execute();
 	}
 
@@ -246,6 +255,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             return true;
             
         case R.id.menu_logout_id:
+            mTimer.cancel();
             mKom.logout();
             Log.i(TAG, "User opted back to login");
             intent = new Intent(this, Login.class);
@@ -321,14 +331,12 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     Log.d(TAG, "mConferences is empty:"
                             + mConferences.isEmpty());
                 }
-                // String currentDateTimeString = new Date().toLocaleString();
-                // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                // + currentDateTimeString + "\n"
-                // + getString(R.string.local_time));
                 if ((mKom != null) && (mKom.isConnected())) {
-                    String currentDateTimeString = null;
                     try {
                         currentDateTimeString = mKom.getServerTime().toString();
+                        mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+                                + currentDateTimeString + "\n"
+                                + getString(R.string.server_time));
                     } catch (Exception e) {
                         // TODO Auto-generated catch block
                         Log.d(TAG, "Populate lost connection");
@@ -336,9 +344,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                         mKom.logout();
                         mEmptyView.setText(getString(R.string.not_connected));
                     }
-                    mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                            + currentDateTimeString + "\n"
-                            + getString(R.string.server_time));
                 } else {
                     mEmptyView.setText(getString(R.string.not_connected));
                 }
@@ -568,6 +573,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             }
         }        
     }
+
+    String currentDateTimeString = "-";
 
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;

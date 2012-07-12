@@ -90,8 +90,6 @@ public class AsyncMessages implements AsynchMessageReceiver {
         case nu.dll.lyskom.Asynch.new_text:
             if(sniper) {
                 str = "New text:"+msg.getData().getInt(ASYNC_TEXT_NO);
-            } else {
-                str = "";
             }
             break;
         }
