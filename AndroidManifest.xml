@@ -1,7 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.lindev.androkom"
-      android:versionName="0.6.9++" android:versionCode="13" android:installLocation="auto"> <!-- bump versionCode on release -->
+      android:versionName="0.6.10" android:versionCode="14" android:installLocation="auto"> <!-- bump versionCode on release -->
 
   <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="8"/>
 
