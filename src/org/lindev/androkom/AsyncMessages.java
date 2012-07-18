@@ -38,7 +38,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
     private final List<Message> publicLog;
 
     private KomServer mKom;
-    private final boolean sniper = false;
+    private final boolean sniper = true;
     
     public static interface AsyncMessageSubscriber {
         public void asyncMessage(Message msg);

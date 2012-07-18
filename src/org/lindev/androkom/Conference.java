@@ -26,9 +26,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
-import android.content.res.ColorStateList;
 import android.content.res.Resources;
-import android.graphics.Color;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -44,7 +42,6 @@ import android.util.Log;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
-import android.view.Gravity;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -58,10 +55,9 @@ import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.LinearLayout;
-import android.widget.TextSwitcher;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewSwitcher;
+import android.widget.ViewAnimator;
 
 /**
  * Show texts in a LysKOM conference.
@@ -69,7 +65,7 @@ import android.widget.ViewSwitcher;
  * @author henrik
  *
  */
-public class Conference extends Activity implements ViewSwitcher.ViewFactory, OnTouchListener, ServiceConnection
+public class Conference extends Activity implements OnTouchListener, ServiceConnection
 {
     private static final String TAG = "Androkom Conference";
 
@@ -134,13 +130,17 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             userbuttonslayout.setVisibility(View.GONE);
         }
         
-        mSwitcher = (TextSwitcher)findViewById(R.id.flipper);
-        mSwitcher.setFactory(this);
-
+        mSwitcher = (ViewAnimator)findViewById(R.id.flipper_id);
+        
         mSlideLeftIn = AnimationUtils.loadAnimation(this, R.anim.slide_left_in);
         mSlideLeftOut = AnimationUtils.loadAnimation(this, R.anim.slide_left_out);
         mSlideRightIn = AnimationUtils.loadAnimation(this, R.anim.slide_right_in);
         mSlideRightOut = AnimationUtils.loadAnimation(this, R.anim.slide_right_out);
+
+        TextView text1 = (TextView)findViewById(R.id.flipper_text1_id);
+        text1.setMovementMethod(LinkMovementMethod.getInstance());
+        TextView text2 = (TextView)findViewById(R.id.flipper_text2_id);
+        text2.setMovementMethod(LinkMovementMethod.getInstance());
 
         final Object data = getLastNonConfigurationInstance();
         final Intent intent = getIntent();
@@ -176,7 +176,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                     Spannable spannedText = mState.currentText.elementAt(
                             mState.currentTextIndex).getSpannable();
                     addLinks(spannedText, digits, null);
-                    mSwitcher.setText(spannedText);
+                    TextView tview = getCurrentTextView();
+                    tview.setText(spannedText);
                 } catch (Exception e) {
                     Log.d(TAG, "onCreate Exception:" + e);
                     //e.printStackTrace();
@@ -196,7 +197,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             mState.ShowHeadersLevel = Integer.parseInt(ConferencePrefs
                     .getShowHeadersLevel(getBaseContext()));
             mState.conferenceNo = confNo;
-            mSwitcher.setText(formatText(getString(R.string.loading_text)+" "));
+            TextView tview = getCurrentTextView();
+            if(tview != null) {
+                tview.setText(formatText(getString(R.string.loading_text)+" "));
+            }
         }
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
@@ -372,6 +376,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 }
             }
             else if (text != null) {
+                Log.d(TAG, "LoadMessageTask.onPostExecute got text");
                 mState.currentText.push(text);
                 mState.currentTextIndex = mState.currentText.size() - 1;
                 //Log.i(TAG, stackAsString());
@@ -382,21 +387,26 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                 //Log.d(TAG, "SUBJECT: "+text.getSubject());
                 //Log.d(TAG, "BODY: "+text.getBody());
                 if (text.getAllHeaders().contains("ContentType:image/")) {
-                    mSwitcher.setText("Text "+text.getTextNo()+getString(R.string.is_image));
+                    Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                    TextView tview = getCurrentTextView();
+                    if (tview != null) {
+                        tview.setText("Text " + text.getTextNo()
+                                + getString(R.string.is_image));
+                        tview.scrollTo(0, 0);
+                    }
                     
                     Intent intent = new Intent(getApplicationContext(), imagesactivity.class);
                     intent.putExtra("bilden", text.getRawBody());
                     startActivity(intent);
-                    
-                    TextView widget = (TextView) mSwitcher.getCurrentView();
-                    widget.scrollTo(0, 0);
                 } else {
+                    Log.d(TAG, "LoadMessageTask.onPostExecute show text");
                     final Spannable spannedText = text.getSpannable();
                     addLinks(spannedText, digits, null);
-                    mSwitcher.setText(spannedText);
 
-                    TextView widget = (TextView) mSwitcher.getCurrentView();
-                    widget.scrollTo(0, 0);
+                    TextView tview = getOtherTextView();
+                    tview.setText(spannedText);
+                    tview.scrollTo(0, 0);
+                    mSwitcher.showNext();
                 }
                 setTitle(mKom.getConferenceName());                
             } else {
@@ -505,7 +515,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
         {
             activateUser();     
-
+            Log.d(TAG, "onFling");
             try {
 	            // Horizontal swipes
             	if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {	                
@@ -539,7 +549,9 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             Log.i(TAG, stackAsString());
             mSwitcher.setInAnimation(mSlideRightIn);
             mSwitcher.setOutAnimation(mSlideRightOut);
-            mSwitcher.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+            TextView tview = getOtherTextView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+            mSwitcher.showNext();
         }
     }
 
@@ -572,42 +584,44 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private void moveToNextText(boolean markTextAsRead) {
         Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size());
         int markTextAsReadint = markTextAsRead ? 0 : 1;
+        mSwitcher.setInAnimation(mSlideLeftIn);
+        mSwitcher.setOutAnimation(mSlideLeftOut);
         
         if ((mState.currentTextIndex + 1) >= mState.currentText.size()) {
             // At end of list. load new text from server
             Log.i(TAG, "fetching new text");
             new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-            mSwitcher.setInAnimation(mSlideLeftIn);
-            mSwitcher.setOutAnimation(mSlideLeftOut);
         }
         else {
+            Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
             mState.currentTextIndex++;
-            mSwitcher.setInAnimation(mSlideLeftIn);
-            mSwitcher.setOutAnimation(mSlideLeftOut);
             Log.i(TAG, stackAsString());
-            mSwitcher.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+            TextView tview = getOtherTextView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+            //mSwitcher.invalidate();
+            mSwitcher.showNext();
         }
     }
 
     private void moveToParentText() {
         int current = mState.getCurrent().getTextNo();
         Log.i(TAG, "fetching parent to text " + current);
-        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
 
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
+        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
     }
 
     private void moveToText(final int textNo) {
         Log.i(TAG, "fetching text " + textNo);
-        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
+        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
     }
 
 	private void scrollPageUp() {
-		TextView t = (TextView) mSwitcher.getCurrentView();
+		TextView t = getCurrentTextView();
 
 		if ( t!= null) {
 			int visibleHeight = t.getHeight()
@@ -625,7 +639,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 	}
 	
 	private void scrollPageDown() {
-		TextView t = (TextView) mSwitcher.getCurrentView();
+		TextView t = getCurrentTextView();
 
 		if (t != null) {
 			int visibleHeight = t.getHeight()
@@ -746,42 +760,40 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
 
 		case R.id.menu_biggerfontsize_id :
 			Log.d(TAG, "Change fontsize+");
-			t1 = (TextView) mSwitcher.getChildAt(0);
+			t1 = getCurrentTextView();
 			newtextsize = (float) (t1.getTextSize()*1.1);
 			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
 			t1.invalidate();
 
-			t1 = (TextView) mSwitcher.getChildAt(1);
+			t1 = getOtherTextView();
 			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-			t1.invalidate();
 			
 			storeFontSize(newtextsize);
 			return true;
 
 		case R.id.menu_smallerfontsize_id :
-			Log.d(TAG, "Change fontsize-");
-			t1 = (TextView) mSwitcher.getChildAt(0);
-			newtextsize = (float) (t1.getTextSize()*0.9);
-			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-			t1.invalidate();
+            Log.d(TAG, "Change fontsize-");
+            t1 = getCurrentTextView();
+            newtextsize = (float) (t1.getTextSize() * 0.9);
+            t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+            t1.invalidate();
 
-			t1 = (TextView) mSwitcher.getChildAt(1);
-			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-			t1.invalidate();
-			
-			storeFontSize(newtextsize);
-			return true;
+            t1 = getOtherTextView();
+            t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
+
+            storeFontSize(newtextsize);
+            return true;
 
 		case R.id.menu_monospaced_id :
             Log.d(TAG, "Change to monospaced");
-            t1 = (TextView) mSwitcher.getChildAt(0);
+            t1 = getCurrentTextView();
             t1.setTypeface(Typeface.create(Typeface.MONOSPACE, Typeface.NORMAL));
             t1.invalidate();
             return true;
 
         case R.id.menu_rot13_id :
             Log.d(TAG, "Toggle rot13");
-            t1 = (TextView) mSwitcher.getCurrentView();
+            t1 = getCurrentTextView();
             CharSequence content = t1.getText();
             CharSequence rot13_content = Rot13.cipher(content.toString());
             t1.setText(rot13_content);
@@ -862,9 +874,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     private void gilla_current_text() {
-        // TODO Auto-generated method stub
-        int CurrentText = mState.getCurrent().getTextNo();
-        
+        int CurrentText = mState.getCurrent().getTextNo();        
         mKom.addAuxItem(CurrentText, AuxItem.tagFastReply, "Gilla");
     }
 
@@ -872,13 +882,14 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     protected void storeFontSize(float size) {
         SharedPreferences settings = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
-        editor.putFloat("conference_body_textsize", size);    	
+        editor.putFloat("conference_body_textsize", size);
+        editor.commit();
     }
 
     protected void setCurrentFontSize() {
         SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
     	
-		TextView t1 = (TextView) mSwitcher.getChildAt(0);
+		TextView t1 = getCurrentTextView();
 		t1.setTextSize(prefs.getFloat("conference_body_textsize", 12));
     }
 
@@ -969,7 +980,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
                         }
 
                         private void doSubRecipient(int selectedUser) {
-                            // TODO Auto-generated method stub
                             String result = mKom.subRecipient(currentTextNo, selectedUser);
                             if (result != "") {
                                 Toast.makeText(getApplicationContext(),
@@ -1014,10 +1024,10 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
   		  Log.i(TAG, "trying to parse " + textvalue);
 		  int textNo = Integer.parseInt(textvalue);
 		  Log.i(TAG, "fetching text " + textNo);
-		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
 
 		  mSwitcher.setInAnimation(mSlideLeftIn);
 		  mSwitcher.setOutAnimation(mSlideLeftOut);
+		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
     	  }
     	});
 
@@ -1187,19 +1197,31 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     }
 
     /**
-     * Return TextViews for switcher.
+     * Assume switcher got two childs and return the other, currently not
+     * visible, child.
      */
-    public View makeView() {
-        Log.d(TAG, "makeView");
-        TextView t = new TextView(this);
-        t.setText(getString(R.string.no_text_loaded), TextView.BufferType.SPANNABLE);
-        t.setMovementMethod(LinkMovementMethod.getInstance());
-        t.setGravity(Gravity.TOP | Gravity.LEFT);
-        t.setTextColor(ColorStateList.valueOf(Color.WHITE));
+    public TextView getOtherTextView() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
 
-        // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
-        //t.setMaxHeight(getWindowManager().getDefaultDisplay().getHeight()-40); 
-        return t;
+        if (currentViewId == R.id.scrollView1) {
+            return (TextView) findViewById(R.id.flipper_text2_id);
+        } else {
+            return (TextView) findViewById(R.id.flipper_text1_id);
+        }
+    }
+
+    /**
+     * Get the visible TextView child
+     * 
+     */
+    public TextView getCurrentTextView() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+
+        if (currentViewId == R.id.scrollView1) {
+            return (TextView) findViewById(R.id.flipper_text1_id);
+        } else {
+            return (TextView) findViewById(R.id.flipper_text2_id);
+        }
     }
 
     private String stackAsString()
@@ -1316,7 +1338,6 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             Log.d(TAG, "onServiceConnected RpcFailure");
             //e.printStackTrace();
         } catch (IOException e) {
-            // TODO Auto-generated catch block
             Log.d(TAG, "onServiceConnected IOException");
             //e.printStackTrace();
             Toast.makeText(getApplicationContext(), getString(R.string.connection_lost), Toast.LENGTH_SHORT).show();
@@ -1330,6 +1351,8 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
             if ((mState != null) && (mState.hasCurrent())) {
                 currentText = mState.getCurrent();
             }
+            mSwitcher.setInAnimation(mSlideLeftIn);
+            mSwitcher.setOutAnimation(mSlideLeftOut);
             if (currentText != null) {
                 Log.d(TAG, "Getting current text");
                 new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
@@ -1376,7 +1399,7 @@ public class Conference extends Activity implements ViewSwitcher.ViewFactory, On
     private Animation mSlideLeftOut;
     private Animation mSlideRightIn;
     private Animation mSlideRightOut;
-    private TextSwitcher mSwitcher;
+    private ViewAnimator mSwitcher;
 
     private int re_userId = 0;
     private String re_userPSW = null;

@@ -2,11 +2,43 @@
 <LinearLayout xmlns:android="http://schemas.android.com/apk/res/android"
 	android:layout_width="fill_parent" android:layout_height="fill_parent"
 	android:orientation="vertical">
-	<TextSwitcher android:id="@+id/flipper"
-		android:layout_width="fill_parent" android:layout_height="wrap_content"
+	<ViewAnimator android:id="@+id/flipper_id"
+		android:layout_width="fill_parent" android:layout_height="0dip"
 		android:layout_weight="10"
 		xmlns:android="http://schemas.android.com/apk/res/android">
-	</TextSwitcher>
+		<ScrollView
+		    android:visibility="visible"
+		    android:layout_height="wrap_content"
+		    android:layout_width="fill_parent"
+		    android:scrollbarStyle="insideInset"
+		    android:id="@+id/scrollView1"
+		    android:scrollbars="vertical" >
+		  <TextView
+		      android:id="@+id/flipper_text1_id"
+              android:text="Loading…"
+              android:textColor="@android:color/white"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:scrollbars = "vertical"
+              android:gravity="left|top"/>
+		</ScrollView>
+        <ScrollView
+            android:visibility="visible"
+            android:layout_height="wrap_content"
+            android:layout_width="fill_parent"
+            android:scrollbarStyle="insideInset"
+            android:id="@+id/scrollView2"
+            android:scrollbars="vertical" >
+          <TextView
+              android:id="@+id/flipper_text2_id"
+              android:text="Loading…"
+              android:textColor="@android:color/white"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:scrollbars = "vertical"
+              android:gravity="left|top"/>
+        </ScrollView>
+	</ViewAnimator>
 	<LinearLayout android:id="@+id/userbuttons"
 	    android:layout_width="fill_parent"
 		android:layout_height="wrap_content" android:orientation="horizontal">
