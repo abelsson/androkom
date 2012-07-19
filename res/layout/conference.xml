@@ -13,14 +13,38 @@
 		    android:scrollbarStyle="insideInset"
 		    android:id="@+id/scrollView1"
 		    android:scrollbars="vertical" >
-		  <TextView
+          <LinearLayout
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:paddingLeft="1dp"
+              android:paddingRight="16dp"
+              android:orientation="vertical">
+          <TextView
+              android:id="@+id/flipper_headers1_id"
+              android:text="Headers…"
+              android:textColor="@android:color/white"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:gravity="left|top"/>
+           <ViewSwitcher
+             android:id="@+id/profile1Switcher"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent">
+		   <TextView
 		      android:id="@+id/flipper_text1_id"
               android:text="Loading…"
               android:textColor="@android:color/white"
               android:layout_height="wrap_content"
               android:layout_width="fill_parent"
-              android:scrollbars = "vertical"
               android:gravity="left|top"/>
+		   <ImageView android:id="@+id/flipper_imageView1"
+		      android:contentDescription="Image without description"
+              android:layout_height="fill_parent"
+              android:layout_width="fill_parent"
+              android:src="@drawable/icon"
+              android:scaleType="centerInside"/>
+           </ViewSwitcher>
+		  </LinearLayout>
 		</ScrollView>
         <ScrollView
             android:visibility="visible"
@@ -29,14 +53,38 @@
             android:scrollbarStyle="insideInset"
             android:id="@+id/scrollView2"
             android:scrollbars="vertical" >
-          <TextView
+          <LinearLayout
+              android:layout_width="fill_parent"
+              android:layout_height="wrap_content"
+              android:paddingLeft="1dp"
+              android:paddingRight="16dp"
+              android:orientation="vertical">
+		    <TextView
+              android:id="@+id/flipper_headers2_id"
+              android:text="Headers…"
+              android:textColor="@android:color/white"
+              android:layout_height="wrap_content"
+              android:layout_width="fill_parent"
+              android:gravity="left|top"/>
+		    <ViewSwitcher
+             android:id="@+id/profile2Switcher"
+             android:layout_width="fill_parent"
+             android:layout_height="fill_parent">
+            <TextView
               android:id="@+id/flipper_text2_id"
               android:text="Loading…"
               android:textColor="@android:color/white"
               android:layout_height="wrap_content"
               android:layout_width="fill_parent"
-              android:scrollbars = "vertical"
               android:gravity="left|top"/>
+           <ImageView android:id="@+id/flipper_imageView2"
+              android:contentDescription="Image without description"
+              android:layout_height="fill_parent"
+              android:layout_width="fill_parent"
+              android:src="@drawable/icon"
+              android:scaleType="centerInside"/>
+           </ViewSwitcher>
+          </LinearLayout>
         </ScrollView>
 	</ViewAnimator>
 	<LinearLayout android:id="@+id/userbuttons"

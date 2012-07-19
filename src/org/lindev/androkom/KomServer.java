@@ -126,7 +126,8 @@ public class KomServer extends Service implements RpcEventListener,
             this.subject = subject;
             this.body = body;
             this.rawBody = rawBody;
-            this.spannable = Conference.formatText(context, this,
+            this.spannable = Conference.formatText(context, this);
+            this.spannableHeaders = Conference.formatHeaders(context, this,
                     ShowHeadersLevel);
         }
 
@@ -152,40 +153,44 @@ public class KomServer extends Service implements RpcEventListener,
         }
 
         public String getAuthor() {
-			return author;
-		}
+            return author;
+        }
 
-		public String getBody() {
-			return body;
-		}
+        public String getBody() {
+            return body;
+        }
 
         public byte[] getRawBody() {
             return rawBody;
         }
 
-		public String getVisibleHeaders() {
-			return visible_headers;
-		}
+        public String getVisibleHeaders() {
+            return visible_headers;
+        }
 
         public String getAllHeaders() {
             return all_headers;
         }
 
-		public String getSubject() {
-			return subject;
-		}
+        public String getSubject() {
+            return subject;
+        }
 
-		public String getDate() {
-			return date;
-		}
+        public String getDate() {
+            return date;
+        }
 
-		public int getTextNo() {
-			return textNo;
-		}
+        public int getTextNo() {
+            return textNo;
+        }
 
-		public Spannable getSpannable() {
-		    return spannable;
-		}
+        public Spannable getSpannableHeaders() {
+            return spannableHeaders;
+        }
+
+        public Spannable getSpannableBody() {
+            return spannable;
+        }
 
         private int textNo;
         private String date;
@@ -196,6 +201,7 @@ public class KomServer extends Service implements RpcEventListener,
         private byte[] rawBody;
         private String author;
         private Spannable spannable;
+        private Spannable spannableHeaders;
     }
     
     public KomServer() {

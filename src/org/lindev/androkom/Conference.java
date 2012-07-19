@@ -27,6 +27,8 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
 import android.content.res.Resources;
+import android.graphics.Bitmap;
+import android.graphics.BitmapFactory;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -54,10 +56,13 @@ import android.view.animation.Animation;
 import android.view.animation.AnimationUtils;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.LinearLayout;
+import android.widget.ScrollView;
 import android.widget.TextView;
 import android.widget.Toast;
 import android.widget.ViewAnimator;
+import android.widget.ViewSwitcher;
 
 /**
  * Show texts in a LysKOM conference.
@@ -174,7 +179,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             if (mState.hasCurrent()) {
                 try {
                     Spannable spannedText = mState.currentText.elementAt(
-                            mState.currentTextIndex).getSpannable();
+                            mState.currentTextIndex).getSpannableBody();
                     addLinks(spannedText, digits, null);
                     TextView tview = getCurrentTextView();
                     tview.setText(spannedText);
@@ -388,24 +393,37 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 //Log.d(TAG, "BODY: "+text.getBody());
                 if (text.getAllHeaders().contains("ContentType:image/")) {
                     Log.d(TAG, "LoadMessageTask.onPostExecute image text");
-                    TextView tview = getCurrentTextView();
-                    if (tview != null) {
-                        tview.setText("Text " + text.getTextNo()
-                                + getString(R.string.is_image));
-                        tview.scrollTo(0, 0);
+                    final Spannable spannedHeader = text.getSpannableHeaders();
+                    addLinks(spannedHeader, digits, null);
+
+                    TextView tview = getOtherHeadersView();
+                    tview.setText(spannedHeader);
+
+                    ImageView imgView = getOtherImgView();
+                    byte[] bilden = text.getRawBody();
+                    Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0, bilden.length);
+                    if(bmImg != null) {
+                        imgView.setImageBitmap(bmImg);
+                    } else {
+                        Toast.makeText(getApplicationContext(), getString(R.string.image_decode_failed), Toast.LENGTH_LONG).show();
                     }
-                    
-                    Intent intent = new Intent(getApplicationContext(), imagesactivity.class);
-                    intent.putExtra("bilden", text.getRawBody());
-                    startActivity(intent);
+                    setOtherImgSwitch();
+                    mSwitcher.showNext();
                 } else {
                     Log.d(TAG, "LoadMessageTask.onPostExecute show text");
-                    final Spannable spannedText = text.getSpannable();
+                    final Spannable spannedHeader = text.getSpannableHeaders();
+                    addLinks(spannedHeader, digits, null);
+
+                    TextView tview = getOtherHeadersView();
+                    tview.setText(spannedHeader);
+
+                    final Spannable spannedText = text.getSpannableBody();
                     addLinks(spannedText, digits, null);
 
-                    TextView tview = getOtherTextView();
+                    tview = getOtherTextView();
                     tview.setText(spannedText);
-                    tview.scrollTo(0, 0);
+                    resetOtherScroll();
+                    setOtherTextSwitch();
                     mSwitcher.showNext();
                 }
                 setTitle(mKom.getConferenceName());                
@@ -549,8 +567,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.i(TAG, stackAsString());
             mSwitcher.setInAnimation(mSlideRightIn);
             mSwitcher.setOutAnimation(mSlideRightOut);
-            TextView tview = getOtherTextView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+
+            TextView tview = getOtherHeadersView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableHeaders());
+
+            tview = getOtherTextView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableBody());
+            setOtherTextSwitch();
             mSwitcher.showNext();
         }
     }
@@ -597,9 +620,14 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             // Display old text, already fetched.
             mState.currentTextIndex++;
             Log.i(TAG, stackAsString());
-            TextView tview = getOtherTextView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannable());
+
+            TextView tview = getOtherHeadersView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableHeaders());
+
+            tview = getOtherTextView();
+            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableBody());
             //mSwitcher.invalidate();
+            setOtherTextSwitch();
             mSwitcher.showNext();
         }
     }
@@ -1110,51 +1138,43 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private static final Pattern digits = Pattern.compile("\\d{5,}");
-    public static Spannable formatText(Context context, TextInfo text, int showHeadersLevel)
-    {
-        //String[] lines = text.getBody().split("\n");
+    public static Spannable formatHeaders(Context context, TextInfo text,
+            int showHeadersLevel) {
         StringBuilder body = new StringBuilder();
 
-        // Some simple heuristics to reflow and htmlize KOM texts.
-        // TODO: Deal with quoted blocks prefixed with '>'.
-
         if (text.getTextNo() > 0) {   
-        	body.append(text.getTextNo());       	
+            body.append(text.getTextNo());          
             body.append(" <b>");
             body.append(text.getAuthor());
             body.append("</b> ");
-        	body.append(text.getDate());
+            body.append(text.getDate());
             body.append("<br/>");
 
-			if (showHeadersLevel>0) {
-				String[] headerlines = text.getVisibleHeaders().split("\n");
-				for (String line : headerlines) {
-					body.append(line);
-					body.append("<br/>");
-				}
-			}
+            if (showHeadersLevel>0) {
+                String[] headerlines = text.getVisibleHeaders().split("\n");
+                for (String line : headerlines) {
+                    body.append(line);
+                    body.append("<br/>");
+                }
+            }
             
             body.append("<b>"+context.getString(R.string.subject));
             body.append(text.getSubject());
             body.append("</b>");
         }
         
-        /*
-        body.append("<p>");
-        for(String line : lines) {
-            if (line.startsWith(" ") || line.startsWith("\t"))
-                body.append("<br/>");
+        Spannable spannedText = (Spannable) Html.fromHtml(body.toString());
+        Linkify.addLinks(spannedText, Linkify.WEB_URLS | Linkify.EMAIL_ADDRESSES);
+        
+        return spannedText;
+    }
+    
+    public static Spannable formatText(Context context, TextInfo text)
+    {
+        StringBuilder body = new StringBuilder();
 
-
-            if (line.trim().length() == 0)
-                body.append("</p><p>");
-
-            
-            body.append(line);
-            body.append(" ");
-        }
-        body.append("</p>");
-        */
+        // Some simple heuristics to reflow and htmlize KOM texts.
+        // TODO: Deal with quoted blocks prefixed with '>'.
 
         String rawbody = text.getBody();
         String cookedbody;
@@ -1197,6 +1217,39 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     /**
+     * Assume switcher got two childs and set the other, currently not
+     * visible, child.
+     */
+    public void resetOtherScroll() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+
+        ScrollView sv = null;
+
+        if (currentViewId == R.id.scrollView1) {
+            sv = (ScrollView) findViewById(R.id.scrollView2);
+        } else {
+            sv = (ScrollView) findViewById(R.id.scrollView1);
+        }
+        if (sv != null) {
+            sv.scrollTo(0, 0);
+        }
+    }
+
+    /**
+     * Assume switcher got two childs and return the other, currently not
+     * visible, child.
+     */
+    public TextView getOtherHeadersView() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+
+        if (currentViewId == R.id.scrollView1) {
+            return (TextView) findViewById(R.id.flipper_headers2_id);
+        } else {
+            return (TextView) findViewById(R.id.flipper_headers1_id);
+        }
+    }
+
+    /**
      * Assume switcher got two childs and return the other, currently not
      * visible, child.
      */
@@ -1207,6 +1260,20 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             return (TextView) findViewById(R.id.flipper_text2_id);
         } else {
             return (TextView) findViewById(R.id.flipper_text1_id);
+        }
+    }
+
+    /**
+     * Assume switcher got two childs and return the other, currently not
+     * visible, child.
+     */
+    public ImageView getOtherImgView() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+
+        if (currentViewId == R.id.scrollView1) {
+            return (ImageView) findViewById(R.id.flipper_imageView2);
+        } else {
+            return (ImageView) findViewById(R.id.flipper_imageView1);
         }
     }
 
@@ -1222,6 +1289,38 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         } else {
             return (TextView) findViewById(R.id.flipper_text2_id);
         }
+    }
+
+    /**
+     * Set switch to show image
+     * 
+     */
+    public void setOtherImgSwitch() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+        ViewSwitcher switcher=null;
+        
+        if (currentViewId == R.id.scrollView1) {
+            switcher = (ViewSwitcher) findViewById(R.id.profile2Switcher);
+        } else {
+            switcher = (ViewSwitcher) findViewById(R.id.profile1Switcher);
+        }
+        switcher.setDisplayedChild(1); // see order in XML
+    }
+
+    /**
+     * Set switch to show text
+     * 
+     */
+    public void setOtherTextSwitch() {
+        int currentViewId = mSwitcher.getCurrentView().getId();
+        ViewSwitcher switcher=null;
+        
+        if (currentViewId == R.id.scrollView1) {
+            switcher = (ViewSwitcher) findViewById(R.id.profile2Switcher);
+        } else {
+            switcher = (ViewSwitcher) findViewById(R.id.profile1Switcher);
+        }
+        switcher.setDisplayedChild(0); // see order in XML
     }
 
     private String stackAsString()
