@@ -19,7 +19,7 @@ import android.util.Log;
 import android.widget.Toast;
 
 public class AsyncMessages implements AsynchMessageReceiver {
-    private static final String TAG = "Androkom";
+    private static final String TAG = "Androkom AsyncMessages";
 
     public static final String ASYNC_MESSAGE_NAME = "name";
     public static final String ASYNC_MESSAGE_NEWNAME = "newname";

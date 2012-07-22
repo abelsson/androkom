@@ -90,6 +90,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     	
         super.onCreate(savedInstanceState);
 
+        Log.d(TAG, "onCreate initialize");
+        
         setContentView(R.layout.conference);
 
         if (ConferencePrefs.getUserButtons(getBaseContext())) {
@@ -152,26 +154,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         
         int confNo = 0;
         int textNo = 0;
-        if (intent != null) {
-            final Bundle extras = intent.getExtras();
-            if (extras != null) {
-                Object confid = extras.get("conference-id");
-                if (confid == null) {
-                    confNo = 0;
-                } else {
-                confNo = (Integer) confid;
-                }                
-                Log.i(TAG, "Got passed conference id: " + confNo);
-                
-                Object textNo_obj = extras.get("textNo");
-                if (textNo_obj == null) {
-                    textNo = 0;
-                } else {
-                    textNo = (Integer) textNo_obj;
-                }
-                Log.i(TAG, "Got passed text no: " + textNo);
-            }
-        }
 
         if (data != null) {
             Log.d(TAG, "Got data!");
@@ -205,6 +187,34 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             TextView tview = getCurrentTextView();
             if(tview != null) {
                 tview.setText(formatText(getString(R.string.loading_text)+" "));
+            }
+        }
+
+        if (intent != null) {
+            final Bundle extras = intent.getExtras();
+            if (extras != null) {
+                Object confid = extras.get("conference-id");
+                if (confid == null) {
+                    confNo = 0;
+                } else {
+                    confNo = (Integer) confid;
+                    mState.conferenceNo = confNo;
+                }
+                Log.i(TAG, "Got passed conference id: " + confNo);
+
+                Object textNo_obj = extras.get("textNo");
+                if (textNo_obj == null) {
+                    textNo = 0;
+                } else {
+                    textNo = (Integer) textNo_obj;
+                    if(textNo > 0) {
+                        if (mState.textQueue == null) {
+                            mState.textQueue = new ArrayBlockingQueue<Integer>(10);
+                        }
+                        mState.textQueue.offer(textNo);
+                    }
+                }
+                Log.i(TAG, "Got passed text no: " + textNo);
             }
         }
 

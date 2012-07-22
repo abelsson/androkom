@@ -644,9 +644,12 @@ public class KomServer extends Service implements RpcEventListener,
      */
     public void setConference(final int confNo) throws RpcFailure, IOException {
         if (s != null) {
+            Log.d(TAG, "setConference Byt till conf:"+confNo);
             s.changeConference(confNo);
             readMarker.clear();
             textFetcher.restartPrefetcher();
+        } else {
+            Log.d(TAG, "setConference Ingen session");
         }
     }
 
