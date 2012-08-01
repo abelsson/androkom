@@ -185,7 +185,7 @@ public class Login extends Activity implements ServiceConnection
             this.dialog.setMessage("Logging in...");
             this.dialog.show();
 
-            this.username = mUsername.getText().toString();
+            this.username = mUsername.getText().toString().trim();
             this.password = mPassword.getText().toString();
         }
 

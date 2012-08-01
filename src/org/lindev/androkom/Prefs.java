@@ -30,11 +30,11 @@ public class Prefs extends PreferenceActivity {
 	}
 
 	public static String getServer(Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_SERVER, OPT_SERVER_DEF);
+		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_SERVER, OPT_SERVER_DEF).trim();
 	}
 
 	public static String getOtherServer(Context context) {
-		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_OTHER_SERVER, OPT_OTHER_SERVER_DEF);
+		return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_OTHER_SERVER, OPT_OTHER_SERVER_DEF).trim();
 	}
 
 	public static Boolean getSavePsw(Context context) {

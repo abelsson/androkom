@@ -570,7 +570,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private void moveToPrevText() {
-        Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex-1) + "/" + mState.currentText.size());
+        Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex - 1)
+                + "/" + mState.currentText.size());
 
         if (mState.currentTextIndex > 0) {
             mState.currentTextIndex--;
@@ -579,11 +580,37 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             mSwitcher.setOutAnimation(mSlideRightOut);
 
             TextView tview = getOtherHeadersView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableHeaders());
+            TextInfo text = mState.currentText
+                    .elementAt(mState.currentTextIndex);
+            if (text.getAllHeaders().contains("ContentType:image/")) {
+                Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                final Spannable spannedHeader = text.getSpannableHeaders();
+                addLinks(spannedHeader, digits, null);
 
-            tview = getOtherTextView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableBody());
-            setOtherTextSwitch();
+                tview.setText(spannedHeader);
+
+                ImageView imgView = getOtherImgView();
+                byte[] bilden = text.getRawBody();
+                Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                        bilden.length);
+                if (bmImg != null) {
+                    imgView.setImageBitmap(bmImg);
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.image_decode_failed),
+                            Toast.LENGTH_LONG).show();
+                }
+                setOtherImgSwitch();
+            } else {
+                Spannable spannableHeaders = mState.currentText.elementAt(
+                        mState.currentTextIndex).getSpannableHeaders();
+                tview.setText(spannableHeaders);
+
+                tview = getOtherTextView();
+                tview.setText(mState.currentText.elementAt(
+                        mState.currentTextIndex).getSpannableBody());
+                setOtherTextSwitch();
+            }
             mSwitcher.showNext();
         }
     }
@@ -615,31 +642,63 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private void moveToNextText(boolean markTextAsRead) {
-        Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/" + mState.currentText.size());
+        Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/"
+                + mState.currentText.size());
         int markTextAsReadint = markTextAsRead ? 0 : 1;
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
-        
+
         if ((mState.currentTextIndex + 1) >= mState.currentText.size()) {
             // At end of list. load new text from server
             Log.i(TAG, "fetching new text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-        }
-        else {
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0,
+                    markTextAsReadint);
+        } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
             mState.currentTextIndex++;
             Log.i(TAG, stackAsString());
 
             TextView tview = getOtherHeadersView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableHeaders());
+            TextInfo text = mState.currentText
+                    .elementAt(mState.currentTextIndex);
+            if (text.getAllHeaders().contains("ContentType:image/")) {
+                Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                final Spannable spannedHeader = text.getSpannableHeaders();
+                addLinks(spannedHeader, digits, null);
 
-            tview = getOtherTextView();
-            tview.setText(mState.currentText.elementAt(mState.currentTextIndex).getSpannableBody());
-            //mSwitcher.invalidate();
-            setOtherTextSwitch();
+                tview.setText(spannedHeader);
+
+                ImageView imgView = getOtherImgView();
+                byte[] bilden = text.getRawBody();
+                Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                        bilden.length);
+                if (bmImg != null) {
+                    imgView.setImageBitmap(bmImg);
+                } else {
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.image_decode_failed),
+                            Toast.LENGTH_LONG).show();
+                }
+                setOtherImgSwitch();
+            } else {
+                tview.setText(mState.currentText.elementAt(
+                        mState.currentTextIndex).getSpannableHeaders());
+
+                tview = getOtherTextView();
+                tview.setText(mState.currentText.elementAt(
+                        mState.currentTextIndex).getSpannableBody());
+                setOtherTextSwitch();
+            }
             mSwitcher.showNext();
         }
+    }
+
+    private void moveToText(final int textNo) {
+        Log.i(TAG, "fetching text " + textNo);
+        mSwitcher.setInAnimation(mSlideLeftIn);
+        mSwitcher.setOutAnimation(mSlideLeftOut);
+        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
     }
 
     private void moveToParentText() {
@@ -649,13 +708,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
         new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
-    }
-
-    private void moveToText(final int textNo) {
-        Log.i(TAG, "fetching text " + textNo);
-        mSwitcher.setInAnimation(mSlideLeftIn);
-        mSwitcher.setOutAnimation(mSlideLeftOut);
-        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
     }
 
 	private void scrollPageUp() {
@@ -1374,9 +1426,11 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     outState.putString("UserServer", mKom.getServer());
                 } else {
                     Log.d(TAG, "No userid, bailing out");
-                    finish();
                 }
             }
+        }
+        if (mKom != null) {
+            mKom.logout();
         }
     }
 
@@ -1447,8 +1501,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.d(TAG, "onServiceConnected RpcFailure");
             //e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "onServiceConnected IOException");
-            //e.printStackTrace();
+            Log.d(TAG, "onServiceConnected IOException:"+e);
+            e.printStackTrace();
             Toast.makeText(getApplicationContext(), getString(R.string.connection_lost), Toast.LENGTH_SHORT).show();
             mKom.logout();
             finish();

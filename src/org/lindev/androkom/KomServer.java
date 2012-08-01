@@ -46,6 +46,7 @@ import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Spannable;
 import android.util.Log;
