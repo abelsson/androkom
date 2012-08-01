@@ -338,7 +338,7 @@ public class KomServer extends Service implements RpcEventListener,
      * When no need to wait for reconnect
      * 
      */
-    private class ReconnectTask extends AsyncTask<KomToken, Void, Void> {
+/*    private class ReconnectTask extends AsyncTask<KomToken, Void, Void> {
         protected void onPreExecute() {
             Log.d(TAG, "ReconnectTask.onPreExecute");
         }
@@ -354,7 +354,7 @@ public class KomServer extends Service implements RpcEventListener,
             return null;
         }
     }
-
+*/
 
     public void reconnect() {
         Log.d(TAG, "KomServer trying to reconnect 1");

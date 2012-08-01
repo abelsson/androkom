@@ -1,6 +1,5 @@
 package org.lindev.androkom.text;
 
-import java.io.IOException;
 import java.util.List;
 
 import nu.dll.lyskom.AuxItem;

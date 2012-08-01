@@ -260,4 +260,5 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="directtounreads_summary">Direkt till olästa</string>
     <string name="directtounreads_dialog_title_prefs">Direkt till olästa</string>
     <string name="subject_list_title">Ärendelista</string>
+    <string name="insertquotation_menu">Infoga citat</string>
 </resources>

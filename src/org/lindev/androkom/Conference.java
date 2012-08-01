@@ -1429,9 +1429,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 }
             }
         }
-        if (mKom != null) {
-            mKom.logout();
-        }
     }
 
     public void onRestoreInstanceState(Bundle savedInstanceState) {

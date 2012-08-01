@@ -1,10 +1,12 @@
 package org.lindev.androkom.gui;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.Conference;
+import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
@@ -278,16 +280,41 @@ public class TextCreator extends TabActivity implements ServiceConnection {
     @Override
     public boolean onOptionsItemSelected(MenuItem item) {
         Log.d(TAG, "onOptionsItemSelected");
-        try {
-            mKom.activateUser();
-        } catch (Exception e1) {
-            Log.d(TAG, "onOptionsItem caught exception, bailing out");
-            // e1.printStackTrace();
-            mKom.logout();
-        }
+        activateUser();
 
         // Handle item selection
         switch (item.getItemId()) {
+        case R.id.menu_insertquotation_id:
+        {
+            Log.i(TAG, "insertquotation");
+            String textToInsert = null;
+            if (mReplyTo > 0) {
+                try {
+                    // TODO: Don't quote image, at least not as text...
+                    textToInsert = mKom.getTextbyNo(mReplyTo).getBodyString();
+                } catch (UnsupportedEncodingException e) {
+                    Log.d(TAG, "onOptionsItemSelected:" + e);
+                    e.printStackTrace();
+                } catch (NullPointerException e) {
+                    Log.d(TAG, "onOptionsItemSelected:" + e);
+                    e.printStackTrace();
+                }
+            }
+            
+            if ((textToInsert != null) && (mBody != null)) {
+                if (textToInsert.endsWith("\n")) {
+                    textToInsert.substring(0, textToInsert.length()-2);
+                }
+                textToInsert = "> " + textToInsert.replaceAll("\n", "\n> ");
+                textToInsert = textToInsert + "\n\n";
+                int start = mBody.getSelectionStart();
+                int end = mBody.getSelectionEnd();
+                mBody.getText().replace(Math.min(start, end),
+                        Math.max(start, end), textToInsert, 0,
+                        textToInsert.length());
+            }
+            return true;
+        }
         case R.id.menu_insertlocation_id:
             Log.i(TAG, "insertlocation");
             if (mPrecision > 0) {
@@ -459,7 +486,34 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         }
     }
 
+    public void activateUser() {
+        new ActivateUserTask().execute();
+    }
+
+    /**
+     * No need to wait for activate
+     * 
+     */
+    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
+        protected void onPreExecute() {
+            Log.d(TAG, "ActivateUserTask.onPreExecute");
+        }
+
+        // worker thread (separate from UI thread)
+        protected Void doInBackground(final KomToken... args) {
+            try {
+                mKom.activateUser();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to activate user exception:"+e1);
+                //e1.printStackTrace();
+                mKom.logout();
+            }
+            return null;
+        }
+    }
+
     public void onServiceConnected(final ComponentName name, final IBinder service) {
+        Log.d(TAG, "onServiceConnected start");
         mKom = ((LocalBinder<KomServer>) service).getService();
 
         if (!getIntent().getBooleanExtra(INTENT_INITIAL_RECIPIENTS_ADDED, false)) {
@@ -467,9 +521,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             getIntent().putExtra(INTENT_INITIAL_RECIPIENTS_ADDED, true);
         }
         enableButtons();
+
+        Log.d(TAG, "onServiceConnected done");
     }
 
     public void onServiceDisconnected(final ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
         mKom = null;
     }
 
