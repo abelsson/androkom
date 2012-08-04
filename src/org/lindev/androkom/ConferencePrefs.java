@@ -27,7 +27,7 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_VIBRATEFORTAP = "vibratefortap";
     private static final Boolean OPT_VIBRATEFORTAP_DEF = true;
     private static final String OPT_VIBRATETIMETAP = "vibratetimetap";
-    private static final String OPT_VIBRATETIMETAP_DEF = "25";
+    private static final String OPT_VIBRATETIMETAP_DEF = "15";
     private static final String OPT_VIBRATEFORASYNCH = "vibrateforasynch";
     private static final Boolean OPT_VIBRATEFORASYNCH_DEF = false;
     private static final String OPT_VIBRATETIME = "vibratetime";

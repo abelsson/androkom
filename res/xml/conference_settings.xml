@@ -53,7 +53,7 @@
     android:key="vibratetimetap"
     android:title="@string/vibratetimetap_title"
     android:summary="@string/vibratetimetap_summary"
-    android:defaultValue="25"
+    android:defaultValue="15"
     android:digits="0123456789"
     />
   <CheckBoxPreference
