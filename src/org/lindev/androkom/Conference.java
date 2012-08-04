@@ -1489,6 +1489,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mKom.setShowHeadersLevel(mState.ShowHeadersLevel);
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
             mKom.setUser(re_userId, re_userPSW, re_server);
+            if(!mKom.isConnected()) {
+                mKom.reconnect();
+            }
         } else {
             if(mKom==null) {
                 Log.d(TAG, "mKom == null");
