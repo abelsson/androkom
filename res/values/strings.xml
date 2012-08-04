@@ -216,6 +216,10 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="userbutton4_title">"Button 4"</string>
     <string name="userbutton4_summary">"User button 4"</string>
     <string name="asynch_prefs_title">"Asynch prefs"</string>
+    <string name="vibratefortap_title">"Vibrate"</string>
+    <string name="vibratefortap_summary">"Vibrate on tap to switch text"</string>
+    <string name="vibratetimetap_title">"Vibrate time"</string>
+    <string name="vibratetimetap_summary">"Time to vibrate (ms)"</string>
     <string name="vibrateforasynch_title">"Vibrate"</string>
     <string name="vibrateforasynch_summary">"Vibrate on recivied IM"</string>
     <string name="vibratetime_title">"Vibrate time"</string>

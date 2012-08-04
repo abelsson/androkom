@@ -33,6 +33,7 @@ import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.os.Vibrator;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -520,18 +521,30 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     {     
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            Context context = getBaseContext();
+            if (ConferencePrefs.getVibrateForTap(context)) {
+                Vibrator vibrator = (Vibrator) context
+                        .getSystemService(Context.VIBRATOR_SERVICE);
+                vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
+            }
             activateUser();
 
             Display display = getWindowManager().getDefaultDisplay();
             int width = display.getWidth();
             // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
             int myLimit = mSwitcher.getBaseline() + mSwitcher.getBottom();
+            //Log.d(TAG, "onSingleTapUp myLimit:"+myLimit);
+            //Log.d(TAG, "onSingleTapUp width:"+width);
+            //Log.d(TAG, "onSingleTapUp e.getRawY():"+e.getRawY());
+            //Log.d(TAG, "onSingleTapUp e.getRawX():"+e.getRawX());
+            //Log.d(TAG, "onSingleTapUp e.getDownTime():"+e.getDownTime());
+
             if (e.getRawY() < myLimit) {
-                if (e.getRawX() > 0.8 * width && e.getDownTime() > 500) {
+                if (e.getRawX() > 0.6 * width) {
                     moveToNextText(true);
                     return true;
                 }
-                if (e.getRawX() < 0.2 * width && e.getDownTime() > 500) {
+                if (e.getRawX() < 0.4 * width) {
                     moveToPrevText();
                     return true;
                 }

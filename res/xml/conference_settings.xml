@@ -44,6 +44,19 @@
     android:defaultValue="false"
     />
   <CheckBoxPreference
+    android:key="vibratefortap"
+    android:title="@string/vibratefortap_title"
+    android:summary="@string/vibratefortap_summary"
+    android:defaultValue="true"
+    />
+  <EditTextPreference
+    android:key="vibratetimetap"
+    android:title="@string/vibratetimetap_title"
+    android:summary="@string/vibratetimetap_summary"
+    android:defaultValue="125"
+    android:digits="0123456789"
+    />
+  <CheckBoxPreference
     android:key="vibrateforasynch"
     android:title="@string/vibrateforasynch_title"
     android:summary="@string/vibrateforasynch_summary"

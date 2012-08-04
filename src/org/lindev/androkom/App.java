@@ -74,7 +74,7 @@ public class App extends Application implements ServiceConnection
         new DelayedUnbindTask().execute(connection);
         nrServiceUsers--;
         Log.d(TAG, "SERVICE fewer users:"+nrServiceUsers);
-   }
+    }
 
     
     private class DelayedUnbindTask extends
