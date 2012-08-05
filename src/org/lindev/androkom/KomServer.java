@@ -46,7 +46,6 @@ import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
-import android.os.Bundle;
 import android.os.IBinder;
 import android.text.Spannable;
 import android.util.Log;
@@ -63,7 +62,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = false;
+	public static boolean RELEASE_BUILD = true;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
