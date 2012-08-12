@@ -26,7 +26,7 @@ public class Prefs extends PreferenceActivity {
 	private static final Boolean OPT_USE_OISAFE_DEF = false;
 
     private static final String OPT_USESSL = "usessl";
-    private static final Boolean OPT_USESSL_DEF = true;
+    private static final Boolean OPT_USESSL_DEF = false;
 
     private static final String OPT_CERTLEVEL = "certlevel";
     private static final String OPT_CERTLEVEL_DEF = "0";

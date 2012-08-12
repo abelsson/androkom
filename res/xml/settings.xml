@@ -29,7 +29,7 @@
     android:key="usessl"
     android:title="@string/usessl_title"
     android:summary="@string/usessl_summary"
-    android:defaultValue="true"
+    android:defaultValue="false"
     />
   <ListPreference
     android:key="certlevel"
