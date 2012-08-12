@@ -16,6 +16,29 @@
     android:title="@string/otherserver_title"
     android:summary="@string/otherserver_summary"
     />
+  <ListPreference
+    android:key="portnum"
+    android:title="@string/portnum_title"
+    android:summary="@string/portnum_summary"
+    android:entries="@array/portnum_entries_list"
+    android:entryValues="@array/portnum_values_list"
+    android:dialogTitle="@string/portnum_dialog_title_prefs"
+    />
+  
+  <CheckBoxPreference
+    android:key="usessl"
+    android:title="@string/usessl_title"
+    android:summary="@string/usessl_summary"
+    android:defaultValue="true"
+    />
+  <ListPreference
+    android:key="certlevel"
+    android:title="@string/certlevel_title"
+    android:summary="@string/certlevel_summary"
+    android:entries="@array/certlevel_entries_list"
+    android:entryValues="@array/certlevel_values_list"
+    android:dialogTitle="@string/certlevel_dialog_title_prefs"
+    />
   </PreferenceCategory>
   <PreferenceCategory
     android:title="@string/othercat_title">

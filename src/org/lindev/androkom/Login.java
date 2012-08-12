@@ -192,20 +192,23 @@ public class Login extends Activity implements ServiceConnection
         protected String doInBackground(final Void... args) 
         {
 			String server = Prefs.getServer(getBaseContext());
+			int port = Prefs.getPortno(getBaseContext());
+			boolean useSSL = Prefs.getUseSSL(getBaseContext());
+			int cert_level = Prefs.getCertLevel(getBaseContext());
         	if(server.equals("@")) {
             	server = Prefs.getOtherServer(getBaseContext());        	
         	}
         	Log.d(TAG, "Connecting to "+server);
         	if(server.length()>0) {
         		if(selectedUser>0) {
-        			String msg = mKom.login(selectedUser, password, server);
+        			String msg = mKom.login(selectedUser, password, server, port, useSSL, cert_level);
         			selectedUser=0;
             		return msg;
         		} else {
         		    String result = "default";
         		    
         		    try {
-        		        result = mKom.login(username, password, server);
+        		        result = mKom.login(username, password, server, port, useSSL, cert_level);
         		    }
         		    catch(NullPointerException e) {
         		        result = "Failed to login";

@@ -44,6 +44,12 @@
     <string name="server_title">Server</string>
     <string name="server_summary">Select server</string>
     <string name="server_dialog_title_prefs">Server dialog title</string>
+    <string name="portnum_title">Portnum</string>
+    <string name="portnum_summary">Port number</string>
+    <string name="portnum_dialog_title_prefs">Portnum dialog title</string>
+    <string name="certlevel_title">certlevel</string>
+    <string name="certlevel_summary">certlevel summary</string>
+    <string name="certlevel_dialog_title_prefs">certlevel dialog title</string>
     <string name="otherserver_title">Other server</string>
     <string name="otherserver_summary">Specify server</string>
     <string name="othercat_title">Other settings</string>
@@ -64,6 +70,8 @@
     <string name="preferredlanguage_dialog_title_prefs">Language dialog title</string>
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
+    <string name="usessl_title">Use SSL</string>
+    <string name="usessl_summary">Encrypted connection (SSL)</string>
     <string name="title_submenu_textsize">Text size...</string>
     <string name="smallerfontsize_label">Smaller fontsize</string>
     <string name="smallerfontsize_shortcut">-</string>

@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="certlevel_entries_list">
+    <item>"Default root"</item>
+    <item>"Embedded root"</item>
+    <item>"Any"</item>
+  </array>
+  <array name="certlevel_values_list">
+    <item>"0"</item>
+    <item>"1"</item>
+    <item>"2"</item>
+  </array>
+</resources>

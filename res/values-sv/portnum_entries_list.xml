@@ -1,0 +1,11 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="portnum_entries_list">
+    <item>"Standard (4894)"</item>
+    <item>"SSL (44894)"</item>
+  </array>
+  <array name="portnum_values_list">
+    <item>"4894"</item>
+    <item>"44894"</item>
+  </array>
+</resources>

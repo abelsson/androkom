@@ -10,7 +10,7 @@
     <string name="x_changed_to_y">" har bytt till "</string>
     <string name="x_says_y">" säger "</string>
     <string name="x_to_y">" till "</string>
-    <string name="lyskom_full">Lyskom är fullt, lämna plats</string>
+    <string name="lyskom_full">"Lyskom är fullt, lämna plats"</string>
     <string name="sync_db_msg">Databasen synkas</string>
     <string name="loading_text">Laddar text..</string>
     <string name="loading">Laddar...</string>
@@ -265,4 +265,12 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="directtounreads_dialog_title_prefs">Direkt till olästa</string>
     <string name="subject_list_title">Ärendelista</string>
     <string name="insertquotation_menu">Infoga citat</string>
+    <string name="usessl_summary">Krypterad uppkoppling (SSL)</string>
+    <string name="usessl_title">Använd SSL</string>
+    <string name="portnum_title">Portnum</string>
+    <string name="portnum_dialog_title_prefs">Portnum dialog title</string>
+    <string name="portnum_summary">Portnummer</string>
+    <string name="certlevel_summary">certlevel summary</string>
+    <string name="certlevel_dialog_title_prefs">certlevel dialog title</string>
+    <string name="certlevel_title">certlevel</string>
 </resources>

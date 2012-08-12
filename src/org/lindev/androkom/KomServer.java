@@ -62,7 +62,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -367,7 +367,7 @@ public class KomServer extends Service implements RpcEventListener,
         if (re_userid > 0) {
             Log.d(TAG, "KomServer trying to login using id " + re_userid
                     + " on server " + re_server);
-            login(re_userid, re_password, re_server);
+            login(re_userid, re_password, re_server, re_port, re_useSSL, re_cert_level);
         } else {
             Log.d(TAG, "Can't reconnect because no userid");
         }
@@ -375,10 +375,11 @@ public class KomServer extends Service implements RpcEventListener,
 
     /**
      * Connect to LysKOM server.
+     * @param port 
      * 
      * @return 0 on success, non-zero on failure.
      */
-    public int connect(String server) 
+    public int connect(String server, int port, boolean useSSL, int cert_level) 
     {
         String  ANDROID         =   android.os.Build.VERSION.RELEASE;       //The current development codename, or the string "REL" if this is a release build.
         String  BOARD           =   android.os.Build.BOARD;                 //The name of the underlying board, like "goldfish".    
@@ -417,7 +418,8 @@ public class KomServer extends Service implements RpcEventListener,
             } catch (Exception e) {
             }
             
-            s.connect(server);
+            s.connect(server, port, useSSL, cert_level,
+                       getBaseContext().getResources().openRawResource(R.raw.root_keystore));
             s.addAsynchMessageReceiver(asyncMessagesHandler);
         } catch (IOException e) {
             // TODO Auto-generated catch block
@@ -428,8 +430,7 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (Exception e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect2 "+e);
-
-            //e.printStackTrace();
+        	e.printStackTrace();
             return -1;
         }
 
@@ -673,9 +674,13 @@ public class KomServer extends Service implements RpcEventListener,
      * 
      * @return Empty string on success, string describing failure otherwise
      */
-    public String login(String username, String password, String server) 
+    public String login(String username, String password, String server, int port, boolean useSSL, int cert_level) 
     {
     	Log.d(TAG, "Trying to login username:"+username);
+        Log.d(TAG, "Trying to login server:"+server);
+        Log.d(TAG, "Trying to login port:"+port);
+        Log.d(TAG, "Trying to login usessl:"+useSSL);
+        Log.d(TAG, "Trying to login cert_level:"+cert_level);
 
     	if (s == null) {
             s = new Session();
@@ -684,7 +689,7 @@ public class KomServer extends Service implements RpcEventListener,
 
     	try {
     		if (!s.getConnected()) {
-    			if (connect(server) != 0) {
+    			if (connect(server, port, useSSL, cert_level) != 0) {
                     if (s != null) {
                         s.disconnect(true);
                     }
@@ -732,6 +737,9 @@ public class KomServer extends Service implements RpcEventListener,
             re_userid = usernames[0].confNo;
             re_password = password;
             re_server = server;
+            re_port = port;
+            re_useSSL = useSSL;
+            re_cert_level = cert_level;
         } catch (Exception e) {
             Log.e(TAG, "Login.name3 Caught " + e.getClass().getName() + ":" + e
                     + ":" + e.getCause());
@@ -751,10 +759,11 @@ public class KomServer extends Service implements RpcEventListener,
 
     /**
      * Log in to server. 
+     * @param port 
      * 
      * @return Empty string on success, string describing failure otherwise
      */
-    public String login(int userid, String password, String server) 
+    public String login(int userid, String password, String server, int port, boolean useSSL, int cert_level) 
     {
     	Log.d(TAG, "Trying to login userid:"+userid);
         if (s == null) {
@@ -764,7 +773,7 @@ public class KomServer extends Service implements RpcEventListener,
         usernames = new ConfInfo[0];
         try {
             if (!s.getConnected()) {
-                if (connect(server) != 0) {
+                if (connect(server, port, useSSL, cert_level) != 0) {
                     try {
                         if (s != null) {
                             s.disconnect(true);
@@ -797,7 +806,10 @@ public class KomServer extends Service implements RpcEventListener,
         re_userid = userid;
         re_password = password;
         re_server = server;
-        
+        re_port = port;
+        re_useSSL = useSSL;
+        re_cert_level = cert_level;
+
         return "";
     }
 
@@ -1734,10 +1746,13 @@ public class KomServer extends Service implements RpcEventListener,
 	private long lastActivate = 0;
 	
 	public HashSet<Integer> mPendingSentTexts;
-	ConfInfo usernames[];
-	private int re_userid; // for reconnect, note: none of these are saved during screen rotation
-	private String re_password; // for reconnect
-	private String re_server; // for reconnect
+	ConfInfo usernames[] = null;
+	private int re_userid=0; // for reconnect, note: none of these are saved during screen rotation
+	private String re_password=null; // for reconnect
+	private String re_server=null; // for reconnect
+    private int re_port=0; // for reconnect
+	private boolean re_useSSL=true; // for reconnect
+    private int re_cert_level=0; // for reconnect
 
 	private String latestIMSender=""; // for creating new IM
 	
