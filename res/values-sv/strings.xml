@@ -273,4 +273,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="certlevel_summary">certlevel summary</string>
     <string name="certlevel_dialog_title_prefs">certlevel dialog title</string>
     <string name="certlevel_title">certlevel</string>
+    <string name="autoreadmarkowntext_title">Läsmarkera egna texter</string>
+    <string name="autoreadmarkowntext_summary">Läsmarkera egna texter</string>
 </resources>

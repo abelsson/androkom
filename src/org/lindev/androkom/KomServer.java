@@ -62,7 +62,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -1615,13 +1615,20 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public int createText(Text t) throws IOException {
+    public int createText(Text t, boolean autoreadmarkowntext) throws IOException {
         int text = 0;
         if (s == null) {
             return 0;
         }
         try {
             text = s.createText(t);
+            if (text == 0) {
+                Log.d(TAG, "createText did not get a textnumber");
+            } else {
+                if (autoreadmarkowntext) {
+                    s.markAsRead(text);
+                }
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.localToGlobal new_text RpcFailure:" + e);
             // e.printStackTrace();

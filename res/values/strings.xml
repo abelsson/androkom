@@ -274,4 +274,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="directtounreads_dialog_title_prefs">Direct to unreads</string>
     <string name="subject_list_title">Subjects</string>
     <string name="insertquotation_menu">Insert quotation</string>
+    <string name="autoreadmarkowntext_title">Mark own texts as read</string>
+    <string name="autoreadmarkowntext_summary">Mark own texts as read</string>
 </resources>

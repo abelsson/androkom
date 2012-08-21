@@ -30,6 +30,12 @@
     android:defaultValue="true"
     />
   <CheckBoxPreference
+    android:key="autoreadmarkowntext"
+    android:title="@string/autoreadmarkowntext_title"
+    android:summary="@string/autoreadmarkowntext_summary"
+    android:defaultValue="false"
+    />
+  <CheckBoxPreference
     android:key="includelocation"
     android:title="@string/includelocation_title"
     android:summary="@string/includelocation_summary"

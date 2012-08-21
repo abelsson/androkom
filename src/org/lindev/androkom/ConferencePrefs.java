@@ -21,6 +21,8 @@ public class ConferencePrefs extends PreferenceActivity {
 
     private static final String OPT_MARKTEXTREAD = "marktextread";
     private static final Boolean OPT_MARKTEXTREAD_DEF = true;
+    private static final String OPT_AUTOMARKOWNTEXTREAD = "autoreadmarkowntext";
+    private static final Boolean OPT_AUTOMARKOWNTEXTREAD_DEF = false;
 	
     private static final String OPT_TOASTFORASYNCH = "toastforasynch";
     private static final Boolean OPT_TOASTFORASYNCH_DEF = false;
@@ -81,6 +83,10 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static Boolean getMarkTextRead(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_MARKTEXTREAD, OPT_MARKTEXTREAD_DEF);
+    }
+
+    public static Boolean getAutoMarkOwnTextRead(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_AUTOMARKOWNTEXTREAD, OPT_AUTOMARKOWNTEXTREAD_DEF);
     }
 
     public static Boolean getToastForAsynch(Context context) {

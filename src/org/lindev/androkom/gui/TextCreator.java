@@ -359,8 +359,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
 
     public boolean onContextItemSelected(MenuItem item) {
         Log.d(TAG, "===============================================");
-        AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
-                .getMenuInfo();
+        //AdapterContextMenuInfo info = (AdapterContextMenuInfo) item
+        //        .getMenuInfo();
         if (item.getItemId() == rot13menuid) {
             Log.i(TAG, "rot13 menu selected");
             return true;

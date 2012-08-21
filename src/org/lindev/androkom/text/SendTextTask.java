@@ -4,6 +4,7 @@ import java.io.IOException;
 
 import nu.dll.lyskom.Text;
 
+import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.R;
 
@@ -40,7 +41,7 @@ public class SendTextTask extends AsyncTask<Void, Void, String> {
     @Override
     protected String doInBackground(final Void... args) {
         try {
-            final int id = mKom.createText(mText);
+            final int id = mKom.createText(mText, ConferencePrefs.getAutoMarkOwnTextRead(mContext));
             if(id!=0) {
                 mKom.mPendingSentTexts.add(id);
             } else {
