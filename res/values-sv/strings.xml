@@ -275,4 +275,11 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="certlevel_title">certlevel</string>
     <string name="autoreadmarkowntext_title">Läsmarkera egna texter</string>
     <string name="autoreadmarkowntext_summary">Läsmarkera egna texter</string>
+    <string name="MxDate_label">"MxDate: "</string>
+    <string name="MxInReplyTo_label">"MxInReply: "</string>
+    <string name="MxTo_label">"MxTo: "</string>
+    <string name="MxCC_label">"MxCC: "</string>
+    <string name="MxFrom_label">"MxFrom: "</string>
+    <string name="MxAuthor_label">"MxAuthor: "</string>
+    <string name="MxReplyTo_label">"MxReplyTo: "</string>
 </resources>

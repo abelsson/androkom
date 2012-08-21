@@ -203,11 +203,67 @@ class TextCache {
                         headersString.append('\n');
                     }
                 }
-                List<AuxItem> location_item = text.getAuxItems(AuxItem.tagCreationLocation);
-                if (location_item.size() > 0) {
-                    for (int i = 0; i < location_item.size(); i++) {
+                List<AuxItem> aux_item = text.getAuxItems(AuxItem.tagMxAuthor);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxAuthor_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxCc);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxCC_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxDate);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxDate_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxFrom);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxFrom_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxInReplyTo);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxInReplyTo_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxReplyTo);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxReplyTo_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagMxTo);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
+                        headersString.append(mKom.getString(R.string.MxTo_label));
+                        headersString.append(aux_item.get(i).getDataString());
+                        headersString.append('\n');
+                    }
+                }
+                aux_item = text.getAuxItems(AuxItem.tagCreationLocation);
+                if (aux_item.size() > 0) {
+                    for (int i = 0; i < aux_item.size(); i++) {
                         headersString.append(mKom.getString(R.string.location_aux_label));
-                        headersString.append(location_item.get(i).getDataString());
+                        headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }

@@ -276,4 +276,11 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="insertquotation_menu">Insert quotation</string>
     <string name="autoreadmarkowntext_title">Mark own texts as read</string>
     <string name="autoreadmarkowntext_summary">Mark own texts as read</string>
+    <string name="MxCC_label">"MxCC: "</string>
+    <string name="MxAuthor_label">"MxAuthor: "</string>
+    <string name="MxDate_label">"MxDate: "</string>
+    <string name="MxFrom_label">"MxFrom: "</string>
+    <string name="MxInReplyTo_label">"MxInReply: "</string>
+    <string name="MxReplyTo_label">"MxReplyTo: "</string>
+    <string name="MxTo_label">"MxTo: "</string>
 </resources>

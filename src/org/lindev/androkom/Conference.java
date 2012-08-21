@@ -1112,6 +1112,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
     
     protected Dialog onCreateDialog(int id) {
+        // Assume id = DIALOG_NUMBER_ENTRY for now 
     	AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
     	alert.setTitle(getString(R.string.seetextagain_label));
@@ -1119,6 +1120,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
     	// Set an EditText view to get user input 
     	final EditText input = new EditText(this);
+    	input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
     	alert.setView(input);
 
     	alert.setPositiveButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
