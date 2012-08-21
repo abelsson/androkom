@@ -56,15 +56,33 @@ public class SendTextTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPostExecute(final String error) {
-        mDialog.dismiss();
-        if (error != null) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle(error);
-            builder.setPositiveButton(mContext.getString(R.string.alert_dialog_ok), null);
-            builder.create().show();
+        try {
+            mDialog.dismiss();
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.d(TAG, "onPostExecute1 caught IAexception: " + e);
+            Log.d(TAG, "onPostExecute1 got error:" + error);
+        } catch (Exception e) {
+            Log.d(TAG, "onPostExecute1 caught exception: " + e);
+            Log.d(TAG, "onPostExecute1 got error:" + error);
         }
-        else if (mRunnable != null) {
-            mRunnable.run();
+
+        try {
+            if (error != null) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(
+                        mContext);
+                builder.setTitle(error);
+                builder.setPositiveButton(
+                        mContext.getString(R.string.alert_dialog_ok), null);
+                builder.create().show();
+            } else if (mRunnable != null) {
+                mRunnable.run();
+            }
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.d(TAG, "onPostExecute2 caught IAexception: " + e);
+            Log.d(TAG, "onPostExecute2 got error:" + error);
+        } catch (Exception e) {
+            Log.d(TAG, "onPostExecute2 caught exception: " + e);
+            Log.d(TAG, "onPostExecute2 got error:" + error);
         }
     }
 }

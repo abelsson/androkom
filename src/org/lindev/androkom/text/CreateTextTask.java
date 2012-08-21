@@ -180,21 +180,27 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         } catch (Exception e) {
             Log.d(TAG, "Failed to dismiss dialog " + e);
         }
-        if (arg instanceof String) {
-            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
-            builder.setTitle((String) arg);
-            builder.setPositiveButton(mContext.getString(R.string.alert_dialog_ok), null);
-            builder.create().show();
+        try {
+            if (arg instanceof String) {
+                final AlertDialog.Builder builder = new AlertDialog.Builder(
+                        mContext);
+                builder.setTitle((String) arg);
+                builder.setPositiveButton(
+                        mContext.getString(R.string.alert_dialog_ok), null);
+                builder.create().show();
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "Failed to show dialog " + e);
         }
         final Text text = (Text) arg;
         if (mUserIsMemberOfSomeConf) {
             if (mRunnable != null) {
                 mRunnable.run(text);
             }
-        }
-        else {
+        } else {
             final OnClickListener listener = new OnClickListener() {
-                public void onClick(final DialogInterface dialog, final int which) {
+                public void onClick(final DialogInterface dialog,
+                        final int which) {
                     if (which == AlertDialog.BUTTON_NEUTRAL) {
                         return;
                     }
@@ -206,12 +212,19 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     }
                 }
             };
-            final AlertDialog.Builder builder = new AlertDialog.Builder(mContext);
+            final AlertDialog.Builder builder = new AlertDialog.Builder(
+                    mContext);
             builder.setTitle(mContext.getString(R.string.CTT_not_member));
-            builder.setPositiveButton(mContext.getString(R.string.yes), listener);
+            builder.setPositiveButton(mContext.getString(R.string.yes),
+                    listener);
             builder.setNegativeButton(mContext.getString(R.string.no), listener);
-            builder.setNeutralButton(mContext.getString(R.string.cancel), listener);
-            builder.create().show();
+            builder.setNeutralButton(mContext.getString(R.string.cancel),
+                    listener);
+            try {
+                builder.create().show();
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to show dialog2 " + e);
+            }
         }
     }
 }
