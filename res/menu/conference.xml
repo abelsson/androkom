@@ -45,6 +45,9 @@
           <item android:title="@string/seewhoison_label"
                 android:alphabeticShortcut="@string/seewhoison_shortcut"
                 android:id="@+id/menu_seewhoison_id"/>
+          <item android:title="@string/seeoriginalpost_label"
+                android:alphabeticShortcut="@string/seeoriginalpost_shortcut"
+                android:id="@+id/menu_seeoriginalpost_id"/>
           </menu>
     </item>
     <item android:id="@+id/menu_submenu_textsize"

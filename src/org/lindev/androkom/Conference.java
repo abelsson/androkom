@@ -310,6 +310,59 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         }
     }
 
+    
+    /**
+     * Fetch original text asynchronously, and show a progress spinner
+     * while the user is waiting.
+     */
+    private class LoadOriginalPostTask extends AsyncTask<Integer, Void, TextInfo>
+    {
+        protected void onPreExecute() {
+            Log.d(TAG, "LoadOriginalPostTask.onPreExecute");
+            setProgressBarIndeterminateVisibility(true);
+        }
+
+        // worker thread (separate from UI thread)
+        protected TextInfo doInBackground(final Integer... args) {
+            Log.d(TAG, "LoadOriginalPostTask doInBackground BEGIN");
+            TextInfo text = null;
+            TextInfo startText = null;
+
+            if (mState.hasCurrent()) {
+                Log.d(TAG, "hasCurrent");
+                text = mState.getCurrent();
+                startText = text;
+                Log.d(TAG, "hasCurrent textno"+text.getTextNo());
+            } else
+                return null;
+            
+            int maxChainLength = 100;
+            TextInfo parentText = mKom.getParentToText(text.getTextNo());
+            while((parentText != null) && (parentText.getTextNo()>0) && (maxChainLength>0)) {
+                maxChainLength--;
+                text = parentText;
+                Log.i(TAG, "Trying to get parent text of" + text.getTextNo());
+                parentText = mKom.getParentToText(text.getTextNo());
+            }
+            if (startText.getTextNo() != text.getTextNo()) {
+                return text;
+            }
+            return null;
+        }
+
+        protected void onPostExecute(final TextInfo text) 
+        {
+            Log.d(TAG, "LoadOriginalPostTask.onPostExecute");
+            setProgressBarIndeterminateVisibility(false);
+            
+            if(text != null) {
+                new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, text.getTextNo(), 0);
+            } else {
+                Toast.makeText(getApplicationContext(), getString(R.string.loadoriginalpost_failed), Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
     /**
      * Fetch new texts asynchronously, and show a progress spinner
      * while the user is waiting.
@@ -455,7 +508,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
     /**
      * Class for handling internal text number links. 
-     * Only a skeleton for now. 
      * 
      * @author henrik
      *
@@ -960,6 +1012,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 			seewhoison(1);
 			return true;
 
+        case R.id.menu_seeoriginalpost_id:
+            seeoriginalpost();
+            return true;
+            
         case R.id.menu_leaveconference_id:
             leaveconference();
             return true;
@@ -1034,6 +1090,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
     protected void seetextagain() {
     	showDialog(DIALOG_NUMBER_ENTRY);
+    }
+
+    protected void seeoriginalpost() {
+        new LoadOriginalPostTask().execute();
     }
 
     protected void seepresentation() {

@@ -285,4 +285,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="MxTo_label">"MxTo: "</string>
     <string name="enabletaptonext_title">Enable tap to next</string>
     <string name="enabletaptonext_summary">Enable tap to next/prev</string>
+    <string name="seeoriginalpost_label">See original post</string>
+    <string name="seeoriginalpost_shortcut">U</string>
+    <string name="loadoriginalpost_failed">Could not find original post</string>
 </resources>
