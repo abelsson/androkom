@@ -35,6 +35,9 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_VIBRATETIME = "vibratetime";
     private static final String OPT_VIBRATETIME_DEF = "500";
 
+    private static final String OPT_ENABLETAPTONEXT = "enabletaptonext";
+    private static final Boolean OPT_ENABLETAPTONEXT_DEF = true;
+
     private static final String OPT_PREFERREDLANGUAGE = "preferredlanguage";
     private static final String OPT_PREFERREDLANGUAGE_DEF = "";
 
@@ -119,6 +122,10 @@ public class ConferencePrefs extends PreferenceActivity {
         String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_USERBUTTON4, OPT_USERBUTTON4_DEF);
         int intval = Integer.parseInt(butval);
         return intval;
+    }
+
+    public static Boolean getEnableTapToNext(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_ENABLETAPTONEXT, OPT_ENABLETAPTONEXT_DEF);
     }
 
     public static Boolean getVibrateForTap(Context context) {

@@ -282,4 +282,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="MxFrom_label">"MxFrom: "</string>
     <string name="MxAuthor_label">"MxAuthor: "</string>
     <string name="MxReplyTo_label">"MxReplyTo: "</string>
+    <string name="enabletaptonext_title">Tillåt tap till nästa</string>
+    <string name="enabletaptonext_summary">Tillåt tap till nästa/föreg. text</string>
 </resources>

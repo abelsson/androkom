@@ -518,17 +518,21 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
      *
      */
     class MyGestureDetector extends SimpleOnGestureListener 
-    {     
+    {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
+            //Log.d(TAG, "onSingleTapUp");
+            return false;
+        }
+        
+        @Override
+        public boolean onSingleTapConfirmed(MotionEvent e) {
             Context context = getBaseContext();
-            if (ConferencePrefs.getVibrateForTap(context)) {
-                Vibrator vibrator = (Vibrator) context
-                        .getSystemService(Context.VIBRATOR_SERVICE);
-                vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
-            }
             activateUser();
 
+            if (!ConferencePrefs.getEnableTapToNext(context)) {
+                return false;
+            }
             Display display = getWindowManager().getDefaultDisplay();
             int width = display.getWidth();
             // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
@@ -541,10 +545,20 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
             if (e.getRawY() < myLimit) {
                 if (e.getRawX() > 0.6 * width) {
+                    if (ConferencePrefs.getVibrateForTap(context)) {
+                        Vibrator vibrator = (Vibrator) context
+                                .getSystemService(Context.VIBRATOR_SERVICE);
+                        vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
+                    }
                     moveToNextText(true);
                     return true;
                 }
                 if (e.getRawX() < 0.4 * width) {
+                    if (ConferencePrefs.getVibrateForTap(context)) {
+                        Vibrator vibrator = (Vibrator) context
+                                .getSystemService(Context.VIBRATOR_SERVICE);
+                        vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
+                    }
                     moveToPrevText();
                     return true;
                 }
@@ -553,28 +567,35 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         }
         
         @Override
-        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX, float velocityY) 
-        {
-            activateUser();     
+        public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
+                float velocityY) {
+            activateUser();
             Log.d(TAG, "onFling");
             try {
-	            // Horizontal swipes
-            	if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {	                
-	                // right to left swipe
-	                if(e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY)            
-	                    moveToNextText(true);     
-	                 else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) 
-	                    moveToPrevText();  	                
+                // Horizontal swipes
+                if (Math.abs(e1.getY() - e2.getY()) <= SWIPE_MAX_OFF_PATH) {
+                    // right to left swipe
+                    if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
+                            && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        moveToNextText(true);
+                        return true;
+                    } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
+                            && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        moveToPrevText();
+                        return true;
+                    }
                 }
-            	
-	            // Vertical swipes
-	            if (Math.abs(e1.getX() - e2.getX()) <= SWIPE_MAX_OFF_PATH) {	                
-	                // top to bottom swipe
-	                if(e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY)            
-	                    moveToParentText();     
-	                      
+
+                // Vertical swipes
+                if (Math.abs(e1.getX() - e2.getX()) <= SWIPE_MAX_OFF_PATH) {
+                    // top to bottom swipe
+                    if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE
+                            && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        moveToParentText();
+                        return true;
+                    }
                 }
-	            
+
             } catch (Exception e) {
                 // nothing
             }

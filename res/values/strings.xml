@@ -283,4 +283,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="MxInReplyTo_label">"MxInReply: "</string>
     <string name="MxReplyTo_label">"MxReplyTo: "</string>
     <string name="MxTo_label">"MxTo: "</string>
+    <string name="enabletaptonext_title">Enable tap to next</string>
+    <string name="enabletaptonext_summary">Enable tap to next/prev</string>
 </resources>

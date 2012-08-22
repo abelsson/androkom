@@ -50,6 +50,12 @@
     android:defaultValue="false"
     />
   <CheckBoxPreference
+    android:key="enabletaptonext"
+    android:title="@string/enabletaptonext_title"
+    android:summary="@string/enabletaptonext_summary"
+    android:defaultValue="true"
+    />
+  <CheckBoxPreference
     android:key="vibratefortap"
     android:title="@string/vibratefortap_title"
     android:summary="@string/vibratefortap_summary"
