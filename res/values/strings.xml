@@ -100,8 +100,10 @@
     <string name="title_submenu_seeagain">See again...</string>
     <string name="seetextagain_label">See text</string>
     <string name="seetextagain_shortcut">T</string>
-    <string name="seepresentation_label">See presentation</string>
-    <string name="seepresentation_shortcut">P</string>
+    <string name="seepresentationconf_label">See presentation conference</string>
+    <string name="seepresentationconf_shortcut">P</string>
+    <string name="seepresentationuser_label">See presentation user</string>
+    <string name="seepresentationuser_shortcut">U</string>
     <string name="seewhoison_label">See who is on</string>
     <string name="seewhoison_shortcut">W</string>
     <string name="no_friends_online">No friends online</string>

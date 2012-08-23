@@ -1004,9 +1004,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 			seetextagain();
 			return true;
 
-		case R.id.menu_seepresentation_id:
-			seepresentation();
+		case R.id.menu_seepresentationconf_id:
+			seePresentationConf();
 			return true;
+
+        case R.id.menu_seepresentationuser_id:
+            seePresentationUser();
+            return true;
 
 		case R.id.menu_seewhoison_id:
 			seewhoison(1);
@@ -1096,8 +1100,21 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         new LoadOriginalPostTask().execute();
     }
 
-    protected void seepresentation() {
+    protected void seePresentationConf() {
         int textNo = mKom.getConferencePres();
+        if (textNo > 0) {
+            Log.i(TAG, "fetching text " + textNo);
+            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
+        } else {
+            Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
+                    Toast.LENGTH_SHORT).show();
+        }
+    }
+
+    protected void seePresentationUser() {
+        final TextInfo currentText = mState.getCurrent();
+        int userNum = currentText.getAuthorNo();
+        int textNo = mKom.getUserPres(userNum);
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
             new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);

@@ -91,8 +91,6 @@
     <string name="next_no_readmark_shortcut">F</string>
     <string name="title_submenu_seeagain">Återse...</string>
     <string name="seetextagain_label">Återse text</string>
-    <string name="seepresentation_label">Återse presentation</string>
-    <string name="seepresentation_shortcut">P</string>
     <string name="seetextagain_shortcut">T</string>
     <string name="seewhoison_label">Vilka</string>
     <string name="seewhoison_shortcut">V</string>
@@ -287,4 +285,8 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="seeoriginalpost_label">Återse ursprungsinlägg</string>
     <string name="seeoriginalpost_shortcut">U</string>
     <string name="loadoriginalpost_failed">Hittar inte urinlägg</string>
+    <string name="seepresentationconf_label">Återse presentation möte</string>
+    <string name="seepresentationconf_shortcut">P</string>
+    <string name="seepresentationuser_shortcut">U</string>
+    <string name="seepresentationuser_label">Återse presentation användare</string>
 </resources>

@@ -306,7 +306,7 @@ class TextCache {
             allHeadersString.append("ContentType:"+text.getContentType());
             
             Log.d(TAG, "getTextFromServer returning");
-            return new TextInfo(mKom.getBaseContext(), textNo, username, CreationTimeString, allHeadersString.toString(),
+            return new TextInfo(mKom.getBaseContext(), textNo, username, authorid, CreationTimeString, allHeadersString.toString(),
                     headersString.toString(),
                     SubjectString, BodyString, text.getBody(), mShowHeadersLevel);
         }

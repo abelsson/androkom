@@ -114,12 +114,13 @@ public class KomServer extends Service implements RpcEventListener,
         public static final int ERROR_FETCHING_TEXT=2;
         public static final int NO_PARENT=3;
 
-        public TextInfo(Context context, int textNo, String author,
+        public TextInfo(Context context, int textNo, String author, int authorno,
                 String date, String all_headers, String visible_headers,
                 String subject, String body, byte[] rawBody,
                 int ShowHeadersLevel) {
             this.textNo = textNo;
             this.author = author;
+            this.authorno = authorno;
             this.date = date;
             this.visible_headers = visible_headers;
             this.all_headers = all_headers;
@@ -135,19 +136,19 @@ public class KomServer extends Service implements RpcEventListener,
             switch (id) {
             case ALL_READ:
                 Log.d(TAG, "createText ALL_READ");
-                return new TextInfo(context, -1, "", "", "", "", "", context
+                return new TextInfo(context, -1, "", 0, "", "", "", "", context
                         .getString(R.string.all_read), null, 1);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
-                return new TextInfo(context, -2, "", "", "", "", "", context
+                return new TextInfo(context, -2, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
-                return new TextInfo(context, -1, "", "", "", "", "", context
+                return new TextInfo(context, -1, "", 0, "", "", "", "", context
                         .getString(R.string.error_no_parent), null, 1);
             default:
                 Log.d(TAG, "createText default");
-                return new TextInfo(context, -2, "", "", "", "", "", context
+                return new TextInfo(context, -2, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             }
         }
@@ -192,6 +193,10 @@ public class KomServer extends Service implements RpcEventListener,
             return spannable;
         }
 
+        public int getAuthorNo() {
+            return authorno;
+        }
+
         private int textNo;
         private String date;
         private String subject;
@@ -200,8 +205,10 @@ public class KomServer extends Service implements RpcEventListener,
         private String body;
         private byte[] rawBody;
         private String author;
+        private int authorno;
         private Spannable spannable;
         private Spannable spannableHeaders;
+
     }
     
     public KomServer() {
@@ -617,6 +624,25 @@ public class KomServer extends Service implements RpcEventListener,
 		}
 		return 0;
 	}
+
+    /**
+     * Return presentation text number for userid.
+     */
+    public int getUserPres(int userid) {
+        int confNo = userid;
+        if (confNo > 0) {
+            try {
+                return s.getConfStat(confNo).getPresentation();
+            } catch (RpcFailure e) {
+                Log.d(TAG, "getConferencePres RpcFailure"+e);
+                //e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "getConferencePres IOException"+e);
+                //e.printStackTrace();
+            }
+        }
+        return 0;
+    }
 
     /**
      * Return number of unreads for current conference.
