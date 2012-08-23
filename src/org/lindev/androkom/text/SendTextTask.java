@@ -32,10 +32,16 @@ public class SendTextTask extends AsyncTask<Void, Void, String> {
 
     @Override
     protected void onPreExecute() {
-        mDialog.setCancelable(false);
-        mDialog.setIndeterminate(true);
-        mDialog.setMessage("Sending text ...");
-        mDialog.show();
+        try {
+            mDialog.setCancelable(false);
+            mDialog.setIndeterminate(true);
+            mDialog.setMessage("Sending text ...");
+            mDialog.show();
+        } catch (java.lang.IllegalArgumentException e) {
+            Log.d(TAG, "onPreExecute1 caught IAexception: " + e);
+        } catch (Exception e) {
+            Log.d(TAG, "onPreExecute1 caught exception: " + e);
+        }
     }
 
     @Override

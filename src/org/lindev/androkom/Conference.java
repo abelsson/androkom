@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -283,11 +284,19 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         switch (butval) {
         case 1: // Svara
             Intent intent = new Intent(this, TextCreator.class);
-            intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent()
-                    .getSubject());
-            intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent()
-                    .getTextNo());
-            startActivity(intent);
+            TextInfo currentText = mState.getCurrent();
+            if ((currentText != null) && (currentText.getTextNo() > 0)) {
+                intent.putExtra(TextCreator.INTENT_SUBJECT,
+                        currentText.getSubject());
+                intent.putExtra(TextCreator.INTENT_REPLY_TO,
+                        currentText.getTextNo());
+                startActivity(intent);
+            } else {
+                Log.d(TAG, "doButtonClick case 1: no current text");
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.no_text_loaded), Toast.LENGTH_SHORT)
+                        .show();
+            }
             break;
         case 2: // Avmarkera
             unmarkCurrentText();
@@ -1607,45 +1616,74 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 }
             }
         }
-        try {
-            mKom.setConference(mState.conferenceNo);
-        } catch (RpcFailure e) {
-            // TODO Auto-generated catch block
-            Log.d(TAG, "onServiceConnected RpcFailure");
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "onServiceConnected IOException:"+e);
-            e.printStackTrace();
-            Toast.makeText(getApplicationContext(), getString(R.string.connection_lost), Toast.LENGTH_SHORT).show();
-            mKom.logout();
-            finish();
-        }
-
-        TextInfo currentText = null;
-
-        if (mState.textQueue == null || mState.textQueue.isEmpty()) {
-            if ((mState != null) && (mState.hasCurrent())) {
-                currentText = mState.getCurrent();
-            }
-            mSwitcher.setInAnimation(mSlideLeftIn);
-            mSwitcher.setOutAnimation(mSlideLeftOut);
-            if (currentText != null) {
-                Log.d(TAG, "Getting current text");
-                new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
-                        currentText.getTextNo(), 0);
-            } else {
-                Log.d(TAG, "Getting next text");
-                new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
-            }
-        } else {
-            Log.d(TAG, "Getting text from queue");
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
-                    mState.textQueue.poll(), 0);
-        }
+        new InitConnectionTask().execute();
         Log.d(TAG, "onServiceConnected done");
     }
 
-	public void onServiceDisconnected(ComponentName name) {
+    private class InitConnectionTask extends
+            AsyncTask<Void, Void, Integer> {
+        @Override
+        protected void onPreExecute() {
+            setProgressBarIndeterminateVisibility(true);
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Integer doInBackground(final Void... args) {
+            {
+                if (mKom == null) {
+                    return null;
+                }
+
+                try {
+                    mKom.setConference(mState.conferenceNo);
+                } catch (RpcFailure e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "onServiceConnected RpcFailure");
+                    // e.printStackTrace();
+                } catch (IOException e) {
+                    Log.d(TAG, "onServiceConnected IOException:" + e);
+                    e.printStackTrace();
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.connection_lost),
+                            Toast.LENGTH_SHORT).show();
+                    mKom.logout();
+                    finish();
+                }
+
+                TextInfo currentText = null;
+
+                if (mState.textQueue == null || mState.textQueue.isEmpty()) {
+                    if ((mState != null) && (mState.hasCurrent())) {
+                        currentText = mState.getCurrent();
+                    }
+                    mSwitcher.setInAnimation(mSlideLeftIn);
+                    mSwitcher.setOutAnimation(mSlideLeftOut);
+                    if (currentText != null) {
+                        Log.d(TAG, "Getting current text");
+                        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                                currentText.getTextNo(), 0);
+                    } else {
+                        Log.d(TAG, "Getting next text");
+                        new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
+                    }
+                } else {
+                    Log.d(TAG, "Getting text from queue");
+                    new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                            mState.textQueue.poll(), 0);
+                }
+
+            }
+            return 0;
+        }
+
+        @Override
+        protected void onPostExecute(final Integer value) {
+            setProgressBarIndeterminateVisibility(false);
+        }
+    }
+
+    public void onServiceDisconnected(ComponentName name) {
 		mKom = null;		
 	}
 
