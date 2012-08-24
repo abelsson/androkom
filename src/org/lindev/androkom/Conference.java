@@ -1,7 +1,6 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
-import java.util.List;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -146,8 +145,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mSlideRightIn = AnimationUtils.loadAnimation(this, R.anim.slide_right_in);
         mSlideRightOut = AnimationUtils.loadAnimation(this, R.anim.slide_right_out);
 
+        TextView text1h = (TextView)findViewById(R.id.flipper_headers1_id);
+        text1h.setMovementMethod(LinkMovementMethod.getInstance());
         TextView text1 = (TextView)findViewById(R.id.flipper_text1_id);
         text1.setMovementMethod(LinkMovementMethod.getInstance());
+
+        TextView text2h = (TextView)findViewById(R.id.flipper_headers2_id);
+        text2h.setMovementMethod(LinkMovementMethod.getInstance());
         TextView text2 = (TextView)findViewById(R.id.flipper_text2_id);
         text2.setMovementMethod(LinkMovementMethod.getInstance());
 
@@ -526,18 +530,21 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         
         public KomInternalURLSpan(String mLinkText) {
             this.mLinkText = mLinkText;
+            Log.d(TAG, "KomInternalURLSpan link for "+mLinkText);
         }
 
         @Override
         public void onClick(View widget) {
             int textNo;
+            Log.d(TAG, "KomInternalURLSpan onClick stored text:"+mLinkText);
             try {
                 textNo = Integer.valueOf(mLinkText);
             } catch (NumberFormatException e)
             {
-                Log.i(TAG, "Illegal textNo: " + mLinkText);
+                Log.i(TAG, "KomInternalURLSpan onClick Illegal textNo: " + mLinkText);
                 return;
             }
+            Log.i(TAG, "KomInternalURLSpan onClick move to textNo: " + textNo);
             moveToText(textNo);
         }
     }  
@@ -582,7 +589,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     {
         @Override
         public boolean onSingleTapUp(MotionEvent e) {
-            //Log.d(TAG, "onSingleTapUp");
+            Log.d(TAG, "onSingleTapUp");
             return false;
         }
         
@@ -590,8 +597,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         public boolean onSingleTapConfirmed(MotionEvent e) {
             Context context = getBaseContext();
             activateUser();
-
+            Log.d(TAG, "onSingleTapConfirmed");
             if (!ConferencePrefs.getEnableTapToNext(context)) {
+                Log.d(TAG, "Tap disabled");
                 return false;
             }
             Display display = getWindowManager().getDefaultDisplay();
