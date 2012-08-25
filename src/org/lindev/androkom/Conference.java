@@ -168,7 +168,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 try {
                     Spannable spannedText = mState.currentText.elementAt(
                             mState.currentTextIndex).getSpannableBody();
-                    addLinks(spannedText, digits, null);
+                    addLinks(spannedText, digits);
                     TextView tview = getCurrentTextView();
                     tview.setText(spannedText);
                 } catch (Exception e) {
@@ -471,7 +471,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 if (text.getAllHeaders().contains("ContentType:image/")) {
                     Log.d(TAG, "LoadMessageTask.onPostExecute image text");
                     final Spannable spannedHeader = text.getSpannableHeaders();
-                    addLinks(spannedHeader, digits, null);
+                    addLinks(spannedHeader, digits);
 
                     TextView tview = getOtherHeadersView();
                     tview.setText(spannedHeader);
@@ -489,13 +489,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 } else {
                     Log.d(TAG, "LoadMessageTask.onPostExecute show text");
                     final Spannable spannedHeader = text.getSpannableHeaders();
-                    addLinks(spannedHeader, digits, null);
+                    addLinks(spannedHeader, digits);
 
                     TextView tview = getOtherHeadersView();
                     tview.setText(spannedHeader);
 
                     final Spannable spannedText = text.getSpannableBody();
-                    addLinks(spannedText, digits, null);
+                    addLinks(spannedText, digits);
 
                     tview = getOtherTextView();
                     tview.setText(spannedText);
@@ -554,7 +554,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
      *  Applies a regex to a Spannable turning the matches into
      *  links. To be used with the class above.
      */ 
-    public final boolean addLinks(Spannable s, Pattern p, String scheme) {
+    public final boolean addLinks(Spannable s, Pattern p) {
         // This could possibly be a new Conference activity, and these links are for a specifik instance. So we
         // remove all old links first.
         for (KomInternalURLSpan span : s.getSpans(0, s.length(), KomInternalURLSpan.class)) {
@@ -688,7 +688,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             if (text.getAllHeaders().contains("ContentType:image/")) {
                 Log.d(TAG, "LoadMessageTask.onPostExecute image text");
                 final Spannable spannedHeader = text.getSpannableHeaders();
-                addLinks(spannedHeader, digits, null);
+                addLinks(spannedHeader, digits);
 
                 tview.setText(spannedHeader);
 
@@ -768,7 +768,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             if (text.getAllHeaders().contains("ContentType:image/")) {
                 Log.d(TAG, "LoadMessageTask.onPostExecute image text");
                 final Spannable spannedHeader = text.getSpannableHeaders();
-                addLinks(spannedHeader, digits, null);
+                addLinks(spannedHeader, digits);
 
                 tview.setText(spannedHeader);
 
@@ -1402,7 +1402,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     public Spannable formatText(String text)
     {
         SpannableStringBuilder spannedText = (SpannableStringBuilder)Html.fromHtml(text);       
-        addLinks(spannedText, Pattern.compile("\\d{5,}"), null);
+        addLinks(spannedText, Pattern.compile("\\d{5,}"));
         Linkify.addLinks(spannedText, Linkify.ALL);
         
         return spannedText;
