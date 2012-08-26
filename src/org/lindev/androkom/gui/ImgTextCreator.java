@@ -143,6 +143,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         Uri uri = Uri.parse(uri_string);
 
         Log.d(TAG, "got filename="+uri.getPath());
+        imgFilename = uri.getLastPathSegment();
         
         ImageView imgView = (ImageView) findViewById(R.id.imageView1);
 
@@ -350,7 +351,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         }
         Log.d(TAG, "sendMessage 3");
 
-        new CreateTextTask(this, mKom, subject, imgdata, mReplyTo, mRecipients, new CreateTextRunnable() {
+        new CreateTextTask(this, mKom, subject, imgFilename, imgdata, mReplyTo, mRecipients, new CreateTextRunnable() {
             public void run(final Text text) {
                 new SendTextTask(ImgTextCreator.this, mKom, text, new Runnable() {
                     public void run() {
@@ -449,4 +450,5 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     byte[] imgdata = null;
+    String imgFilename = null;
 }

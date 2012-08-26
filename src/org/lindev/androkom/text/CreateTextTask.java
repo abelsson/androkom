@@ -29,6 +29,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
     private final double mLon;
     private final double mPrecision;
     private final String mBody;
+    private final String imgFilename;
     private final byte[] imgData;
     private final int mInReplyTo;
     private final List<Recipient> mRecipients;
@@ -50,6 +51,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         this.mLon = loc_lon;
         this.mPrecision = loc_precision;
         this.mBody = body;
+        this.imgFilename = null;
         this.imgData = null;
         this.mInReplyTo = inReplyTo;
         this.mRecipients = recipients;
@@ -67,6 +69,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         this.mLon = 0;
         this.mPrecision = 0;
         this.mBody = body;
+        this.imgFilename = null;
         this.imgData = null;
         this.mInReplyTo = inReplyTo;
         this.mRecipients = recipients;
@@ -74,7 +77,8 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         this.mUserIsMemberOfSomeConf = false;
     }
 
-    public CreateTextTask(final Context context, final KomServer kom, final String subject, final byte[] imgdata,
+    public CreateTextTask(final Context context, final KomServer kom, final String subject,
+            final String imgFilename, final byte[] imgdata,
             final int inReplyTo, final List<Recipient> recipients, final CreateTextRunnable runnable) {
         this.mDialog = new ProgressDialog(context);
         this.mContext = context;
@@ -84,6 +88,7 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
         this.mLon = 0;
         this.mPrecision = 0;
         this.mBody = "";
+        this.imgFilename = imgFilename;
         this.imgData = imgdata;
         this.mInReplyTo = inReplyTo;
         this.mRecipients = recipients;
@@ -159,9 +164,15 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
             contents[subjectBytes.length] = (byte) '\n';
 
             text.setContents(contents);
-            text.getStat().setAuxItem(
-                    new AuxItem(AuxItem.tagContentType,
-                            "image/jpeg; name=dummy.jpg"));
+            AuxItem auxItem = null;
+            if(imgFilename == null) {
+                auxItem = new AuxItem(AuxItem.tagContentType,
+                        "image/jpeg; name=dummy.jpg");
+            } else {
+                auxItem = new AuxItem(AuxItem.tagContentType,
+                        "image/jpeg; name="+imgFilename);
+            }
+            text.getStat().setAuxItem(auxItem);
         }
 
         if((ConferencePrefs.getIncludeLocation(mContext)) &&
