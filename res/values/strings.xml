@@ -290,4 +290,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="seeoriginalpost_label">See original post</string>
     <string name="seeoriginalpost_shortcut">U</string>
     <string name="loadoriginalpost_failed">Could not find original post</string>
+    <string name="maximagesizepix_summary">Max image size (pixels)</string>
+    <string name="maximagesizepix_title">Max image size</string>
 </resources>

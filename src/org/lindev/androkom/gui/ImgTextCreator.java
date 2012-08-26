@@ -12,6 +12,7 @@ import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
+import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
@@ -167,9 +168,8 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     private Bitmap getBitmap(ContentResolver cr, Uri uri) {
         try {
             InputStream is = cr.openInputStream(uri);
-            //final int IMAGE_MAX_SIZE = 1200000; // 1.2MP
-            final int IMAGE_MAX_SIZE = 50000; // 50KP
-            
+            final int IMAGE_MAX_SIZE = ConferencePrefs.getMaxImageSizePix(this);
+
             // Decode image size
             BitmapFactory.Options o = new BitmapFactory.Options();
             o.inJustDecodeBounds = true;

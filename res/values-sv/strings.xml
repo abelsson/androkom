@@ -289,4 +289,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="seepresentationconf_shortcut">P</string>
     <string name="seepresentationuser_shortcut">U</string>
     <string name="seepresentationuser_label">Återse presentation användare</string>
+    <string name="maximagesizepix_summary">Max bildstorlek (pixlar)</string>
+    <string name="maximagesizepix_title">Max bildstorlek</string>
 </resources>

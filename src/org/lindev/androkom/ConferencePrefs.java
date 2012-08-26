@@ -60,7 +60,10 @@ public class ConferencePrefs extends PreferenceActivity {
     
     private static final String OPT_FORCE646DECODE = "force646decode";
     private static final Boolean OPT_FORCE646DECODE_DEF = false;
-    
+
+    private static final String OPT_MAXIMAGESIZEPIX = "maximagesizepix";
+    private static final String OPT_MAXIMAGESIZEPIX_DEF = "100000";
+
     private static final String TAG = "Androkom ConferencePrefs";
     
     protected void onCreate(Bundle savedInstanceState) {
@@ -158,5 +161,11 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static boolean getforce646decode(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_FORCE646DECODE, OPT_FORCE646DECODE_DEF);    }
+
+    public static int getMaxImageSizePix(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_MAXIMAGESIZEPIX, OPT_MAXIMAGESIZEPIX_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
 
 }

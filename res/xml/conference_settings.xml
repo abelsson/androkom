@@ -142,5 +142,12 @@
     android:summary="@string/force646decode_summary"
     android:defaultValue="false"
     />
+  <EditTextPreference
+    android:key="maximagesizepix"
+    android:title="@string/maximagesizepix_title"
+    android:summary="@string/maximagesizepix_summary"
+    android:defaultValue="100000"
+    android:digits="0123456789"
+    />
   </PreferenceCategory>
 </PreferenceScreen>

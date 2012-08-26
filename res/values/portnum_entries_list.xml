@@ -1,11 +1,21 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <array name="portnum_entries_list">
-    <item>"Standard (4894)"</item>
+    <item>"Default (4894)"</item>
     <item>"SSL (44894)"</item>
+    <item>"Other/HTTP (80)"</item>
+    <item>"Other/HTTPS (443)"</item>
+    <item>"Other/SSH (22)"</item>
+    <item>"Other/IMAPS (993)"</item>
+    <item>"Other/POP3S (995)"</item>
   </array>
   <array name="portnum_values_list">
     <item>"4894"</item>
     <item>"44894"</item>
+    <item>"80"</item>
+    <item>"443"</item>
+    <item>"22"</item>
+    <item>"993"</item>
+    <item>"995"</item>
   </array>
 </resources>
