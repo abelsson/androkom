@@ -1479,13 +1479,16 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             text = s.getTextStat(textNo, refreshCache);
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getTextStat RpcFailure:" + e);
+            Log.d(TAG, "komserver.getTextStat trying to recover from RpcFailure:" + e);
             // e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "komserver.getTextStat IOException:" + e);
+            Log.d(TAG, "komserver.getTextStat trying to recover from IOException:" + e);
             // e.printStackTrace();
         } catch (ClassCastException e) {
-            Log.d(TAG, "komserver.getTextStat ClassCastException:" + e);
+            Log.d(TAG, "komserver.getTextStat trying to recover from ClassCastException:" + e);
+        } catch (Exception e) {
+            Log.d(TAG, "komserver.getTextStat trying to recover from Exception:" + e);
+            e.printStackTrace();
         }
         return text;
     }
