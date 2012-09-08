@@ -16,6 +16,7 @@ import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.DynamicSessionInfo;
 import nu.dll.lyskom.KomTime;
 import nu.dll.lyskom.KomToken;
+import nu.dll.lyskom.Mark;
 import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.Person;
 import nu.dll.lyskom.RpcCall;
@@ -1706,10 +1707,42 @@ public class KomServer extends Service implements RpcEventListener,
                 Log.d(TAG, "nextUnreadTexts Subject: "+text.getSubject());
             }
         } catch (RpcFailure e) {
-            Log.d(TAG, "queryReadTextsCached " + e);
+            Log.d(TAG, "nextUnreadTexts " + e);
             //e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "queryReadTextsCached " + e);
+            Log.d(TAG, "nextUnreadTexts " + e);
+            //e.printStackTrace();
+        }
+        return ret_data;
+    }
+
+    public List<TextInfo> getMarkedTexts() {
+        List<TextInfo> ret_data = new ArrayList<TextInfo>();
+        Mark[] data = null;
+
+        if (s == null) {
+            return null;
+        }
+        try {
+            data = s.getMarks();
+            for(Mark i:data) {
+                Integer textno = i.getText();
+                Log.d(TAG, "getMarkedTexts Next text: "+textno);
+                TextInfo text = getKomText(textno);
+                if (text != null) {
+                    ret_data.add(text);
+                } else {
+                    Log.d(TAG, "getMarkedTexts could not find textno "+textno);
+                }
+                Log.d(TAG, "getMarkedTexts Author: "+text.getAuthor());
+                Log.d(TAG, "getMarkedTexts Date: "+text.getDate());
+                Log.d(TAG, "getMarkedTexts Subject: "+text.getSubject());
+            }
+        } catch (RpcFailure e) {
+            Log.d(TAG, "getMarkedTexts " + e);
+            //e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "getMarkedTexts " + e);
             //e.printStackTrace();
         }
         return ret_data;

@@ -50,6 +50,11 @@
                    android:label="@string/endast_label">
          </activity>
         
+         <!--  Lista markerade -->
+         <activity android:name=".MarkedTextList"       
+                   android:label="@string/showmarkedtexts_label">
+         </activity>
+        
          <!--  Join Conference -->
          <activity android:name=".JoinConference"       
                    android:label="@string/joinconference_label">

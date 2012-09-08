@@ -438,84 +438,94 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             return text;
         }
 
-        protected void onPostExecute(final TextInfo text) 
-        {
-            Log.d(TAG, "LoadMessageTask.onPostExecute");
-            setProgressBarIndeterminateVisibility(false);
-            //int curr = -1;
-            //if (mState.hasCurrent()) {
-            //    curr = mState.getCurrent().getTextNo();
-            //}
-            if (text != null && text.getTextNo() < 0) {
-                Toast.makeText(getApplicationContext(), text.getBody(), Toast.LENGTH_SHORT).show();
-                if(text.getTextNo() < -1) {
-                    /* error fetching text, probably lost connection */
+        protected void onPostExecute(final TextInfo text) {
+            try {
+                Log.d(TAG, "LoadMessageTask.onPostExecute");
+                setProgressBarIndeterminateVisibility(false);
+                // int curr = -1;
+                // if (mState.hasCurrent()) {
+                // curr = mState.getCurrent().getTextNo();
+                // }
+                if (text != null && text.getTextNo() < 0) {
+                    Toast.makeText(getApplicationContext(), text.getBody(),
+                            Toast.LENGTH_SHORT).show();
+                    if (text.getTextNo() < -1) {
+                        /* error fetching text, probably lost connection */
+                        Log.d(TAG,
+                                "error fetching text, probably lost connection");
+                        mKom.logout();
+                        finish();
+                    } else {
+                        Log.d(TAG, "error fetching text, recoverable error?");
+                    }
+                } else if (text != null) {
+                    Log.d(TAG, "LoadMessageTask.onPostExecute got text");
+                    mState.currentText.push(text);
+                    mState.currentTextIndex = mState.currentText.size() - 1;
+                    // Log.i(TAG, stackAsString());
+
+                    // Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
+                    // Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
+                    // Log.d(TAG, "AUTHOR: "+text.getAuthor());
+                    // Log.d(TAG, "SUBJECT: "+text.getSubject());
+                    // Log.d(TAG, "BODY: "+text.getBody());
+                    if (text.getAllHeaders().contains("ContentType:image/")) {
+                        Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                        final Spannable spannedHeader = text
+                                .getSpannableHeaders();
+                        addLinks(spannedHeader, digits);
+
+                        TextView tview = getOtherHeadersView();
+                        tview.setText(spannedHeader);
+
+                        ImageView imgView = getOtherImgView();
+                        byte[] bilden = text.getRawBody();
+                        Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                                bilden.length);
+                        if (bmImg != null) {
+                            imgView.setImageBitmap(bmImg);
+                        } else {
+                            Toast.makeText(getApplicationContext(),
+                                    getString(R.string.image_decode_failed),
+                                    Toast.LENGTH_LONG).show();
+                        }
+                        setOtherImgSwitch();
+                        mSwitcher.showNext();
+                    } else {
+                        Log.d(TAG, "LoadMessageTask.onPostExecute show text");
+                        final Spannable spannedHeader = text
+                                .getSpannableHeaders();
+                        addLinks(spannedHeader, digits);
+
+                        TextView tview = getOtherHeadersView();
+                        tview.setText(spannedHeader);
+
+                        final Spannable spannedText = text.getSpannableBody();
+                        addLinks(spannedText, digits);
+
+                        tview = getOtherTextView();
+                        tview.setText(spannedText);
+                        resetOtherScroll();
+                        setOtherTextSwitch();
+                        mSwitcher.showNext();
+                    }
+                    setTitle(mKom.getConferenceName());
+                } else {
                     Log.d(TAG, "error fetching text, probably lost connection");
+                    Log.d(TAG, "LoadMessageTask onPostExecute text=null");
                     mKom.logout();
                     finish();
-                } else {
-                    Log.d(TAG, "error fetching text, recoverable error?");
                 }
+            } catch (Exception e) {
+                Log.d(TAG, "LoadMessageTask PostExecute catched exception:" + e);
+                e.printStackTrace();
             }
-            else if (text != null) {
-                Log.d(TAG, "LoadMessageTask.onPostExecute got text");
-                mState.currentText.push(text);
-                mState.currentTextIndex = mState.currentText.size() - 1;
-                //Log.i(TAG, stackAsString());
-
-                //Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
-                //Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
-                //Log.d(TAG, "AUTHOR: "+text.getAuthor());
-                //Log.d(TAG, "SUBJECT: "+text.getSubject());
-                //Log.d(TAG, "BODY: "+text.getBody());
-                if (text.getAllHeaders().contains("ContentType:image/")) {
-                    Log.d(TAG, "LoadMessageTask.onPostExecute image text");
-                    final Spannable spannedHeader = text.getSpannableHeaders();
-                    addLinks(spannedHeader, digits);
-
-                    TextView tview = getOtherHeadersView();
-                    tview.setText(spannedHeader);
-
-                    ImageView imgView = getOtherImgView();
-                    byte[] bilden = text.getRawBody();
-                    Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0, bilden.length);
-                    if(bmImg != null) {
-                        imgView.setImageBitmap(bmImg);
-                    } else {
-                        Toast.makeText(getApplicationContext(), getString(R.string.image_decode_failed), Toast.LENGTH_LONG).show();
-                    }
-                    setOtherImgSwitch();
-                    mSwitcher.showNext();
-                } else {
-                    Log.d(TAG, "LoadMessageTask.onPostExecute show text");
-                    final Spannable spannedHeader = text.getSpannableHeaders();
-                    addLinks(spannedHeader, digits);
-
-                    TextView tview = getOtherHeadersView();
-                    tview.setText(spannedHeader);
-
-                    final Spannable spannedText = text.getSpannableBody();
-                    addLinks(spannedText, digits);
-
-                    tview = getOtherTextView();
-                    tview.setText(spannedText);
-                    resetOtherScroll();
-                    setOtherTextSwitch();
-                    mSwitcher.showNext();
-                }
-                setTitle(mKom.getConferenceName());                
-            } else {
-                Log.d(TAG, "error fetching text, probably lost connection");
-                Log.d(TAG, "LoadMessageTask onPostExecute text=null");
-                mKom.logout();
-                finish();
-            }
-//            if (curr > 0) {
-//                if (ConferencePrefs.getMarkTextRead(getBaseContext()))
-//                {
-//                    mKom.markTextAsRead(curr);
-//                }
-//            }
+            // if (curr > 0) {
+            // if (ConferencePrefs.getMarkTextRead(getBaseContext()))
+            // {
+            // mKom.markTextAsRead(curr);
+            // }
+            // }
         }
     }
 

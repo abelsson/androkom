@@ -268,6 +268,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		    startActivity(intent);
 		    return true;
 
+        case R.id.menu_showmarkedtexts_id:
+            intent = new Intent(this, MarkedTextList.class);
+            startActivity(intent);
+            return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}

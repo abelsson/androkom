@@ -30,12 +30,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * Show a list of unread texts in selected conference.
+ * Show a list of marked texts.
  * 
  * 
  */
-public class ConferenceTextList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
-	public static final String TAG = "Androkom ConferenceTextList";
+public class MarkedTextList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
+	public static final String TAG = "Androkom MarkedTextList";
 
 	/**
 	 * Instantiate activity.
@@ -47,8 +47,6 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
         Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
-
-	    mConfNo = (Integer) getIntent().getExtras().get("conference-id");
 
         if (savedInstanceState != null) {
             Log.d(TAG, "Got a bundle");
@@ -311,7 +309,7 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.nextUnreadTexts(mConfNo);
+						retlist = mKom.getMarkedTexts();
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}

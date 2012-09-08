@@ -291,4 +291,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="seepresentationuser_label">Återse presentation användare</string>
     <string name="maximagesizepix_summary">Max bildstorlek (pixlar)</string>
     <string name="maximagesizepix_title">Max bildstorlek</string>
+    <string name="showmarkedtexts_label">Lista markerade texter</string>
+    <string name="showmarkedtexts_shortcut">T</string>
 </resources>
