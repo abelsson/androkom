@@ -294,4 +294,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="loadoriginalpost_failed">Could not find original post</string>
     <string name="maximagesizepix_summary">Max image size (pixels)</string>
     <string name="maximagesizepix_title">Max image size</string>
+    <string name="menu_sharetext_label">Copy</string>
+    <string name="shared_subject">Shared from Lyskom</string>
 </resources>

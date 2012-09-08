@@ -34,6 +34,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.text.ClipboardManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -1079,6 +1080,11 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         case R.id.menu_next_no_readmark_id:
             moveToNextText(false);
             return true;
+
+        case R.id.menu_sharetext_id:
+            shareIt();
+            return true;
+            
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -1325,7 +1331,43 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         }
     }
 
+    private void shareIt() {
+        String shareBody = "Here is the share content body";
+        TextInfo currentText = null;
+        /*
+         * Intent sharingIntent = new
+         * Intent(android.content.Intent.ACTION_SEND);
+         * sharingIntent.setType("text/plain"); String shareSubject =
+         * getString(R.string.shared_subject);
+         * 
+         * if (mState.textQueue == null || mState.textQueue.isEmpty()) { if
+         * ((mState != null) && (mState.hasCurrent())) { currentText =
+         * mState.getCurrent(); shareBody = currentText.getSpannableHeaders() +
+         * "\n" + currentText.getSpannableBody();
+         * sharingIntent.putExtra(android.content.Intent.EXTRA_SUBJECT,
+         * shareSubject);
+         * sharingIntent.putExtra(android.content.Intent.EXTRA_TEXT, shareBody);
+         * startActivity(Intent.createChooser(sharingIntent, "Share via")); } }
+         */
+        currentText = mState.getCurrent();
+        shareBody = currentText.getSpannableHeaders() + "\n"
+                + currentText.getSpannableBody();
 
+        /*
+         * if(android.os.Build.VERSION.SDK_INT >
+         * android.os.Build.VERSION_CODES.ECLAIR_MR1) {
+         * android.content.ClipboardManager clipboard =
+         * (android.content.ClipboardManager)
+         * getSystemService(Context.CLIPBOARD_SERVICE); android.content.ClipData
+         * clip = android.content.ClipData.newPlainText("Copied Text",
+         * stringYouExtracted); clipboard.setPrimaryClip(clip); } else {
+         */
+        android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
+        clipboard.setText(shareBody);
+        /* } */
+
+    }
+    
     /**
      * The menu key has been pressed, instantiate the requested
      * menu.
