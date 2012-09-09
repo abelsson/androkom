@@ -34,7 +34,6 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
-import android.text.ClipboardManager;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -520,6 +519,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             } catch (Exception e) {
                 Log.d(TAG, "LoadMessageTask PostExecute catched exception:" + e);
                 e.printStackTrace();
+                Log.d(TAG, "LoadMessageTask PostExecute bailing out");
+                finish();
             }
             // if (curr > 0) {
             // if (ConferencePrefs.getMarkTextRead(getBaseContext()))
@@ -1334,7 +1335,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private void shareIt() {
         String shareBody = "Here is the share content body";
         TextInfo currentText = null;
-        /*
+        /*  Should we use share instead/also?
+         * 
+         * 
          * Intent sharingIntent = new
          * Intent(android.content.Intent.ACTION_SEND);
          * sharingIntent.setType("text/plain"); String shareSubject =
@@ -1354,6 +1357,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 + currentText.getSpannableBody();
 
         /*
+         * New version of clipboard can probably handle images too:
+         * 
          * if(android.os.Build.VERSION.SDK_INT >
          * android.os.Build.VERSION_CODES.ECLAIR_MR1) {
          * android.content.ClipboardManager clipboard =
@@ -1363,9 +1368,23 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
          * stringYouExtracted); clipboard.setPrimaryClip(clip); } else {
          */
         android.text.ClipboardManager clipboard = (android.text.ClipboardManager) getSystemService(Context.CLIPBOARD_SERVICE);
-        clipboard.setText(shareBody);
-        /* } */
-
+        if (currentText.getAllHeaders().contains("ContentType:image/")) {
+            Log.d(TAG, "shareit image text");
+            byte[] bilden = currentText.getRawBody();
+            Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                    bilden.length);
+            if (bmImg != null) {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.clipboard_cant_handle_image),
+                        Toast.LENGTH_LONG).show();
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.image_decode_failed),
+                        Toast.LENGTH_LONG).show();
+            }
+        } else {
+            clipboard.setText(shareBody);
+        }
     }
     
     /**

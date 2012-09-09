@@ -295,4 +295,5 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="showmarkedtexts_shortcut">T</string>
     <string name="menu_sharetext_label">Kopiera</string>
     <string name="shared_subject">Delat från Lyskom</string>
+    <string name="clipboard_cant_handle_image">Klippbordet hanterar inte bilder.</string>
 </resources>

@@ -1,5 +1,6 @@
 package org.lindev.androkom.text;
 
+import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -77,75 +78,89 @@ class TextCache {
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
-            Log.d(TAG, "getTextFromServer textno:"+textNo);
-            if(!mKom.isConnected()) {
+            Log.d(TAG, "getTextFromServer textno:" + textNo);
+            if (!mKom.isConnected()) {
                 Log.d(TAG, " getTextFromServer not connected");
                 return null;
             }
             Text text = null;
+            StringBuilder allHeadersString;
+            String username = mKom.getString(R.string.anonymous);
+            int authorid;
+            String CreationTimeString;
+            StringBuilder headersString;
+            String SubjectString = null;
+            String BodyString = null;
+
             try {
-                Log.d(TAG, "TextFetcherTask:"+textNo);
+                Log.d(TAG, "TextFetcherTask:" + textNo);
                 text = mKom.getTextbyNo(textNo);
             } catch (final RpcFailure e) {
-                Log.d(TAG, "getTextFromServer: "+e);
-                //e.printStackTrace();
+                Log.d(TAG, "getTextFromServer: " + e);
+                // e.printStackTrace();
                 return null;
             }
 
-            String username=mKom.getString(R.string.anonymous);
-            int authorid = text.getAuthor();
+            authorid = text.getAuthor();
             if (authorid > 0) {
                 try {
-                    nu.dll.lyskom.Conference confStat = mKom.getConfStat(authorid);
-                    if(confStat!=null) {
+                    nu.dll.lyskom.Conference confStat = mKom
+                            .getConfStat(authorid);
+                    if (confStat != null) {
                         username = confStat.getNameString();
                     } else {
                         Log.d(TAG, "getTextFromServer Failed to get username");
                     }
                 } catch (final Exception e) {
-                    username = mKom.getString(R.string.person) + authorid + mKom.getString(R.string.does_not_exist);
+                    username = mKom.getString(R.string.person) + authorid
+                            + mKom.getString(R.string.does_not_exist);
                 }
             } else {
-                Log.d(TAG, "Text "+textNo+" authorid:"+authorid);
+                Log.d(TAG, "Text " + textNo + " authorid:" + authorid);
             }
             Date CreationTime = text.getCreationTime();
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
-            String CreationTimeString = sdf.format(CreationTime);
-            String SubjectString = null;
+            CreationTimeString = sdf.format(CreationTime);
+
             try {
                 SubjectString = text.getSubjectString();
             } catch (UnsupportedEncodingException e) {
-                Log.d(TAG, "UnsupportedEncodingException"+e);
+                Log.d(TAG, "UnsupportedEncodingException" + e);
                 SubjectString = text.getSubjectString8();
             }
-            String BodyString = null;
+
             try {
                 BodyString = text.getBodyString();
             } catch (UnsupportedEncodingException e) {
-                Log.d(TAG, "UnsupportedEncodingException"+e);
+                Log.d(TAG, "UnsupportedEncodingException" + e);
                 BodyString = text.getBodyString8();
             }
-            StringBuilder headersString = new StringBuilder();
+            headersString = new StringBuilder();
             int[] items;
             if (mShowHeadersLevel > 0) {
-                
+
                 int marks = text.getMarks();
-                if (marks>0) {
-                    headersString.append(mKom.getString(R.string.marked_by)+marks+mKom.getString(R.string.marked_by_persons));
+                if (marks > 0) {
+                    headersString.append(mKom.getString(R.string.marked_by)
+                            + marks
+                            + mKom.getString(R.string.marked_by_persons));
                 }
                 items = text.getRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.androkom_header_recipient));
+                        headersString.append(mKom
+                                .getString(R.string.androkom_header_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom.getConfStat(items[i]);
-                            if(confStat!=null) {
+                            nu.dll.lyskom.Conference confStat = mKom
+                                    .getConfStat(items[i]);
+                            if (confStat != null) {
                                 headersString.append(confStat.getNameString());
                             } else {
                                 Log.d(TAG, "Failed to append header");
                             }
                         } catch (Exception e) {
-                            username = mKom.getString(R.string.person) + authorid
+                            username = mKom.getString(R.string.person)
+                                    + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
                         headersString.append('\n');
@@ -154,16 +169,19 @@ class TextCache {
                 items = text.getCcRecipients();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_cc_recipient));
+                        headersString.append(mKom
+                                .getString(R.string.header_cc_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom.getConfStat(items[i]);
-                            if(confStat!=null) {
+                            nu.dll.lyskom.Conference confStat = mKom
+                                    .getConfStat(items[i]);
+                            if (confStat != null) {
                                 headersString.append(confStat.getNameString());
                             } else {
                                 Log.d(TAG, "Failed to appen headers2");
                             }
                         } catch (Exception e) {
-                            username = mKom.getString(R.string.person) + authorid
+                            username = mKom.getString(R.string.person)
+                                    + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
                         headersString.append('\n');
@@ -172,25 +190,32 @@ class TextCache {
                 items = text.getCommented();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_comment_to));
+                        headersString.append(mKom
+                                .getString(R.string.header_comment_to));
                         headersString.append(items[i]);
-                        conditionalAppend(headersString, mKom.getString(R.string.by_author), getAuthorName(items[i]));
+                        conditionalAppend(headersString,
+                                mKom.getString(R.string.by_author),
+                                getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
                 items = text.getComments();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_comment_in));
+                        headersString.append(mKom
+                                .getString(R.string.header_comment_in));
                         headersString.append(items[i]);
-                        conditionalAppend(headersString,mKom.getString(R.string.by_author), getAuthorName(items[i]));
+                        conditionalAppend(headersString,
+                                mKom.getString(R.string.by_author),
+                                getAuthorName(items[i]));
                         headersString.append('\n');
                     }
                 }
                 items = text.getFootnotes();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_footnote_in));
+                        headersString.append(mKom
+                                .getString(R.string.header_footnote_in));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -198,7 +223,8 @@ class TextCache {
                 items = text.getFootnoted();
                 if (items.length > 0) {
                     for (int i = 0; i < items.length; i++) {
-                        headersString.append(mKom.getString(R.string.header_footnote_to));
+                        headersString.append(mKom
+                                .getString(R.string.header_footnote_to));
                         headersString.append(items[i]);
                         headersString.append('\n');
                     }
@@ -206,7 +232,8 @@ class TextCache {
                 List<AuxItem> aux_item = text.getAuxItems(AuxItem.tagMxAuthor);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxAuthor_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxAuthor_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -214,7 +241,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxCc);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxCC_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxCC_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -222,7 +250,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxDate);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxDate_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxDate_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -230,7 +259,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxFrom);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxFrom_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxFrom_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -238,7 +268,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxInReplyTo);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxInReplyTo_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxInReplyTo_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -246,7 +277,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxReplyTo);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxReplyTo_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxReplyTo_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -254,7 +286,8 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagMxTo);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.MxTo_label));
+                        headersString.append(mKom
+                                .getString(R.string.MxTo_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
@@ -262,89 +295,99 @@ class TextCache {
                 aux_item = text.getAuxItems(AuxItem.tagCreationLocation);
                 if (aux_item.size() > 0) {
                     for (int i = 0; i < aux_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.location_aux_label));
+                        headersString.append(mKom
+                                .getString(R.string.location_aux_label));
                         headersString.append(aux_item.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }
             }
-                if (mShowHeadersLevel > 1) {
-                List<AuxItem> contentType_item = text.getAuxItems(AuxItem.tagContentType);
+            if (mShowHeadersLevel > 1) {
+                List<AuxItem> contentType_item = text
+                        .getAuxItems(AuxItem.tagContentType);
                 if (contentType_item.size() > 0) {
                     for (int i = 0; i < contentType_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.contentType_aux_label));
-                        headersString.append(contentType_item.get(i).getDataString());
+                        headersString.append(mKom
+                                .getString(R.string.contentType_aux_label));
+                        headersString.append(contentType_item.get(i)
+                                .getDataString());
                         headersString.append('\n');
                     }
                 }
-                List<AuxItem> creatorsw_item = text.getAuxItems(AuxItem.tagCreatingSoftware);
+                List<AuxItem> creatorsw_item = text
+                        .getAuxItems(AuxItem.tagCreatingSoftware);
                 if (creatorsw_item.size() > 0) {
                     for (int i = 0; i < creatorsw_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.creatorsw_aux_label));
-                        headersString.append(creatorsw_item.get(i).getDataString());
+                        headersString.append(mKom
+                                .getString(R.string.creatorsw_aux_label));
+                        headersString.append(creatorsw_item.get(i)
+                                .getDataString());
                         headersString.append('\n');
                     }
                 }
                 List<AuxItem> faq_item = text.getAuxItems(AuxItem.tagFaqText);
                 if (faq_item.size() > 0) {
                     for (int i = 0; i < faq_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.faq_aux_label));
+                        headersString.append(mKom
+                                .getString(R.string.faq_aux_label));
                         headersString.append(faq_item.get(i).getDataString());
                         headersString.append('\n');
                     }
                 }
             }
-                List<AuxItem> fast_item = text.getAuxItems(AuxItem.tagFastReply);
-                    if (fast_item.size() > 0) {
-                        for (int i = 0; i < fast_item.size(); i++) {
-                        headersString.append(mKom.getString(R.string.fast_aux_label));
-                        headersString.append(fast_item.get(i).getDataString());
-                        headersString.append('\n');
-                    }
+            List<AuxItem> fast_item = text.getAuxItems(AuxItem.tagFastReply);
+            if (fast_item.size() > 0) {
+                for (int i = 0; i < fast_item.size(); i++) {
+                    headersString.append(mKom
+                            .getString(R.string.fast_aux_label));
+                    headersString.append(fast_item.get(i).getDataString());
+                    headersString.append('\n');
                 }
-            StringBuilder allHeadersString = new StringBuilder();
-            allHeadersString.append("ContentType:"+text.getContentType());
-            
+            }
+            allHeadersString = new StringBuilder();
+            allHeadersString.append("ContentType:" + text.getContentType());
             Log.d(TAG, "getTextFromServer returning");
-            return new TextInfo(mKom.getBaseContext(), textNo, username, authorid, CreationTimeString, allHeadersString.toString(),
-                    headersString.toString(),
-                    SubjectString, BodyString, text.getBody(), mShowHeadersLevel);
+            return new TextInfo(mKom.getBaseContext(), textNo, username,
+                    authorid, CreationTimeString, allHeadersString.toString(),
+                    headersString.toString(), SubjectString, BodyString,
+                    text.getBody(), mShowHeadersLevel);
         }
 
         private void conditionalAppend(StringBuilder headersString,
                 String string, String authorName) {
-            if(string == null) 
+            if (string == null)
                 return;
-            if(authorName == null)
+            if (authorName == null)
                 return;
-            if(string.length()<1)
+            if (string.length() < 1)
                 return;
-            if(authorName.length()<1)
+            if (authorName.length() < 1)
                 return;
-            headersString.append(string+authorName);
+            headersString.append(string + authorName);
         }
 
         protected Void doInBackground(final Integer... args) {
             TextInfo text = null;
             mTextNo = args[0];
             Log.i(TAG, "TextFetcherTask fetching text " + mTextNo);
-            if(!mKom.isConnected()) {
+            if (!mKom.isConnected()) {
                 Log.d(TAG, " TextFetcherTask not connected");
                 return null;
             }
             try {
                 text = getTextFromServer(mTextNo);
             } catch (Exception e) {
-                Log.d(TAG, "TextFetcherTask.background caught error:"+e);
-                //e.printStackTrace();
+                Log.d(TAG, "TextFetcherTask.background caught error:" + e);
+                // e.printStackTrace();
                 text = null;
             }
             if (text == null) {
-                text = TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
+                text = TextInfo.createText(mKom.getBaseContext(),
+                        TextInfo.ERROR_FETCHING_TEXT);
                 clearCacheStat();
             } else {
                 mTextCache.put(mTextNo, text);
-                synchronized(mTextCache) {
+                synchronized (mTextCache) {
                     mTextCache.notifyAll();
                 }
             }

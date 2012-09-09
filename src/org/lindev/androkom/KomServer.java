@@ -31,6 +31,7 @@ import nu.dll.lyskom.UConference;
 import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
+import org.lindev.androkom.MarkedTextList.populateMarkedTextsTask;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.im.IMNotification;
@@ -475,7 +476,7 @@ public class KomServer extends Service implements RpcEventListener,
                         + getString(R.string.does_not_exist);
             }
         } else {
-            Log.d(TAG, "fetchPersons persNo=" + persNo);
+            Log.d(TAG, "fetchUsername persNo=" + persNo);
             username = getString(R.string.anonymous);
         }
         return username;
@@ -1716,7 +1717,7 @@ public class KomServer extends Service implements RpcEventListener,
         return ret_data;
     }
 
-    public List<TextInfo> getMarkedTexts() {
+    public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(populateMarkedTextsTask populateMarkedTextsT) {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
         Mark[] data = null;
 
@@ -1725,6 +1726,10 @@ public class KomServer extends Service implements RpcEventListener,
         }
         try {
             data = s.getMarks();
+            if (populateMarkedTextsT != null) {
+                populateMarkedTextsT.changeMax(data.length);
+            }
+            int counter = 0;
             for(Mark i:data) {
                 Integer textno = i.getText();
                 Log.d(TAG, "getMarkedTexts Next text: "+textno);
@@ -1737,6 +1742,10 @@ public class KomServer extends Service implements RpcEventListener,
                 Log.d(TAG, "getMarkedTexts Author: "+text.getAuthor());
                 Log.d(TAG, "getMarkedTexts Date: "+text.getDate());
                 Log.d(TAG, "getMarkedTexts Subject: "+text.getSubject());
+                counter++;
+                if (populateMarkedTextsT != null) {
+                    populateMarkedTextsT.updateProgress((int) ((counter / (float) data.length) * 100));
+                }
             }
         } catch (RpcFailure e) {
             Log.d(TAG, "getMarkedTexts " + e);

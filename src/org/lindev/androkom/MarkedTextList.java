@@ -10,6 +10,7 @@ import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
 
 import android.app.ListActivity;
+import android.app.ProgressDialog;
 import android.content.ComponentName;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -43,8 +44,8 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
-		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        Log.d(TAG, "onCreate");
+
+		Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
@@ -64,8 +65,8 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 	}
 
 	/**
-	 * While activity is active, keep a timer running to periodically refresh
-	 * the list of unread messages.
+	 * Repopulate list when resumed.
+	 * 
 	 */
 	@Override
 	public void onResume() {
@@ -73,7 +74,6 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 
         Log.d(TAG, "onResume");
 
-        new PopulateConferenceTask().execute();
 	}
 
 	/**
@@ -213,58 +213,78 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 		startActivity(intent);
 	}
 
-	private class PopulateConferenceTask extends
-			AsyncTask<Void, Void, List<TextInfo>> {
-		@Override
-		protected void onPreExecute() {
-			setProgressBarIndeterminateVisibility(true);
-		}
+    public class populateMarkedTextsTask extends
+            AsyncTask<Void, Integer, List<TextInfo>> {
+        private final ProgressDialog dialog = new ProgressDialog(
+                MarkedTextList.this);
 
-		// worker thread (separate from UI thread)
-		@Override
-		protected List<TextInfo> doInBackground(final Void... args) {
-		    int max_sleep = 60;
-		    while(mKom == null) {
-		        max_sleep--;
-		        if(max_sleep<1) {
-		            Log.d(TAG, "PopulateConferenceTask timeout");
-		            return null;
-		        }
-		        Log.d(TAG, "PopulateConferenceTask sleeps");
-		        try {
+        @Override
+        protected void onPreExecute() {
+            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+            this.dialog.setCancelable(true);
+            this.dialog.setIndeterminate(false);
+            this.dialog.setMessage(getString(R.string.loading));
+            this.dialog.setMax(1);
+            this.dialog.show();
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected List<TextInfo> doInBackground(final Void... args) {
+            int max_sleep = 60;
+            while (mKom == null) {
+                max_sleep--;
+                if (max_sleep < 1) {
+                    Log.d(TAG, "PopulateMarkedTextsTask timeout");
+                    return null;
+                }
+                Log.d(TAG, "PopulateMarkedTextsTask sleeps");
+                try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
-                    Log.d(TAG, "PopulateConferenceTask sleep interrupted");
-                    //e.printStackTrace();
+                    Log.d(TAG, "PopulateMarkedTextsTask sleep interrupted");
+                    // e.printStackTrace();
                 }
-		    }
-            //if((mKom!=null) && (!mKom.isConnected())) {
-            //    mKom.reconnect();
-            //}
-			return fetchTextHeaders();
-		}
+            }
+            // if((mKom!=null) && (!mKom.isConnected())) {
+            // mKom.reconnect();
+            // }
+            return fetchTextHeaders(this);
+        }
 
-		@Override
+        void changeMax(int val) {
+            this.dialog.setMax(val);
+        }
+
+        public void updateProgress(int percent) {
+            publishProgress(percent);
+        }
+
+        protected void onProgressUpdate(Integer... i) {
+            this.dialog.setProgress(i[0]);
+        }
+
+        @Override
         protected void onPostExecute(final List<TextInfo> fetched) {
-            setProgressBarIndeterminateVisibility(false);
+            this.dialog.dismiss();
 
             mAdapter.clear();
             mTexts = fetched;
 
             if (mTexts != null && (!mTexts.isEmpty())) {
                 for (TextInfo elem : mTexts) {
-                    String str = elem.getDate()+ " " + elem.getAuthor() +"\n" + elem.getSubject() ;
+                    String str = elem.getDate() + " " + elem.getAuthor() + "\n"
+                            + elem.getSubject();
                     mAdapter.add(str);
                 }
 
                 mAdapter.notifyDataSetChanged();
             } else {
-                Log.d(TAG, "populateConferences failed, no Conferences");
+                Log.d(TAG, "populateMarkedTexts failed, no Texts");
                 Log.d(TAG, "mConferences is null:" + (mTexts == null));
                 if (mTexts != null) {
-                    Log.d(TAG, "mConferences is empty:"
-                            + mTexts.isEmpty());
+                    Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
                 }
                 // String currentDateTimeString = new Date().toLocaleString();
                 // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
@@ -287,8 +307,8 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
                 } else {
                     mEmptyView.setText(getString(R.string.not_connected));
                 }
-                if((mKom!=null) && (!mKom.isConnected())) {
-                    if(mKom.getUserId()>0) {
+                if ((mKom != null) && (!mKom.isConnected())) {
+                    if (mKom.getUserId() > 0) {
                         Log.d(TAG, "Got userid, trying to reconnect");
                         new reconnectTask();
                     } else {
@@ -297,11 +317,10 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
                     }
                 }
             }
-		}
+        }
+    }
 
-	}
-
-	private List<TextInfo> fetchTextHeaders() {
+	private List<TextInfo> fetchTextHeaders(populateMarkedTextsTask populateMarkedTextsT) {
 		List<TextInfo> retlist = null;
 
 		try {
@@ -309,7 +328,7 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.getMarkedTexts();
+						retlist = mKom.getMarkedTexts(populateMarkedTextsT);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -412,7 +431,7 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
 		
 			runOnUiThread(new Runnable() {
 				public void run() {					
-					new PopulateConferenceTask().execute();
+					new populateMarkedTextsTask().execute();
 				}
 			});
 		}
@@ -441,6 +460,7 @@ public class MarkedTextList extends ListActivity implements AsyncMessageSubscrib
             }
         }
         new cacheNamesTask().execute();
+        new populateMarkedTextsTask().execute();
     }
 
 	public void onServiceDisconnected(ComponentName name) {

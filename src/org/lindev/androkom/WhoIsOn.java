@@ -66,7 +66,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     }
     
     /**
-     * Update on visible?
+     * Update on visible
      */
     @Override
 	public void onResume() {

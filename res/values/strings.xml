@@ -296,4 +296,5 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="maximagesizepix_title">Max image size</string>
     <string name="menu_sharetext_label">Copy</string>
     <string name="shared_subject">Shared from Lyskom</string>
+    <string name="clipboard_cant_handle_image">Clipboard cant handle image.</string>
 </resources>
