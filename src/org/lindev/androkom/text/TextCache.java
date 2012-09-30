@@ -1,6 +1,5 @@
 package org.lindev.androkom.text;
 
-import java.io.IOException;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.Date;
@@ -78,9 +77,9 @@ class TextCache {
         private int mTextNo;
 
         private TextInfo getTextFromServer(final int textNo) {
-            Log.d(TAG, "getTextFromServer textno:" + textNo);
+            Log.d(TAG, "TextFetcherTask getTextFromServer textno:" + textNo);
             if (!mKom.isConnected()) {
-                Log.d(TAG, " getTextFromServer not connected");
+                Log.d(TAG, "TextFetcherTask getTextFromServer not connected");
                 return null;
             }
             Text text = null;
@@ -93,12 +92,18 @@ class TextCache {
             String BodyString = null;
 
             try {
-                Log.d(TAG, "TextFetcherTask:" + textNo);
+                Log.d(TAG, "TextFetcherTask get textno:" + textNo);
                 text = mKom.getTextbyNo(textNo);
             } catch (final RpcFailure e) {
-                Log.d(TAG, "getTextFromServer: " + e);
+                Log.d(TAG, "TextFetcherTask getTextFromServer RpcFailure: " + e);
                 // e.printStackTrace();
                 return null;
+            }
+
+            if(text == null) {
+                Log.d(TAG, "TextFetcherTask failed to get eext: ");
+            } else {
+                Log.d(TAG, "TextFetcherTask got Text: ");
             }
 
             authorid = text.getAuthor();
@@ -404,12 +409,19 @@ class TextCache {
         boolean needFetch;
 
         synchronized (mSent) {
+            Log.d(TAG, " doGetText mSent");
             needFetch = mSent.add(textNo);
         }
+        Log.d(TAG, " doGetText mSent done");
 
         if (needFetch) {
+            Log.d(TAG, " doGetText needFetch");
+            //if(android.os.Build.VERSION.SDK_INT > 12) {
+                //new TextFetcherTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textNo);
+            
             new TextFetcherTask().execute(textNo);
         }
+        Log.d(TAG, " doGetText Done");
     }
 
     /**

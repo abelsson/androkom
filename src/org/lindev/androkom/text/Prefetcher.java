@@ -427,6 +427,8 @@ class Prefetcher {
             needCaching = mRelevantCached.add(textNo);
         }
         if (needCaching) {
+            //if(android.os.Build.VERSION.SDK_INT > 12) {
+                //new CacheRelevantTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textNo);
             new CacheRelevantTask().execute(textNo);
         }
     }

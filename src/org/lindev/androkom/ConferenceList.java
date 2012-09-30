@@ -402,7 +402,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
      */
     private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
         protected void onPreExecute() {
-            Log.d(TAG, "LoadMessageTask.onPreExecute");
+            Log.d(TAG, "ActivateUserTask.onPreExecute");
         }
 
         // worker thread (separate from UI thread)
@@ -490,7 +490,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         mKom.addAsyncSubscriber(this);
         if ((re_userId > 0) && (re_userPSW != null)
                 && (re_userPSW.length() > 0) && mKom != null) {
-            mKom.setUser(re_userId, re_userPSW, re_server);
+            mKom.setUser(re_userId, re_userPSW, re_server, re_port, re_useSSL, re_cert_level);
         } else {
             if (mKom == null) {
                 Log.d(TAG, "mKom == null");
@@ -530,6 +530,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             outState.putInt("UserId", re_userId);
             outState.putString("UserPSW", re_userPSW);
             outState.putString("UserServer", re_server);
+            outState.putInt("UserServerPortNo", re_port);
+            outState.putBoolean("UserUseSSL", re_useSSL);
+            outState.putInt("UserCertLevel", re_cert_level);
         } else {
             if (mKom != null) {
                 int userId = mKom.getUserId();
@@ -538,6 +541,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     outState.putInt("UserId", userId);
                     outState.putString("UserPSW", mKom.getUserPassword());
                     outState.putString("UserServer", mKom.getServer());
+                    outState.putInt("UserServerPortNo", mKom.getServerPortNo());
+                    outState.putBoolean("UserUseSSL", mKom.getUseSSL());
+                    outState.putInt("UserCertLevel", mKom.getCertLevel());
                 } else {
                     Log.d(TAG, "No userid to store");
                 }
@@ -553,14 +559,17 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     private void restoreBundle(Bundle savedInstanceState) {
         if (savedInstanceState != null) {
-            Log.d(TAG, "ConferenceList restoreBundle got a bundle");
+            Log.d(TAG, "restoreBundle got a bundle");
             // Restore UI state from the savedInstanceState.
             // This bundle has also been passed to onCreate.
             re_userId = savedInstanceState.getInt("UserId");
             re_userPSW = savedInstanceState.getString("UserPSW");
             re_server = savedInstanceState.getString("UserServer");
+            re_port = savedInstanceState.getInt("UserServerPortNo");
+            re_useSSL = savedInstanceState.getBoolean("UserUseSSL");
+            re_cert_level = savedInstanceState.getInt("UserCertLevel");
             if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
-                mKom.setUser(re_userId, re_userPSW, re_server);
+                mKom.setUser(re_userId, re_userPSW, re_server, re_port, re_useSSL, re_cert_level);
             } else {
                 if(mKom==null) {
                     Log.d(TAG, "mKom == null");
@@ -576,7 +585,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     }
                 }
             }
-        }        
+        } else {
+            Log.d(TAG, "restoreBundle did not get any bundle");
+        }
     }
 
     String currentDateTimeString = "-";
@@ -588,6 +599,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	private int re_userId = 0;
     private String re_userPSW = null;
     private String re_server = null;
+    private int re_port=0; // for reconnect
+    private boolean re_useSSL=true; // for reconnect
+    private int re_cert_level=0; // for reconnect
 
     TextView mEmptyView;
 	KomServer mKom=null;

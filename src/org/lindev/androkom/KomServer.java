@@ -346,7 +346,7 @@ public class KomServer extends Service implements RpcEventListener,
      * When no need to wait for reconnect
      * 
      */
-/*    private class ReconnectTask extends AsyncTask<KomToken, Void, Void> {
+    private class ReconnectTask extends AsyncTask<KomToken, Void, Void> {
         protected void onPreExecute() {
             Log.d(TAG, "ReconnectTask.onPreExecute");
         }
@@ -362,13 +362,12 @@ public class KomServer extends Service implements RpcEventListener,
             return null;
         }
     }
-*/
 
     public void reconnect() {
-        Log.d(TAG, "KomServer trying to reconnect 1");
-        new LogoutTask().execute();
+        Log.d(TAG, "reconnect() Logout old session");
+        logout();  //new LogoutTask().execute();
     	
-        Log.d(TAG, "KomServer trying to reconnect 2");
+        Log.d(TAG, "reconnect() Initialize new session");
 
         s = new Session();
         s.addRpcEventListener(this);
@@ -379,6 +378,8 @@ public class KomServer extends Service implements RpcEventListener,
             login(re_userid, re_password, re_server, re_port, re_useSSL, re_cert_level);
         } else {
             Log.d(TAG, "Can't reconnect because no userid");
+            Thread.dumpStack();
+            logout();
         }
     }
 
@@ -411,11 +412,15 @@ public class KomServer extends Service implements RpcEventListener,
         String  USER            =   android.os.Build.USER;                  //
 
         try {
-            
+            if(s==null) {
+                Log.d(TAG, "connect Trying to recreate session");
+                reconnect();
+            }
             try {
                 String hostName = MANUFACTURER.replace(' ', '_') + "_" + MODEL.replace(' ', '_');
                 s.setClientHost(hostName);
             } catch (Exception e) {
+                Log.i(TAG, "connect Got no model");
             }
 
             try {
@@ -425,11 +430,24 @@ public class KomServer extends Service implements RpcEventListener,
                 int splitIndex = userName.indexOf("@");
                 s.setClientUser(userName.substring(0, splitIndex));
             } catch (Exception e) {
+                Log.i(TAG, "connect Got no account");
             }
-            
-            s.connect(server, port, useSSL, cert_level,
-                       getBaseContext().getResources().openRawResource(R.raw.root_keystore));
-            s.addAsynchMessageReceiver(asyncMessagesHandler);
+
+            if (s != null) {
+                s.connect(server, port, useSSL, cert_level, getBaseContext()
+                        .getResources().openRawResource(R.raw.root_keystore));
+                if (asyncMessagesHandler != null) {
+                    s.addAsynchMessageReceiver(asyncMessagesHandler);
+                } else {
+                    Log.d(TAG, "connect asyncMessagesHandler==null");
+                    Thread.dumpStack();
+                    logout();
+                    return -2;
+                }
+            } else {
+                Log.d(TAG, "connect s==null");
+                return -2;
+            }
         } catch (IOException e) {
             // TODO Auto-generated catch block
         	Log.d(TAG, "connect1 "+e);
@@ -674,9 +692,14 @@ public class KomServer extends Service implements RpcEventListener,
     public void setConference(final int confNo) throws RpcFailure, IOException {
         if (s != null) {
             Log.d(TAG, "setConference Byt till conf:" + confNo);
+            try {
             s.changeConference(confNo);
             readMarker.clear();
             textFetcher.restartPrefetcher();
+            } catch(java.lang.NullPointerException e) {
+                Log.d(TAG, "setConference Handled an NullpointerException");
+                Thread.dumpStack();
+            }
         } else {
             Log.d(TAG, "setConference Ingen session");
         }
@@ -812,18 +835,23 @@ public class KomServer extends Service implements RpcEventListener,
                     }
                     s = null;
                     return getString(R.string.error_could_not_connect);
+                } else {
+                    Log.d(TAG, "login Succeded to connect");
                 }
             }
         } catch (Exception e) {
+            Log.d(TAG, "login Failed to connect");
             s = null;
             return getString(R.string.error_could_not_connect);
         }
         
         try {
+            Log.d(TAG, "login Logging in");
         	// login as hidden
         	if (!s.login(userid, password, hidden_session, false)) {
         		return getString(R.string.error_invalid_password);
         	}
+        	Log.d(TAG, "login Setting ClientVersion");
         	s.setClientVersion("Androkom", getVersionName());
         	s.setLatteName("AndroKOM " + getVersionName());
         } catch (Exception e) {
@@ -1086,6 +1114,7 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public int getNextUnreadTextNo() {
+        Log.d(TAG, "getNextUnreadTextNo");
         return textFetcher.getNextUnreadTextNo();
     }
 
@@ -1431,6 +1460,7 @@ public class KomServer extends Service implements RpcEventListener,
         if(s==null) {
             return null;
         }
+        Log.d(TAG, "getTextbyNo Trying to get text#: " + textNo);
         try {
             text=s.getText(textNo);
         } catch (RpcFailure e) {
@@ -1576,6 +1606,8 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (IOException e) {
             Log.d(TAG, "komserver.isMemberOf new_text IOException:" + e);
             // e.printStackTrace();
+        } catch (java.lang.NullPointerException e) {
+            Log.d(TAG, "komserver.isMemberOf new_text NullPointerException:" + e);
         }
         return text;
     }
@@ -1770,12 +1802,34 @@ public class KomServer extends Service implements RpcEventListener,
         return re_server;
     }
 
-    public void setUser(int userId, String userPSW, String server) {
-        if((userId>0)&&(userPSW!=null)&&(userPSW.length()>0)){
-            re_userid=userId;
-            re_password=userPSW;
-            re_server=server;
-            Log.d(TAG, "setting userid:"+userId+" server:"+server);
+    public int getServerPortNo() {
+        return re_port;
+    }
+
+    public boolean getUseSSL() {
+        return re_useSSL;
+    }
+
+    public int getCertLevel() {
+        return re_cert_level;
+    }
+
+    public void setUser(int userId, String userPSW, String server, int port,
+            boolean useSSL, int cert_level) {
+        if ((userId > 0) && (userPSW != null) && (userPSW.length() > 0)
+                && (server.length() > 0) && (port > 0)) {
+            re_userid = userId;
+            re_password = userPSW;
+            re_server = server;
+            re_port = port;
+            re_useSSL = useSSL;
+            re_cert_level = cert_level;
+            Log.d(TAG, "setting userid:" + userId + " server:" + server);
+        } else {
+            Log.d(TAG, "setUser got bad params! " + userId + " server:"
+                    + server + " port:" + port);
+            Thread.dumpStack();
+            logout();
         }
     }
 
@@ -1789,7 +1843,9 @@ public class KomServer extends Service implements RpcEventListener,
     public void setConnected(boolean val) {
         connected = val;
         if (val) {
-            //new ReconnectTask().execute();
+            if (s==null || s.getState()==Session.STATE_DISCONNECTED) {
+                new ReconnectTask().execute();
+            }
         } else {
             if (s != null) {
                 try {

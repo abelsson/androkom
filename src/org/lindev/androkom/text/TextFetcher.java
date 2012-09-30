@@ -30,11 +30,13 @@ public class TextFetcher {
     }
 
     public int getNextUnreadTextNo() {
+        Log.d(TAG, "getNextUnreadTextNo");
         return mPrefetcher.getNextUnreadTextNo();
     }
 
     public TextInfo getNextUnreadText() {
         boolean doCacheRelevant = true;
+        Log.d(TAG, "getNextUnreadText");
         return mPrefetcher.getNextUnreadText(doCacheRelevant);
     }
 

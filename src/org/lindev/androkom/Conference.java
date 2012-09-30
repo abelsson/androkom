@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -230,6 +231,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.d(TAG, "onCreate Got a bundle");
             restoreBundle(savedInstanceState);
         }
+        Log.d(TAG, "onCreate trying to bind service");
         getApp().doBindService(this);
     }
     
@@ -238,8 +240,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         Log.d(TAG, "onResume");
         super.onResume();
 
-        if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
-            mKom.setUser(re_userId, re_userPSW, re_server);
+        if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&(mKom!=null)) {
+            Log.d(TAG, "onResume resets username");
+            mKom.setUser(re_userId, re_userPSW, re_server, re_port, re_useSSL, re_cert_level);
         } else {
             if(mKom==null) {
                 Log.d(TAG, "mKom == null");
@@ -253,6 +256,11 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 if(re_userPSW.length()<1){
                     Log.d(TAG, "short password");
                 }
+            }
+            if((mKom!=null) && (mKom.getUserId()>0)) {
+                Log.d(TAG, "onResume mKom has username");
+            } else {
+                Log.d(TAG, "onResume mKom is missing username");
             }
         }
     }
@@ -398,26 +406,26 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             TextInfo text = null;
 
             if (mState.hasCurrent()) {
-                Log.d(TAG, "hasCurrent");
+                Log.d(TAG, "LoadMessageTask doInBackground hasCurrent");
                 if((args[2]==0) && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
-                    Log.d(TAG, "getMarkTextRead");
+                    Log.d(TAG, "LoadMessageTask doInBackground getMarkTextRead");
                     mKom.markTextAsRead(mState.getCurrent().getTextNo());
                 }
             }
 
             switch (args[0]) {
             case MESSAGE_TYPE_PARENT_TO:
-                Log.i(TAG, "Trying to get parent text of" + args[1]);
+                Log.i(TAG, "LoadMessageTask doInBackground Trying to get parent text of" + args[1]);
                 text = mKom.getParentToText(args[1]);
                 break;
 
             case MESSAGE_TYPE_TEXTNO: 
-                Log.i(TAG, "Trying to get text " + args[1]);
+                Log.i(TAG, "LoadMessageTask doInBackground Trying to get text " + args[1]);
                 text = mKom.getKomText(args[1]);
                 break;
 
             case MESSAGE_TYPE_NEXT:
-                Log.i(TAG, "Trying to get next unread text");
+                Log.i(TAG, "LoadMessageTask doInBackground Trying to get next unread text");
                 /* runOnUiThread(new Runnable() {
                     public void run() {
                         int textNo = mKom.getNextUnreadTextNo();
@@ -428,6 +436,11 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 });*/
 
                 text = mKom.getNextUnreadText();
+                if(text==null) {
+                    Log.i(TAG, "LoadMessageTask doInBackground Failed to get text");
+                } else {
+                    Log.i(TAG, "LoadMessageTask doInBackground Got text");
+                }
                 break;
 
             default:
@@ -616,20 +629,48 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             Display display = getWindowManager().getDefaultDisplay();
             int width = display.getWidth();
+            int height = display.getHeight();
             // TODO: Eh. Figure out how calculate our height properly (excluding optional buttons).
             int myLimit = mSwitcher.getBaseline() + mSwitcher.getBottom();
-            //Log.d(TAG, "onSingleTapUp myLimit:"+myLimit);
-            //Log.d(TAG, "onSingleTapUp width:"+width);
-            //Log.d(TAG, "onSingleTapUp e.getRawY():"+e.getRawY());
-            //Log.d(TAG, "onSingleTapUp e.getRawX():"+e.getRawX());
-            //Log.d(TAG, "onSingleTapUp e.getDownTime():"+e.getDownTime());
+            Log.d(TAG, "onSingleTapUp myLimit:"+myLimit);
+            Log.d(TAG, "onSingleTapUp width:"+width);
+            Log.d(TAG, "onSingleTapUp height:"+height);
+            Log.d(TAG, "onSingleTapUp Baseliune:"+mSwitcher.getBaseline());
+            Log.d(TAG, "onSingleTapUp PaddingTop:"+mSwitcher.getPaddingTop());
+            Log.d(TAG, "onSingleTapUp top:"+mSwitcher.getTop());
+            Log.d(TAG, "onSingleTapUp ---");
+            int childCount = mSwitcher.getChildCount();          
+            //int foo = mSwitcher.getDisplayedChild();
+            for (int foo = 0; foo < childCount; foo++) {
+                View bar = mSwitcher.getChildAt(foo);
+                Rect outRect = new Rect();
+                bar.getHitRect(outRect);
+                Log.d(TAG, "onSingleTapUp child top:" + outRect.top);
+                Log.d(TAG, "onSingleTapUp child height:" + outRect.height());
+                Log.d(TAG, "onSingleTapUp child baseline:" + bar.getBaseline());
+                Log.d(TAG, "onSingleTapUp child top:" + bar.getTop());
+                Log.d(TAG,
+                        "onSingleTapUp child padding top:"
+                                + bar.getPaddingTop());
+                Log.d(TAG, "onSingleTapUp ---");
+            }
+            Log.d(TAG, "onSingleTapUp e.getRawY():"+e.getRawY());
+            Log.d(TAG, "onSingleTapUp e.getRawX():"+e.getRawX());
+            Log.d(TAG, "onSingleTapUp e.getY():"+e.getY());
+            Log.d(TAG, "onSingleTapUp e.getDownTime():"+e.getDownTime());
 
-            if (e.getRawY() < myLimit) {
+            int topLimit = 0;
+            if (android.os.Build.VERSION.SDK_INT > 10) {
+                topLimit = height / 10;
+            }
+            
+            if ((e.getRawY() > topLimit) && (e.getRawY() < myLimit)) {
                 if (e.getRawX() > 0.6 * width) {
                     if (ConferencePrefs.getVibrateForTap(context)) {
                         Vibrator vibrator = (Vibrator) context
                                 .getSystemService(Context.VIBRATOR_SERVICE);
-                        vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
+                        vibrator.vibrate(ConferencePrefs
+                                .getVibrateTimeTap(context));
                     }
                     moveToNextText(true);
                     return true;
@@ -638,7 +679,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     if (ConferencePrefs.getVibrateForTap(context)) {
                         Vibrator vibrator = (Vibrator) context
                                 .getSystemService(Context.VIBRATOR_SERVICE);
-                        vibrator.vibrate(ConferencePrefs.getVibrateTimeTap(context));
+                        vibrator.vibrate(ConferencePrefs
+                                .getVibrateTimeTap(context));
                     }
                     moveToPrevText();
                     return true;
@@ -698,7 +740,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             TextInfo text = mState.currentText
                     .elementAt(mState.currentTextIndex);
             if (text.getAllHeaders().contains("ContentType:image/")) {
-                Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                Log.d(TAG, "moveToPrevText image text");
                 final Spannable spannedHeader = text.getSpannableHeaders();
                 addLinks(spannedHeader, digits);
 
@@ -766,8 +808,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         if ((mState.currentTextIndex + 1) >= mState.currentText.size()) {
             // At end of list. load new text from server
             Log.i(TAG, "fetching new text");
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0,
-                    markTextAsReadint);
+            //if (android.os.Build.VERSION.SDK_INT > 12) {
+                //new LoadMessageTask().executeOnExecutor(
+                        //AsyncTask.THREAD_POOL_EXECUTOR, MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
+            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
         } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
@@ -778,7 +822,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             TextInfo text = mState.currentText
                     .elementAt(mState.currentTextIndex);
             if (text.getAllHeaders().contains("ContentType:image/")) {
-                Log.d(TAG, "LoadMessageTask.onPostExecute image text");
+                Log.d(TAG, "moveToNextText image text");
                 final Spannable spannedHeader = text.getSpannableHeaders();
                 addLinks(spannedHeader, digits);
 
@@ -822,6 +866,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
+        //if(android.os.Build.VERSION.SDK_INT > 12) {
+            //new LoadMessageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  MESSAGE_TYPE_PARENT_TO, current, 0);
         new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
     }
 
@@ -1111,9 +1157,41 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 		t1.setTextSize(prefs.getFloat("conference_body_textsize", 12));
     }
 
+    private class markCurrentTextTask extends AsyncTask<Void, Void, Integer> {
+        @Override
+        protected void onPreExecute() {
+            setProgressBarIndeterminateVisibility(true);
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Integer doInBackground(final Void... args) {
+            if (mKom == null) {
+                return null;
+            }
+
+            try {
+                int CurrentTextNo = mState.getCurrent().getTextNo();
+                mKom.markText(CurrentTextNo);
+            } catch (RpcFailure e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "markCurrentTextTask RpcFailure");
+                // e.printStackTrace();
+            }
+
+            Log.d(TAG, "markCurrentTextTask doInBackground Done");
+            return 0;
+        }
+
+        @Override
+        protected void onPostExecute(final Integer value) {
+            setProgressBarIndeterminateVisibility(false);
+            Log.d(TAG, "markCurrentTextTask Done");
+        }
+    }
+
     protected void markCurrentText() {
-    	int CurrentTextNo = mState.getCurrent().getTextNo();
-    	mKom.markText(CurrentTextNo);
+        new markCurrentTextTask().execute();
     }
     
     protected void unmarkCurrentText() {
@@ -1617,6 +1695,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             outState.putInt("UserId", re_userId);
             outState.putString("UserPSW", re_userPSW);
             outState.putString("UserServer", re_server);
+            outState.putInt("UserServerPortNo", re_port);
+            outState.putBoolean("UserUseSSL", re_useSSL);
+            outState.putInt("UserCertLevel", re_cert_level);
         } else {
             if (mKom != null) {
                 int userId = mKom.getUserId();
@@ -1625,6 +1706,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     outState.putInt("UserId", userId);
                     outState.putString("UserPSW", mKom.getUserPassword());
                     outState.putString("UserServer", mKom.getServer());
+                    outState.putInt("UserServerPortNo", mKom.getServerPortNo());
+                    outState.putBoolean("UserUseSSL", mKom.getUseSSL());
+                    outState.putInt("UserCertLevel", mKom.getCertLevel());
                 } else {
                     Log.d(TAG, "No userid, bailing out");
                 }
@@ -1651,8 +1735,11 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             re_userId = savedInstanceState.getInt("UserId");
             re_userPSW = savedInstanceState.getString("UserPSW");
             re_server = savedInstanceState.getString("UserServer");
+            re_port = savedInstanceState.getInt("UserServerPortNo");
+            re_useSSL = savedInstanceState.getBoolean("UserUseSSL");
+            re_cert_level = savedInstanceState.getInt("UserCertLevel");
             if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
-                mKom.setUser(re_userId, re_userPSW, re_server);
+                mKom.setUser(re_userId, re_userPSW, re_server, re_port, re_useSSL, re_cert_level);
             } else {
                 if(mKom==null) {
                     Log.d(TAG, "mKom == null");
@@ -1675,17 +1762,34 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         Log.d(TAG, "onServiceConnected start");
         mKom = ((LocalBinder<KomServer>) service).getService();
         mKom.setShowHeadersLevel(mState.ShowHeadersLevel);
+        if(mKom == null) {
+            Log.d(TAG, "onServiceConnected Failed to get mKom service");
+        } else {
+            Log.d(TAG, "onServiceConnected Succeeded to get mKom service");            
+        }
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&mKom!=null) {
-            mKom.setUser(re_userId, re_userPSW, re_server);
+            Log.d(TAG, "onServiceConnected Setting user id from local variables");
+            mKom.setUser(re_userId, re_userPSW, re_server, re_port, re_useSSL, re_cert_level);
             if(!mKom.isConnected()) {
+                Log.d(TAG, "onServiceConnected Trying to reconnect");
                 mKom.reconnect();
             }
         } else {
             if(mKom==null) {
-                Log.d(TAG, "mKom == null");
+                Log.d(TAG, "onServiceConnected  mKom == null");
+            } else {
+                Log.d(TAG, "onServiceConnected Missing user id in local variables, trying to restore from service");
+                re_userId = mKom.getUserId();
+                re_userPSW = mKom.getUserPassword();
+                re_server = mKom.getServer();
+                re_port = mKom.getServerPortNo();
+                re_useSSL = mKom.getUseSSL();
+                re_cert_level = mKom.getCertLevel();                
             }
             if(re_userId<1){
                 Log.d(TAG, "no userId");
+            } else {
+                Log.d(TAG, "got userId:"+re_userId);
             }
             if(re_userPSW==null){
                 Log.d(TAG, "null password");
@@ -1718,17 +1822,24 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     mKom.setConference(mState.conferenceNo);
                 } catch (RpcFailure e) {
                     // TODO Auto-generated catch block
-                    Log.d(TAG, "onServiceConnected RpcFailure");
+                    Log.d(TAG, "InitConnectionTask RpcFailure");
                     // e.printStackTrace();
                 } catch (IOException e) {
-                    Log.d(TAG, "onServiceConnected IOException:" + e);
+                    Log.d(TAG, "InitConnectionTask IOException:" + e);
                     e.printStackTrace();
-                    Toast.makeText(getApplicationContext(),
-                            getString(R.string.connection_lost),
-                            Toast.LENGTH_SHORT).show();
+                    try {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.connection_lost),
+                                Toast.LENGTH_SHORT).show();
+                    } catch (Exception e2) {
+                        Log.d(TAG,
+                                "InitConnectionTask IOException failed to toast:"
+                                        + e2);
+                    }
                     mKom.logout();
                     finish();
                 }
+                Log.d(TAG, "InitConnectionTask set Conference Done");
 
                 TextInfo currentText = null;
 
@@ -1739,26 +1850,28 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     mSwitcher.setInAnimation(mSlideLeftIn);
                     mSwitcher.setOutAnimation(mSlideLeftOut);
                     if (currentText != null) {
-                        Log.d(TAG, "Getting current text");
+                        Log.d(TAG, "InitConnectionTask Getting current text");
                         new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
                                 currentText.getTextNo(), 0);
                     } else {
-                        Log.d(TAG, "Getting next text");
+                        Log.d(TAG, "InitConnectionTask Getting next text");
                         new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
                     }
                 } else {
-                    Log.d(TAG, "Getting text from queue");
+                    Log.d(TAG, "InitConnectionTask Getting text from queue");
                     new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
                             mState.textQueue.poll(), 0);
                 }
 
             }
+            Log.d(TAG, "InitConnectionTask doInBackground Done");
             return 0;
         }
 
         @Override
         protected void onPostExecute(final Integer value) {
             setProgressBarIndeterminateVisibility(false);
+            Log.d(TAG, "InitConnectionTask Done");
         }
     }
 
@@ -1797,6 +1910,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private int re_userId = 0;
     private String re_userPSW = null;
     private String re_server = null;
+    private int re_port=0; // for reconnect
+    private boolean re_useSSL=true; // for reconnect
+    private int re_cert_level=0; // for reconnect
     
     private static final int DIALOG_NUMBER_ENTRY = 7;
     private static final int MESSAGE_TYPE_PARENT_TO = 1;
