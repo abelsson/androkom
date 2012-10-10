@@ -33,9 +33,8 @@
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
                     android:layout_weight="2"
-                    android:background="@android:drawable/editbox_background"
+                    android:hint="subject"
                     android:singleLine="true" >
-
                     <requestFocus />
                 </EditText>
 

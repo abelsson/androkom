@@ -14,7 +14,9 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -65,13 +67,20 @@ public class Login extends Activity implements ServiceConnection
         mUsername.setText(prefs.getString("username", ""));
         mPassword.setText(getPsw());
 
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeLoginMessage(msg);
+            }
+        };
+
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });        
         getApp().doBindService(this);
     }
     
-	@Override
+    @Override
 	protected void onDestroy() {
 	    Log.d(TAG, "onDestroy");
         getApp().doUnbindService(this);
@@ -263,34 +272,21 @@ public class Login extends Activity implements ServiceConnection
                         if (user.name.compareToIgnoreCase(username) == 0) {
                             Log.d(TAG, "Exact username found, id: "+user.id);
                             selectedUser = user.id;
-                            doLogin();
+                            // Restart task by message
+                            Message msg = new Message();
+                            msg.obj = selectedUser;
+                            msg.what = 1;
+                            mHandler.sendMessage(msg);
                         }
                     }
                     if (selectedUser == 0) {
                         // Exact match not found
-                        AlertDialog.Builder builder = new AlertDialog.Builder(
-                                Login.this);
-                        builder.setTitle(getString(R.string.pick_a_name));
-                        String[] vals = new String[users.length];
-                        for (int i = 0; i < users.length; i++)
-                            vals[i] = users[i].name;
-                        builder.setSingleChoiceItems(vals, -1,
-                                new DialogInterface.OnClickListener() {
-                                    public void onClick(DialogInterface dialog,
-                                            int item) {
-                                        Toast.makeText(getApplicationContext(),
-                                                users[item].name,
-                                                Toast.LENGTH_SHORT).show();
-                                        dialog.cancel();
-                                        selectedUser = users[item].id;
-                                        Log.d(TAG, "Selected user:"
-                                                + selectedUser + ":"
-                                                + new String(users[item].name));
-                                        doLogin();
-                                    }
-                                });
-                        AlertDialog alert = builder.create();
-                        alert.show();
+                        // Go back to GUI, let user select and then
+                        // restart task
+                        Message msg = new Message();
+                        msg.obj = users;
+                        msg.what = 2;
+                        mHandler.sendMessage(msg);
                     }
                 } else {
                     try {
@@ -352,6 +348,39 @@ public class Login extends Activity implements ServiceConnection
     private void doLogin()
     {
         new LoginTask().execute();
+    }
+
+    protected void consumeLoginMessage(Message msg) {
+        switch (msg.what) {
+        case 1:  // Name resolved, just try login again
+            doLogin();
+            return;
+        case 2: // Ambiguous name, resolve it
+            final ConferenceInfo[] users = (ConferenceInfo[]) msg.obj;
+
+            AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
+            builder.setTitle(getString(R.string.pick_a_name));
+            String[] vals = new String[users.length];
+            for (int i = 0; i < users.length; i++)
+                vals[i] = users[i].name;
+            builder.setSingleChoiceItems(vals, -1,
+                    new DialogInterface.OnClickListener() {
+                        public void onClick(DialogInterface dialog, int item) {
+                            Toast.makeText(getApplicationContext(),
+                                    users[item].name, Toast.LENGTH_SHORT)
+                                    .show();
+                            dialog.cancel();
+                            selectedUser = users[item].id;
+                            Log.d(TAG, "Selected user:" + selectedUser + ":"
+                                    + new String(users[item].name));
+                            doLogin();
+                        }
+                    });
+            AlertDialog alert = builder.create();
+            alert.show();
+        default:
+            Log.d(TAG, "consumeLoginMessage ERROR unknown msg.what=" + msg.what);
+        }
     }
 
     private void doClearPsw()
@@ -429,4 +458,5 @@ public class Login extends Activity implements ServiceConnection
     private EditText mPassword;	
 	private KomServer mKom = null;
 	private Uri share_uri=null;
+	private Handler mHandler=null;
 }

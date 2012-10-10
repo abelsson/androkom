@@ -64,7 +64,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -389,7 +389,7 @@ public class KomServer extends Service implements RpcEventListener,
      * 
      * @return 0 on success, non-zero on failure.
      */
-    public int connect(String server, int port, boolean useSSL, int cert_level) 
+    public synchronized int connect(String server, int port, boolean useSSL, int cert_level) 
     {
         String  ANDROID         =   android.os.Build.VERSION.RELEASE;       //The current development codename, or the string "REL" if this is a release build.
         String  BOARD           =   android.os.Build.BOARD;                 //The name of the underlying board, like "goldfish".    
@@ -464,7 +464,7 @@ public class KomServer extends Service implements RpcEventListener,
         return 0;
     }
 
-    public void disconnect() {
+    public synchronized void disconnect() {
     	try {
     		s.disconnect(true);
 		} catch (RpcFailure e) {
@@ -914,7 +914,7 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
-    public String decodeKomErrorCode(int code) {
+    public static String decodeKomErrorCode(int code) {
         switch (code) {
         case 0:
             return "no-error";
@@ -1170,7 +1170,7 @@ public class KomServer extends Service implements RpcEventListener,
         return mLastTextNo;
     }
 
-	String[] getNextHollerith(String s) {
+	private String[] getNextHollerith(String s) {
 		s = s.trim();
 		int prefixLen = s.indexOf("H");
 
@@ -1191,7 +1191,7 @@ public class KomServer extends Service implements RpcEventListener,
 	/**
 	 * Parse properties from the common area, if any.
 	 */
-	void parseCommonUserArea() {
+	public void parseCommonUserArea() {
 		try {
 			UserArea ua = s.getUserArea();
 			String[] blocks = ua.getBlockNames();
@@ -1236,7 +1236,7 @@ public class KomServer extends Service implements RpcEventListener,
 	/**
 	 * Parse properties the elisp client has set, if any.
 	 */
-	void parseElispUserArea() {
+	public void parseElispUserArea() {
 		try {
 
 			UserArea ua = s.getUserArea();
@@ -1834,11 +1834,16 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public boolean isConnected() {
-		if ((s == null) || (!connected)) {
-			return false;
-		}
-		return s.getConnected();
-	}
+        if (!connected) {
+            return false;
+        }
+        synchronized (s) {
+            if (s != null) {
+                return s.getConnected();
+            }
+        }
+        return false;
+    }
 
     public void setConnected(boolean val) {
         connected = val;

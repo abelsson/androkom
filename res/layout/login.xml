@@ -19,6 +19,7 @@ android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:inputType="textPersonName"
 android:text=""
+android:hint="name"
 android:textSize="18sp"
 >
 </EditText>
@@ -34,6 +35,7 @@ android:id="@+id/password"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text=""
+android:hint="password"
 android:inputType="textPassword"
 android:textSize="18sp"
 >
