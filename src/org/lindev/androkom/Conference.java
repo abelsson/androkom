@@ -1889,8 +1889,18 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         int currentTextIndex;
         Stack<TextInfo> currentText;
         Queue<Integer> textQueue;
-        boolean hasCurrent() { return currentTextIndex >= 0; }
-        TextInfo getCurrent() { return currentText.elementAt(currentTextIndex); }
+
+        boolean hasCurrent() {
+            return currentTextIndex >= 0;
+        }
+
+        TextInfo getCurrent() {
+            if (currentTextIndex >= 0 && currentTextIndex < currentText.size())
+                return currentText.elementAt(currentTextIndex);
+            else
+                return null;
+        }
+
         int ShowHeadersLevel;
     };
     

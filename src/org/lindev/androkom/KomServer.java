@@ -1837,9 +1837,15 @@ public class KomServer extends Service implements RpcEventListener,
         if (!connected) {
             return false;
         }
-        synchronized (s) {
-            if (s != null) {
-                return s.getConnected();
+        if (s != null) {
+            try {
+                synchronized (s) {
+                    if (s != null) {
+                        return s.getConnected();
+                    }
+                }
+            } catch (Exception e) {
+                Log.d(TAG, "isConnected caught exception:" + e);
             }
         }
         return false;
