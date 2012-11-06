@@ -149,5 +149,31 @@
     android:defaultValue="100000"
     android:digits="0123456789"
     />
+  <EditTextPreference
+    android:key="bgcolour"
+    android:title="@string/bgcolour_title"
+    android:summary="@string/bgcolour_summary"
+    android:defaultValue="black"
+    />
+  <EditTextPreference
+    android:key="fgcolour"
+    android:title="@string/fgcolour_title"
+    android:summary="@string/fgcolour_summary"
+    android:defaultValue="white"
+    />
+  <EditTextPreference
+    android:key="linkcolour"
+    android:title="@string/linkcolour_title"
+    android:summary="@string/linkcolour_summary"
+    android:defaultValue="blue"
+    />
+  <EditTextPreference
+    android:key="fontsize"
+    android:title="@string/fontsize_title"
+    android:summary="@string/fontsize_summary"
+    android:defaultValue="14"
+    android:digits="0123456789"
+    />
+  
   </PreferenceCategory>
 </PreferenceScreen>

@@ -296,4 +296,14 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="menu_sharetext_label">Kopiera</string>
     <string name="shared_subject">Delat från Lyskom</string>
     <string name="clipboard_cant_handle_image">Klippbordet hanterar inte bilder.</string>
+    <string name="bgcolour_title">Background colour</string>
+    <string name="bgcolour_summary">Colour of background in textview</string>
+    <string name="fgcolour_title">Text colour</string>
+    <string name="fgcolour_summary">Colour of text in textview</string>
+    <string name="linkcolour_title">Link colour</string>
+    <string name="linkcolour_summary">Colour of link in textview</string>
+    <string name="fontsize_title">Font size</string>
+    <string name="fontsize_summary">Font size in points (dip)</string>
+    <string name="im_conversations_list_label">IM Konversationer</string>
+    <string name="illegal_colour">"Okänt färgnamn: "</string>
 </resources>

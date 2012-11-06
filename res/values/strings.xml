@@ -297,4 +297,13 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="menu_sharetext_label">Copy</string>
     <string name="shared_subject">Shared from Lyskom</string>
     <string name="clipboard_cant_handle_image">Clipboard cant handle image.</string>
+    <string name="bgcolour_title">Background colour</string>
+    <string name="bgcolour_summary">Colour of background in textview</string>
+    <string name="fgcolour_title">Text colour</string>
+    <string name="fgcolour_summary">Colour of text in textview</string>
+    <string name="linkcolour_title">Link colour</string>
+    <string name="linkcolour_summary">Colour of link in textview</string>
+    <string name="fontsize_title">Font size</string>
+    <string name="fontsize_summary">Font size in points (dip)</string>
+    <string name="illegal_colour">"Unknown colourname: "</string>
 </resources>

@@ -29,6 +29,7 @@ import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
+import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
@@ -43,6 +44,7 @@ import android.text.method.LinkMovementMethod;
 import android.text.style.ClickableSpan;
 import android.text.util.Linkify;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.Display;
 import android.view.GestureDetector;
 import android.view.GestureDetector.SimpleOnGestureListener;
@@ -1169,10 +1171,16 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             if (mKom == null) {
                 return null;
             }
+            if (mState == null) {
+                return null;
+            }
 
             try {
-                int CurrentTextNo = mState.getCurrent().getTextNo();
-                mKom.markText(CurrentTextNo);
+                TextInfo current = mState.getCurrent();
+                if (current != null) {
+                    int CurrentTextNo = current.getTextNo();
+                    mKom.markText(CurrentTextNo);
+                }
             } catch (RpcFailure e) {
                 // TODO Auto-generated catch block
                 Log.d(TAG, "markCurrentTextTask RpcFailure");
@@ -1633,6 +1641,83 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     /**
+     * Update theme settings like colours
+     * @param view 
+     * 
+     */
+    public void updateTheme(View view) {
+        Log.d(TAG, "updateTheme");
+
+        int bgCol = Color.parseColor("black");
+        int fgCol = Color.parseColor("white");
+        int linkCol = Color.parseColor("blue");
+        String bgColString = null;
+        String fgColString = null;
+        String linkColString = null;
+
+        try {
+            bgColString = ConferencePrefs.getBGColour(getBaseContext());
+            bgCol = Color.parseColor(bgColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+bgColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+            
+        try {
+            fgColString = ConferencePrefs.getFGColour(getBaseContext());
+            fgCol = Color.parseColor(fgColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+bgColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+        
+        try {
+            linkColString = ConferencePrefs.getLinkColour(getBaseContext());
+            linkCol = Color.parseColor(linkColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+linkColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+        
+        /*Log.d(TAG, "updateTheme bgCols="+bgColString);
+        Log.d(TAG, "updateTheme fgCols="+fgColString);
+        Log.d(TAG, "updateTheme bgCol="+bgCol);
+        Log.d(TAG, "updateTheme fgCol="+fgCol);*/
+        
+        ViewAnimator va = (ViewAnimator)findViewById(R.id.flipper_id);
+        va.setBackgroundColor(bgCol);
+        
+        TextView text1h = (TextView)findViewById(R.id.flipper_headers1_id);
+        TextView text1 = (TextView)findViewById(R.id.flipper_text1_id);
+        TextView text2h = (TextView)findViewById(R.id.flipper_headers2_id);
+        TextView text2 = (TextView)findViewById(R.id.flipper_text2_id);
+        
+        text1h.setBackgroundColor(bgCol);
+        text2h.setBackgroundColor(bgCol);
+        text1.setBackgroundColor(bgCol);
+        text2.setBackgroundColor(bgCol);
+        
+        text1h.setLinkTextColor(linkCol);
+        text2h.setLinkTextColor(linkCol);
+        text1.setLinkTextColor(linkCol);
+        text2.setLinkTextColor(linkCol);
+
+        text1h.setTextColor(fgCol);
+        text2h.setTextColor(fgCol);
+        text1.setTextColor(fgCol);
+        text2.setTextColor(fgCol);
+        
+        float fontSize = ConferencePrefs.getFontSize(getBaseContext());
+        text1h.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        text2h.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        text1.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+        text2.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
+    }
+    
+    /**
      * Set switch to show image
      * 
      */
@@ -1646,6 +1731,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             switcher = (ViewSwitcher) findViewById(R.id.profile1Switcher);
         }
         switcher.setDisplayedChild(1); // see order in XML
+        
+        updateTheme(switcher.getChildAt(1));
     }
 
     /**
@@ -1662,6 +1749,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             switcher = (ViewSwitcher) findViewById(R.id.profile1Switcher);
         }
         switcher.setDisplayedChild(0); // see order in XML
+        updateTheme(switcher.getChildAt(0));
     }
 
     private String stackAsString()

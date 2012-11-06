@@ -64,6 +64,15 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_MAXIMAGESIZEPIX = "maximagesizepix";
     private static final String OPT_MAXIMAGESIZEPIX_DEF = "100000";
 
+    private static final String OPT_FONTSIZE = "fontsize";
+    private static final String OPT_FONTSIZE_DEF = "14";
+    private static final String OPT_BGCOLOUR = "bgcolour";
+    private static final String OPT_BGCOLOUR_DEF = "black";
+    private static final String OPT_FGCOLOUR = "fgcolour";
+    private static final String OPT_FGCOLOUR_DEF = "white";
+    private static final String OPT_LINKCOLOUR = "linkcolour";
+    private static final String OPT_LINKCOLOUR_DEF = "blue";
+
     private static final String TAG = "Androkom ConferencePrefs";
     
     protected void onCreate(Bundle savedInstanceState) {
@@ -168,4 +177,21 @@ public class ConferencePrefs extends PreferenceActivity {
         return intval;
     }
 
+    public static int getFontSize(Context context) {
+        String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_FONTSIZE, OPT_FONTSIZE_DEF);
+        int intval = Integer.parseInt(butval);
+        return intval;
+    }
+
+    public static String getBGColour(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_BGCOLOUR, OPT_BGCOLOUR_DEF);
+    }
+
+    public static String getFGColour(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_FGCOLOUR, OPT_FGCOLOUR_DEF);
+    }
+
+    public static String getLinkColour(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_LINKCOLOUR, OPT_LINKCOLOUR_DEF);
+    }
 }

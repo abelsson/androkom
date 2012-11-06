@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.Date;
 import java.util.List;
 import java.util.Timer;
 import java.util.TimerTask;
@@ -17,11 +18,13 @@ import android.content.ComponentName;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
+import android.graphics.Color;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
+import android.util.TypedValue;
 import android.view.KeyEvent;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +35,7 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
+import android.widget.ViewAnimator;
 
 /**
  * Show a list of all conferences with unread texts.
@@ -80,7 +84,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
         Log.d(TAG, "onResume");
 
-		mTimer = new Timer();
+        mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 
 			@Override
@@ -312,7 +316,21 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             if((mKom!=null) && (!mKom.isConnected())) {
                 mKom.reconnect();
             }
-			return fetchConferences();
+            List<ConferenceInfo> confList = fetchConferences();
+            try {
+                if (mKom != null) {
+                    Date currTime = mKom.getServerTime();
+                    if (currTime != null) {
+                        currentDateTimeString = currTime.toString();
+                    } else {
+                        currentDateTimeString = "-";
+                    }
+                }
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+			return confList;
 		}
 
 		@Override
@@ -338,7 +356,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 }
                 if ((mKom != null) && (mKom.isConnected())) {
                     try {
-                        currentDateTimeString = mKom.getServerTime().toString();
                         mEmptyView.setText(getString(R.string.no_unreads) + "\n"
                                 + currentDateTimeString + "\n"
                                 + getString(R.string.server_time));
@@ -362,6 +379,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     }
                 }
             }
+            //updateTheme(null);
 		}
 
 	}
@@ -447,6 +465,85 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         }
     }
     
+    /**
+     * Update theme settings like colours
+     * @param view 
+     * 
+     */
+    public void updateTheme(View view) {
+        Log.d(TAG, "updateTheme");
+
+        int bgCol = Color.parseColor("black");
+        int fgCol = Color.parseColor("white");
+        int linkCol = Color.parseColor("blue");
+        String bgColString = null;
+        String fgColString = null;
+        String linkColString = null;
+
+        try {
+            bgColString = ConferencePrefs.getBGColour(getBaseContext());
+            bgCol = Color.parseColor(bgColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+bgColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+            
+        try {
+            fgColString = ConferencePrefs.getFGColour(getBaseContext());
+            fgCol = Color.parseColor(fgColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+bgColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+        
+        try {
+            linkColString = ConferencePrefs.getLinkColour(getBaseContext());
+            linkCol = Color.parseColor(linkColString);
+        } catch (IllegalArgumentException e) {
+            Toast.makeText(getApplicationContext(),
+                    getString(R.string.illegal_colour)+linkColString, Toast.LENGTH_SHORT)
+                    .show();
+        }
+        
+        /*Log.d(TAG, "updateTheme bgCols="+bgColString);
+        Log.d(TAG, "updateTheme fgCols="+fgColString);
+        Log.d(TAG, "updateTheme bgCol="+bgCol);
+        Log.d(TAG, "updateTheme fgCol="+fgCol);*/
+
+/*        ListView listan = (ListView)findViewById(android.R.id.list);
+        listan.setBackgroundColor(bgCol);
+        TextView txt = (TextView)findViewById(android.R.id.text1);
+        if (txt != null) {
+            txt.setBackgroundColor(bgCol);
+            txt.setLinkTextColor(linkCol);
+
+            txt.setTextColor(fgCol);
+
+            float fontSize = ConferencePrefs.getFontSize(getBaseContext());
+            txt.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize);
+        } else {
+            Toast.makeText(getApplicationContext(), "Toast1 !",
+                    Toast.LENGTH_SHORT).show();
+        }
+        */
+        if (mEmptyView != null) {
+            mEmptyView.setBackgroundColor(bgCol);
+
+            mEmptyView.setLinkTextColor(linkCol);
+
+            mEmptyView.setTextColor(fgCol);
+
+            float fontSize = ConferencePrefs.getFontSize(getBaseContext());
+            mEmptyView.setTextSize(TypedValue.COMPLEX_UNIT_DIP, fontSize);
+        } else {
+            Toast.makeText(getApplicationContext(),
+                    "Toast2 !", Toast.LENGTH_SHORT)
+                    .show();
+        }
+    }
+ 
 	App getApp() {
 		return (App) getApplication();
 	}
@@ -594,7 +691,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
-	private Timer mTimer;
+	private Timer mTimer = null;
 
 	private int re_userId = 0;
     private String re_userPSW = null;
