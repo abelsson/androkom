@@ -308,4 +308,5 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="fontsize_title">Font size</string>
     <string name="fontsize_summary">Font size in points (dip)</string>
     <string name="illegal_colour">"Unknown colourname: "</string>
+    <string name="speakBtnLabel">Speak</string>
 </resources>

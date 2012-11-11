@@ -3,6 +3,7 @@ package org.lindev.androkom.gui;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Locale;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.Conference;
@@ -24,10 +25,12 @@ import org.lindev.androkom.text.Recipient.RecipientType;
 import org.lindev.androkom.text.SendTextTask;
 import android.app.AlertDialog;
 import android.app.TabActivity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.location.Location;
 import android.location.LocationListener;
@@ -35,6 +38,7 @@ import android.location.LocationManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
+import android.speech.RecognizerIntent;
 import android.text.ClipboardManager;
 import android.util.Log;
 import android.view.ContextMenu;
@@ -43,11 +47,11 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.widget.AdapterView;
-import android.widget.AdapterView.AdapterContextMenuInfo;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TabHost;
 import android.widget.Toast;
@@ -56,6 +60,8 @@ import android.widget.TabHost.TabSpec;
 public class TextCreator extends TabActivity implements ServiceConnection {
     public static final String TAG = "Androkom TextCreator";
 
+    protected static final int RESULT_SPEECH = 1;
+    
     private static final String TEXT_TAB_TAG = "text-tab-tag";
     private static final String RECIPIENTS_TAB_TAG = "recipients-tab-tag";
 
@@ -133,6 +139,52 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         initializeButtons();
 
         getApp().doBindService(this);
+
+        ImageButton btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
+        
+        btnSpeak.setOnClickListener(new View.OnClickListener() {
+ 
+            public void onClick(View v) {
+ 
+                Intent intent = new Intent(
+                        RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+ 
+                //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, Locale.getDefault());
+ 
+                try {
+                    startActivityForResult(intent, RESULT_SPEECH);
+                    //txtText.setText("");
+                } catch (ActivityNotFoundException a) {
+                    Toast t = Toast.makeText(getApplicationContext(),
+                            "Opps! Your device doesn't support Speech to Text",
+                            Toast.LENGTH_SHORT);
+                    t.show();
+                }
+            }
+        });
+    }
+    
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+        case RESULT_SPEECH: {
+            if (resultCode == RESULT_OK && null != data) {
+
+                ArrayList<String> textLista = data
+                        .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                String text = textLista.get(0)+" ";
+                int start = mBody.getSelectionStart();
+                int end = mBody.getSelectionEnd();
+                mBody.getText().replace(Math.min(start, end),
+                        Math.max(start, end), text, 0, text.length());
+            }
+            break;
+        }
+
+        }
     }
     
     @Override

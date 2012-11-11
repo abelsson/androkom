@@ -308,4 +308,5 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="fontsize_summary">Font size in points (dip)</string>
     <string name="im_conversations_list_label">IM Konversationer</string>
     <string name="illegal_colour">"Okänt färgnamn: "</string>
+    <string name="speakBtnLabel">Tala</string>
 </resources>

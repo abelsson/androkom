@@ -298,7 +298,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
 
-            int result = tts.setLanguage(Locale.UK);
+            int result = tts.setLanguage(Locale.getDefault());
 
             if (result == TextToSpeech.LANG_MISSING_DATA
                     || result == TextToSpeech.LANG_NOT_SUPPORTED) {
