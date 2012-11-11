@@ -57,6 +57,8 @@
     <string name="showfullheaders_summary">Visa text info, som kommentarer</string>
     <string name="marktextread_title">Läsmarkera</string>
     <string name="marktextread_summary">Markera visade texter som lästa</string>
+    <string name="speakasynch_title">Speak asynch</string>
+    <string name="speakasynch_summary">Speak out asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
     <string name="preferredlanguage_title">Språk</string>

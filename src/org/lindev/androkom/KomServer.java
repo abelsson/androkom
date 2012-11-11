@@ -1789,7 +1789,21 @@ public class KomServer extends Service implements RpcEventListener,
         return ret_data;
     }
 
-
+    /*
+     * Remove contents of "Paranthesis" in kom-name
+     */
+    public String stripParanthesis(String str) {
+        String retval = str;
+        int firstP = str.lastIndexOf('(');
+        int lastP = str.indexOf(')', firstP);
+        if ((firstP >= 0) && (lastP >= 0) && (lastP > firstP)) {
+            retval = str.substring(0, firstP)
+                    + str.substring(lastP, str.length() - 1);
+            retval = stripParanthesis(retval);
+        }
+        return retval;
+    }
+    
     public int getUserId() {
         return re_userid;
     }

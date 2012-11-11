@@ -63,6 +63,8 @@
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
     <string name="marktextread_title">Mark texts read</string>
     <string name="marktextread_summary">Mark texts read</string>
+    <string name="speakasynch_title">Speak asynch</string>
+    <string name="speakasynch_summary">Speak out asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
     <string name="preferredlanguage_title">Language</string>

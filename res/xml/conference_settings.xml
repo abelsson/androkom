@@ -44,6 +44,12 @@
   <PreferenceCategory
     android:title="@string/asynch_prefs_title">
   <CheckBoxPreference
+    android:key="speakasynch"
+    android:title="@string/speakasynch_title"
+    android:summary="@string/speakasynch_summary"
+    android:defaultValue="false"
+    />
+   <CheckBoxPreference
     android:key="toastforasynch"
     android:title="@string/toastforasynch_title"
     android:summary="@string/toastforasynch_summary"

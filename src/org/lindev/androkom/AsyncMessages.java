@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Locale;
 import java.util.Set;
 
 import nu.dll.lyskom.AsynchMessage;
@@ -15,10 +16,11 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.Message;
 import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
 import android.util.Log;
 import android.widget.Toast;
 
-public class AsyncMessages implements AsynchMessageReceiver {
+public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInitListener {
     private static final String TAG = "Androkom AsyncMessages";
 
     public static final String ASYNC_MESSAGE_NAME = "name";
@@ -109,9 +111,14 @@ public class AsyncMessages implements AsynchMessageReceiver {
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
                 }
-                //Context context = app.getBaseContext();
+                // Context context = app.getBaseContext();
                 if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
                     Toast.makeText(app, str, length).show();
+                }
+                if (ConferencePrefs.getSpeakAsynch(app.getBaseContext())) {
+                    if (tts != null) {
+                        tts.speak(mKom.stripParanthesis(str), TextToSpeech.QUEUE_ADD, null);
+                    }
                 }
             }
         }
@@ -127,6 +134,7 @@ public class AsyncMessages implements AsynchMessageReceiver {
         this.subscribers = new HashSet<AsyncMessageSubscriber>();
         this.messageLog = new ArrayList<Message>();
         this.publicLog = Collections.unmodifiableList(this.messageLog);
+        this.tts = new TextToSpeech(app.getBaseContext(), this);
     }
 
     private Message processMessage(final AsynchMessage asynchMessage) {
@@ -276,4 +284,32 @@ public class AsyncMessages implements AsynchMessageReceiver {
             Log.d(TAG, "Fatal error: handler = null.");
         }
     }
+
+    public void onDestroy() {
+        // Don't forget to shutdown tts!
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+            tts = null;
+        }
+        //super.onDestroy();
+    }
+
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.UK);
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "onInit: This Language is not supported");
+            } else {
+                Log.d(TAG, "onInit: TTS initialized OK");
+            }
+        } else {
+            Log.e(TAG, "onInit: Initilization Failed!");
+        }
+    }
+    
+    private TextToSpeech tts=null;
 }
