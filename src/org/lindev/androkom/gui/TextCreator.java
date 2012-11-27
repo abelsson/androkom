@@ -3,8 +3,6 @@ package org.lindev.androkom.gui;
 import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Locale;
-
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.Conference;
 import nu.dll.lyskom.KomToken;
@@ -150,7 +148,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                         RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
  
                 //intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, "en-US");
-                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, Locale.getDefault());
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL, RecognizerIntent.LANGUAGE_MODEL_FREE_FORM );
  
                 try {
                     startActivityForResult(intent, RESULT_SPEECH);
@@ -172,7 +170,8 @@ public class TextCreator extends TabActivity implements ServiceConnection {
         switch (requestCode) {
         case RESULT_SPEECH: {
             if (resultCode == RESULT_OK && null != data) {
-
+                // Only in Android 4.0: data.getFloatArrayExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
+                
                 ArrayList<String> textLista = data
                         .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
                 String text = textLista.get(0)+" ";

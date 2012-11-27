@@ -1,5 +1,6 @@
 package org.lindev.androkom.gui;
 
+import java.util.ArrayList;
 import java.util.Observable;
 import java.util.Observer;
 
@@ -12,6 +13,7 @@ import org.lindev.androkom.im.SendMessageTask;
 
 import android.app.AlertDialog;
 import android.app.ListActivity;
+import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
 import android.content.Context;
 import android.content.DialogInterface;
@@ -23,6 +25,7 @@ import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Message;
 import android.provider.BaseColumns;
+import android.speech.RecognizerIntent;
 import android.util.AttributeSet;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -33,12 +36,16 @@ import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.CursorAdapter;
 import android.widget.EditText;
+import android.widget.ImageButton;
 import android.widget.ListView;
 import android.widget.TextView;
+import android.widget.Toast;
 
 public class IMConversation extends ListActivity implements ServiceConnection, Observer, OnClickListener {
     public static final String TAG = "Androkom IMConversation";
 
+    protected static final int RESULT_SPEECH = 1;
+    
     private static final int MAX_MESSAGES = 50;
     private static final int BACKGROUND_COLOR_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
@@ -114,7 +121,8 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         super.onCreate(savedInstanceState);
 
         mLatestSeen = -1;
-        if (savedInstanceState != null && savedInstanceState.containsKey(LATEST_SEEN)) {
+        if (savedInstanceState != null
+                && savedInstanceState.containsKey(LATEST_SEEN)) {
             mLatestSeen = savedInstanceState.getInt(LATEST_SEEN);
         }
 
@@ -123,6 +131,31 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mTextField = (EditText) findViewById(R.id.message);
 
         mSendButton.setOnClickListener(this);
+
+        ImageButton btnSpeak = (ImageButton) findViewById(R.id.btnSpeak);
+
+        btnSpeak.setOnClickListener(new View.OnClickListener() {
+
+            public void onClick(View v) {
+
+                Intent intent = new Intent(
+                        RecognizerIntent.ACTION_RECOGNIZE_SPEECH);
+
+                // intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                // "en-US");
+                intent.putExtra(RecognizerIntent.EXTRA_LANGUAGE_MODEL,
+                        RecognizerIntent.LANGUAGE_MODEL_FREE_FORM);
+
+                try {
+                    startActivityForResult(intent, RESULT_SPEECH);
+                } catch (ActivityNotFoundException a) {
+                    Toast t = Toast.makeText(getApplicationContext(),
+                            "Opps! Your device doesn't support Speech to Text",
+                            Toast.LENGTH_SHORT);
+                    t.show();
+                }
+            }
+        });
         getApp().doBindService(this);
     }
 
@@ -132,6 +165,29 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
         mLatestSeen = -1;
         mTextField.setText("");
         initialize(intent);
+    }
+
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        switch (requestCode) {
+        case RESULT_SPEECH: {
+            if (resultCode == RESULT_OK && null != data) {
+                // Only in Android 4.0: data.getFloatArrayExtra(RecognizerIntent.EXTRA_CONFIDENCE_SCORES);
+                
+                ArrayList<String> textLista = data
+                        .getStringArrayListExtra(RecognizerIntent.EXTRA_RESULTS);
+                String text = textLista.get(0)+" ";
+                int start = mTextField.getSelectionStart();
+                int end = mTextField.getSelectionEnd();
+                mTextField.getText().replace(Math.min(start, end),
+                        Math.max(start, end), text, 0, text.length());
+            }
+            break;
+        }
+
+        }
     }
 
     @Override

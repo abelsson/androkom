@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -36,6 +37,8 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
 import android.os.Vibrator;
+import android.speech.tts.TextToSpeech;
+import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.Html;
 import android.text.Spannable;
 import android.text.SpannableStringBuilder;
@@ -74,7 +77,7 @@ import android.widget.ViewSwitcher;
  * @author henrik
  *
  */
-public class Conference extends Activity implements OnTouchListener, ServiceConnection
+public class Conference extends Activity implements OnTouchListener, ServiceConnection, OnInitListener
 {
     private static final String TAG = "Androkom Conference";
 
@@ -229,6 +232,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
        
+        tts = new TextToSpeech(getBaseContext(), this);
+
         if (savedInstanceState != null) {
             Log.d(TAG, "onCreate Got a bundle");
             restoreBundle(savedInstanceState);
@@ -270,6 +275,14 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 	@Override
 	protected void onDestroy() {
         getApp().doUnbindService(this);
+
+        // Don't forget to shutdown tts!
+        if (tts != null) {
+            tts.stop();
+            tts.shutdown();
+            tts = null;
+        }
+        
 		super.onDestroy();
 		Log.d(TAG, "Destroyed");
 	}
@@ -1133,6 +1146,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         case R.id.menu_sharetext_id:
             shareIt();
             return true;
+
+        case R.id.menu_speaktext_id:
+            speakText();
+            return true;
             
         default:
             return super.onOptionsItemSelected(item);
@@ -1470,6 +1487,19 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
         } else {
             clipboard.setText(shareBody);
+        }
+    }
+    
+    private void speakText() {
+        String shareBody = "Here is the share content body";
+        TextInfo currentText = null;
+
+        currentText = mState.getCurrent();
+        shareBody = currentText.getSpannableHeaders() + "\n"
+                + currentText.getSpannableBody();
+
+        if (tts != null) {
+            tts.speak(shareBody, TextToSpeech.QUEUE_ADD, null);
         }
     }
     
@@ -1967,6 +1997,22 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 		mKom = null;		
 	}
 
+    public void onInit(int status) {
+        if (status == TextToSpeech.SUCCESS) {
+
+            int result = tts.setLanguage(Locale.getDefault());
+
+            if (result == TextToSpeech.LANG_MISSING_DATA
+                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                Log.e(TAG, "onInit: This Language is not supported");
+            } else {
+                Log.d(TAG, "onInit: TTS initialized OK");
+            }
+        } else {
+            Log.e(TAG, "onInit: Initilization Failed!");
+        }
+    }
+    
     App getApp() 
     {
         return (App)getApplication();
@@ -2016,4 +2062,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private static final int MESSAGE_TYPE_PARENT_TO = 1;
     private static final int MESSAGE_TYPE_TEXTNO = 2;
     private static final int MESSAGE_TYPE_NEXT = 3;
+    
+    private TextToSpeech tts=null;
 }
