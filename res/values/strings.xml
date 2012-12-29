@@ -58,7 +58,7 @@
     <string name="use_oisafe_title">OISafe</string>
     <string name="use_oisafe_summary">Get username and password from OISafe</string>
     <string name="autologin_title">Autologin</string>
-    <string name="autologin_summary">Automaticly login if password is saved</string>
+    <string name="autologin_summary">Automatically login if password is saved</string>
     <string name="showfullheaders_title">Show full headers</string>
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
     <string name="marktextread_title">Mark texts read</string>
@@ -161,7 +161,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="im_new_message_to">"New message to:"</string>
     <string name="im_message">"Message:"</string>
     <string name="im_isnt_logged_in">" isn't logged in."</string>
-    <string name="im_network_error">"Network error occured while sending message."</string>
+    <string name="im_network_error">"Network error occurred while sending message."</string>
     <string name="im_clear_history_q">"Clear conversation history?"</string>
     <string name="yes">"Yes"</string>
     <string name="no">"No"</string>
@@ -298,7 +298,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="maximagesizepix_title">Max image size</string>
     <string name="menu_sharetext_label">Copy</string>
     <string name="shared_subject">Shared from Lyskom</string>
-    <string name="clipboard_cant_handle_image">Clipboard cant handle image.</string>
+    <string name="clipboard_cant_handle_image">Clipboard can\'t handle image.</string>
     <string name="bgcolour_title">Background colour</string>
     <string name="bgcolour_summary">Colour of background in textview</string>
     <string name="fgcolour_title">Text colour</string>
@@ -310,4 +310,8 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="illegal_colour">"Unknown colourname: "</string>
     <string name="speakBtnLabel">Speak</string>
     <string name="menu_speaktext_label">Speak text</string>
+    <string name="do_seeagain">See texts again</string>
+    <string name="seeagaintexts_shortcut">G</string>
+    <string name="seeagaintexts_label">See Again</string>
+    <string name="seeagaintextlist_label">See again text list</string>
 </resources>

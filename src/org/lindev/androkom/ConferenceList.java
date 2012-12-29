@@ -35,7 +35,6 @@ import android.widget.ArrayAdapter;
 import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
-import android.widget.ViewAnimator;
 
 /**
  * Show a list of all conferences with unread texts.
@@ -277,6 +276,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             startActivity(intent);
             return true;
 
+        case R.id.menu_seeagaintexts_id:
+            intent = new Intent(this, SeeAgainTexts.class);
+            startActivity(intent);
+            return true;
+
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -360,7 +364,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                                 + currentDateTimeString + "\n"
                                 + getString(R.string.server_time));
                     } catch (Exception e) {
-                        // TODO Auto-generated catch block
                         Log.d(TAG, "Populate lost connection");
                         // e.printStackTrace();
                         mKom.logout();

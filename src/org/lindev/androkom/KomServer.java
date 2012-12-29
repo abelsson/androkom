@@ -32,6 +32,7 @@ import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.MarkedTextList.populateMarkedTextsTask;
+import org.lindev.androkom.SeeAgainTextList.populateSeeAgainTextsTask;
 import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.im.IMNotification;
@@ -64,7 +65,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -279,7 +280,8 @@ public class KomServer extends Service implements RpcEventListener,
 
         unregisterReceiver(mConnReceiver);
 
-        logout();
+        new LogoutTask().execute();
+
         getApp().shutdown();
 
         super.onDestroy();
@@ -1651,10 +1653,10 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             text = s.getUConfStat(confNo);
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getUConfStat new_text RpcFailure:" + e);
+            Log.d(TAG, "komserver.getUConfStat RpcFailure:" + e);
             // e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "komserver.getUConfStat new_text IOException:" + e);
+            Log.d(TAG, "komserver.getUConfStat IOException:" + e);
             // e.printStackTrace();
         }
         return text;
@@ -1669,15 +1671,73 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             text = s.localToGlobal(confNo, firstLocalNo, noOfExistingTexts);
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.localToGlobal new_text RpcFailure:" + e);
+            Log.d(TAG, "komserver.localToGlobal RpcFailure:" + e);
             // e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "komserver.localToGlobal new_text IOException:" + e);
+            Log.d(TAG, "komserver.localToGlobal IOException:" + e);
             // e.printStackTrace();
         }
         return text;
     }
 
+    public TextMapping localToGlobalReverse(int confNo, int firstLocalNo,
+            int noOfExistingTexts) {
+        TextMapping text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.localToGlobalReverse(confNo, firstLocalNo, noOfExistingTexts);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.localToGlobalReverse RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.localToGlobalReverse IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public List<TextInfo> populateSeeAgain(populateSeeAgainTextsTask populateSeeAgainTextsT, int confNo, int numTexts) {
+        List<TextInfo> ret_data = new ArrayList<TextInfo>();
+        TextMapping data = null;
+
+        if (s == null) {
+            return null;
+        }
+        try {
+            data = localToGlobalReverse(confNo, 0, numTexts);
+            if (populateSeeAgainTextsT != null) {
+                populateSeeAgainTextsT.changeMax(data.size());
+            }
+            Log.d(TAG, "populateSeeAgain found number of texts: "+data.size());
+            int counter = 0;
+            while (data != null && data.hasMoreElements()) {
+                final int globalNo = (Integer) data.nextElement();
+                final int localNo = data.local();
+
+                Log.d(TAG, "populateSeeAgain Next text: "+globalNo);
+                TextInfo text = getKomText(globalNo);
+                if (text != null) {
+                    ret_data.add(text);
+                } else {
+                    Log.d(TAG, "populateSeeAgain could not find textno "+globalNo);
+                }
+                Log.d(TAG, "populateSeeAgain Author: "+text.getAuthor());
+                Log.d(TAG, "populateSeeAgain Date: "+text.getDate());
+                Log.d(TAG, "populateSeeAgain Subject: "+text.getSubject());
+                counter++;
+                if (populateSeeAgainTextsT != null) {
+                    populateSeeAgainTextsT.updateProgress((int) ((counter / (float) data.size()) * 100));
+                }
+            }
+        } catch (RpcFailure e) {
+            Log.d(TAG, "populateSeeAgain " + e);
+            //e.printStackTrace();
+        }
+        return ret_data;
+   }
+    
     public int createText(Text t, boolean autoreadmarkowntext) throws IOException {
         int text = 0;
         if (s == null) {
@@ -1693,10 +1753,10 @@ public class KomServer extends Service implements RpcEventListener,
                 }
             }
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.localToGlobal new_text RpcFailure:" + e);
+            Log.d(TAG, "komserver.createText RpcFailure:" + e);
             // e.printStackTrace();
         } catch (IOException e) {
-            Log.d(TAG, "komserver.localToGlobal new_text IOException:" + e);
+            Log.d(TAG, "komserver.createText IOException:" + e);
             // e.printStackTrace();
         }
         return text;

@@ -310,4 +310,8 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="illegal_colour">"Okänt färgnamn: "</string>
     <string name="speakBtnLabel">Tala</string>
     <string name="menu_speaktext_label">Tala text</string>
+    <string name="do_seeagain">Återse texter</string>
+    <string name="seeagaintexts_shortcut">G</string>
+    <string name="seeagaintexts_label">Återse senaste</string>
+    <string name="seeagaintextlist_label">Återse senaste text lista</string>
 </resources>

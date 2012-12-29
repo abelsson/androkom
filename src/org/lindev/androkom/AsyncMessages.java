@@ -146,7 +146,12 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
 
         switch (msg.what) {
         case nu.dll.lyskom.Asynch.login:
+            try {
             b.putString(ASYNC_MESSAGE_NAME, mKom.getConferenceName(params[0].intValue()));
+            } catch (java.lang.ArrayIndexOutOfBoundsException e) {
+                Log.d(TAG, "processMessage login caught ArrayIndexOutOfBoundsException.");
+                Log.d(TAG, ""+e);
+            }
             break;
 
         case nu.dll.lyskom.Asynch.logout:

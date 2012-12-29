@@ -2,6 +2,8 @@ package org.lindev.androkom;
 
 import java.io.IOException;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+
 import nu.dll.lyskom.KomToken;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.TextInfo;
@@ -30,12 +32,12 @@ import android.widget.TextView;
 import android.widget.Toast;
 
 /**
- * Show a list of marked texts.
+ * Show a list of texts again.
  * 
  * 
  */
-public class MarkedTextList extends ListActivity implements ServiceConnection {
-	public static final String TAG = "Androkom MarkedTextList";
+public class SeeAgainTextList extends ListActivity implements ServiceConnection {
+	public static final String TAG = "Androkom SeeAgainTextList";
 
 	/**
 	 * Instantiate activity.
@@ -52,7 +54,30 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
             Log.d(TAG, "Got a bundle");
             restoreBundle(savedInstanceState);
         }
-		
+
+        final Intent intent = getIntent();
+
+        if (intent != null) {
+            final Bundle extras = intent.getExtras();
+            if (extras != null) {
+                Object confid = extras.get("conference-id");
+                if (confid == null) {
+                    confNo = 0;
+                } else {
+                    confNo = (Integer) confid;
+                }
+                Log.i(TAG, "Got passed conference id: " + confNo);
+
+                Object textNo_obj = extras.get("numTexts");
+                if (textNo_obj == null) {
+                    numTexts = 0;
+                } else {
+                    numTexts = (Integer) textNo_obj;
+                }
+                Log.i(TAG, "Got passed text no: " + numTexts);
+            }
+        }
+        
 		mEmptyView = (TextView) findViewById(android.R.id.empty);
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
 		setListAdapter(mAdapter);
@@ -209,10 +234,10 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 		startActivity(intent);
 	}
 
-    public class populateMarkedTextsTask extends
+    public class populateSeeAgainTextsTask extends
             AsyncTask<Void, Integer, List<TextInfo>> {
         private final ProgressDialog dialog = new ProgressDialog(
-                MarkedTextList.this);
+                SeeAgainTextList.this);
 
         @Override
         protected void onPreExecute() {
@@ -231,15 +256,15 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
             while (mKom == null) {
                 max_sleep--;
                 if (max_sleep < 1) {
-                    Log.d(TAG, "PopulateMarkedTextsTask timeout");
+                    Log.d(TAG, "PopulateSeeAgainTextsTask timeout");
                     return null;
                 }
-                Log.d(TAG, "PopulateMarkedTextsTask sleeps");
+                Log.d(TAG, "PopulateSeeAgainTextsTask sleeps");
                 try {
                     Thread.sleep(1000);
                 } catch (InterruptedException e) {
                     // TODO Auto-generated catch block
-                    Log.d(TAG, "PopulateMarkedTextsTask sleep interrupted");
+                    Log.d(TAG, "PopulateSeeAgainTextsTask sleep interrupted");
                     // e.printStackTrace();
                 }
             }
@@ -277,7 +302,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 
                 mAdapter.notifyDataSetChanged();
             } else {
-                Log.d(TAG, "populateMarkedTexts failed, no Texts");
+                Log.d(TAG, "populateSeeAgainTexts failed, no Texts");
                 Log.d(TAG, "mConferences is null:" + (mTexts == null));
                 if (mTexts != null) {
                     Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
@@ -316,7 +341,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         }
     }
 
-	private List<TextInfo> fetchTextHeaders(populateMarkedTextsTask populateMarkedTextsT) {
+	private List<TextInfo> fetchTextHeaders(populateSeeAgainTextsTask populateSeeAgainTextsT) {
 		List<TextInfo> retlist = null;
 
 		try {
@@ -324,7 +349,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.getMarkedTexts(populateMarkedTextsT);
+						retlist = mKom.populateSeeAgain(populateSeeAgainTextsT, confNo, numTexts);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -368,6 +393,35 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         }
     }
 
+    private class cacheNamesTask extends
+            AsyncTask<Void, Void, Void> {
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "cacheNamesTask 1");
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Void doInBackground(final Void... args) {
+            try {
+                List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
+                if(pers != null) {
+                    Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
+                } else {
+                    Log.d(TAG, "cacheNamesTask num persons = null");                    
+                }
+            } catch (IOException e) {
+                Log.d(TAG, "cacheNamesTask got IOException:" + e);
+                //e.printStackTrace();
+            }
+            return null;
+        }
+
+        protected void onPostExecute() {
+            Log.d(TAG, "cacheNamesTask 2");
+        }
+    }
+    
 	App getApp() {
 		return (App) getApplication();
 	}
@@ -412,7 +466,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
                 }
             }
         }
-        new populateMarkedTextsTask().execute();
+        new populateSeeAgainTextsTask().execute();
     }
 
 	public void onServiceDisconnected(ComponentName name) {
@@ -492,6 +546,9 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         }        
     }
 
+    private int confNo = 0;
+    private int numTexts = 0;
+    
     private List<TextInfo> mTexts;
 	private ArrayAdapter<String> mAdapter;
 	private int mConfNo;
