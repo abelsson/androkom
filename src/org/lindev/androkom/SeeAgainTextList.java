@@ -127,9 +127,11 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
 
 		activateUser();
 		
+		mKom.setCurrentTextList(mTexts);
+
 		Intent intent = new Intent(this, Conference.class);
         intent.putExtra("conference-id", mConfNo);
-		intent.putExtra("textNo", mTexts.get((int) id).getTextNo());
+        intent.putExtra("textListIndex", (int)id);
 		startActivity(intent);
 	}
 

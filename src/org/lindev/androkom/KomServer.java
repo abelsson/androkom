@@ -1864,6 +1864,14 @@ public class KomServer extends Service implements RpcEventListener,
         return retval;
     }
     
+    void setCurrentTextList(List<TextInfo> Texts) {
+        mTexts = Texts;
+    }
+
+    List<TextInfo> getCurrentTextList() {
+        return (mTexts);
+    }
+
     public int getUserId() {
         return re_userid;
     }
@@ -1973,6 +1981,8 @@ public class KomServer extends Service implements RpcEventListener,
 	private boolean re_useSSL=true; // for reconnect
     private int re_cert_level=0; // for reconnect
 
+    private List<TextInfo> mTexts;
+    
 	private String latestIMSender=""; // for creating new IM
 	
 	private boolean hidden_session = !RELEASE_BUILD;

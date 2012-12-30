@@ -1,9 +1,7 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
 import java.util.List;
 import nu.dll.lyskom.KomToken;
-import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
@@ -17,7 +15,6 @@ import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
 import android.os.IBinder;
-import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -102,9 +99,11 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 
 		activateUser();
 		
-		Intent intent = new Intent(this, Conference.class);
+        mKom.setCurrentTextList(mTexts);
+        
+        Intent intent = new Intent(this, Conference.class);
         intent.putExtra("conference-id", mConfNo);
-		intent.putExtra("textNo", mTexts.get((int) id).getTextNo());
+        intent.putExtra("textListIndex", (int)id);
 		startActivity(intent);
 	}
 

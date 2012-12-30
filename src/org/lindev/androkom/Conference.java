@@ -1,6 +1,7 @@
 package org.lindev.androkom;
 
 import java.io.IOException;
+import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
 import java.util.Stack;
@@ -227,6 +228,17 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     }
                 }
                 Log.i(TAG, "Got passed text no: " + textNo);
+                
+                Object textId_obj = extras.get("textListIndex");
+                textNo = -1;
+                if (textId_obj != null) {
+                    Integer textId = (Integer) textId_obj;
+                    if(textId >= 0) {
+                        textNo = textId;
+                    }
+                }
+                mState.textListIndex  = textNo;
+                Log.i(TAG, "Got passed text id: " + textNo);
             }
         }
 
@@ -268,6 +280,16 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 Log.d(TAG, "onResume mKom has username");
             } else {
                 Log.d(TAG, "onResume mKom is missing username");
+            }
+            if ((mKom!=null) && (mState.textListIndex >= 0)) {
+                List<TextInfo> textList = mKom.getCurrentTextList();
+                if (textList != null) {
+                    int textNo = textList.get(mState.textListIndex).getTextNo();
+                    mState.textQueue = new ArrayBlockingQueue<Integer>(10);
+                    mState.textQueue.offer(textNo);
+                } else {
+                    Log.d(TAG, "onResume textList is null");
+                }
             }
         }
     }
@@ -537,8 +559,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                         setOtherTextSwitch();
                         mSwitcher.showNext();
                     }
-                    setTitle(mKom.getConferenceName());
-                } else {
+                    if (mState.textListIndex >= 0) {
+                        setTitle("(återser)");
+                    } else {
+                        setTitle(mKom.getConferenceName());
+                    }
+               } else {
                     Log.d(TAG, "error fetching text, probably lost connection");
                     Log.d(TAG, "LoadMessageTask onPostExecute text=null");
                     mKom.logout();
@@ -742,6 +768,25 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private void moveToPrevText() {
+        if (mState.textListIndex >= 0) {
+            moveToPrevListText();
+        } else {
+            moveToPrevUnreadText();
+        }
+    }
+
+    private void moveToPrevListText() {
+        List<TextInfo> textList = mKom.getCurrentTextList();
+        if(mState.textListIndex>0) {
+            mState.textListIndex--;
+            int textNo = textList.get(mState.textListIndex).getTextNo();
+            moveToText(textNo);
+        } else {
+            Log.d(TAG, "moveToPrevListText already at start of list");
+        }
+    }
+
+    private void moveToPrevUnreadText() {
         Log.i(TAG, "moving to prev text, cur: " + (mState.currentTextIndex - 1)
                 + "/" + mState.currentText.size());
 
@@ -751,39 +796,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             mSwitcher.setInAnimation(mSlideRightIn);
             mSwitcher.setOutAnimation(mSlideRightOut);
 
-            TextView tview = getOtherHeadersView();
             TextInfo text = mState.currentText
                     .elementAt(mState.currentTextIndex);
-            if (text.getAllHeaders().contains("ContentType:image/")) {
-                Log.d(TAG, "moveToPrevText image text");
-                final Spannable spannedHeader = text.getSpannableHeaders();
-                addLinks(spannedHeader, digits);
-
-                tview.setText(spannedHeader);
-
-                ImageView imgView = getOtherImgView();
-                byte[] bilden = text.getRawBody();
-                Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
-                        bilden.length);
-                if (bmImg != null) {
-                    imgView.setImageBitmap(bmImg);
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            getString(R.string.image_decode_failed),
-                            Toast.LENGTH_LONG).show();
-                }
-                setOtherImgSwitch();
-            } else {
-                Spannable spannableHeaders = mState.currentText.elementAt(
-                        mState.currentTextIndex).getSpannableHeaders();
-                tview.setText(spannableHeaders);
-
-                tview = getOtherTextView();
-                tview.setText(mState.currentText.elementAt(
-                        mState.currentTextIndex).getSpannableBody());
-                setOtherTextSwitch();
-            }
-            mSwitcher.showNext();
+            setTextInView(text);
         }
     }
 
@@ -814,6 +829,58 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private void moveToNextText(boolean markTextAsRead) {
+        if(mState.textListIndex >= 0) {
+            moveToNextListText(markTextAsRead);
+        } else {
+            moveToNextUnreadText(markTextAsRead);
+        }
+    }
+    
+    private void moveToNextListText(boolean markTextAsRead) {
+        List<TextInfo> textList = mKom.getCurrentTextList();
+        if((mState.textListIndex+1)<textList.size()) {
+            mState.textListIndex++;
+            int textNo = textList.get(mState.textListIndex).getTextNo();
+            moveToText(textNo);
+        } else {
+            Log.d(TAG, "moveToNextListText already at end of list");
+        }
+    }
+
+    private void setTextInView(TextInfo text) {
+        TextView tview = getOtherHeadersView();
+        if (text.getAllHeaders().contains("ContentType:image/")) {
+            Log.d(TAG, "setTextInView image text");
+            final Spannable spannedHeader = text.getSpannableHeaders();
+            addLinks(spannedHeader, digits);
+
+            tview.setText(spannedHeader);
+
+            ImageView imgView = getOtherImgView();
+            byte[] bilden = text.getRawBody();
+            Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                    bilden.length);
+            if (bmImg != null) {
+                imgView.setImageBitmap(bmImg);
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.image_decode_failed),
+                        Toast.LENGTH_LONG).show();
+            }
+            setOtherImgSwitch();
+        } else {
+            tview.setText(mState.currentText.elementAt(
+                    mState.currentTextIndex).getSpannableHeaders());
+
+            tview = getOtherTextView();
+            tview.setText(mState.currentText.elementAt(
+                    mState.currentTextIndex).getSpannableBody());
+            setOtherTextSwitch();
+        }
+        mSwitcher.showNext();
+    }
+    
+    private void moveToNextUnreadText(boolean markTextAsRead) {
         Log.i(TAG, "moving to next text cur:" + mState.currentTextIndex + "/"
                 + mState.currentText.size());
         int markTextAsReadint = markTextAsRead ? 0 : 1;
@@ -833,38 +900,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             mState.currentTextIndex++;
             Log.i(TAG, stackAsString());
 
-            TextView tview = getOtherHeadersView();
-            TextInfo text = mState.currentText
-                    .elementAt(mState.currentTextIndex);
-            if (text.getAllHeaders().contains("ContentType:image/")) {
-                Log.d(TAG, "moveToNextText image text");
-                final Spannable spannedHeader = text.getSpannableHeaders();
-                addLinks(spannedHeader, digits);
-
-                tview.setText(spannedHeader);
-
-                ImageView imgView = getOtherImgView();
-                byte[] bilden = text.getRawBody();
-                Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
-                        bilden.length);
-                if (bmImg != null) {
-                    imgView.setImageBitmap(bmImg);
-                } else {
-                    Toast.makeText(getApplicationContext(),
-                            getString(R.string.image_decode_failed),
-                            Toast.LENGTH_LONG).show();
-                }
-                setOtherImgSwitch();
-            } else {
-                tview.setText(mState.currentText.elementAt(
-                        mState.currentTextIndex).getSpannableHeaders());
-
-                tview = getOtherTextView();
-                tview.setText(mState.currentText.elementAt(
-                        mState.currentTextIndex).getSpannableBody());
-                setOtherTextSwitch();
-            }
-            mSwitcher.showNext();
+            setTextInView(mState.currentText.elementAt(mState.currentTextIndex));
         }
     }
 
@@ -1917,6 +1953,17 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 }
             }
         }
+        if ((mKom!=null) && (mState.textListIndex >= 0)) {
+            List<TextInfo> textList = mKom.getCurrentTextList();
+            if (textList != null) {
+                int textNo = textList.get(mState.textListIndex).getTextNo();
+                mState.textQueue = new ArrayBlockingQueue<Integer>(10);
+                mState.textQueue.offer(textNo);
+            } else {
+                Log.d(TAG, "onResume textList is null");
+            }
+        }
+
         new InitConnectionTask().execute();
         Log.d(TAG, "onServiceConnected done");
     }
@@ -2019,6 +2066,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     private class State {
+        public int textListIndex = -1;
         public int conferenceNo;
         int currentTextIndex;
         Stack<TextInfo> currentText;
