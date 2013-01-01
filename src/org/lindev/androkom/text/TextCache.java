@@ -97,6 +97,13 @@ class TextCache {
             } catch (final RpcFailure e) {
                 Log.d(TAG, "TextFetcherTask getTextFromServer RpcFailure: " + e);
                 // e.printStackTrace();
+                if(e.getError()==14) {
+                    //Text does not exist or we are not allowed to read.
+                    return new TextInfo(mKom.getBaseContext(), textNo, username,
+                            0, "-", "FINNS EJ",
+                            "FINNS EJ", "FINNS EJ", "FINNS EJ",
+                            null, 0);                    
+                }
                 return null;
             }
 

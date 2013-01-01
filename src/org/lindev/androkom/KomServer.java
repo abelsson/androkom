@@ -1468,7 +1468,7 @@ public class KomServer extends Service implements RpcEventListener,
         } catch (RpcFailure e) {
             if(e.getError()==14) {
                 Log.d(TAG, "komserver.getTextbyNo No such text#:" + e.getErrorStatus());
-                
+                throw(e);
             } else {
                 Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
             }
@@ -1698,7 +1698,25 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public List<TextInfo> populateSeeAgain(populateSeeAgainTextsTask populateSeeAgainTextsT, int confNo, int numTexts) {
+    public TextMapping mapCreatedTextsReverse(int confNo, int firstLocalNo,
+            int noOfExistingTexts) {
+        TextMapping text = null;
+        if (s == null) {
+            return null;
+        }
+        try {
+            text = s.mapCreatedTextsReverse(confNo, firstLocalNo, noOfExistingTexts);
+        } catch (RpcFailure e) {
+            Log.d(TAG, "komserver.mapCreatedTextsReverse RpcFailure:" + e);
+            // e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "komserver.mapCreatedTextsReverse IOException:" + e);
+            // e.printStackTrace();
+        }
+        return text;
+    }
+
+    public List<TextInfo> populateSeeAgain(populateSeeAgainTextsTask populateSeeAgainTextsT, int confNo, int numTexts, boolean douser) {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
         TextMapping data = null;
 
@@ -1706,11 +1724,21 @@ public class KomServer extends Service implements RpcEventListener,
             return null;
         }
         try {
-            data = localToGlobalReverse(confNo, 0, numTexts);
+            if(douser) {
+                data = mapCreatedTextsReverse(confNo, 0, numTexts);
+            } else {
+                data = localToGlobalReverse(confNo, 0, numTexts);                
+            }
             if (populateSeeAgainTextsT != null) {
                 populateSeeAgainTextsT.changeMax(data.size());
             }
-            Log.d(TAG, "populateSeeAgain found number of texts: "+data.size());
+            if (data != null) {
+                Log.d(TAG,
+                        "populateSeeAgain found number of texts: "
+                                + data.size());
+            } else {
+                Log.d(TAG, "populateSeeAgain found null: ");
+            }
             int counter = 0;
             while (data != null && data.hasMoreElements()) {
                 final int globalNo = (Integer) data.nextElement();
@@ -1720,12 +1748,12 @@ public class KomServer extends Service implements RpcEventListener,
                 TextInfo text = getKomText(globalNo);
                 if (text != null) {
                     ret_data.add(text);
+                    Log.d(TAG, "populateSeeAgain Author: "+text.getAuthor());
+                    Log.d(TAG, "populateSeeAgain Date: "+text.getDate());
+                    Log.d(TAG, "populateSeeAgain Subject: "+text.getSubject());
                 } else {
                     Log.d(TAG, "populateSeeAgain could not find textno "+globalNo);
                 }
-                Log.d(TAG, "populateSeeAgain Author: "+text.getAuthor());
-                Log.d(TAG, "populateSeeAgain Date: "+text.getDate());
-                Log.d(TAG, "populateSeeAgain Subject: "+text.getSubject());
                 counter++;
                 if (populateSeeAgainTextsT != null) {
                     populateSeeAgainTextsT.updateProgress((int) ((counter / (float) data.size()) * 100));

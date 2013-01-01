@@ -380,7 +380,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     protected void consumeMessage(Message msg) {
         final TextInfo text;
         switch (msg.what) {
-        case MESSAGE_TYPE_PARENT_TO:
+        case Consts.MESSAGE_TYPE_PARENT_TO:
             Log.i(TAG,
                     "consumeMessage doInBackground Trying to get parent text of"
                             + msg.arg1);
@@ -395,7 +395,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
 
-        case MESSAGE_TYPE_TEXTNO:
+        case Consts.MESSAGE_TYPE_TEXTNO:
             Log.i(TAG, "consumeMessage doInBackground Trying to get text "
                     + msg.arg1);
             text = mKom.getKomText(msg.arg1);
@@ -409,7 +409,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
 
-        case MESSAGE_TYPE_NEXT:
+        case Consts.MESSAGE_TYPE_NEXT:
             Log.i(TAG, "consumeMessage Trying to get next unread text");
 
             text = mKom.getNextUnreadText();
@@ -443,7 +443,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
             
-        case MESSAGE_TYPE_MARKREAD:
+        case Consts.MESSAGE_TYPE_MARKREAD:
             if (mState.hasCurrent()) {
                 Log.d(TAG, "consumeMessage doInBackground hasCurrent");
                 if ((msg.arg2 == 0)
@@ -454,7 +454,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
             
-        case MESSAGE_TYPE_ACTIVATEUSER:
+        case Consts.MESSAGE_TYPE_ACTIVATEUSER:
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
@@ -464,7 +464,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
 
-        case MESSAGE_TYPE_SEEORIGINALPOST:
+        case Consts.MESSAGE_TYPE_SEEORIGINALPOST:
             text = mKom.getKomText(msg.arg1);
             final TextInfo parentText = mKom.getParentToText(text.getTextNo());
             if((parentText != null) && (parentText.getTextNo()>0)) {
@@ -483,7 +483,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 } else {
                     Message msgout = new Message();
                     msgout.arg1 = parentText.getTextNo();
-                    msgout.what = MESSAGE_TYPE_SEEORIGINALPOST;
+                    msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST;
                     mHandler.sendMessage(msgout);
                 }
             } else if((text != null) && (text.getTextNo()>0)) {
@@ -598,7 +598,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         msg.obj = 0;
         msg.arg1 = textNo;
         msg.arg2 = markTextAsReadint;
-        msg.what = MESSAGE_TYPE_MARKREAD;
+        msg.what = Consts.MESSAGE_TYPE_MARKREAD;
         mHandler.sendMessage(msg);
 
         msg = new Message();
@@ -829,7 +829,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
     public void activateUser() {
         Message msg = new Message();
-        msg.what = MESSAGE_TYPE_ACTIVATEUSER;
+        msg.what = Consts.MESSAGE_TYPE_ACTIVATEUSER;
         mHandler.sendMessage(msg);
     }
 
@@ -898,7 +898,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             //if (android.os.Build.VERSION.SDK_INT > 12) {
                 //new LoadMessageTask().executeOnExecutor(
                         //AsyncTask.THREAD_POOL_EXECUTOR, MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-            loadMessage(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
+            loadMessage(Consts.MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
         } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
@@ -913,7 +913,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         Log.i(TAG, "fetching text " + textNo);
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
-        loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
+        loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
     }
 
     private void moveToParentText() {
@@ -924,7 +924,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mSwitcher.setOutAnimation(mSlideLeftOut);
         //if(android.os.Build.VERSION.SDK_INT > 12) {
             //new LoadMessageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  MESSAGE_TYPE_PARENT_TO, current, 0);
-        loadMessage(MESSAGE_TYPE_PARENT_TO, current, 0);
+        loadMessage(Consts.MESSAGE_TYPE_PARENT_TO, current, 0);
     }
 
 	private void scrollPageUp() {
@@ -1283,7 +1283,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.d(TAG, "hasCurrent textno" + text.getTextNo());
         } else
             return;
-        msg.what = MESSAGE_TYPE_SEEORIGINALPOST;
+        msg.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST;
         mHandler.sendMessage(msg);
     }
 
@@ -1291,7 +1291,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         int textNo = mKom.getConferencePres();
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
-            loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
+            loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
                     Toast.LENGTH_SHORT).show();
@@ -1304,7 +1304,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         int textNo = mKom.getUserPres(userNum);
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
-            loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
+            loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
                     Toast.LENGTH_SHORT).show();
@@ -1417,7 +1417,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
 		  mSwitcher.setInAnimation(mSlideLeftIn);
 		  mSwitcher.setOutAnimation(mSlideLeftOut);
-		  loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
+		  loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
     	  }
     	});
 
@@ -2030,15 +2030,15 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     mSwitcher.setOutAnimation(mSlideLeftOut);
                     if (currentText != null) {
                         Log.d(TAG, "InitConnectionTask Getting current text");
-                        loadMessage(MESSAGE_TYPE_TEXTNO,
+                        loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
                                 currentText.getTextNo(), 0);
                     } else {
                         Log.d(TAG, "InitConnectionTask Getting next text");
-                        loadMessage(MESSAGE_TYPE_NEXT, 0, 0);
+                        loadMessage(Consts.MESSAGE_TYPE_NEXT, 0, 0);
                     }
                 } else {
                     Log.d(TAG, "InitConnectionTask Getting text from queue");
-                    loadMessage(MESSAGE_TYPE_TEXTNO,
+                    loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
                             mState.textQueue.poll(), 0);
                 }
 
@@ -2121,12 +2121,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private int re_cert_level=0; // for reconnect
     
     private static final int DIALOG_NUMBER_ENTRY = 7;
-    private static final int MESSAGE_TYPE_PARENT_TO = 1;
-    private static final int MESSAGE_TYPE_TEXTNO = 2;
-    private static final int MESSAGE_TYPE_NEXT = 3;
-    private static final int MESSAGE_TYPE_MARKREAD = 4;
-    private static final int MESSAGE_TYPE_ACTIVATEUSER = 5;
-    private static final int MESSAGE_TYPE_SEEORIGINALPOST = 6;
     
     private TextToSpeech tts=null;
     private static Handler mHandler=null;

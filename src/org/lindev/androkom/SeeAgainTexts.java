@@ -16,6 +16,7 @@ import android.util.Log;
 import android.view.View;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.RadioButton;
 
 /**
  * Dialog to set options for See Again (återse). 
@@ -29,7 +30,8 @@ public class SeeAgainTexts extends Activity implements ServiceConnection {
     private KomServer mKom;
     private EditText mConfName;
     private EditText mTexts;
-
+    private RadioButton mradioUserButton;
+    
     @Override
     public void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
@@ -37,6 +39,8 @@ public class SeeAgainTexts extends Activity implements ServiceConnection {
 
         mConfName = (EditText) findViewById(R.id.confname);
         mTexts = (EditText) findViewById(R.id.num_texts);
+        mradioUserButton = (RadioButton) findViewById(R.id.radio_user);
+        
         Button seeagainButton = (Button) findViewById(R.id.do_seeagain);
         seeagainButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) {
@@ -82,6 +86,7 @@ public class SeeAgainTexts extends Activity implements ServiceConnection {
                                 SeeAgainTextList.class);
                         intent.putExtra("conference-id", conf.getNo());
                         intent.putExtra("numTexts", numTexts);
+                        intent.putExtra("douser", mradioUserButton.isChecked());
                         if (conf.getNo() > 0) {
                             if (numTexts > 0) {
                                 startActivity(intent);

@@ -314,4 +314,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="seeagaintexts_shortcut">G</string>
     <string name="seeagaintexts_label">See Again</string>
     <string name="seeagaintextlist_label">See again text list</string>
+    <string name="radio_conf_label">Conference</string>
+    <string name="radio_user_label">User</string>
 </resources>

@@ -1,11 +1,6 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-
-import nu.dll.lyskom.KomToken;
-import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
@@ -18,6 +13,7 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.util.Log;
@@ -75,12 +71,27 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
                     numTexts = (Integer) textNo_obj;
                 }
                 Log.i(TAG, "Got passed text no: " + numTexts);
+
+                Object user_obj = extras.get("douser");
+                if (textNo_obj == null) {
+                    douser = false;
+                } else {
+                    douser = (Boolean) user_obj;
+                }
+                Log.i(TAG, "Got passed text no: " + numTexts);
             }
         }
         
 		mEmptyView = (TextView) findViewById(android.R.id.empty);
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
 		setListAdapter(mAdapter);
+
+		mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeMessage(msg);
+            }
+        };
 
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
@@ -292,52 +303,57 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
         protected void onPostExecute(final List<TextInfo> fetched) {
             this.dialog.dismiss();
 
-            mAdapter.clear();
-            mTexts = fetched;
+            updateView(fetched);
+        }
+    }
 
-            if (mTexts != null && (!mTexts.isEmpty())) {
-                for (TextInfo elem : mTexts) {
-                    String str = elem.getDate() + " " + elem.getAuthor() + "\n"
-                            + elem.getSubject();
-                    mAdapter.add(str);
-                }
 
-                mAdapter.notifyDataSetChanged();
-            } else {
-                Log.d(TAG, "populateSeeAgainTexts failed, no Texts");
-                Log.d(TAG, "mConferences is null:" + (mTexts == null));
-                if (mTexts != null) {
-                    Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
-                }
-                // String currentDateTimeString = new Date().toLocaleString();
-                // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                // + currentDateTimeString + "\n"
-                // + getString(R.string.local_time));
-                if ((mKom != null) && (mKom.isConnected())) {
-                    String currentDateTimeString = null;
-                    try {
-                        currentDateTimeString = mKom.getServerTime().toString();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        Log.d(TAG, "Populate lost connection");
-                        // e.printStackTrace();
-                        mKom.logout();
-                        mEmptyView.setText(getString(R.string.not_connected));
-                    }
-                    mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                            + currentDateTimeString + "\n"
-                            + getString(R.string.server_time));
-                } else {
+    void updateView(final List<TextInfo> fetched) {
+        mAdapter.clear();
+        mTexts = fetched;
+
+        if (mTexts != null && (!mTexts.isEmpty())) {
+            for (TextInfo elem : mTexts) {
+                String str = elem.getDate() + " " + elem.getAuthor() + "\n"
+                        + elem.getSubject();
+                mAdapter.add(str);
+            }
+
+            mAdapter.notifyDataSetChanged();
+        } else {
+            Log.d(TAG, "populateSeeAgainTexts failed, no Texts");
+            Log.d(TAG, "mConferences is null:" + (mTexts == null));
+            if (mTexts != null) {
+                Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
+            }
+            // String currentDateTimeString = new Date().toLocaleString();
+            // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+            // + currentDateTimeString + "\n"
+            // + getString(R.string.local_time));
+            if ((mKom != null) && (mKom.isConnected())) {
+                String currentDateTimeString = null;
+                try {
+                    currentDateTimeString = mKom.getServerTime().toString();
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "Populate lost connection");
+                    // e.printStackTrace();
+                    mKom.logout();
                     mEmptyView.setText(getString(R.string.not_connected));
                 }
-                if ((mKom != null) && (!mKom.isConnected())) {
-                    if (mKom.getUserId() > 0) {
-                        Log.d(TAG, "Got userid, trying to reconnect");
-                        new reconnectTask();
-                    } else {
-                        Log.d(TAG, "No userid, bailing out");
-                        finish();
-                    }
+                mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+                        + currentDateTimeString + "\n"
+                        + getString(R.string.server_time));
+            } else {
+                mEmptyView.setText(getString(R.string.not_connected));
+            }
+            if ((mKom != null) && (!mKom.isConnected())) {
+                if (mKom.getUserId() > 0) {
+                    Log.d(TAG, "Got userid, trying to reconnect");
+                    new reconnectTask();
+                } else {
+                    Log.d(TAG, "No userid, bailing out");
+                    finish();
                 }
             }
         }
@@ -351,7 +367,7 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.populateSeeAgain(populateSeeAgainTextsT, confNo, numTexts);
+						retlist = mKom.populateSeeAgain(populateSeeAgainTextsT, confNo, numTexts, douser);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -369,21 +385,11 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
 		return retlist;
 	}
 
-    public void activateUser() {
-        new ActivateUserTask().execute();
-    }
-
-    /**
-     * No need to wait for activate
-     * 
-     */
-    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
-        protected void onPreExecute() {
-            Log.d(TAG, "LoadMessageTask.onPreExecute");
-        }
-
-        // worker thread (separate from UI thread)
-        protected Void doInBackground(final KomToken... args) {
+	protected void consumeMessage(Message msg) {
+        final TextInfo text;
+        switch (msg.what) {
+            
+        case Consts.MESSAGE_TYPE_ACTIVATEUSER:
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
@@ -391,39 +397,26 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
                 //e1.printStackTrace();
                 mKom.logout();
             }
-            return null;
-        }
-    }
+            break;
 
-    private class cacheNamesTask extends
-            AsyncTask<Void, Void, Void> {
-        @Override
-        protected void onPreExecute() {
-            Log.d(TAG, "cacheNamesTask 1");
-        }
-
-        // worker thread (separate from UI thread)
-        @Override
-        protected Void doInBackground(final Void... args) {
-            try {
-                List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
-                if(pers != null) {
-                    Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
-                } else {
-                    Log.d(TAG, "cacheNamesTask num persons = null");                    
-                }
-            } catch (IOException e) {
-                Log.d(TAG, "cacheNamesTask got IOException:" + e);
-                //e.printStackTrace();
+        case Consts.MESSAGE_TYPE_POPULATE_SEEAGAIN:
+            List<TextInfo> headers = fetchTextHeaders(null);
+            if(headers != null) {
+                updateView(headers);
             }
-            return null;
-        }
-
-        protected void onPostExecute() {
-            Log.d(TAG, "cacheNamesTask 2");
+            break;
+        default:
+            Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
+            return;
         }
     }
-    
+
+    public void activateUser() {
+        Message msgout = new Message();
+        msgout.what = Consts.MESSAGE_TYPE_ACTIVATEUSER;
+        mHandler.sendMessage(msgout);
+    }
+
 	App getApp() {
 		return (App) getApplication();
 	}
@@ -468,7 +461,10 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
                 }
             }
         }
-        new populateSeeAgainTextsTask().execute();
+        //new populateSeeAgainTextsTask().execute();
+        Message msg = new Message();
+        msg.what = Consts.MESSAGE_TYPE_POPULATE_SEEAGAIN;
+        mHandler.sendMessage(msg);
     }
 
 	public void onServiceDisconnected(ComponentName name) {
@@ -550,6 +546,7 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
 
     private int confNo = 0;
     private int numTexts = 0;
+    private boolean douser = false;
     
     private List<TextInfo> mTexts;
 	private ArrayAdapter<String> mAdapter;
@@ -563,5 +560,6 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
     private int re_cert_level=0; // for reconnect
 
     TextView mEmptyView;
+    private static Handler mHandler=null;
 	KomServer mKom=null;
 }

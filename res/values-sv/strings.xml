@@ -314,4 +314,6 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="seeagaintexts_shortcut">G</string>
     <string name="seeagaintexts_label">Återse senaste</string>
     <string name="seeagaintextlist_label">Återse senaste text lista</string>
+    <string name="radio_conf_label">Möte</string>
+    <string name="radio_user_label">Användare</string>
 </resources>

@@ -14,7 +14,9 @@ import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.KeyEvent;
 import android.view.Menu;
@@ -54,6 +56,13 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
 		setListAdapter(mAdapter);
 
+		mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeMessage(msg);
+            }
+        };
+        
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
 
@@ -263,59 +272,62 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         @Override
         protected void onPostExecute(final List<TextInfo> fetched) {
             this.dialog.dismiss();
+            updateView(fetched);
+        }
+    }
 
-            mAdapter.clear();
-            mTexts = fetched;
+    void updateView(List<TextInfo> fetched) {
+        mAdapter.clear();
+        mTexts = fetched;
 
-            if (mTexts != null && (!mTexts.isEmpty())) {
-                for (TextInfo elem : mTexts) {
-                    String str = elem.getDate() + " " + elem.getAuthor() + "\n"
-                            + elem.getSubject();
-                    mAdapter.add(str);
-                }
+        if (mTexts != null && (!mTexts.isEmpty())) {
+            for (TextInfo elem : mTexts) {
+                String str = elem.getDate() + " " + elem.getAuthor() + "\n"
+                        + elem.getSubject();
+                mAdapter.add(str);
+            }
 
-                mAdapter.notifyDataSetChanged();
-            } else {
-                Log.d(TAG, "populateMarkedTexts failed, no Texts");
-                Log.d(TAG, "mConferences is null:" + (mTexts == null));
-                if (mTexts != null) {
-                    Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
-                }
-                // String currentDateTimeString = new Date().toLocaleString();
-                // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                // + currentDateTimeString + "\n"
-                // + getString(R.string.local_time));
-                if ((mKom != null) && (mKom.isConnected())) {
-                    String currentDateTimeString = null;
-                    try {
-                        currentDateTimeString = mKom.getServerTime().toString();
-                    } catch (Exception e) {
-                        // TODO Auto-generated catch block
-                        Log.d(TAG, "Populate lost connection");
-                        // e.printStackTrace();
-                        mKom.logout();
-                        mEmptyView.setText(getString(R.string.not_connected));
-                    }
-                    mEmptyView.setText(getString(R.string.no_unreads) + "\n"
-                            + currentDateTimeString + "\n"
-                            + getString(R.string.server_time));
-                } else {
+            mAdapter.notifyDataSetChanged();
+        } else {
+            Log.d(TAG, "populateMarkedTexts failed, no Texts");
+            Log.d(TAG, "mConferences is null:" + (mTexts == null));
+            if (mTexts != null) {
+                Log.d(TAG, "mConferences is empty:" + mTexts.isEmpty());
+            }
+            // String currentDateTimeString = new Date().toLocaleString();
+            // mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+            // + currentDateTimeString + "\n"
+            // + getString(R.string.local_time));
+            if ((mKom != null) && (mKom.isConnected())) {
+                String currentDateTimeString = null;
+                try {
+                    currentDateTimeString = mKom.getServerTime().toString();
+                } catch (Exception e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "Populate lost connection");
+                    // e.printStackTrace();
+                    mKom.logout();
                     mEmptyView.setText(getString(R.string.not_connected));
                 }
-                if ((mKom != null) && (!mKom.isConnected())) {
-                    if (mKom.getUserId() > 0) {
-                        Log.d(TAG, "Got userid, trying to reconnect");
-                        new reconnectTask();
-                    } else {
-                        Log.d(TAG, "No userid, bailing out");
-                        finish();
-                    }
+                mEmptyView.setText(getString(R.string.no_unreads) + "\n"
+                        + currentDateTimeString + "\n"
+                        + getString(R.string.server_time));
+            } else {
+                mEmptyView.setText(getString(R.string.not_connected));
+            }
+            if ((mKom != null) && (!mKom.isConnected())) {
+                if (mKom.getUserId() > 0) {
+                    Log.d(TAG, "Got userid, trying to reconnect");
+                    new reconnectTask();
+                } else {
+                    Log.d(TAG, "No userid, bailing out");
+                    finish();
                 }
             }
         }
     }
 
-	private List<TextInfo> fetchTextHeaders(populateMarkedTextsTask populateMarkedTextsT) {
+    private List<TextInfo> fetchTextHeaders(populateMarkedTextsTask populateMarkedTextsT) {
 		List<TextInfo> retlist = null;
 
 		try {
@@ -341,30 +353,36 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 		return retlist;
 	}
 
-    public void activateUser() {
-        new ActivateUserTask().execute();
-    }
+    protected void consumeMessage(Message msg) {
+        final TextInfo text;
+        switch (msg.what) {
 
-    /**
-     * No need to wait for activate
-     * 
-     */
-    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
-        protected void onPreExecute() {
-            Log.d(TAG, "LoadMessageTask.onPreExecute");
-        }
-
-        // worker thread (separate from UI thread)
-        protected Void doInBackground(final KomToken... args) {
+        case Consts.MESSAGE_TYPE_ACTIVATEUSER:
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:"+e1);
-                //e1.printStackTrace();
+                Log.i(TAG, "Failed to activate user exception:" + e1);
+                // e1.printStackTrace();
                 mKom.logout();
             }
-            return null;
+            break;
+
+        case Consts.MESSAGE_TYPE_POPULATE_MARKEDTEXTSLIST:
+            List<TextInfo> headers = fetchTextHeaders(null);
+            if (headers != null) {
+                updateView(headers);
+            }
+            break;
+        default:
+            Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
+            return;
         }
+    }
+
+    public void activateUser() {
+        Message msgout = new Message();
+        msgout.what = Consts.MESSAGE_TYPE_ACTIVATEUSER;
+        mHandler.sendMessage(msgout);
     }
 
 	App getApp() {
@@ -411,7 +429,10 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
                 }
             }
         }
-        new populateMarkedTextsTask().execute();
+        //new populateSeeAgainTextsTask().execute();
+        Message msg = new Message();
+        msg.what = Consts.MESSAGE_TYPE_POPULATE_MARKEDTEXTSLIST;
+        mHandler.sendMessage(msg);
     }
 
 	public void onServiceDisconnected(ComponentName name) {
@@ -503,5 +524,6 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
     private int re_cert_level=0; // for reconnect
 
     TextView mEmptyView;
-	KomServer mKom=null;
+    private static Handler mHandler=null;
+    KomServer mKom=null;
 }
