@@ -119,7 +119,7 @@ class Prefetcher {
                     return;
                 }
                 Log.i(TAG, "PrefetchNextUnread prefetching text " + textNo + " in conference " + confNo);
-                mTextCache.getText(textNo);
+                mTextCache.getCText(textNo);
             }
         }
 
@@ -326,7 +326,7 @@ class Prefetcher {
 
         // Retrieve the text
         Log.d(TAG, " getNextUnreadText get text from cache:"+tc.textNo);
-        final TextInfo text = mTextCache.getText(tc.textNo);
+        final TextInfo text = mTextCache.getDText(tc.textNo);
 
         if(text==null) {
             Log.d(TAG, "Got null text!?!?");
@@ -367,7 +367,7 @@ class Prefetcher {
                 return null;
             }
             final int textNo = args[0];
-            final TextInfo textInfo = mTextCache.getText(textNo);
+            final TextInfo textInfo = mTextCache.getDText(textNo);
             final Text text;
             try {
                 text = mKom.getTextbyNo(textNo);
@@ -404,7 +404,7 @@ class Prefetcher {
             }
 
             for (final int t : texts) {
-                mTextCache.getText(t);
+                mTextCache.getCText(t);
             }
 
             return null;

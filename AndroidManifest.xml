@@ -1,11 +1,9 @@
 <?xml version="1.0" encoding="utf-8"?>
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
       package="org.lindev.androkom"
-      android:versionName="0.8.2" android:versionCode="27" android:installLocation="auto"> <!-- bump versionCode on release -->
+      android:versionName="0.8.2++" android:versionCode="27" android:installLocation="auto"> <!-- bump versionCode on release -->
 
-  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="12"/>
-  <!--  NOTE: Currently can't handle above level 12 due to AsyncTask beeing
-        scheduled serially in level 13 and up -->
+  <uses-sdk android:minSdkVersion="7" android:targetSdkVersion="17"/>
 
   <uses-permission android:name="android.permission.INTERNET" />
   <uses-permission android:name="android.permission.WAKE_LOCK" />

@@ -10,7 +10,6 @@ import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
 import nu.dll.lyskom.AuxItem;
-import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
@@ -36,7 +35,9 @@ import android.graphics.Rect;
 import android.graphics.Typeface;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
@@ -244,6 +245,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
         mGestureDetector = new GestureDetector(new MyGestureDetector());
        
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeMessage(msg);
+            }
+        };
+
         tts = new TextToSpeech(getBaseContext(), this);
 
         if (savedInstanceState != null) {
@@ -369,221 +377,238 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     
-    /**
-     * Fetch original text asynchronously, and show a progress spinner
-     * while the user is waiting.
-     */
-    private class LoadOriginalPostTask extends AsyncTask<Integer, Void, TextInfo>
-    {
-        protected void onPreExecute() {
-            Log.d(TAG, "LoadOriginalPostTask.onPreExecute");
-            setProgressBarIndeterminateVisibility(true);
-        }
-
-        // worker thread (separate from UI thread)
-        protected TextInfo doInBackground(final Integer... args) {
-            Log.d(TAG, "LoadOriginalPostTask doInBackground BEGIN");
-            TextInfo text = null;
-            TextInfo startText = null;
-
-            if (mState.hasCurrent()) {
-                Log.d(TAG, "hasCurrent");
-                text = mState.getCurrent();
-                startText = text;
-                Log.d(TAG, "hasCurrent textno"+text.getTextNo());
-            } else
-                return null;
-            
-            int maxChainLength = 100;
-            TextInfo parentText = mKom.getParentToText(text.getTextNo());
-            while((parentText != null) && (parentText.getTextNo()>0) && (maxChainLength>0)) {
-                maxChainLength--;
-                text = parentText;
-                Log.i(TAG, "Trying to get parent text of" + text.getTextNo());
-                parentText = mKom.getParentToText(text.getTextNo());
+    protected void consumeMessage(Message msg) {
+        final TextInfo text;
+        switch (msg.what) {
+        case MESSAGE_TYPE_PARENT_TO:
+            Log.i(TAG,
+                    "consumeMessage doInBackground Trying to get parent text of"
+                            + msg.arg1);
+            text = mKom.getParentToText(msg.arg1);
+            if (text != null) {
+                Log.i(TAG, "consumeMessage Got text");
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        setMessage(text);
+                    }
+                });
             }
-            if (startText.getTextNo() != text.getTextNo()) {
-                return text;
-            }
-            return null;
-        }
+            break;
 
-        protected void onPostExecute(final TextInfo text) 
-        {
-            Log.d(TAG, "LoadOriginalPostTask.onPostExecute");
-            setProgressBarIndeterminateVisibility(false);
-            
-            if(text != null) {
-                new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, text.getTextNo(), 0);
+        case MESSAGE_TYPE_TEXTNO:
+            Log.i(TAG, "consumeMessage doInBackground Trying to get text "
+                    + msg.arg1);
+            text = mKom.getKomText(msg.arg1);
+            if (text != null) {
+                Log.i(TAG, "consumeMessage Got text");
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        setMessage(text);
+                    }
+                });
+            }
+            break;
+
+        case MESSAGE_TYPE_NEXT:
+            Log.i(TAG, "consumeMessage Trying to get next unread text");
+
+            text = mKom.getNextUnreadText();
+            if (text == null) {
+                Log.i(TAG, "consumeMessage Failed to get text");
+                int looplevel = (Integer) msg.obj;
+                looplevel++;
+                if (looplevel > 500) {
+                    // Timeout
+                    Log.d(TAG, "Could not find text");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            setProgressBarIndeterminateVisibility(false);
+                        }
+                    });
+                } else {
+                    Message msgout = new Message();
+                    msgout.arg1 = msg.arg1;
+                    msgout.arg2 = msg.arg2;
+                    msgout.obj = looplevel;
+                    msgout.what = msg.what;
+                    mHandler.sendMessageDelayed(msgout, 200);
+                }
             } else {
-                Toast.makeText(getApplicationContext(), getString(R.string.loadoriginalpost_failed), Toast.LENGTH_LONG).show();
+                Log.i(TAG, "consumeMessage Got text");
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        setMessage(text);
+                    }
+                });
             }
-        }
-    }
-    
-    /**
-     * Fetch new texts asynchronously, and show a progress spinner
-     * while the user is waiting.
-     * 
-     * @author henrik
-     */
-    private class LoadMessageTask extends AsyncTask<Integer, Void, TextInfo>
-    {
-        protected void onPreExecute() {
-            Log.d(TAG, "LoadMessageTask.onPreExecute");
-            setProgressBarIndeterminateVisibility(true);
-        }
-
-        // worker thread (separate from UI thread)
-        // args[0] = text type
-        // args[1] = text#
-        // args[2] = mark current text as read
-        protected TextInfo doInBackground(final Integer... args) {
-            Log.d(TAG, "LoadMessageTask doInBackground BEGIN");
-            TextInfo text = null;
-
+            break;
+            
+        case MESSAGE_TYPE_MARKREAD:
             if (mState.hasCurrent()) {
-                Log.d(TAG, "LoadMessageTask doInBackground hasCurrent");
-                if((args[2]==0) && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
-                    Log.d(TAG, "LoadMessageTask doInBackground getMarkTextRead");
+                Log.d(TAG, "consumeMessage doInBackground hasCurrent");
+                if ((msg.arg2 == 0)
+                        && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
+                    Log.d(TAG, "consumeMessage doInBackground getMarkTextRead");
                     mKom.markTextAsRead(mState.getCurrent().getTextNo());
                 }
             }
-
-            switch (args[0]) {
-            case MESSAGE_TYPE_PARENT_TO:
-                Log.i(TAG, "LoadMessageTask doInBackground Trying to get parent text of" + args[1]);
-                text = mKom.getParentToText(args[1]);
-                break;
-
-            case MESSAGE_TYPE_TEXTNO: 
-                Log.i(TAG, "LoadMessageTask doInBackground Trying to get text " + args[1]);
-                text = mKom.getKomText(args[1]);
-                break;
-
-            case MESSAGE_TYPE_NEXT:
-                Log.i(TAG, "LoadMessageTask doInBackground Trying to get next unread text");
-                /* runOnUiThread(new Runnable() {
-                    public void run() {
-                        int textNo = mKom.getNextUnreadTextNo();
-                        if (textNo > 0) {
-                            mSwitcher.setText(formatText(getString(R.string.loading_text)+" "+textNo));
-                        }
-                    }
-                });*/
-
-                text = mKom.getNextUnreadText();
-                if(text==null) {
-                    Log.i(TAG, "LoadMessageTask doInBackground Failed to get text");
-                } else {
-                    Log.i(TAG, "LoadMessageTask doInBackground Got text");
-                }
-                break;
-
-            default:
-                Log.d(TAG, "LoadMessageTask unknown type:" + args[0]);
-                text = null;
-            }
-
-            return text;
-        }
-
-        protected void onPostExecute(final TextInfo text) {
+            break;
+            
+        case MESSAGE_TYPE_ACTIVATEUSER:
             try {
-                Log.d(TAG, "LoadMessageTask.onPostExecute");
-                setProgressBarIndeterminateVisibility(false);
-                // int curr = -1;
-                // if (mState.hasCurrent()) {
-                // curr = mState.getCurrent().getTextNo();
-                // }
-                if (text != null && text.getTextNo() < 0) {
-                    Toast.makeText(getApplicationContext(), text.getBody(),
-                            Toast.LENGTH_SHORT).show();
-                    if (text.getTextNo() < -1) {
-                        /* error fetching text, probably lost connection */
-                        Log.d(TAG,
-                                "error fetching text, probably lost connection");
-                        mKom.logout();
-                        finish();
-                    } else {
-                        Log.d(TAG, "error fetching text, recoverable error?");
-                    }
-                } else if (text != null) {
-                    Log.d(TAG, "LoadMessageTask.onPostExecute got text");
-                    mState.currentText.push(text);
-                    mState.currentTextIndex = mState.currentText.size() - 1;
-                    // Log.i(TAG, stackAsString());
-
-                    // Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
-                    // Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
-                    // Log.d(TAG, "AUTHOR: "+text.getAuthor());
-                    // Log.d(TAG, "SUBJECT: "+text.getSubject());
-                    // Log.d(TAG, "BODY: "+text.getBody());
-                    if (text.getAllHeaders().contains("ContentType:image/")) {
-                        Log.d(TAG, "LoadMessageTask.onPostExecute image text");
-                        final Spannable spannedHeader = text
-                                .getSpannableHeaders();
-                        addLinks(spannedHeader, digits);
-
-                        TextView tview = getOtherHeadersView();
-                        tview.setText(spannedHeader);
-
-                        ImageView imgView = getOtherImgView();
-                        byte[] bilden = text.getRawBody();
-                        Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
-                                bilden.length);
-                        if (bmImg != null) {
-                            imgView.setImageBitmap(bmImg);
-                        } else {
-                            Toast.makeText(getApplicationContext(),
-                                    getString(R.string.image_decode_failed),
-                                    Toast.LENGTH_LONG).show();
-                        }
-                        setOtherImgSwitch();
-                        mSwitcher.showNext();
-                    } else {
-                        Log.d(TAG, "LoadMessageTask.onPostExecute show text");
-                        final Spannable spannedHeader = text
-                                .getSpannableHeaders();
-                        addLinks(spannedHeader, digits);
-
-                        TextView tview = getOtherHeadersView();
-                        tview.setText(spannedHeader);
-
-                        final Spannable spannedText = text.getSpannableBody();
-                        addLinks(spannedText, digits);
-
-                        tview = getOtherTextView();
-                        tview.setText(spannedText);
-                        resetOtherScroll();
-                        setOtherTextSwitch();
-                        mSwitcher.showNext();
-                    }
-                    if (mState.textListIndex >= 0) {
-                        setTitle("(återser)");
-                    } else {
-                        setTitle(mKom.getConferenceName());
-                    }
-               } else {
-                    Log.d(TAG, "error fetching text, probably lost connection");
-                    Log.d(TAG, "LoadMessageTask onPostExecute text=null");
-                    mKom.logout();
-                    finish();
-                }
-            } catch (Exception e) {
-                Log.d(TAG, "LoadMessageTask PostExecute catched exception:" + e);
-                e.printStackTrace();
-                Log.d(TAG, "LoadMessageTask PostExecute bailing out");
-                finish();
+                mKom.activateUser();
+            } catch (Exception e1) {
+                Log.i(TAG, "Failed to activate user exception:"+e1);
+                //e1.printStackTrace();
+                mKom.logout();
             }
-            // if (curr > 0) {
-            // if (ConferencePrefs.getMarkTextRead(getBaseContext()))
-            // {
-            // mKom.markTextAsRead(curr);
-            // }
-            // }
+            break;
+
+        case MESSAGE_TYPE_SEEORIGINALPOST:
+            text = mKom.getKomText(msg.arg1);
+            final TextInfo parentText = mKom.getParentToText(text.getTextNo());
+            if((parentText != null) && (parentText.getTextNo()>0)) {
+                Log.i(TAG,
+                        "Trying to get parent text of" + parentText.getTextNo());
+                int looplevel = (Integer) msg.obj;
+                looplevel++;
+                if (looplevel > 100) {
+                    // Timeout
+                    Log.d(TAG, "Stuck in loop or long thread");
+                    runOnUiThread(new Runnable() {
+                        public void run() {
+                            setMessage(parentText);
+                        }
+                    });
+                } else {
+                    Message msgout = new Message();
+                    msgout.arg1 = parentText.getTextNo();
+                    msgout.what = MESSAGE_TYPE_SEEORIGINALPOST;
+                    mHandler.sendMessage(msgout);
+                }
+            } else if((text != null) && (text.getTextNo()>0)) {
+                Log.i(TAG, "consumeMessage Got text");
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        setMessage(text);
+                    }
+                });
+            }
+            break;
+        default:
+            Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
+            return;
         }
     }
+
+    void setMessage(TextInfo text) {
+        try {
+            Log.d(TAG, "setMessage");
+            setProgressBarIndeterminateVisibility(false);
+            // int curr = -1;
+            // if (mState.hasCurrent()) {
+            // curr = mState.getCurrent().getTextNo();
+            // }
+            if (text != null && text.getTextNo() < 0) {
+                Toast.makeText(getApplicationContext(), text.getBody(),
+                        Toast.LENGTH_SHORT).show();
+                if (text.getTextNo() < -1) {
+                    /* error fetching text, probably lost connection */
+                    Log.d(TAG,
+                            "setMessage error fetching text, probably lost connection");
+                    mKom.logout();
+                    finish();
+                } else {
+                    Log.d(TAG, "setMessage error fetching text, recoverable error?");
+                }
+            } else if (text != null) {
+                Log.d(TAG, "setMessage got text");
+                mState.currentText.push(text);
+                mState.currentTextIndex = mState.currentText.size() - 1;
+                // Log.i(TAG, stackAsString());
+
+                // Log.d(TAG, "VHEADERS: "+text.getVisibleHeaders());
+                // Log.d(TAG, "AHEADERS: "+text.getAllHeaders());
+                // Log.d(TAG, "AUTHOR: "+text.getAuthor());
+                // Log.d(TAG, "SUBJECT: "+text.getSubject());
+                // Log.d(TAG, "BODY: "+text.getBody());
+                if (text.getAllHeaders().contains("ContentType:image/")) {
+                    Log.d(TAG, "setMessage image text");
+                    final Spannable spannedHeader = text
+                            .getSpannableHeaders();
+                    addLinks(spannedHeader, digits);
+
+                    TextView tview = getOtherHeadersView();
+                    tview.setText(spannedHeader);
+
+                    ImageView imgView = getOtherImgView();
+                    byte[] bilden = text.getRawBody();
+                    Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                            bilden.length);
+                    if (bmImg != null) {
+                        imgView.setImageBitmap(bmImg);
+                    } else {
+                        Toast.makeText(getApplicationContext(),
+                                getString(R.string.image_decode_failed),
+                                Toast.LENGTH_LONG).show();
+                    }
+                    setOtherImgSwitch();
+                    mSwitcher.showNext();
+                } else {
+                    Log.d(TAG, "setMessage show text");
+                    final Spannable spannedHeader = text
+                            .getSpannableHeaders();
+                    addLinks(spannedHeader, digits);
+
+                    TextView tview = getOtherHeadersView();
+                    tview.setText(spannedHeader);
+
+                    final Spannable spannedText = text.getSpannableBody();
+                    addLinks(spannedText, digits);
+
+                    tview = getOtherTextView();
+                    tview.setText(spannedText);
+                    resetOtherScroll();
+                    setOtherTextSwitch();
+                    mSwitcher.showNext();
+                }
+                if (mState.textListIndex >= 0) {
+                    setTitle("(återser)");
+                } else {
+                    setTitle(mKom.getConferenceName());
+                }
+           } else {
+                Log.d(TAG, "setMessage error fetching text, probably lost connection");
+                Log.d(TAG, "setMessage text=null");
+                mKom.logout();
+                finish();
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "setMessage PostExecute catched exception:" + e);
+            e.printStackTrace();
+            Log.d(TAG, "setMessage PostExecute bailing out");
+            finish();
+        }
+    }
+    
+    void loadMessage(int msgType, int textNo, int markTextAsReadint) {
+        setProgressBarIndeterminateVisibility(true);
+
+        Message msg = new Message();
+        msg.obj = 0;
+        msg.arg1 = textNo;
+        msg.arg2 = markTextAsReadint;
+        msg.what = MESSAGE_TYPE_MARKREAD;
+        mHandler.sendMessage(msg);
+
+        msg = new Message();
+        msg.obj = 0;
+        msg.arg1 = textNo;
+        msg.arg2 = markTextAsReadint;
+        msg.what = msgType;
+        mHandler.sendMessage(msg);
+    }
+
 
     /**
      * Class for handling internal text number links. 
@@ -803,29 +828,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     public void activateUser() {
-        new ActivateUserTask().execute();
-    }
-
-    /**
-     * No need to wait for activate
-     * 
-     */
-    private class ActivateUserTask extends AsyncTask<KomToken, Void, Void> {
-        protected void onPreExecute() {
-            Log.d(TAG, "ActivateUserTask.onPreExecute");
-        }
-
-        // worker thread (separate from UI thread)
-        protected Void doInBackground(final KomToken... args) {
-            try {
-                mKom.activateUser();
-            } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:"+e1);
-                //e1.printStackTrace();
-                mKom.logout();
-            }
-            return null;
-        }
+        Message msg = new Message();
+        msg.what = MESSAGE_TYPE_ACTIVATEUSER;
+        mHandler.sendMessage(msg);
     }
 
     private void moveToNextText(boolean markTextAsRead) {
@@ -893,7 +898,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             //if (android.os.Build.VERSION.SDK_INT > 12) {
                 //new LoadMessageTask().executeOnExecutor(
                         //AsyncTask.THREAD_POOL_EXECUTOR, MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-            new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
+            loadMessage(MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
         } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
@@ -908,7 +913,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         Log.i(TAG, "fetching text " + textNo);
         mSwitcher.setInAnimation(mSlideLeftIn);
         mSwitcher.setOutAnimation(mSlideLeftOut);
-        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
+        loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
     }
 
     private void moveToParentText() {
@@ -919,7 +924,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mSwitcher.setOutAnimation(mSlideLeftOut);
         //if(android.os.Build.VERSION.SDK_INT > 12) {
             //new LoadMessageTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR,  MESSAGE_TYPE_PARENT_TO, current, 0);
-        new LoadMessageTask().execute(MESSAGE_TYPE_PARENT_TO, current, 0);
+        loadMessage(MESSAGE_TYPE_PARENT_TO, current, 0);
     }
 
 	private void scrollPageUp() {
@@ -1270,14 +1275,23 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     protected void seeoriginalpost() {
-        new LoadOriginalPostTask().execute();
+        Message msg = new Message();
+        if (mState.hasCurrent()) {
+            Log.d(TAG, "hasCurrent");
+            TextInfo text = mState.getCurrent();
+            msg.arg1 = text.getTextNo();
+            Log.d(TAG, "hasCurrent textno" + text.getTextNo());
+        } else
+            return;
+        msg.what = MESSAGE_TYPE_SEEORIGINALPOST;
+        mHandler.sendMessage(msg);
     }
 
     protected void seePresentationConf() {
         int textNo = mKom.getConferencePres();
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
+            loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
                     Toast.LENGTH_SHORT).show();
@@ -1290,7 +1304,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         int textNo = mKom.getUserPres(userNum);
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
-            new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
+            loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
         } else {
             Toast.makeText(getApplicationContext(), getString(R.string.no_presentation_error),
                     Toast.LENGTH_SHORT).show();
@@ -1403,7 +1417,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
 		  mSwitcher.setInAnimation(mSlideLeftIn);
 		  mSwitcher.setOutAnimation(mSlideLeftOut);
-		  new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO, textNo, 0);
+		  loadMessage(MESSAGE_TYPE_TEXTNO, textNo, 0);
     	  }
     	});
 
@@ -2016,15 +2030,15 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     mSwitcher.setOutAnimation(mSlideLeftOut);
                     if (currentText != null) {
                         Log.d(TAG, "InitConnectionTask Getting current text");
-                        new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                        loadMessage(MESSAGE_TYPE_TEXTNO,
                                 currentText.getTextNo(), 0);
                     } else {
                         Log.d(TAG, "InitConnectionTask Getting next text");
-                        new LoadMessageTask().execute(MESSAGE_TYPE_NEXT, 0, 0);
+                        loadMessage(MESSAGE_TYPE_NEXT, 0, 0);
                     }
                 } else {
                     Log.d(TAG, "InitConnectionTask Getting text from queue");
-                    new LoadMessageTask().execute(MESSAGE_TYPE_TEXTNO,
+                    loadMessage(MESSAGE_TYPE_TEXTNO,
                             mState.textQueue.poll(), 0);
                 }
 
@@ -2110,6 +2124,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private static final int MESSAGE_TYPE_PARENT_TO = 1;
     private static final int MESSAGE_TYPE_TEXTNO = 2;
     private static final int MESSAGE_TYPE_NEXT = 3;
+    private static final int MESSAGE_TYPE_MARKREAD = 4;
+    private static final int MESSAGE_TYPE_ACTIVATEUSER = 5;
+    private static final int MESSAGE_TYPE_SEEORIGINALPOST = 6;
     
     private TextToSpeech tts=null;
+    private Handler mHandler=null;
 }

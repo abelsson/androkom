@@ -22,7 +22,7 @@ public class TextFetcher {
     }
 
     public TextInfo getKomText(final int textNo) {
-        final TextInfo text = mTextCache.getText(textNo);
+        final TextInfo text = mTextCache.getDText(textNo);
         if(text!=null) {
             mPrefetcher.doCacheRelevant(text.getTextNo());
         }
@@ -57,7 +57,7 @@ public class TextFetcher {
             final int commented[] = text.getCommented();
             if (commented.length > 0) {
                 Log.d(TAG, "number of parents:" + commented.length);
-                final TextInfo textInfo = mTextCache.getText(commented[0]);
+                final TextInfo textInfo = mTextCache.getDText(commented[0]);
                 if (textInfo != null) {
                     mPrefetcher.doCacheRelevant(textInfo.getTextNo());
                 }

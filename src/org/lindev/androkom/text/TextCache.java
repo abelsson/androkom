@@ -429,7 +429,7 @@ class TextCache {
     *
     * @param textNo global text number to fetch
     */
-    TextInfo getText(final int textNo) {
+    TextInfo getDText(final int textNo) {
         if(!mKom.isConnected()) {
             Log.d(TAG, " getText not connected");
             return null;
@@ -446,6 +446,7 @@ class TextCache {
 
         final Thread currentThread = Thread.currentThread();
         int MaxWaits = 140;
+        
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
             synchronized(mTextCache) {
                 Log.d(TAG, "getText waiting for mTextCache:"+textNo+" loop "+MaxWaits);
@@ -475,6 +476,30 @@ class TextCache {
         Log.d(TAG, "getText returning");
         return text;
     }
+
+    /**
+    * Fetch a text for cache
+    *
+    * @param textNo global text number to fetch
+    */
+    void getCText(final int textNo) {
+        if(!mKom.isConnected()) {
+            Log.d(TAG, " getCText not connected");
+            return;
+        }
+        Log.d(TAG, "getCText:"+textNo);
+        TextInfo text = mTextCache.get(textNo);
+        if (text == null) {
+            Log.d(TAG, "getCText doGetText:"+textNo);
+            doGetText(textNo);
+        } else {
+            Log.d(TAG, "getCText gotText, returning");
+            return;
+        }
+
+        Log.d(TAG, "getCText returning");
+    }
+
 
     void setShowHeadersLevel(final int mShowHeadersLevel) {
         this.mShowHeadersLevel = mShowHeadersLevel;
