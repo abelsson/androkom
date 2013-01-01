@@ -30,7 +30,7 @@ class Prefetcher {
     private static final String TAG = "Androkom Prefetcher";
 
     private static final Pattern TEXT_LINK_FINDER = Pattern.compile("\\d{5,}");
-    private static final int MAX_PREFETCH = 50;
+    private static final int MAX_PREFETCH = (int) (Runtime.getRuntime().maxMemory()/(1024*1024))-10;
     private static final int ASK_AMOUNT = 2 * MAX_PREFETCH;
     private static boolean ENABLE_CACHE_RELEVANT = false;
 
@@ -43,6 +43,7 @@ class Prefetcher {
     private PrefetchNextUnread mPrefetchRunner = null;
 
     Prefetcher(final KomServer kom, final TextCache textCache) {
+        Log.d(TAG, "MAX_PREFETCH="+MAX_PREFETCH);
         this.mKom = kom;
         this.mTextCache = textCache;
         this.mUnreadQueue = new ArrayBlockingQueue<TextConf>(MAX_PREFETCH);

@@ -14,6 +14,7 @@ import android.content.SharedPreferences;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -78,6 +79,18 @@ public class Login extends Activity implements ServiceConnection
             public void onClick(View view) { doLogin(); }
         });        
         getApp().doBindService(this);
+        
+        Debug.MemoryInfo memoryInfo = new Debug.MemoryInfo();
+        Debug.getMemoryInfo(memoryInfo);
+
+        String memMessage = String.format(
+            "Memory: Pss=%.2f MB, Private=%.2f MB, Shared=%.2f MB",
+            memoryInfo.getTotalPss() / 1024.0,
+            memoryInfo.getTotalPrivateDirty() / 1024.0,
+            memoryInfo.getTotalSharedDirty() / 1024.0);
+        Log.d(TAG, memMessage);
+        double max = Runtime.getRuntime().maxMemory();
+        Log.d(TAG, "max memory:"+max);
     }
     
     @Override
@@ -458,5 +471,5 @@ public class Login extends Activity implements ServiceConnection
     private EditText mPassword;	
 	private KomServer mKom = null;
 	private Uri share_uri=null;
-	private Handler mHandler=null;
+	private static Handler mHandler=null;
 }

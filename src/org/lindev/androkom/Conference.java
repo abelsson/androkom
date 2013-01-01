@@ -2129,5 +2129,5 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     private static final int MESSAGE_TYPE_SEEORIGINALPOST = 6;
     
     private TextToSpeech tts=null;
-    private Handler mHandler=null;
+    private static Handler mHandler=null;
 }
