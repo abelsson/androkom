@@ -315,7 +315,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
             runOnUiThread(new Runnable() {
                 public void run() {
                     progressBar = new ProgressDialog(context);
-                    progressBar.setMessage("Loading texts");
+                    progressBar.setMessage(getString(R.string.loading));
                     progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
                     progressBar.show();
                 }

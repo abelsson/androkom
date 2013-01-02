@@ -454,7 +454,7 @@ class TextCache {
         final Thread currentThread = Thread.currentThread();
         int MaxWaits = 140;
         
-        while (!currentThread.isInterrupted() && text == null && MaxWaits>0) {
+        while (!currentThread.isInterrupted() && text == null && MaxWaits>0 && (textNo>0)) {
             synchronized(mTextCache) {
                 Log.d(TAG, "getText waiting for mTextCache:"+textNo+" loop "+MaxWaits);
                 if(!mKom.isConnected()) {

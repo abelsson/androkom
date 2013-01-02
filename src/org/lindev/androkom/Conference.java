@@ -377,70 +377,103 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     
-    protected void consumeMessage(Message msg) {
+    protected void consumeMessage(final Message msg) {
+        Thread backgroundThread;
+        final int textNo;
         final TextInfo text;
         switch (msg.what) {
         case Consts.MESSAGE_TYPE_PARENT_TO:
+            textNo = msg.arg1;
             Log.i(TAG,
                     "consumeMessage doInBackground Trying to get parent text of"
-                            + msg.arg1);
-            text = mKom.getParentToText(msg.arg1);
-            if (text != null) {
-                Log.i(TAG, "consumeMessage Got text");
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        setMessage(text);
+                            + textNo);
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    final TextInfo text;
+                    text = mKom.getParentToText(textNo);
+                    if ((text != null)&&(text.getTextNo()>0)) {
+                        Log.i(TAG, "consumeMessage Got text");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                setMessage(text);
+                            }
+                        });
+                    } else {
+                        Log.d(TAG, "consumeMessage failed to get parent of "
+                                + textNo);
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                Toast.makeText(getApplicationContext(),
+                                        getString(R.string.error_no_parent),
+                                        Toast.LENGTH_SHORT).show();
+                                setProgressBarIndeterminateVisibility(false);
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
+            backgroundThread.start();
             break;
 
         case Consts.MESSAGE_TYPE_TEXTNO:
+            textNo = msg.arg1;
             Log.i(TAG, "consumeMessage doInBackground Trying to get text "
-                    + msg.arg1);
-            text = mKom.getKomText(msg.arg1);
-            if (text != null) {
-                Log.i(TAG, "consumeMessage Got text");
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        setMessage(text);
+                    + textNo);
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    final TextInfo text;
+                    text = mKom.getKomText(textNo);
+                    if (text != null) {
+                        Log.i(TAG, "consumeMessage Got text");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                setMessage(text);
+                            }
+                        });
+                    } else {
+                        Log.d(TAG, "consumeMessage failed to get text "+textNo);
                     }
-                });
-            }
+                }
+            });
+            backgroundThread.start();
             break;
 
         case Consts.MESSAGE_TYPE_NEXT:
             Log.i(TAG, "consumeMessage Trying to get next unread text");
-
-            text = mKom.getNextUnreadText();
-            if (text == null) {
-                Log.i(TAG, "consumeMessage Failed to get text");
-                int looplevel = (Integer) msg.obj;
-                looplevel++;
-                if (looplevel > 500) {
-                    // Timeout
-                    Log.d(TAG, "Could not find text");
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            setProgressBarIndeterminateVisibility(false);
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    final TextInfo text;
+                    text = mKom.getNextUnreadText();
+                    if (text == null) {
+                        int looplevel = (Integer) msg.obj;
+                        Log.d(TAG, "consumeMessage Failed to get text, loop " + looplevel);
+                        if (looplevel > 1500) {
+                            // Timeout
+                            Log.d(TAG, "consumeMessage Could not find text");
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    setProgressBarIndeterminateVisibility(false);
+                                }
+                            });
+                        } else {
+                            Message msgout = new Message();
+                            msgout.arg1 = msg.arg1;
+                            msgout.arg2 = msg.arg2;
+                            msgout.obj = looplevel++;
+                            msgout.what = msg.what;
+                            mHandler.sendMessageDelayed(msgout, 200);
                         }
-                    });
-                } else {
-                    Message msgout = new Message();
-                    msgout.arg1 = msg.arg1;
-                    msgout.arg2 = msg.arg2;
-                    msgout.obj = looplevel;
-                    msgout.what = msg.what;
-                    mHandler.sendMessageDelayed(msgout, 200);
-                }
-            } else {
-                Log.i(TAG, "consumeMessage Got text");
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        setMessage(text);
+                    } else {
+                        Log.i(TAG, "consumeMessage Got text");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                setMessage(text);
+                            }
+                        });
                     }
-                });
-            }
+                }
+            });
+            backgroundThread.start();
             break;
             
         case Consts.MESSAGE_TYPE_MARKREAD:
@@ -464,36 +497,71 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             }
             break;
 
-        case Consts.MESSAGE_TYPE_SEEORIGINALPOST:
-            text = mKom.getKomText(msg.arg1);
-            final TextInfo parentText = mKom.getParentToText(text.getTextNo());
-            if((parentText != null) && (parentText.getTextNo()>0)) {
-                Log.i(TAG,
-                        "Trying to get parent text of" + parentText.getTextNo());
-                int looplevel = (Integer) msg.obj;
-                looplevel++;
-                if (looplevel > 100) {
-                    // Timeout
-                    Log.d(TAG, "Stuck in loop or long thread");
-                    runOnUiThread(new Runnable() {
-                        public void run() {
-                            setMessage(parentText);
+        case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
+            textNo = (Integer) msg.arg1;
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    if (textNo > 0) {
+                        Log.i(TAG, "OP1: Trying to get parent text of " + textNo);
+
+                        TextInfo texto = mKom.getKomText(textNo);
+                        if(texto != null) {
+                        Message msgout = new Message();
+                        msgout.obj = texto;
+                        msgout.arg1 = textNo;
+                        msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST2;
+                        mHandler.sendMessage(msgout);
+                        } else {
+                            Log.d(TAG, "OP1: No text?");
                         }
-                    });
-                } else {
-                    Message msgout = new Message();
-                    msgout.arg1 = parentText.getTextNo();
-                    msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST;
-                    mHandler.sendMessage(msgout);
-                }
-            } else if((text != null) && (text.getTextNo()>0)) {
-                Log.i(TAG, "consumeMessage Got text");
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        setMessage(text);
+                    } else {
+                        Log.d(TAG, "OP1: FAIL");
                     }
-                });
-            }
+                }
+            });
+            backgroundThread.start();
+            break;
+        case Consts.MESSAGE_TYPE_SEEORIGINALPOST2:
+            text = (TextInfo) msg.obj;
+            textNo = (Integer) msg.arg1;
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    if ((text != null) && (text.getTextNo() > 0)) {
+                        final TextInfo parentText = mKom.getParentToText(text
+                                .getTextNo());
+                        if ((parentText != null)
+                                && (parentText.getTextNo() > 0)) {
+                            Log.i(TAG, "Trying to get parent text of"
+                                    + parentText.getTextNo());
+                            int looplevel = (Integer) msg.arg2;
+                            looplevel++;
+                            if (looplevel > 100) {
+                                // Timeout
+                                Log.d(TAG, "Stuck in loop or long thread");
+                                runOnUiThread(new Runnable() {
+                                    public void run() {
+                                        setMessage(parentText);
+                                    }
+                                });
+                            } else {
+                                Message msgout = new Message();
+                                msgout.arg1 = text.getTextNo();
+                                msgout.obj = parentText;
+                                msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST2;
+                                mHandler.sendMessage(msgout);
+                            }
+                        } else if ((text != null) && (text.getTextNo() > 0)) {
+                            Log.i(TAG, "consumeMessage Got text");
+                            runOnUiThread(new Runnable() {
+                                public void run() {
+                                    setMessage(text);
+                                }
+                            });
+                        }
+                    }
+                }
+            });
+            backgroundThread.start();
             break;
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
@@ -504,7 +572,6 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     void setMessage(TextInfo text) {
         try {
             Log.d(TAG, "setMessage");
-            setProgressBarIndeterminateVisibility(false);
             // int curr = -1;
             // if (mState.hasCurrent()) {
             // curr = mState.getCurrent().getTextNo();
@@ -589,6 +656,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.d(TAG, "setMessage PostExecute bailing out");
             finish();
         }
+        setProgressBarIndeterminateVisibility(false);
     }
     
     void loadMessage(int msgType, int textNo, int markTextAsReadint) {
@@ -1279,11 +1347,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         if (mState.hasCurrent()) {
             Log.d(TAG, "hasCurrent");
             TextInfo text = mState.getCurrent();
-            msg.arg1 = text.getTextNo();
-            Log.d(TAG, "hasCurrent textno" + text.getTextNo());
+            int textNo = text.getTextNo();
+            Log.d(TAG, "hasCurrent textno " + textNo);
+            msg.arg1 = textNo;
+            Log.d(TAG, "hasCurrent textno " + msg.arg1);
         } else
             return;
-        msg.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST;
+        msg.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST1;
         mHandler.sendMessage(msg);
     }
 
