@@ -1,7 +1,6 @@
 package org.lindev.androkom;
 
 import java.util.List;
-import nu.dll.lyskom.KomToken;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
@@ -10,6 +9,7 @@ import org.lindev.androkom.gui.TextCreator;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
@@ -67,6 +67,8 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 		lv.setTextFilterEnabled(true);
 
 		getApp().doBindService(this);
+
+		context = this;
 	}
 
 	/**
@@ -217,64 +219,6 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 		startActivity(intent);
 	}
 
-    public class populateMarkedTextsTask extends
-            AsyncTask<Void, Integer, List<TextInfo>> {
-        private final ProgressDialog dialog = new ProgressDialog(
-                MarkedTextList.this);
-
-        @Override
-        protected void onPreExecute() {
-            this.dialog.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
-            this.dialog.setCancelable(true);
-            this.dialog.setIndeterminate(false);
-            this.dialog.setMessage(getString(R.string.loading));
-            this.dialog.setMax(1);
-            this.dialog.show();
-        }
-
-        // worker thread (separate from UI thread)
-        @Override
-        protected List<TextInfo> doInBackground(final Void... args) {
-            int max_sleep = 60;
-            while (mKom == null) {
-                max_sleep--;
-                if (max_sleep < 1) {
-                    Log.d(TAG, "PopulateMarkedTextsTask timeout");
-                    return null;
-                }
-                Log.d(TAG, "PopulateMarkedTextsTask sleeps");
-                try {
-                    Thread.sleep(1000);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, "PopulateMarkedTextsTask sleep interrupted");
-                    // e.printStackTrace();
-                }
-            }
-            // if((mKom!=null) && (!mKom.isConnected())) {
-            // mKom.reconnect();
-            // }
-            return fetchTextHeaders(this);
-        }
-
-        void changeMax(int val) {
-            this.dialog.setMax(val);
-        }
-
-        public void updateProgress(int percent) {
-            publishProgress(percent);
-        }
-
-        protected void onProgressUpdate(Integer... i) {
-            this.dialog.setProgress(i[0]);
-        }
-
-        @Override
-        protected void onPostExecute(final List<TextInfo> fetched) {
-            this.dialog.dismiss();
-            updateView(fetched);
-        }
-    }
 
     void updateView(List<TextInfo> fetched) {
         mAdapter.clear();
@@ -327,7 +271,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         }
     }
 
-    private List<TextInfo> fetchTextHeaders(populateMarkedTextsTask populateMarkedTextsT) {
+    private List<TextInfo> fetchTextHeaders() {
 		List<TextInfo> retlist = null;
 
 		try {
@@ -335,7 +279,7 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.getMarkedTexts(populateMarkedTextsT);
+						retlist = mKom.getMarkedTexts(this);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -368,16 +312,52 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
             break;
 
         case Consts.MESSAGE_TYPE_POPULATE_MARKEDTEXTSLIST:
-            List<TextInfo> headers = fetchTextHeaders(null);
-            if (headers != null) {
-                updateView(headers);
-            }
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    progressBar = new ProgressDialog(context);
+                    progressBar.setMessage("Loading texts");
+                    progressBar.setProgressStyle(ProgressDialog.STYLE_HORIZONTAL);
+                    progressBar.show();
+                }
+            });
+
+            Thread backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    final List<TextInfo> headers = fetchTextHeaders();
+                    if(headers != null) {
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                updateView(headers);
+                                progressBar.dismiss();
+                            }
+                        });
+                    }
+                }
+            });
+            backgroundThread.start();
             break;
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
             return;
         }
     }
+
+    public void setPBMax(final int size) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                progressBar.setMax(size);
+            }
+        });
+    }
+
+    public void setPBprogress(final int size) {
+        runOnUiThread(new Runnable() {
+            public void run() {
+                progressBar.setProgress(size);
+            }
+        });
+    }
+
 
     public void activateUser() {
         Message msgout = new Message();
@@ -512,6 +492,9 @@ public class MarkedTextList extends ListActivity implements ServiceConnection {
         }        
     }
 
+    Context context=null;
+    ProgressDialog progressBar;
+    
     private List<TextInfo> mTexts;
 	private ArrayAdapter<String> mAdapter;
 	private int mConfNo;

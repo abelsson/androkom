@@ -450,7 +450,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         @Override
         protected Void doInBackground(final Void... args) {
             try {
-                List<ConferenceInfo> pers = mKom.fetchPersons(null, 1);
+                List<ConferenceInfo> pers = mKom.fetchPersons(1);
                 if(pers != null) {
                     Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
                 } else {

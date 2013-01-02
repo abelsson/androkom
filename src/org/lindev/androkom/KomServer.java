@@ -31,15 +31,13 @@ import nu.dll.lyskom.UConference;
 import nu.dll.lyskom.UserArea;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
-import org.lindev.androkom.MarkedTextList.populateMarkedTextsTask;
-import org.lindev.androkom.SeeAgainTextList.populateSeeAgainTextsTask;
-import org.lindev.androkom.WhoIsOn.populatePersonsTask;
 import org.lindev.androkom.im.IMLogger;
 import org.lindev.androkom.im.IMNotification;
 import org.lindev.androkom.text.TextFetcher;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
+import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -505,11 +503,9 @@ public class KomServer extends Service implements RpcEventListener,
     /**
      * Fetch a list of persons online
      * 
-     * @param populatePersonsTask
      * @throws IOException 
      */
-    public List<ConferenceInfo> fetchPersons(
-            populatePersonsTask populatePersonsT, int who_type) throws IOException {
+    public List<ConferenceInfo> fetchPersons(int who_type) throws IOException {
         if (s == null) {
             return null;
         }
@@ -524,9 +520,6 @@ public class KomServer extends Service implements RpcEventListener,
         try {
             DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false,
                     30 * 60);
-            if (populatePersonsT != null) {
-                populatePersonsT.changeMax(persons.length);
-            }
 
             for (int i = 0; i < persons.length; i++) {
                 int persNo = persons[i].getPerson();
@@ -553,10 +546,6 @@ public class KomServer extends Service implements RpcEventListener,
                     info.sessionNo = persons[i].session;
 
                     arr.add(info);
-                }
-                if (populatePersonsT != null) {
-                    populatePersonsT
-                            .updateProgress((int) ((i / (float) persons.length) * 100));
                 }
             }
         } catch (Exception e) {
@@ -1716,9 +1705,9 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public List<TextInfo> populateSeeAgain(populateSeeAgainTextsTask populateSeeAgainTextsT, int confNo, int numTexts, boolean douser) {
+    public List<TextInfo> populateSeeAgain(final SeeAgainTextList seeAgainTextList, int confNo, int numTexts, boolean douser) {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
-        TextMapping data = null;
+        final TextMapping data;
 
         if (s == null) {
             return null;
@@ -1729,13 +1718,11 @@ public class KomServer extends Service implements RpcEventListener,
             } else {
                 data = localToGlobalReverse(confNo, 0, numTexts);                
             }
-            if (populateSeeAgainTextsT != null) {
-                populateSeeAgainTextsT.changeMax(data.size());
-            }
             if (data != null) {
                 Log.d(TAG,
                         "populateSeeAgain found number of texts: "
                                 + data.size());
+                        seeAgainTextList.setPBMax(data.size());
             } else {
                 Log.d(TAG, "populateSeeAgain found null: ");
             }
@@ -1755,9 +1742,7 @@ public class KomServer extends Service implements RpcEventListener,
                     Log.d(TAG, "populateSeeAgain could not find textno "+globalNo);
                 }
                 counter++;
-                if (populateSeeAgainTextsT != null) {
-                    populateSeeAgainTextsT.updateProgress((int) ((counter / (float) data.size()) * 100));
-                }
+                seeAgainTextList.setPBprogress(counter);
             }
         } catch (RpcFailure e) {
             Log.d(TAG, "populateSeeAgain " + e);
@@ -1837,7 +1822,7 @@ public class KomServer extends Service implements RpcEventListener,
         return ret_data;
     }
 
-    public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(populateMarkedTextsTask populateMarkedTextsT) {
+    public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(MarkedTextList markedTextList) {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
         Mark[] data = null;
 
@@ -1846,8 +1831,13 @@ public class KomServer extends Service implements RpcEventListener,
         }
         try {
             data = s.getMarks();
-            if (populateMarkedTextsT != null) {
-                populateMarkedTextsT.changeMax(data.length);
+            if (data != null) {
+                Log.d(TAG,
+                        "populateSeeAgain found number of texts: "
+                                + data.length);
+                markedTextList.setPBMax(data.length);
+            } else {
+                Log.d(TAG, "populateSeeAgain found null: ");
             }
             int counter = 0;
             for(Mark i:data) {
@@ -1863,9 +1853,7 @@ public class KomServer extends Service implements RpcEventListener,
                 Log.d(TAG, "getMarkedTexts Date: "+text.getDate());
                 Log.d(TAG, "getMarkedTexts Subject: "+text.getSubject());
                 counter++;
-                if (populateMarkedTextsT != null) {
-                    populateMarkedTextsT.updateProgress((int) ((counter / (float) data.length) * 100));
-                }
+                markedTextList.setPBprogress(counter);
             }
         } catch (RpcFailure e) {
             Log.d(TAG, "getMarkedTexts " + e);
