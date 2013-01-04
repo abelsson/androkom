@@ -445,8 +445,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                     final TextInfo text;
                     text = mKom.getNextUnreadText();
                     if (text == null) {
-                        int looplevel = (Integer) msg.obj;
-                        Log.d(TAG, "consumeMessage Failed to get text, loop " + looplevel);
+                        int looplevel = 0;
+                        if (msg.obj != null) {
+                            looplevel = (Integer) msg.obj;
+                        }
+                        Log.d(TAG, "consumeMessage Failed to get text, loop "
+                                + looplevel);
                         if (looplevel > 1500) {
                             // Timeout
                             Log.d(TAG, "consumeMessage Could not find text");
@@ -1343,6 +1347,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     }
 
     protected void seeoriginalpost() {
+        setProgressBarIndeterminateVisibility(true);
+        
         Message msg = new Message();
         if (mState.hasCurrent()) {
             Log.d(TAG, "hasCurrent");
