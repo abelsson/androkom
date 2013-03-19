@@ -212,7 +212,12 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
             return true;
             
         case R.id.menu_logout_id:
-            mKom.logout();
+            try {
+                mKom.logout();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             Log.i(TAG, "User opted back to login");
             intent = new Intent(this, Login.class);
             startActivity(intent);
@@ -281,7 +286,12 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
                     // TODO Auto-generated catch block
                     Log.d(TAG, "Populate lost connection");
                     // e.printStackTrace();
-                    mKom.logout();
+                    try {
+                        mKom.logout();
+                    } catch (InterruptedException e1) {
+                        // TODO Auto-generated catch block
+                        e1.printStackTrace();
+                    }
                     mEmptyView.setText(getString(R.string.not_connected));
                 }
                 mEmptyView.setText(getString(R.string.no_unreads) + "\n"
@@ -336,9 +346,14 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:"+e1);
+                Log.i(TAG, "Failed to activate user, exception:"+e1);
                 //e1.printStackTrace();
-                mKom.logout();
+                try {
+                    mKom.logout();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             break;
 

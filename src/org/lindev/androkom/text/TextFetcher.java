@@ -69,7 +69,12 @@ public class TextFetcher {
     }
 
     public void restartPrefetcher() {
-        mPrefetcher.restart(mKom.getCurrentConference());
+        try {
+            mPrefetcher.restart(mKom.getCurrentConference());
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
     public void setShowHeadersLevel(final int mShowHeadersLevel) {

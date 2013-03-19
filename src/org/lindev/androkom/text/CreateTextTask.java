@@ -129,8 +129,13 @@ public class CreateTextTask extends AsyncTask<Void, Void, Object> {
                     text.addMiscInfoEntry(TextStat.miscBccRecpt, recipient.recipientId);
                     break;
                 }
-                if (mKom.isMemberOf(recipient.recipientId)) {
-                    mUserIsMemberOfSomeConf = true;
+                try {
+                    if (mKom.isMemberOf(recipient.recipientId)) {
+                        mUserIsMemberOfSomeConf = true;
+                    }
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
                 }
             }
             catch (final IllegalArgumentException e) {

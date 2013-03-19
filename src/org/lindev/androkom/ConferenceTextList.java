@@ -177,7 +177,12 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
             return true;
             
         case R.id.menu_logout_id:
-            mKom.logout();
+            try {
+                mKom.logout();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             Log.i(TAG, "User opted back to login");
             intent = new Intent(this, Login.class);
             startActivity(intent);
@@ -280,7 +285,12 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
                         // TODO Auto-generated catch block
                         Log.d(TAG, "Populate lost connection");
                         // e.printStackTrace();
-                        mKom.logout();
+                        try {
+                            mKom.logout();
+                        } catch (InterruptedException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
                         mEmptyView.setText(getString(R.string.not_connected));
                     }
                     mEmptyView.setText(getString(R.string.no_unreads) + "\n"
@@ -349,7 +359,12 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
             } catch (Exception e1) {
                 Log.i(TAG, "Failed to activate user exception:"+e1);
                 //e1.printStackTrace();
-                mKom.logout();
+                try {
+                    mKom.logout();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             return null;
         }
@@ -366,7 +381,13 @@ public class ConferenceTextList extends ListActivity implements AsyncMessageSubs
         @Override
         protected Void doInBackground(final Void... args) {
             try {
-                List<ConferenceInfo> pers = mKom.fetchPersons(1);
+                List<ConferenceInfo> pers = null;
+                try {
+                    pers = mKom.fetchPersons(null, 1);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "cacheNamesTask InterruptedException"); 
+                }
                 if(pers != null) {
                     Log.d(TAG, "cacheNamesTask num persons = " + pers.size());
                 } else {

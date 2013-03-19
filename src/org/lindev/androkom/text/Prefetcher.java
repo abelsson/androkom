@@ -85,7 +85,13 @@ class Prefetcher {
                 Log.d(TAG, "PrefetchNextUnread.initialize not connected");
                 return;
             }
-            final List<Integer> unreadConfList = mKom.getUnreadConfsListCached();
+            List<Integer> unreadConfList = null;
+            try {
+                unreadConfList = mKom.getUnreadConfsListCached();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             if(unreadConfList==null) {
                 Log.d(TAG, "initialize unreadConfList==null");
                 return;
@@ -153,15 +159,31 @@ class Prefetcher {
             }
             mCurrConf = mUnreadConfs.element();
             Log.i(TAG, "PrefetchNextUnread askServerForMore mCurrConf: " + mCurrConf + " mCurrConfLocalNo: " + mCurrConfLastRead);
-            final Membership membership;
-            final TextMapping tm;
+            Membership membership = null;
+            TextMapping tm = null;
             final List<Integer> maybeUnread = new ArrayList<Integer>();
-            membership = mKom.queryReadTexts(mKom.getUserId(), mCurrConf, true);
+            try {
+                membership = mKom.queryReadTexts(mKom.getUserId(), mCurrConf, true);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             mCurrConfLastRead = lastTextReadFrom(membership, mCurrConfLastRead);
             Log.i(TAG, "PrefetchNextUnread mCurrConfLastRead: " + mCurrConfLastRead);
-            final UConference conf = mKom.getUConfStat(mCurrConf);
-            if (mCurrConfLastRead < conf.getHighestLocalNo()) {
-                tm = mKom.localToGlobal(mCurrConf, mCurrConfLastRead + 1, ASK_AMOUNT);
+            UConference conf = null;
+            try {
+                conf = mKom.getUConfStat(mCurrConf);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            if ((conf != null) && mCurrConfLastRead < conf.getHighestLocalNo()) {
+                try {
+                    tm = mKom.localToGlobal(mCurrConf, mCurrConfLastRead + 1, ASK_AMOUNT);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
                 Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
             }
             else {
@@ -195,7 +217,7 @@ class Prefetcher {
                 if (mMaybeUnreadIter == null) {
                     Log.d(TAG, " run not connected (is null)");
                     Log.i(TAG,
-                            "PrefetchNextUnread is exiting because it was interrupted");
+                            "PrefetchNextUnread is exiting because it was interrupted 1");
                     mIsInterrupted = true;
                 } else if (mMaybeUnreadIter.hasNext()) {
                     final int textNo = mMaybeUnreadIter.next();
@@ -218,6 +240,7 @@ class Prefetcher {
                 } else {
                     // No more unread in conference, and no more unread
                     // conferences
+                    mIsInterrupted = false;
                     break;
                 }
             }
@@ -236,12 +259,14 @@ class Prefetcher {
                 }
             } else {
                 Log.i(TAG,
-                        "PrefetchNextUnread is exiting because it was interrupted");
+                        "PrefetchNextUnread is exiting because it was interrupted 2");
             }
         }
     }
 
     int getNextUnreadTextNo() {
+        Log.d(TAG, " *** getNextUnreadTextNo ***");
+
         if(!mKom.isConnected()) {
             Log.d(TAG, " getNextUnreadTextNo not connected");
             return 0;
@@ -256,7 +281,7 @@ class Prefetcher {
         TextConf tc = null;
         int i=0;
         Log.d(TAG, " getNextUnreadTextNo take1");
-        while((tc == null) && (i <20)) {
+        while((tc == null) && (i < 20)) {
             tc = mUnreadQueue.peek();
             if(tc == null) {
                 Log.d(TAG, "getNextUnreadTextNo waiting for textno. loop#"+i);
@@ -281,6 +306,7 @@ class Prefetcher {
     }
     
     TextInfo getNextUnreadText(final boolean cacheRelevant) {
+        Log.d(TAG, " +++ getNextUnreadText +++");
         if(!mKom.isConnected()) {
             Log.d(TAG, " getNextUnreadText not connected");
             return null;
@@ -294,9 +320,9 @@ class Prefetcher {
         // Get the next unread text from the queue
         final TextConf tc;
         try {
-            Log.d(TAG, " getNextUnreadText take1");
+            //Log.d(TAG, " getNextUnreadText take1");
             tc = mUnreadQueue.poll(10, TimeUnit.SECONDS);
-            Log.d(TAG, " getNextUnreadText take2");
+            //Log.d(TAG, " getNextUnreadText take2");
         } catch (final InterruptedException e) {
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
@@ -304,12 +330,12 @@ class Prefetcher {
             Log.d(TAG, " getNextUnreadText next text would be kind of null?");
             return null;
         } else {
-            Log.d(TAG, " getNextUnreadText next text would be:" + tc.textNo);
+            //Log.d(TAG, " getNextUnreadText next text would be:" + tc.textNo);
         }
         // This is how the prefetcher marks that there are no more unread texts. mPrefetchRunner should be finished,
         // so we can delete the reference to it.
         if (tc.textNo < 0) {
-            Log.d(TAG, " getNextUnreadText mark no more unread");
+            //Log.d(TAG, " getNextUnreadText mark no more unread");
 
             mPrefetchRunner = null;
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ALL_READ);
@@ -317,16 +343,21 @@ class Prefetcher {
 
         // If the text is already locally marked as read, get the next one instead
         if (mKom.isLocalRead(tc.textNo)) {
-            Log.d(TAG, " getNextUnreadText already read, get another");
+            //Log.d(TAG, " getNextUnreadText already read, get another");
             return getNextUnreadText(cacheRelevant);
         }
 
         // Switch conference name
-        Log.d(TAG, " getNextUnreadText change conf name");
-        mKom.setConferenceName(mKom.getConferenceName(tc.confNo));
+        //Log.d(TAG, " getNextUnreadText change conf name");
+        try {
+            mKom.setConferenceName(mKom.getConferenceName(tc.confNo));
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, " getNextUnreadText InterruptedException");
+        }
 
         // Retrieve the text
-        Log.d(TAG, " getNextUnreadText get text from cache:"+tc.textNo);
+        //Log.d(TAG, " getNextUnreadText get text from cache:"+tc.textNo);
         final TextInfo text = mTextCache.getDText(tc.textNo);
 
         if(text==null) {
@@ -334,13 +365,13 @@ class Prefetcher {
         }
         // Cache relevant info both for this text and for the next in the queue (if available)
         if (cacheRelevant) {
-            Log.d(TAG, " getNextUnreadText cache relevant");
+            //Log.d(TAG, " getNextUnreadText cache relevant");
             doCacheRelevant(tc.textNo);
             final TextConf tcNext = mUnreadQueue.peek();
             if (tcNext != null) {
                 doCacheRelevant(tcNext.textNo);
             }
-            Log.d(TAG, " getNextUnreadText cache done");
+            //Log.d(TAG, " getNextUnreadText cache done");
         }
 
         Log.d(TAG, " getNextUnreadText returning");

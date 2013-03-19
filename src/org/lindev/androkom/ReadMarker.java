@@ -77,6 +77,10 @@ public class ReadMarker {
         catch (NullPointerException e) {
             Log.d(TAG, "markToServer Handled a NullPointerException:"+e);
             //e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "markToServer Handled a InterruptedException:"+e);
+            e.printStackTrace();
         }
         Log.i(TAG, "Mark as read finished: " + textNo);
     }

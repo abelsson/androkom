@@ -1,5 +1,7 @@
 package org.lindev.androkom;
 
+import nu.dll.lyskom.RpcFailure;
+
 import org.lindev.androkom.gui.ImgTextCreator;
 
 import android.app.Activity;
@@ -7,6 +9,7 @@ import android.app.AlertDialog;
 import android.app.ProgressDialog;
 import android.content.ActivityNotFoundException;
 import android.content.ComponentName;
+import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
@@ -23,6 +26,7 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
+import android.view.WindowManager.BadTokenException;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.Toast;
@@ -202,17 +206,25 @@ public class Login extends Activity implements ServiceConnection
         String password;
 
         protected void onPreExecute() {
-            this.dialog.setCancelable(true);
-            this.dialog.setIndeterminate(true);
-            this.dialog.setMessage("Logging in...");
-            this.dialog.show();
+            try {
+                this.dialog.setCancelable(true);
+                this.dialog.setIndeterminate(true);
+                this.dialog.setMessage("Logging in...");
+                this.dialog.show();
 
-            this.username = mUsername.getText().toString().trim();
-            this.password = mPassword.getText().toString();
+                this.username = mUsername.getText().toString().trim();
+                this.password = mPassword.getText().toString();
+            } catch (BadTokenException e) {
+                Log.d(TAG, "LoginTask onPreExecute caught BadTokenException: "
+                        + e);
+                e.printStackTrace();
+                finish();
+            }
         }
 
         protected String doInBackground(final Void... args) 
         {
+            Log.d(TAG, "LoginTask doInBackground ");
 			String server = Prefs.getServer(getBaseContext());
 			int port = Prefs.getPortno(getBaseContext());
 			boolean useSSL = Prefs.getUseSSL(getBaseContext());
@@ -220,21 +232,39 @@ public class Login extends Activity implements ServiceConnection
         	if(server.equals("@")) {
             	server = Prefs.getOtherServer(getBaseContext());        	
         	}
-        	Log.d(TAG, "Connecting to "+server);
+        	Log.d(TAG, "LoginTask Connecting to "+server);
         	if(server.length()>0) {
         		if(selectedUser>0) {
-        			String msg = mKom.login(selectedUser, password, server, port, useSSL, cert_level);
+                    Log.d(TAG, "LoginTask login userid");
+                    mKom.reconnect();
+        			String msg = "Broken error";
+                    try {
+                        msg = mKom.login(selectedUser, password, server, port, useSSL, cert_level);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
         			selectedUser=0;
+                    Log.d(TAG, "LoginTask logged in userid");
             		return msg;
         		} else {
-        		    String result = "default";
+        		    String result = "login broken error";
+                    Log.d(TAG, "LoginTask login username");
         		    
         		    try {
+                        mKom.reconnect();
         		        result = mKom.login(username, password, server, port, useSSL, cert_level);
         		    }
         		    catch(NullPointerException e) {
         		        result = "Failed to login";
-        		    }
+        		    } catch (RpcFailure e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
+                    Log.d(TAG, "LoginTask logged in userid?");
             		return result;
         		}
         	}
@@ -345,14 +375,13 @@ public class Login extends Activity implements ServiceConnection
                 editor.commit();
 
                 if (share_uri == null) {
-                    Intent intent = new Intent(Login.this, ConferenceList.class);
-                    startActivity(intent);
-                    finish();
+                    Message msg = new Message();
+                    msg.what = Consts.MESSAGE_INTENT_CONFLIST;
+                    mHandler.sendMessage(msg);
                 } else {
-                    Intent intent = new Intent(Login.this, ImgTextCreator.class);
-                    intent.putExtra("bild_uri", share_uri.toString());
-                    startActivity(intent);
-                    finish();
+                    Message msg = new Message();
+                    msg.what = Consts.MESSAGE_INTENT_IMGTEXTCREATOR;
+                    mHandler.sendMessage(msg);
                 }
             }
         }
@@ -364,10 +393,14 @@ public class Login extends Activity implements ServiceConnection
     }
 
     protected void consumeLoginMessage(Message msg) {
+        Intent intent;
+        Context context = getBaseContext();
+        
         switch (msg.what) {
         case 1:  // Name resolved, just try login again
             doLogin();
-            return;
+            break;
+            
         case 2: // Ambiguous name, resolve it
             final ConferenceInfo[] users = (ConferenceInfo[]) msg.obj;
 
@@ -391,6 +424,21 @@ public class Login extends Activity implements ServiceConnection
                     });
             AlertDialog alert = builder.create();
             alert.show();
+            break;
+            
+        case Consts.MESSAGE_INTENT_CONFLIST:
+            //Context context = Login.this;
+            intent = new Intent(context, ConferenceList.class);
+            startActivity(intent);
+            finish();
+            break;
+
+        case Consts.MESSAGE_INTENT_IMGTEXTCREATOR:
+            intent = new Intent(context, ImgTextCreator.class);
+            intent.putExtra("bild_uri", share_uri.toString());
+            startActivity(intent);
+            finish();
+            break;
         default:
             Log.d(TAG, "consumeLoginMessage ERROR unknown msg.what=" + msg.what);
         }

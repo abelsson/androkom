@@ -49,6 +49,9 @@ class TextCache {
             Log.d(TAG, "getAuthorName: " + e);
             // e.printStackTrace();
             return null;
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         if (text != null) {
             String username;
@@ -105,6 +108,9 @@ class TextCache {
                             null, 0);                    
                 }
                 return null;
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
 
             if(text == null) {
@@ -452,7 +458,7 @@ class TextCache {
         }
 
         final Thread currentThread = Thread.currentThread();
-        int MaxWaits = 140;
+        int MaxWaits = 40;
         
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0 && (textNo>0)) {
             synchronized(mTextCache) {

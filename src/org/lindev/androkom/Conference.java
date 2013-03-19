@@ -381,6 +381,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         Thread backgroundThread;
         final int textNo;
         final TextInfo text;
+	    
+        final int msgarg1 = msg.arg1;
+        final int msgarg2 = msg.arg2;
+        final Object msgobj = msg.obj;
+        final int msgwhat = msg.what;
+
         switch (msg.what) {
         case Consts.MESSAGE_TYPE_PARENT_TO:
             textNo = msg.arg1;
@@ -391,7 +397,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 public void run() {
                     final TextInfo text;
                     text = mKom.getParentToText(textNo);
-                    if ((text != null)&&(text.getTextNo()>0)) {
+                    if ((text != null) && (text.getTextNo() > 0)) {
                         Log.i(TAG, "consumeMessage Got text");
                         runOnUiThread(new Runnable() {
                             public void run() {
@@ -431,7 +437,8 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                             }
                         });
                     } else {
-                        Log.d(TAG, "consumeMessage failed to get text "+textNo);
+                        Log.d(TAG, "consumeMessage failed to get text "
+                                + textNo);
                     }
                 }
             });
@@ -440,14 +447,36 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
         case Consts.MESSAGE_TYPE_NEXT:
             Log.i(TAG, "consumeMessage Trying to get next unread text");
+            if(msgobj == null) {
+                Log.i(TAG, "consumeMessage msgobj == null");
+            } else {
+                int looplevel = (Integer) msgobj;
+                Log.i(TAG, "consumeMessage msgobj = "+looplevel);
+            }
             backgroundThread = new Thread(new Runnable() {
+                //final int lmsgarg1 = msgarg1;
+                //final int lmsgarg2 = msgarg2;
+                final Object lmsgobj = msgobj;
+                final int lmsgwhat = msgwhat;
+                final Handler lmHandler = mHandler;
+                
                 public void run() {
                     final TextInfo text;
+                    
+                    if(lmsgobj == null) {
+                        Log.i(TAG, "consumeMessage lmsgobj == null");
+                    } else {
+                        int looplevel = (Integer) lmsgobj;
+                        Log.i(TAG, "consumeMessage lmsgobj = "+looplevel);
+                    }
+
+                    Log.i(TAG, "consumeMessage pre session");
                     text = mKom.getNextUnreadText();
+                    Log.i(TAG, "consumeMessage post session");
                     if (text == null) {
                         int looplevel = 0;
-                        if (msg.obj != null) {
-                            looplevel = (Integer) msg.obj;
+                        if (msgobj != null) {
+                            looplevel = (Integer) lmsgobj;
                         }
                         Log.d(TAG, "consumeMessage Failed to get text, loop "
                                 + looplevel);
@@ -460,12 +489,26 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                                 }
                             });
                         } else {
-                            Message msgout = new Message();
-                            msgout.arg1 = msg.arg1;
-                            msgout.arg2 = msg.arg2;
-                            msgout.obj = looplevel++;
-                            msgout.what = msg.what;
-                            mHandler.sendMessageDelayed(msgout, 200);
+                            try {
+                                if ((looplevel > 0) && (mKom.getConferenceUnreadsNo() > 0)) {
+                                    Log.d(TAG, "consumeMessage sending message");
+                                    Message msgout = new Message();
+                                    // msgout.arg1 = lmsgarg1;
+                                    // msgout.arg2 = lmsgarg2;
+                                    Integer ll = looplevel++;
+                                    Log.d(TAG, "consumeMessage new looplevel:"+ll);
+                                    msgout.obj = ll;
+                                    msgout.what = lmsgwhat;
+                                    lmHandler.sendMessageDelayed(msgout, 200);
+                                } else {
+                                    Log.d(TAG, "consumeMessage NOT sending message");
+                                    finish();
+                                }
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                Log.d(TAG, "consumeMessage NOT sending message 2");
+                                e.printStackTrace();
+                            }
                         }
                     } else {
                         Log.i(TAG, "consumeMessage Got text");
@@ -479,7 +522,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             });
             backgroundThread.start();
             break;
-            
+
         case Consts.MESSAGE_TYPE_MARKREAD:
             if (mState.hasCurrent()) {
                 Log.d(TAG, "consumeMessage doInBackground hasCurrent");
@@ -490,14 +533,19 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 }
             }
             break;
-            
+
         case Consts.MESSAGE_TYPE_ACTIVATEUSER:
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:"+e1);
-                //e1.printStackTrace();
-                mKom.logout();
+                Log.i(TAG, "Failed to activate user exception:" + e1);
+                // e1.printStackTrace();
+                try {
+                    mKom.logout();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             break;
 
@@ -506,15 +554,16 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             backgroundThread = new Thread(new Runnable() {
                 public void run() {
                     if (textNo > 0) {
-                        Log.i(TAG, "OP1: Trying to get parent text of " + textNo);
+                        Log.i(TAG, "OP1: Trying to get parent text of "
+                                + textNo);
 
                         TextInfo texto = mKom.getKomText(textNo);
-                        if(texto != null) {
-                        Message msgout = new Message();
-                        msgout.obj = texto;
-                        msgout.arg1 = textNo;
-                        msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST2;
-                        mHandler.sendMessage(msgout);
+                        if (texto != null) {
+                            Message msgout = new Message();
+                            msgout.obj = texto;
+                            msgout.arg1 = textNo;
+                            msgout.what = Consts.MESSAGE_TYPE_SEEORIGINALPOST2;
+                            mHandler.sendMessage(msgout);
                         } else {
                             Log.d(TAG, "OP1: No text?");
                         }
@@ -567,9 +616,29 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             });
             backgroundThread.start();
             break;
+        case Consts.MESSAGE_CONF_INIT:
+            Log.d(TAG, "consumeMessage MESSAGE_CONF_INIT");
+
+            if ((mKom != null) && (mState.textListIndex >= 0)) {
+                List<TextInfo> textList = mKom.getCurrentTextList();
+                if (textList != null) {
+                    textNo = textList.get(mState.textListIndex).getTextNo();
+                    mState.textQueue = new ArrayBlockingQueue<Integer>(10);
+                    mState.textQueue.offer(textNo);
+                } else {
+                    Log.d(TAG, "onResume textList is null");
+                }
+            }
+
+            Log.d(TAG, "consumeMessage Pre Init Task");
+            //new InitConnectionTask().execute();
+            initConf();
+            Log.d(TAG, "consumeMessage Post Init Task");
+            break;
+
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
-            return;
+            break;
         }
     }
 
@@ -674,7 +743,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mHandler.sendMessage(msg);
 
         msg = new Message();
-        msg.obj = 0;
+        msg.obj = (Integer) 1;
         msg.arg1 = textNo;
         msg.arg2 = markTextAsReadint;
         msg.what = msgType;
@@ -1271,7 +1340,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 
     private void gilla_current_text() {
         int CurrentText = mState.getCurrent().getTextNo();        
-        mKom.addAuxItem(CurrentText, AuxItem.tagFastReply, "Gilla");
+        try {
+            mKom.addAuxItem(CurrentText, AuxItem.tagFastReply, "Gilla");
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
     }
 
 
@@ -1309,7 +1383,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 TextInfo current = mState.getCurrent();
                 if (current != null) {
                     int CurrentTextNo = current.getTextNo();
-                    mKom.markText(CurrentTextNo);
+                    try {
+                        mKom.markText(CurrentTextNo);
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 }
             } catch (RpcFailure e) {
                 // TODO Auto-generated catch block
@@ -1336,7 +1415,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         TextInfo currentText = mState.getCurrent();
         if (currentText != null) {
             int CurrentTextNo = currentText.getTextNo();
-            mKom.unmarkText(CurrentTextNo);
+            try {
+                mKom.unmarkText(CurrentTextNo);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
             Log.d(TAG, "Failed to unmark due to null");
         }
@@ -1377,7 +1461,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     protected void seePresentationUser() {
         final TextInfo currentText = mState.getCurrent();
         int userNum = currentText.getAuthorNo();
-        int textNo = mKom.getUserPres(userNum);
+        int textNo = 0;
+        try {
+            textNo = mKom.getUserPres(userNum);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         if (textNo > 0) {
             Log.i(TAG, "fetching text " + textNo);
             loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
@@ -1394,7 +1484,12 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
 	}
 
     protected void leaveconference() {
-        mKom.leaveConference(mState.conferenceNo);
+        try {
+            mKom.leaveConference(mState.conferenceNo);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
         finish();
     }
 
@@ -1431,8 +1526,15 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             AlertDialog.Builder builder = new AlertDialog.Builder(Conference.this);
             builder.setTitle(getString(R.string.pick_a_name));
             final String[] vals = new String[allrecipts.length];
-            for (int i = 0; i < allrecipts.length; i++)
-                vals[i] = mKom.fetchUsername(allrecipts[i]);
+            for (int i = 0; i < allrecipts.length; i++) {
+                vals[i] = "(unknown)";
+                try {
+                    vals[i] = mKom.fetchUsername(allrecipts[i]);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    Log.d(TAG, "subRecipient InterruptedException:"+e);
+                }
+            }
             builder.setSingleChoiceItems(vals, -1,
                     new DialogInterface.OnClickListener() {
                         public void onClick(DialogInterface dialog, int item) {
@@ -1444,7 +1546,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                         }
 
                         private void doSubRecipient(int selectedUser) {
-                            String result = mKom.subRecipient(currentTextNo, selectedUser);
+                            String result = "broken error";
+                            try {
+                                result = mKom.subRecipient(currentTextNo, selectedUser);
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
+                            }
                             if (result != "") {
                                 Toast.makeText(getApplicationContext(),
                                         result, Toast.LENGTH_SHORT)
@@ -1458,6 +1566,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             // TODO Auto-generated catch block
             Log.d(TAG, "subRecipient RPcFailure:"+e);
             //e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -1540,10 +1651,17 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                             int selectedComment = allComments[item];
                             Log.d(TAG, "Selected comment:" + selectedComment);
                             String result="no result";
-                            if(item<commented.length) {
-                                result = mKom.subComment(currentTextNo, selectedComment);
-                            } else {
-                                result = mKom.subComment(selectedComment, currentTextNo);                                
+                            try {
+                                if (item < commented.length) {
+                                    result = mKom.subComment(currentTextNo,
+                                            selectedComment);
+                                } else {
+                                    result = mKom.subComment(selectedComment,
+                                            currentTextNo);
+                                }
+                            } catch (InterruptedException e) {
+                                // TODO Auto-generated catch block
+                                e.printStackTrace();
                             }
                             if (result != "") {
                                 Toast.makeText(getApplicationContext(),
@@ -1558,6 +1676,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             // TODO Auto-generated catch block
             Log.d(TAG, "subComment RPcFailure:"+e);
             //e.printStackTrace();
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
     }
 
@@ -2043,91 +2164,79 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
                 }
             }
         }
-        if ((mKom!=null) && (mState.textListIndex >= 0)) {
-            List<TextInfo> textList = mKom.getCurrentTextList();
-            if (textList != null) {
-                int textNo = textList.get(mState.textListIndex).getTextNo();
-                mState.textQueue = new ArrayBlockingQueue<Integer>(10);
-                mState.textQueue.offer(textNo);
-            } else {
-                Log.d(TAG, "onResume textList is null");
-            }
-        }
 
-        new InitConnectionTask().execute();
+        Message msg = new Message();
+        msg.what = Consts.MESSAGE_CONF_INIT;
+        mHandler.sendMessage(msg);
+
         Log.d(TAG, "onServiceConnected done");
     }
 
-    private class InitConnectionTask extends
-            AsyncTask<Void, Void, Integer> {
-        @Override
-        protected void onPreExecute() {
-            setProgressBarIndeterminateVisibility(true);
-        }
+    protected void initConf() {
+        {
+            Log.d(TAG, "InitConf");
 
-        // worker thread (separate from UI thread)
-        @Override
-        protected Integer doInBackground(final Void... args) {
-            {
-                if (mKom == null) {
-                    return null;
-                }
-
-                try {
-                    mKom.setConference(mState.conferenceNo);
-                } catch (RpcFailure e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, "InitConnectionTask RpcFailure");
-                    // e.printStackTrace();
-                } catch (IOException e) {
-                    Log.d(TAG, "InitConnectionTask IOException:" + e);
-                    e.printStackTrace();
-                    try {
-                        Toast.makeText(getApplicationContext(),
-                                getString(R.string.connection_lost),
-                                Toast.LENGTH_SHORT).show();
-                    } catch (Exception e2) {
-                        Log.d(TAG,
-                                "InitConnectionTask IOException failed to toast:"
-                                        + e2);
-                    }
-                    mKom.logout();
-                    finish();
-                }
-                Log.d(TAG, "InitConnectionTask set Conference Done");
-
-                TextInfo currentText = null;
-
-                if (mState.textQueue == null || mState.textQueue.isEmpty()) {
-                    if ((mState != null) && (mState.hasCurrent())) {
-                        currentText = mState.getCurrent();
-                    }
-                    mSwitcher.setInAnimation(mSlideLeftIn);
-                    mSwitcher.setOutAnimation(mSlideLeftOut);
-                    if (currentText != null) {
-                        Log.d(TAG, "InitConnectionTask Getting current text");
-                        loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
-                                currentText.getTextNo(), 0);
-                    } else {
-                        Log.d(TAG, "InitConnectionTask Getting next text");
-                        loadMessage(Consts.MESSAGE_TYPE_NEXT, 0, 0);
-                    }
-                } else {
-                    Log.d(TAG, "InitConnectionTask Getting text from queue");
-                    loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
-                            mState.textQueue.poll(), 0);
-                }
-
+            if (mKom == null) {
+                return;
             }
-            Log.d(TAG, "InitConnectionTask doInBackground Done");
-            return 0;
-        }
 
-        @Override
-        protected void onPostExecute(final Integer value) {
-            setProgressBarIndeterminateVisibility(false);
-            Log.d(TAG, "InitConnectionTask Done");
+            try {
+                Log.d(TAG, "InitConnectionTask setConf 1");
+                mKom.setConference(mState.conferenceNo);
+                Log.d(TAG, "InitConnectionTask setConf 2");
+            } catch (RpcFailure e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "InitConnectionTask RpcFailure");
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "InitConnectionTask IOException:" + e);
+                e.printStackTrace();
+                try {
+                    Toast.makeText(getApplicationContext(),
+                            getString(R.string.connection_lost),
+                            Toast.LENGTH_SHORT).show();
+                } catch (Exception e2) {
+                    Log.d(TAG,
+                            "InitConnectionTask IOException failed to toast:"
+                                    + e2);
+                }
+                try {
+                    mKom.logout();
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+                finish();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            Log.d(TAG, "InitConnectionTask set Conference Done");
+
+            TextInfo currentText = null;
+
+            if (mState.textQueue == null || mState.textQueue.isEmpty()) {
+                if ((mState != null) && (mState.hasCurrent())) {
+                    currentText = mState.getCurrent();
+                }
+                mSwitcher.setInAnimation(mSlideLeftIn);
+                mSwitcher.setOutAnimation(mSlideLeftOut);
+                if (currentText != null) {
+                    Log.d(TAG, "InitConnectionTask Getting current text");
+                    loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
+                            currentText.getTextNo(), 0);
+                } else {
+                    Log.d(TAG, "InitConnectionTask Getting next text");
+                    loadMessage(Consts.MESSAGE_TYPE_NEXT, 0, 0);
+                }
+            } else {
+                Log.d(TAG, "InitConnectionTask Getting text from queue");
+                loadMessage(Consts.MESSAGE_TYPE_TEXTNO,
+                        mState.textQueue.poll(), 0);
+            }
+
         }
+        Log.d(TAG, "InitConf done");
     }
 
     public void onServiceDisconnected(ComponentName name) {
@@ -2137,13 +2246,17 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
 
-            int result = tts.setLanguage(Locale.getDefault());
+            if (tts != null) {
+                int result = tts.setLanguage(Locale.getDefault());
 
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e(TAG, "onInit: This Language is not supported");
+                if (result == TextToSpeech.LANG_MISSING_DATA
+                        || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e(TAG, "onInit: This Language is not supported");
+                } else {
+                    Log.d(TAG, "onInit: TTS initialized OK");
+                }
             } else {
-                Log.d(TAG, "onInit: TTS initialized OK");
+                Log.d(TAG, "onInit: no TTS found");
             }
         } else {
             Log.e(TAG, "onInit: Initilization Failed!");

@@ -10,6 +10,9 @@ import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
 import java.util.Set;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.locks.Lock;
+import java.util.concurrent.locks.ReentrantLock;
 
 import nu.dll.lyskom.ConfInfo;
 import nu.dll.lyskom.AuxItem;
@@ -37,7 +40,6 @@ import org.lindev.androkom.text.TextFetcher;
 
 import android.accounts.Account;
 import android.accounts.AccountManager;
-import android.app.ProgressDialog;
 import android.app.Service;
 import android.content.BroadcastReceiver;
 import android.content.Context;
@@ -47,7 +49,9 @@ import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.text.Spannable;
 import android.util.Log;
 import android.widget.Toast;
@@ -237,11 +241,23 @@ public class KomServer extends Service implements RpcEventListener,
         new IMNotification(this);
         asyncMessagesHandler.subscribe(imLogger);
 
-        if (s == null) {
-            s = new Session();
-            s.addRpcEventListener(this);
+        try {
+            if(slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    if (lks == null) {
+                        lks = new Session();
+                        lks.addRpcEventListener(this);
+                    }
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "onCreate could not lock");
+            }
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
-        
         registerReceiver(mConnReceiver, new IntentFilter(
                 ConnectivityManager.CONNECTIVITY_ACTION));
    }
@@ -306,13 +322,14 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
-    public void logout() {
+    public void nolock_logout() throws InterruptedException {
         Log.d(TAG, "KomServer logout");
-        if (s != null) {
+        Log.d(TAG, "KomServer logout Locked Session");
+        if (lks != null) {
             try {
-                if (s.getState() == Session.STATE_LOGIN)
-                    s.logout(true);
-                Log.i("androkom", "logged out");
+                if (lks.getState() == Session.STATE_LOGIN)
+                    lks.logout(true);
+                Log.i(TAG, "logout: logged out");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 Log.d(TAG, "logout1 " + e);
@@ -320,26 +337,40 @@ public class KomServer extends Service implements RpcEventListener,
             }
 
             try {
-                s.disconnect(true);
+                Log.d(TAG, "logout: trying to disconnect");
+                lks.disconnect(true);
+                Log.d(TAG, "logout: disconnected");
             } catch (Exception e) {
                 // TODO Auto-generated catch block
                 Log.d(TAG, "logout2 " + e);
                 // e.printStackTrace();
             }
 
-            if(s!=null) {
-                try {
-                    s.removeRpcEventListener(this);
-                } catch (Exception e) {
-                    // TODO Auto-generated catch block
-                    Log.d(TAG, "logout3 " + e);
-                    // e.printStackTrace();
-                }
+            try {
+                lks.removeRpcEventListener(this);
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "logout3 " + e);
+                // e.printStackTrace();
             }
-            Log.i("androkom", "disconnected");
+            Log.i(TAG, "logout disconnected and no listener");
         }
+        Log.d(TAG, "logout reached end");
+    }
 
-        s = null;
+    public void logout() throws InterruptedException {
+        Log.d(TAG, "KomServer logout try lock");
+        if (slock.tryLock(6, TimeUnit.SECONDS)) {
+            try {
+                nolock_logout();
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "KomServer logout Unlocked Session");
+            }
+        } else {
+            Log.d(TAG, "logout could not lock");
+        }
+        Log.d(TAG, "logout reached end");
     }
 
     /**
@@ -365,31 +396,64 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void reconnect() {
         Log.d(TAG, "reconnect() Logout old session");
-        logout();  //new LogoutTask().execute();
-    	
+        try {
+            logout();
+        } catch (InterruptedException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+        } // new LogoutTask().execute();
+
         Log.d(TAG, "reconnect() Initialize new session");
 
-        s = new Session();
-        s.addRpcEventListener(this);
+        try {
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                Log.d(TAG, "reconnect got lock");
+                try {
+                    lks = new Session();
+                    lks.addRpcEventListener(this);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "reconnect unlocked");
+                }
+            } else {
+                Log.d(TAG, "reconnect failed to get lock");
+            }
+        } catch (InterruptedException e) {
+            Log.d(TAG, "onCreate tryLock interrupted");
+            e.printStackTrace();
+        }
 
         if (re_userid > 0) {
             Log.d(TAG, "KomServer trying to login using id " + re_userid
                     + " on server " + re_server);
-            login(re_userid, re_password, re_server, re_port, re_useSSL, re_cert_level);
+            try {
+                login(re_userid, re_password, re_server, re_port, re_useSSL,
+                        re_cert_level);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         } else {
             Log.d(TAG, "Can't reconnect because no userid");
             Thread.dumpStack();
-            logout();
+            try {
+                logout();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 
     /**
      * Connect to LysKOM server.
+     * 
+     * No need to get lock for calls to Session since lock is already obtained by login.
      * @param port 
      * 
      * @return 0 on success, non-zero on failure.
      */
-    public synchronized int connect(String server, int port, boolean useSSL, int cert_level) 
+    private synchronized int connect(String server, int port, boolean useSSL, int cert_level) 
     {
         String  ANDROID         =   android.os.Build.VERSION.RELEASE;       //The current development codename, or the string "REL" if this is a release build.
         String  BOARD           =   android.os.Build.BOARD;                 //The name of the underlying board, like "goldfish".    
@@ -412,36 +476,48 @@ public class KomServer extends Service implements RpcEventListener,
         String  USER            =   android.os.Build.USER;                  //
 
         try {
-            if(s==null) {
-                Log.d(TAG, "connect Trying to recreate session");
-                reconnect();
+            if (lks == null) {
+                Log.d(TAG, "connect: no session!");
             }
             try {
-                String hostName = MANUFACTURER.replace(' ', '_') + "_" + MODEL.replace(' ', '_');
-                s.setClientHost(hostName);
+                String hostName = MANUFACTURER.replace(' ', '_') + "_"
+                        + MODEL.replace(' ', '_');
+                lks.setClientHost(hostName);
             } catch (Exception e) {
-                Log.i(TAG, "connect Got no model");
+                Log.i(TAG, "connect Got no terminalmodel");
             }
 
             try {
                 AccountManager accountManager = AccountManager.get(this);
-                Account[] accounts = accountManager.getAccountsByType("com.google");
+                Account[] accounts = accountManager
+                        .getAccountsByType("com.google");
                 String userName = accounts[0].name;
                 int splitIndex = userName.indexOf("@");
-                s.setClientUser(userName.substring(0, splitIndex));
+                lks.setClientUser(userName.substring(0, splitIndex));
             } catch (Exception e) {
                 Log.i(TAG, "connect Got no account");
             }
 
-            if (s != null) {
-                s.connect(server, port, useSSL, cert_level, getBaseContext()
-                        .getResources().openRawResource(R.raw.root_keystore));
-                if (asyncMessagesHandler != null) {
-                    s.addAsynchMessageReceiver(asyncMessagesHandler);
+            if (lks != null) {
+                Log.i(TAG, "connect lks.connect");
+                if (lks.connect(
+                        server,
+                        port,
+                        useSSL,
+                        cert_level,
+                        getBaseContext().getResources().openRawResource(
+                                R.raw.root_keystore))) {
+                    Log.i(TAG, "connect lks.connect done");
+                    if (asyncMessagesHandler != null) {
+                        lks.addAsynchMessageReceiver(asyncMessagesHandler);
+                    } else {
+                        Log.d(TAG, "connect asyncMessagesHandler==null");
+                        Thread.dumpStack();
+                        // logout();
+                        return -2;
+                    }
                 } else {
-                    Log.d(TAG, "connect asyncMessagesHandler==null");
-                    Thread.dumpStack();
-                    logout();
+                    Log.i(TAG, "connect lks.connect could not connect");
                     return -2;
                 }
             } else {
@@ -450,14 +526,14 @@ public class KomServer extends Service implements RpcEventListener,
             }
         } catch (IOException e) {
             // TODO Auto-generated catch block
-        	Log.d(TAG, "connect1 "+e);
+            Log.d(TAG, "connect1 " + e);
 
-            //e.printStackTrace();
+            // e.printStackTrace();
             return -1;
         } catch (Exception e) {
             // TODO Auto-generated catch block
-        	Log.d(TAG, "connect2 "+e);
-        	e.printStackTrace();
+            Log.d(TAG, "connect2 " + e);
+            e.printStackTrace();
             return -1;
         }
 
@@ -465,33 +541,59 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public synchronized void disconnect() {
-    	try {
-    		s.disconnect(true);
-		} catch (RpcFailure e) {
-		    Log.d(TAG, "disconnect RpcFailure"+e);
-			//e.printStackTrace();
-		} catch (Exception e) {
-		    Log.d(TAG, "disconnect "+e);
-			//e.printStackTrace();
-		}
+        try {
+            Log.d(TAG, "mKom.disconnect tryLock");
+
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    lks.disconnect(true);
+                } catch (RpcFailure e) {
+                    Log.d(TAG, "disconnect RpcFailure" + e);
+                    // e.printStackTrace();
+                } catch (Exception e) {
+                    Log.d(TAG, "disconnect " + e);
+                    // e.printStackTrace();
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.disconnect unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.disconnect could not lock");
+            }
+        } catch (InterruptedException e) {
+            Log.d(TAG, "disconnect tryLock interrupted");
+            e.printStackTrace();
+        }
     }
 
     /**
      * Fetch a username from userid
      * 
      * @param userid
+     * @throws InterruptedException 
      */
-    public String fetchUsername(int persNo) {
-        String username;
+    public String fetchUsername(int persNo) throws InterruptedException {
+        String username = null;
         if (persNo > 0) {
-            try {
-                nu.dll.lyskom.Conference confStat = s.getConfStat(persNo);
-                username = confStat.getNameString();
-            } catch (Exception e) {
-                Log.d(TAG, "fetchUsername caught exception from getConfStat"+e);
-                //e.printStackTrace();
-                username = getString(R.string.person) + persNo
-                        + getString(R.string.does_not_exist);
+            Log.d(TAG, "mKom.fetchUsername tryLock");
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                Log.d(TAG, "mKom.fetchUsername got Lock");
+                try {
+                    nu.dll.lyskom.Conference confStat = lks.getConfStat(persNo);
+                    username = confStat.getNameString();
+                } catch (Exception e) {
+                    Log.d(TAG,
+                            "fetchUsername caught exception from getConfStat"
+                                    + e);
+                    // e.printStackTrace();
+                    username = getString(R.string.person) + persNo
+                            + getString(R.string.does_not_exist);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.fetchUsername unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.fetchUsername could not lock session");
             }
         } else {
             Log.d(TAG, "fetchUsername persNo=" + persNo);
@@ -502,11 +604,14 @@ public class KomServer extends Service implements RpcEventListener,
     
     /**
      * Fetch a list of persons online
+     * @param mHandler 
      * 
-     * @throws IOException 
+     * @throws IOException
+     * @throws InterruptedException
      */
-    public List<ConferenceInfo> fetchPersons(int who_type) throws IOException {
-        if (s == null) {
+    public List<ConferenceInfo> fetchPersons(Handler mHandler, int who_type) throws IOException,
+            InterruptedException {
+        if (lks == null) {
             return null;
         }
 
@@ -517,39 +622,55 @@ public class KomServer extends Service implements RpcEventListener,
             friendsList = getFriends();
         }
 
-        try {
-            DynamicSessionInfo[] persons = s.whoIsOnDynamic(true, false,
-                    30 * 60);
+        Log.d(TAG, "fetchPersons trying to lock");
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "fetchPersons got lock");
+            try {
+                DynamicSessionInfo[] persons = lks.whoIsOnDynamic(true, false,
+                        30 * 60);
 
-            for (int i = 0; i < persons.length; i++) {
-                int persNo = persons[i].getPerson();
-                if ((who_type == 1) || (friendsList.contains(persNo))) {
-                    String username;
-                    if (persNo > 0) {
-                        try {
-                            nu.dll.lyskom.Conference confStat = s
-                                    .getConfStat(persNo);
-                            username = confStat.getNameString();
-                        } catch (Exception e) {
-                            username = getString(R.string.person) + persNo
-                                    + getString(R.string.does_not_exist);
+                for (int i = 0; i < persons.length; i++) {
+                    int persNo = persons[i].getPerson();
+                    if ((who_type == 1) || (friendsList.contains(persNo))) {
+                        String username;
+                        if (persNo > 0) {
+                            try {
+                                nu.dll.lyskom.Conference confStat = lks
+                                        .getConfStat(persNo);
+                                username = confStat.getNameString();
+                            } catch (Exception e) {
+                                username = getString(R.string.person) + persNo
+                                        + getString(R.string.does_not_exist);
+                            }
+                        } else {
+                            Log.d(TAG, "fetchPersons persNo=" + persNo);
+                            username = getString(R.string.anonymous);
                         }
-                    } else {
-                        Log.d(TAG, "fetchPersons persNo=" + persNo);
-                        username = getString(R.string.anonymous);
+                        Log.i(TAG, "fetchPersons (i=" + i + ") " + username
+                                + " <" + persNo + ">");
+
+                        ConferenceInfo info = new ConferenceInfo();
+                        info.id = persNo;
+                        info.name = username;
+                        info.sessionNo = persons[i].session;
+
+                        arr.add(info);
+                        
+                        Message msg = new Message();
+                        msg.what = Consts.MESSAGE_PROGRESS;
+                        msg.arg1 = (int)(((float)i)/((float)persons.length)*100.0);
+                        mHandler.sendMessage(msg);
+
                     }
-                    Log.i("androkom", username + " <" + persNo + ">");
-
-                    ConferenceInfo info = new ConferenceInfo();
-                    info.id = persNo;
-                    info.name = username;
-                    info.sessionNo = persons[i].session;
-
-                    arr.add(info);
                 }
+            } catch (Exception e) {
+                Log.d(TAG, "fetchPersons caught an exception:" + e);
+            } finally {
+                Log.d(TAG, "fetchPersons finally unlock lock");
+                slock.unlock();
             }
-        } catch (Exception e) {
-            Log.d(TAG, "fetchPersons caught an exception:" + e);
+        } else {
+            Log.d(TAG, "fetchPersons tryLock failed to get lock");
         }
         return arr;
     }
@@ -573,39 +694,63 @@ public class KomServer extends Service implements RpcEventListener,
      * @throws IOException 
      * @throws RpcFailure 
      * @throws UnsupportedEncodingException 
+     * @throws InterruptedException 
      */
-    public List<ConferenceInfo> fetchConferences() throws UnsupportedEncodingException, RpcFailure, IOException {
+    public List<ConferenceInfo> fetchConferences()
+            throws UnsupportedEncodingException, RpcFailure, IOException,
+            InterruptedException {
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
-        for (int conf : s.getMyUnreadConfsList(true)) {
-            final String name = s.toString(s.getConfName(conf));
-            Log.i(TAG, name + " <" + conf + ">");
-            final ConferenceInfo info = new ConferenceInfo();
-            info.id = conf;
-            info.name = name;
-            info.numUnread = s.getUnreadCount(conf);
-            arr.add(info);
+        Log.d(TAG, "mKom.fetchConferences tryLock");
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "mKom.fetchConferences got Lock");
+            try {
+                for (int conf : lks.getMyUnreadConfsList(true)) {
+                    final String name = lks.toString(lks.getConfName(conf));
+                    Log.i(TAG, name + " <" + conf + ">");
+                    final ConferenceInfo info = new ConferenceInfo();
+                    info.id = conf;
+                    info.name = name;
+                    info.numUnread = lks.getUnreadCount(conf);
+                    arr.add(info);
+                }
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "mKom.fetchConferences unlocked");
+            }
+        } else {
+            Log.d(TAG, "mKom.fetchConferences failed to lock");
         }
         return arr;
     }
 
     /**
      * Return name for given conference.
+     * @throws InterruptedException 
      */
-    public String getConferenceName(int conf)
-    {
-    	try {
-			return s.toString(s.getConfName(conf));
-		} catch (Exception e) {
-			// TODO Auto-generated catch block
-        	Log.d(TAG, "getConferenceName "+e);
+    public String getConferenceName(int conf) throws InterruptedException {
+        Log.d(TAG, "mKom.getConferenceName id=" + conf);
+        String confName = "";
+        Log.d(TAG, "mKom.getConferenceName tryLock");
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "mKom.getConferenceName got Lock");
+            try {
+                confName = lks.toString(lks.getConfName(conf));
+            } catch (Exception e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "getConferenceName " + e);
 
-			//e.printStackTrace();
-		}
-		return "";
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "mKom.getConferenceName unlocked");
+            }
+            Log.d(TAG, "mKom.getConferenceName got " + confName);
+        } else {
+            Log.d(TAG, "mKom.getConferenceName failed to lock ");
+        }
+        return confName;
     }
-    
 
-    private String mConfName = "";
     public void setConferenceName(final String name) {
         mConfName = name;
     }
@@ -620,243 +765,343 @@ public class KomServer extends Service implements RpcEventListener,
     /**
      * Return presentation text number for current conference.
      */
-	public int getConferencePres() {
-		int confNo = s.getCurrentConference();
-		if (confNo > 0) {
-			try {
-				return s.getConfStat(confNo).getPresentation();
-			} catch (RpcFailure e) {
-			    Log.d(TAG, "getConferencePres RpcFailure"+e);
-				//e.printStackTrace();
-			} catch (IOException e) {
-                Log.d(TAG, "getConferencePres IOException"+e);
-				//e.printStackTrace();
-			}
-		}
-		return 0;
-	}
+    public int getConferencePres() {
+        int confPres = 0;
+
+        try {
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    int confNo = lks.getCurrentConference();
+                    if (confNo > 0) {
+                        try {
+                            confPres = lks.getConfStat(confNo)
+                                    .getPresentation();
+                        } catch (RpcFailure e) {
+                            Log.d(TAG, "getConferencePres RpcFailure" + e);
+                            // e.printStackTrace();
+                        } catch (IOException e) {
+                            Log.d(TAG, "getConferencePres IOException" + e);
+                            // e.printStackTrace();
+                        }
+                    }
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "getConferencePres tryLock could not lock");
+            }
+        } catch (InterruptedException e) {
+            Log.d(TAG, "getConferencePres tryLock interrupted");
+            e.printStackTrace();
+        }
+        return confPres;
+    }
 
     /**
      * Return presentation text number for userid.
+     * 
+     * @throws InterruptedException
      */
-    public int getUserPres(int userid) {
+    public int getUserPres(int userid) throws InterruptedException {
         int confNo = userid;
+        int userPres = 0;
+
         if (confNo > 0) {
-            try {
-                return s.getConfStat(confNo).getPresentation();
-            } catch (RpcFailure e) {
-                Log.d(TAG, "getConferencePres RpcFailure"+e);
-                //e.printStackTrace();
-            } catch (IOException e) {
-                Log.d(TAG, "getConferencePres IOException"+e);
-                //e.printStackTrace();
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    userPres = lks.getConfStat(confNo).getPresentation();
+                } catch (RpcFailure e) {
+                    Log.d(TAG, "getConferencePres RpcFailure" + e);
+                    // e.printStackTrace();
+                } catch (IOException e) {
+                    Log.d(TAG, "getConferencePres IOException" + e);
+                    // e.printStackTrace();
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "getConferencePres could not lock");
             }
         }
-        return 0;
+        return userPres;
     }
 
     /**
      * Return number of unreads for current conference.
+     * @throws InterruptedException 
      */
-    public int getConferenceUnreadsNo() {
-        int confNo = s.getCurrentConference();
-        if (confNo > 0) {
+    public int getConferenceUnreadsNo() throws InterruptedException {
+        int unreads = 0;
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
             try {
-                return s.getUnreadCount(confNo);
+                if (lks != null) {
+                    int confNo = lks.getCurrentConference();
+                    if (confNo > 0) {
+                        unreads = lks.getUnreadCount(confNo);
+                    }
+                } else {
+                    Log.d(TAG, "getConferenceUnreadsNo no session");
+                }
             } catch (RpcFailure e) {
-                Log.d(TAG, "getConferenceUnreadsNo RpcFailure:"+e);
-                //e.printStackTrace();
+                Log.d(TAG, "getConferenceUnreadsNo RpcFailure:" + e);
+                // e.printStackTrace();
             } catch (IOException e) {
-                Log.d(TAG, "getConferenceUnreadsNo IOException:"+e);
-                //e.printStackTrace();
+                Log.d(TAG, "getConferenceUnreadsNo IOException:" + e);
+                // e.printStackTrace();
+            } catch (NullPointerException e) {
+                Log.d(TAG, "getConferenceUnreadsNo NullPointerException:" + e);
+                e.printStackTrace();
+            } finally {
+                slock.unlock();
             }
+        } else {
+            Log.d(TAG, "getConferenceUnreadsNo faile to get lock");
         }
-        Log.d(TAG, "getConferenceUnreadsNo no current conference (or exception)");
-        return 0;
+        Log.d(TAG,
+                "getConferenceUnreadsNo no current conference (or exception)");
+        return unreads;
     }
 
     /**
      * Set currently active conference.
-     * @throws IOException 
-     * @throws RpcFailure 
+     * 
+     * @throws IOException
+     * @throws RpcFailure
+     * @throws InterruptedException 
      */
-    public void setConference(final int confNo) throws RpcFailure, IOException {
-        if (s != null) {
-            Log.d(TAG, "setConference Byt till conf:" + confNo);
+    public void setConference(final int confNo) throws RpcFailure, IOException, InterruptedException {
+        Log.d(TAG, "mKom.setConference tryLock");
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
             try {
-            s.changeConference(confNo);
-            readMarker.clear();
-            textFetcher.restartPrefetcher();
-            } catch(java.lang.NullPointerException e) {
-                Log.d(TAG, "setConference Handled an NullpointerException");
-                Thread.dumpStack();
+                if (lks != null) {
+                    Log.d(TAG, "setConference Byt till conf:" + confNo);
+                    try {
+                        lks.changeConference(confNo);
+                        readMarker.clear();
+                        textFetcher.restartPrefetcher();
+                    } catch (java.lang.NullPointerException e) {
+                        Log.d(TAG,
+                                "setConference Handled an NullpointerException");
+                        Thread.dumpStack();
+                    }
+                } else {
+                    Log.d(TAG, "setConference Ingen session");
+                }
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "mKom.setConference unlocked");
             }
         } else {
-            Log.d(TAG, "setConference Ingen session");
+            Log.d(TAG, "mKom.setConference could not lock");
         }
     }
 
-    /* Send message about user active to server.
-     * Will not send more than once every 30 sek to keep from 
-     * flooding server.
+    /*
+     * Send message about user active to server. Will not send more than once
+     * every 30 sek to keep from flooding server.
      */
-    public void activateUser() throws Exception {
+    public void activateUser() throws InterruptedException, IOException, Exception {
         long long_now = System.currentTimeMillis();
-        if (s==null) {
-            throw new Exception("Not logged in");
-        }
-        if ((long_now - lastActivate) > (30 * 1000)) {
-            s.doUserActive();
-            lastActivate = long_now;
+        Log.d(TAG, "mKom.activateUser tryLock");
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "mKom.activateUser got lock");
+            try {
+                if (lks == null) {
+                    throw new Exception("Not logged in");
+                }
+                if ((long_now - lastActivate) > (30 * 1000)) {
+                    lks.doUserActive();
+                    lastActivate = long_now;
+                }
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "mKom.activateUser unlocked");
+            }
+        } else {
+            Log.d(TAG, "mKom.activateUser could not get lock");
         }
     }
-    
+
     /**
-     * Log in to server. 
+     * Log in to server.
      * 
      * @return Empty string on success, string describing failure otherwise
+     * @throws InterruptedException 
+     * @throws RpcFailure 
      */
-    public String login(String username, String password, String server, int port, boolean useSSL, int cert_level) 
-    {
-    	Log.d(TAG, "Trying to login username:"+username);
-        Log.d(TAG, "Trying to login server:"+server);
-        Log.d(TAG, "Trying to login port:"+port);
-        Log.d(TAG, "Trying to login usessl:"+useSSL);
-        Log.d(TAG, "Trying to login cert_level:"+cert_level);
+    public String login(String username, String password, String server,
+            int port, boolean useSSL, int cert_level) throws RpcFailure, InterruptedException {
+        Log.d(TAG, "Trying to login username:" + username);
+        Log.d(TAG, "Trying to login server:" + server);
+        Log.d(TAG, "Trying to login port:" + port);
+        Log.d(TAG, "Trying to login usessl:" + useSSL);
+        Log.d(TAG, "Trying to login cert_level:" + cert_level);
 
-    	if (s == null) {
-            s = new Session();
-            s.addRpcEventListener(this);
-        }
-
-    	try {
-    		if (!s.getConnected()) {
-    			if (connect(server, port, useSSL, cert_level) != 0) {
-                    if (s != null) {
-                        s.disconnect(true);
-                    }
-    				s = null;
-                    return getString(R.string.error_could_not_connect);
-    			}
-    		}
-        } catch (Exception e) {
-            Log.e("androkom", "Login.name connect Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
             try {
-                s.disconnect(true);
-            } catch (IOException e1) {
-                // TODO Auto-generated catch block
-                //e1.printStackTrace();
-            }
-            s = null;
-            //e.printStackTrace();
-            return getString(R.string.error_unknown)+"(1)";
-        }
+                Log.d(TAG, "login A Got lock");
 
-        usernames = new ConfInfo[0];
-        try {
-            usernames = s.lookupName(username, true, false);
-            if (usernames.length != 1) {            
-                return getString(R.string.error_ambigious_name);
-            } else {
-                // login as hidden
-                if (!s.login(usernames[0].confNo, password, hidden_session, false)) {
-                    return getString(R.string.error_invalid_password);
+                if (lks == null) {
+                    Log.d(TAG, "login creating new session");
+                    lks = new Session();
+                    lks.addRpcEventListener(this);
                 }
-            }
-        } catch (Exception e) {
-            Log.e("androkom", "Login.name Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
-            //e.printStackTrace();
-            return getString(R.string.error_unknown)+"(2)";
-        }
-        try {
-            s.setClientVersion("Androkom", getVersionName());
-            s.setLatteName("AndroKOM " + getVersionName());
-        } catch (Exception e) {
-        	Log.e(TAG, "Login.name2 Caught " + e.getClass().getName()+":"+e+":"+e.getCause());
-        	//e.printStackTrace();
-        }
-        try {
-            re_userid = usernames[0].confNo;
-            re_password = password;
-            re_server = server;
-            re_port = port;
-            re_useSSL = useSSL;
-            re_cert_level = cert_level;
-        } catch (Exception e) {
-            Log.e(TAG, "Login.name3 Caught " + e.getClass().getName() + ":" + e
-                    + ":" + e.getCause());
-            return getString(R.string.error_unknown)+"(3)";
-        }
+                Log.d(TAG, "LOGIN 1");
 
-        try {
-            parseCommonUserArea();
-            parseElispUserArea();
-        } catch (Exception e) {
-            Log.e(TAG, "Login.name4 Caught " + e.getClass().getName() + ":" + e
-                    + ":" + e.getCause());
-            return getString(R.string.error_unknown)+"(4)";
+                if (!lks.getConnected()) {
+                    Log.d(TAG, "LOGIN not connected, trying to reconnect");
+                    if (connect(server, port, useSSL, cert_level) != 0) {
+                        Log.d(TAG, "LOGIN failed to reconnect");
+                        if (lks != null) {
+                            lks.disconnect(true);
+                            Log.d(TAG, "LOGIN lks disconnected");
+                        }
+                        lks = null;
+                        return getString(R.string.error_could_not_connect);
+                    }
+                }
+                Log.d(TAG, "LOGIN 2");
+                usernames = new ConfInfo[0];
+                usernames = lks.lookupName(username, true, false);
+                Log.d(TAG, "LOGIN 3");
+                if (usernames.length != 1) {
+                    Log.d(TAG, "LOGIN 4");
+                    return getString(R.string.error_ambigious_name);
+                } else {
+                    Log.d(TAG, "LOGIN 5");
+                    // login as hidden
+                    if (!lks.login(usernames[0].confNo, password,
+                            hidden_session, false)) {
+                        return getString(R.string.error_invalid_password);
+                    }
+                }
+                Log.d(TAG, "LOGIN 6");
+
+                lks.setClientVersion("Androkom", getVersionName());
+                lks.setLatteName("AndroKOM " + getVersionName());
+
+                Log.d(TAG, "LOGIN 7");
+
+                re_userid = usernames[0].confNo;
+                re_password = password;
+                re_server = server;
+                re_port = port;
+                re_useSSL = useSSL;
+                re_cert_level = cert_level;
+
+                parseCommonUserArea();
+                parseElispUserArea();
+
+                Log.d(TAG, "LOGIN 8");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "LOGIN 9");
+                e.printStackTrace();
+            } finally {
+                Log.d(TAG, "LOGIN 10");
+                slock.unlock();
+                Log.d(TAG, "LOGIN A unlocked");
+            }
+        } else {
+            Log.d(TAG, "LOGIN could not lock");
         }
         return "";
     }
-
+    
     /**
-     * Log in to server. 
-     * @param port 
+     * Log in to server.
+     * 
+     * @param port
      * 
      * @return Empty string on success, string describing failure otherwise
+     * @throws InterruptedException 
      */
-    public String login(int userid, String password, String server, int port, boolean useSSL, int cert_level) 
-    {
-    	Log.d(TAG, "Trying to login userid:"+userid);
-        if (s == null) {
-            s = new Session();
-            s.addRpcEventListener(this);
-        }
-        usernames = new ConfInfo[0];
-        try {
-            if (!s.getConnected()) {
-                if (connect(server, port, useSSL, cert_level) != 0) {
-                    try {
-                        if (s != null) {
-                            s.disconnect(true);
-                        }
-                    } catch (IOException e) {
-                        // TODO Auto-generated catch block
-                        // e.printStackTrace();
-                    }
-                    s = null;
-                    return getString(R.string.error_could_not_connect);
-                } else {
-                    Log.d(TAG, "login Succeded to connect");
-                }
-            }
-        } catch (Exception e) {
-            Log.d(TAG, "login Failed to connect");
-            s = null;
-            return getString(R.string.error_could_not_connect);
-        }
-        
-        try {
-            Log.d(TAG, "login Logging in");
-        	// login as hidden
-        	if (!s.login(userid, password, hidden_session, false)) {
-        		return getString(R.string.error_invalid_password);
-        	}
-        	Log.d(TAG, "login Setting ClientVersion");
-        	s.setClientVersion("Androkom", getVersionName());
-        	s.setLatteName("AndroKOM " + getVersionName());
-        } catch (Exception e) {
-            Log.e("androkom", "Login.id Caught " + e.getClass().getName());
-            //Log.e("androkom", "Login.id Caught " + e.getClass().getName()+e.getStackTrace());
-            return "Unknown error";
-        }
-        re_userid = userid;
-        re_password = password;
-        re_server = server;
-        re_port = port;
-        re_useSSL = useSSL;
-        re_cert_level = cert_level;
+    public String login(int userid, String password, String server, int port,
+            boolean useSSL, int cert_level) throws InterruptedException {
+        Log.d(TAG, "login Trying to login userid:" + userid);
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "login B got lock");
+            try {
+                if (lks == null) {
+                    Log.d(TAG, "login creating new session");
 
+                    lks = new Session();
+                    lks.addRpcEventListener(this);
+                }
+                usernames = new ConfInfo[0];
+                try {
+                    Log.d(TAG, "login checking connection");
+                    if (!lks.getConnected()) {
+                        Log.d(TAG, "login not connected");
+                        if (connect(server, port, useSSL, cert_level) != 0) {
+                            Log.d(TAG, "login Failed to connect");                            
+                            try {
+                                if (lks != null) {
+                                    lks.disconnect(true);
+                                }
+                            } catch (IOException e) {
+                                // TODO Auto-generated catch block
+                                // e.printStackTrace();
+                            }
+                            lks = null;
+                            return getString(R.string.error_could_not_connect);
+                        } else {
+                            Log.d(TAG, "login Succeded to connect");
+                        }
+                    }
+                } catch (Exception e) {
+                    Log.d(TAG, "login Failed to connect");
+                    lks = null;
+                    return getString(R.string.error_could_not_connect);
+                }
+
+                try {
+                    Log.d(TAG, "login Logging in");
+                    // login as hidden
+                    if (!lks.login(userid, password, hidden_session, false)) {
+                        return getString(R.string.error_invalid_password);
+                    }
+                    Log.d(TAG, "login Setting ClientVersion");
+                    lks.setClientVersion("Androkom", getVersionName());
+                    lks.setLatteName("AndroKOM " + getVersionName());
+                    Log.d(TAG, "login done Setting ClientVersion");
+                } catch (nu.dll.lyskom.RpcFailure e) {
+                    Log.e(TAG, "Login.id Caught "
+                            + e.getClass().getName());
+                    Log.e(TAG, "Login.id Caught "
+                            + e + "\n" + e.getStackTrace());
+                    int errorCode = e.getError();
+                    Log.e(TAG, "login.id got error from server: "+decodeKomErrorCode(errorCode));
+                    nolock_logout();
+                    lks = null;
+                    // probably just a bad client programmer, trying to ignore
+                } catch (Exception e) {
+                    Log.e(TAG, "Login.id Caught "
+                            + e.getClass().getName());
+                    // Log.e("androkom", "Login.id Caught " +
+                    // e.getClass().getName()+e.getStackTrace());
+                    nolock_logout();
+                    lks = null;
+                    return "Unknown error: Exit client and restart";
+                }
+                Log.d(TAG, "login finished logging in");
+                re_userid = userid;
+                re_password = password;
+                re_server = server;
+                re_port = port;
+                re_useSSL = useSSL;
+                re_cert_level = cert_level;
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "login B unlocked");
+            }
+        } else {
+            Log.d(TAG, "login could not lock");
+        }
+        Log.d(TAG, "login done");
         return "";
     }
 
@@ -870,38 +1115,58 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public void endast(int confNo, int no) {
-    	try {
-			s.endast(confNo, no);
-		} catch (RpcFailure e) {
-		    Log.d(TAG, "endast RpcFailure:"+e);
-		    //e.printStackTrace();
-		} catch (IOException e) {
-            Log.d(TAG, "endast IOException:"+e);
-			//e.printStackTrace();
-		}
-    }
-
-    public void joinconference(int confNo) {
         try {
-            s.joinConference(confNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "joinconference RpcFailure:"+e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "joinconference IOException:"+e);
-            //e.printStackTrace();
+            slock.tryLock(60, TimeUnit.SECONDS);
+            try {
+                lks.endast(confNo, no);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "endast RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "endast IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } catch (InterruptedException e) {
+            Log.d(TAG, "onCreate tryLock interrupted");
+            e.printStackTrace();
         }
     }
 
-    public void leaveConference(int confNo) {
-        try {
-            s.leaveConference(confNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "leaveConference RpcFailure:"+e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "leaveConference IOException:"+e);
-            //e.printStackTrace();
+    public void joinconference(int confNo) throws InterruptedException {
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.joinConference(confNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "joinconference RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "joinconference IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "joinconference could not lock");
+        }
+    }
+
+    public void leaveConference(int confNo) throws InterruptedException {
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.leaveConference(confNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "leaveConference RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "leaveConference IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "leaveConference could not lock");
         }
     }
 
@@ -1034,64 +1299,84 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
-    public String subRecipient(int textNo, int confNo) {
-        String result="";
-        
-        try {
-            Log.d(TAG, "Remove confNo:"+confNo+" from textNo:"+textNo);
-            s.subRecipient(textNo, confNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "subRecipient RpcFailure:"+e);
-            //e.printStackTrace();
-            Log.d(TAG, "Error: "+e.getError());
-            Log.d(TAG, "ErrorStatus: "+e.getErrorStatus());
-            Log.d(TAG, "Message: "+e.getMessage());
+    public String subRecipient(int textNo, int confNo) throws InterruptedException {
+        String result = "";
 
-            result = decodeKomErrorCode(e.getError());
-        } catch (IOException e) {
-            Log.d(TAG, "subRecipient IOException:"+e);
-            //e.printStackTrace();
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                Log.d(TAG, "Remove confNo:" + confNo + " from textNo:" + textNo);
+                lks.subRecipient(textNo, confNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "subRecipient RpcFailure:" + e);
+                // e.printStackTrace();
+                Log.d(TAG, "Error: " + e.getError());
+                Log.d(TAG, "ErrorStatus: " + e.getErrorStatus());
+                Log.d(TAG, "Message: " + e.getMessage());
+
+                result = decodeKomErrorCode(e.getError());
+            } catch (IOException e) {
+                Log.d(TAG, "subRecipient IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "subRecipient could not lock");
         }
         return result;
     }
 
     /*
-     * Add an aux item of type auxtype to text number textno with content content.
-     * Note: textno must be pointing on an text not a conference/person.
+     * Add an aux item of type auxtype to text number textno with content
+     * content. Note: textno must be pointing on an text not a
+     * conference/person.
      */
-    public void addAuxItem(int textno, int auxType, String content) {
+    public void addAuxItem(int textno, int auxType, String content) throws InterruptedException {
         Log.d(TAG, "addAuxItem textno" + textno);
         Log.d(TAG, "addAuxItem axutype" + auxType);
         Log.d(TAG, "addAuxItem content" + content);
 
-        try {
-            AuxItem auxItem = new AuxItem(auxType, content);
-            AuxItem[] add_items = { auxItem };
-            int[] del_items = {};
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                AuxItem auxItem = new AuxItem(auxType, content);
+                AuxItem[] add_items = { auxItem };
+                int[] del_items = {};
 
-            s.modifyAuxInfo(false, textno, del_items, add_items);
-        } catch (Exception e) {
-            Log.d(TAG, "Failed to add aux item. Exception:" + e);
+                lks.modifyAuxInfo(false, textno, del_items, add_items);
+            } catch (Exception e) {
+                Log.d(TAG, "Failed to add aux item. Exception:" + e);
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "addAuxItem failed to lock");
         }
     }
-            
-    public String subComment(int textNo, int commentNo) {
-        String result="";
-        
-        try {
-            Log.d(TAG, "Remove textNo:"+textNo+" from commentNo:"+commentNo);
-            s.subComment(textNo, commentNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "subRecipient RpcFailure:"+e);
-            //e.printStackTrace();
-            Log.d(TAG, "Error: "+e.getError());
-            Log.d(TAG, "ErrorStatus: "+e.getErrorStatus());
-            Log.d(TAG, "Message: "+e.getMessage());
 
-            result = decodeKomErrorCode(e.getError());
-        } catch (IOException e) {
-            Log.d(TAG, "subRecipient IOException:"+e);
-            //e.printStackTrace();
+    public String subComment(int textNo, int commentNo) throws InterruptedException {
+        String result = "";
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                Log.d(TAG, "Remove textNo:" + textNo + " from commentNo:"
+                        + commentNo);
+                lks.subComment(textNo, commentNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "subRecipient RpcFailure:" + e);
+                // e.printStackTrace();
+                Log.d(TAG, "Error: " + e.getError());
+                Log.d(TAG, "ErrorStatus: " + e.getErrorStatus());
+                Log.d(TAG, "Message: " + e.getMessage());
+
+                result = decodeKomErrorCode(e.getError());
+            } catch (IOException e) {
+                Log.d(TAG, "subRecipient IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "subRecipient could not lock");
         }
         return result;
     }
@@ -1126,30 +1411,40 @@ public class KomServer extends Service implements RpcEventListener,
         return readMarker.isLocalRead(textNo);
     }
 
-    public void markText(int textNo)
-    {
-    	try {
-			s.markText(textNo, 100);
-		} catch (RpcFailure e) {
-            Log.d(TAG, "markText RpcFailure:"+e);
-			//e.printStackTrace();
-		} catch (IOException e) {
-            Log.d(TAG, "markText IOException:"+e);
-            //e.printStackTrace();
-		}
+    public void markText(int textNo) throws InterruptedException {
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.markText(textNo, 100);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "markText RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "markText IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "markText could not lock");
+        }
     }
 
-    public void unmarkText(int textNo)
-    {
-    	try {
-			s.unmarkText(textNo);
-		} catch (RpcFailure e) {
-            Log.d(TAG, "unmarkText RpcFailure:"+e);
-			//e.printStackTrace();
-		} catch (IOException e) {
-            Log.d(TAG, "unmarkText IOException:"+e);
-            //e.printStackTrace();
-		}
+    public void unmarkText(int textNo) throws InterruptedException {
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.unmarkText(textNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "unmarkText RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "unmarkText IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "unmarkText could not lock");
+        }
     }
 
     /**
@@ -1161,53 +1456,72 @@ public class KomServer extends Service implements RpcEventListener,
         return mLastTextNo;
     }
 
-	private String[] getNextHollerith(String s) {
-		s = s.trim();
-		int prefixLen = s.indexOf("H");
+    private String[] getNextHollerith(String s) {
+        s = s.trim();
+        int prefixLen = s.indexOf("H");
 
         int len = Integer.parseInt(s.substring(0, prefixLen));
 
         prefixLen++;
         String first = s.substring(prefixLen, prefixLen + len);
 
-		String second;
-		if (s.length() > first.length() + prefixLen + 1)
-			second = s.substring(first.length() + prefixLen + 1);
-		else
-			second = "";
+        String second;
+        if (s.length() > first.length() + prefixLen + 1)
+            second = s.substring(first.length() + prefixLen + 1);
+        else
+            second = "";
 
-		return new String[] { first, second };
-	}
+        return new String[] { first, second };
+    }
 
-	/**
-	 * Parse properties from the common area, if any.
-	 */
-	public void parseCommonUserArea() {
-		try {
-			UserArea ua = s.getUserArea();
-			String[] blocks = ua.getBlockNames();
+    /**
+     * Parse properties from the common area, if any.
+     */
+    public void parseCommonUserArea() {
+        try {
+            UserArea ua = null;
 
-			mCommonUserAreaProps = new HashMap<String, String>();
+            try {
+                Log.d(TAG, "parseCommonUserArea tryLock");
+                if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                    try {
+                        ua = lks.getUserArea();
+                    } finally {
+                        slock.unlock();
+                        Log.d(TAG, "parseCommonUserArea unlocked");
+                    }
+                } else {
+                    Log.d(TAG, "parseCommonUserArea failed to lock");
+                }
+            } catch (InterruptedException e) {
+                Log.d(TAG, "onCreate tryLock interrupted");
+                e.printStackTrace();
+            }
+            if (ua != null) {
+                String[] blocks = ua.getBlockNames();
 
-			for (String block : blocks) {
+                mCommonUserAreaProps = new HashMap<String, String>();
 
-				if (block.equals("common")) {
-					String token = ua.getBlock(block).getContentString();
-					while (token.length() > 0) {
-						String[] first = getNextHollerith(token);
-						String[] second = getNextHollerith(first[1]);
+                for (String block : blocks) {
 
-						mCommonUserAreaProps.put(first[0], second[0]);
-						token = second[1];
-					}
-				}
+                    if (block.equals("common")) {
+                        String token = ua.getBlock(block).getContentString();
+                        while (token.length() > 0) {
+                            String[] first = getNextHollerith(token);
+                            String[] second = getNextHollerith(first[1]);
 
-			}
-		} catch (Exception e) {
-			Log.d(TAG, "parseCommonUserArea " + e);
-			//e.printStackTrace();
-		}
-	}
+                            mCommonUserAreaProps.put(first[0], second[0]);
+                            token = second[1];
+                        }
+                    }
+
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "parseCommonUserArea " + e);
+            // e.printStackTrace();
+        }
+    }
 
 	/**
 	 * Get a property of presence-messages
@@ -1224,36 +1538,54 @@ public class KomServer extends Service implements RpcEventListener,
 		return presence_messages;
 	}
 
-	/**
-	 * Parse properties the elisp client has set, if any.
-	 */
-	public void parseElispUserArea() {
-		try {
+    /**
+     * Parse properties the elisp client has set, if any.
+     */
+    public void parseElispUserArea() {
+        try {
+            UserArea ua = null;
 
-			UserArea ua = s.getUserArea();
-			String[] blocks = ua.getBlockNames();
+            try {
+                Log.d(TAG, "parseElispUserArea");
+                if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                    try {
+                        ua = lks.getUserArea();
+                    } finally {
+                        slock.unlock();
+                        Log.d(TAG, "parseElispUserArea unlocked");
+                    }
+                } else {
+                    Log.d(TAG, "parseElispUserArea could not lock");
+                }
+            } catch (InterruptedException e) {
+                Log.d(TAG, "onCreate tryLock interrupted");
+                e.printStackTrace();
+            }
+            if (ua != null) {
+                String[] blocks = ua.getBlockNames();
 
-			mElispUserAreaProps = new HashMap<String, String>();
+                mElispUserAreaProps = new HashMap<String, String>();
 
-			for (String block : blocks) {
+                for (String block : blocks) {
 
-				if (block.equals("elisp")) {
-					String token = ua.getBlock(block).getContentString();
-					while (token.length() > 0) {
-						String[] first = getNextHollerith(token);
-						String[] second = getNextHollerith(first[1]);
+                    if (block.equals("elisp")) {
+                        String token = ua.getBlock(block).getContentString();
+                        while (token.length() > 0) {
+                            String[] first = getNextHollerith(token);
+                            String[] second = getNextHollerith(first[1]);
 
-						mElispUserAreaProps.put(first[0], second[0]);
-						token = second[1];
-					}
-				}
+                            mElispUserAreaProps.put(first[0], second[0]);
+                            token = second[1];
+                        }
+                    }
 
-			}
-		} catch (Exception e) {
-			Log.d(TAG, "parseElispUserArea " + e);
-			//e.printStackTrace();
-		}
-	}
+                }
+            }
+        } catch (Exception e) {
+            Log.d(TAG, "parseElispUserArea " + e);
+            // e.printStackTrace();
+        }
+    }
 
 	/**
 	 * Get a list of the IDs of all friends which are set in the elisp client
@@ -1274,41 +1606,55 @@ public class KomServer extends Service implements RpcEventListener,
 		return friendsList;
 	}
 
-    public String addNewRecipientToText(int textNo, int confNo, int texttype) {
-        String result="";
-        
+    public String addNewRecipientToText(int textNo, int confNo, int texttype) throws InterruptedException {
+        String result = "";
+
         Log.d(TAG, "Add new recipient (null method)");
         Log.d(TAG, "-- textNo:" + textNo);
         Log.d(TAG, "-- confNo:" + confNo);
         Log.d(TAG, "-- texttype:" + texttype);
-        try {
-            s.addRecipient(textNo, confNo, texttype);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "addNewRecipientToText " + e);
-            //e.printStackTrace();
-            result = decodeKomErrorCode(e.getError());
-        } catch (IOException e) {
-            Log.d(TAG, "addNewRecipientToText " + e);
-            //e.printStackTrace();
+        
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.addRecipient(textNo, confNo, texttype);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "addNewRecipientToText " + e);
+                // e.printStackTrace();
+                result = decodeKomErrorCode(e.getError());
+            } catch (IOException e) {
+                Log.d(TAG, "addNewRecipientToText " + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "could not lock");
         }
         return result;
     }
     
-    public String addNewCommentToText(int textNo, int commentNo) {
-        String result="";
-        
+    public String addNewCommentToText(int textNo, int commentNo) throws InterruptedException {
+        String result = "";
+
         Log.d(TAG, "Add new comment (null method)");
         Log.d(TAG, "-- textNo:" + textNo);
         Log.d(TAG, "-- commentNo:" + commentNo);
-        try {
-            s.addComment(textNo, commentNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "addNewCommentToText " + e);
-            //e.printStackTrace();
-            result = decodeKomErrorCode(e.getError());
-        } catch (IOException e) {
-            Log.d(TAG, "addNewCommentToText " + e);
-            //e.printStackTrace();
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                lks.addComment(textNo, commentNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "addNewCommentToText " + e);
+                // e.printStackTrace();
+                result = decodeKomErrorCode(e.getError());
+            } catch (IOException e) {
+                Log.d(TAG, "addNewCommentToText " + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "addNewCommentToText could not lock");
         }
         return result;
     }
@@ -1333,29 +1679,55 @@ public class KomServer extends Service implements RpcEventListener,
 		return latestIMSender;
 	}
 	
-	public boolean sendMessage(int recipient, String message, boolean block)
-			throws IOException, RpcFailure {
-		final boolean res = s.sendMessage(recipient, message, block);
-		imLogger.sendMessage(recipient, message);
-		return res;
-	}
+    public boolean sendMessage(int recipient, String message, boolean block)
+            throws IOException, RpcFailure, InterruptedException {
+        boolean res = false;
+
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                res = lks.sendMessage(recipient, message, block);
+                imLogger.sendMessage(recipient, message);
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "sendMessage could not lock");
+        }
+        return res;
+    }
 
 	public void setShowHeadersLevel(final int h) {
 		textFetcher.setShowHeadersLevel(h);
 	}
 
     public ConferenceInfo[] getUserNames() {
-        if (s != null) {
+        if (lks != null) {
             try {
                 if (usernames != null && usernames.length > 1) {
                     final ConferenceInfo[] items = new ConferenceInfo[usernames.length];
                     Log.d(TAG, "Ambigous name");
-                    for (int i = 0; i < usernames.length; i++) {
-                        items[i] = new ConferenceInfo();
-                        items[i].name = s.toString(s
-                                .getConfName(usernames[i].confNo));
-                        items[i].id = usernames[i].confNo;
-                        Log.d(TAG, "Name " + i + ":" + items[i]);
+                    try {
+                        Log.d(TAG, "getUserNames try lock");
+                        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                            Log.d(TAG, "getUserNames got lock");
+                            try {
+                                for (int i = 0; i < usernames.length; i++) {
+                                    items[i] = new ConferenceInfo();
+                                    items[i].name = lks.toString(lks
+                                            .getConfName(usernames[i].confNo));
+                                    items[i].id = usernames[i].confNo;
+                                    Log.d(TAG, "Name " + i + ":" + items[i]);
+                                }
+                            } finally {
+                                slock.unlock();
+                                Log.d(TAG, "getUserNames unlock");
+                            }
+                        } else {
+                            Log.d(TAG, "getUserNames could not lock");
+                        }
+                    } catch (InterruptedException e) {
+                        Log.d(TAG, "onCreate tryLock interrupted");
+                        e.printStackTrace();
                     }
                     return items;
                 }
@@ -1377,169 +1749,284 @@ public class KomServer extends Service implements RpcEventListener,
         return null;
     }
 
-	public Date getServerTime() throws Exception {
-	    if(s!=null) {
-	        return s.getTime().getTime();
-	    } else {
-	        throw new Exception("Not connected");
-	    }
-	}
-
-    public Person getPersonStat(Integer arg0) {
-        Person pers = null;
-        try {
-            pers = s.getPersonStat(arg0);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "getUserNames " + e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "getUserNames " + e);
-            //e.printStackTrace();
+    public Date getServerTime() throws InterruptedException {
+        Date tiden = null;
+        Log.d(TAG, "getServerTime");
+        if (slock.tryLock(6, TimeUnit.SECONDS)) {
+            Log.d(TAG, "getServerTime got lock");
+            try {
+                if (lks != null) {
+                    tiden = lks.getTime().getTime();
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "getServerTime unlocked");
+            }
+        } else {
+            Log.d(TAG, "getServerTime failed to get lock");
         }
+        Log.d(TAG, "getServerTime done");
+        return tiden;
+    }
+
+    public Person getPersonStat(Integer arg0) throws InterruptedException {
+        long startTime = System.currentTimeMillis();
+        Person pers = null;
+        Log.d(TAG, "getPersonStat id=" + arg0);
+        Log.d(TAG, "getPersonStat try Lock "
+                + (System.currentTimeMillis() - startTime));
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "getPersonStat got Lock "
+                    + (System.currentTimeMillis() - startTime));
+            try {
+                pers = lks.getPersonStat(arg0);
+                Log.d(TAG,
+                        "getPersonStat got Stat "
+                                + (System.currentTimeMillis() - startTime));
+            } catch (RpcFailure e) {
+                Log.d(TAG,
+                        "getUserNames " + e + " "
+                                + (System.currentTimeMillis() - startTime));
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG,
+                        "getUserNames " + e + " "
+                                + (System.currentTimeMillis() - startTime));
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+                Log.d(TAG,
+                        "getPersonStat unlock Lock "
+                                + (System.currentTimeMillis() - startTime));
+            }
+        } else {
+            Log.d(TAG,
+                    "getPersonStat failed to lock "
+                            + (System.currentTimeMillis() - startTime));
+        }
+        Log.d(TAG, "getPersonStat returning"
+                + (System.currentTimeMillis() - startTime));
         return pers;
     }
 
-    public String getClientName(int sessionNo) {
+    public String getClientName(int sessionNo) throws InterruptedException {
         String clientName = "";
-        try {
-            byte[] clientBytes = s.getClientName(sessionNo);
-            clientName = s.toString(clientBytes);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "getClientName " + e);
-            e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "getClientName " + e);
-            //e.printStackTrace();
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                byte[] clientBytes = lks.getClientName(sessionNo);
+                clientName = lks.toString(clientBytes);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "getClientName " + e);
+                e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "getClientName " + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "getClientName could not lock");
         }
         return clientName;
     }
 
-    public String getClientVersion(int sessionNo) {
+    public String getClientVersion(int sessionNo) throws InterruptedException {
         String clientName = "";
-        try {
-            byte[] clientBytes = s.getClientVersion(sessionNo);
-            clientName = s.toString(clientBytes);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "getClientVersion " + e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "getClientVersion " + e);
-            //e.printStackTrace();
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                byte[] clientBytes = lks.getClientVersion(sessionNo);
+                clientName = lks.toString(clientBytes);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "getClientVersion " + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "getClientVersion " + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "getClientVersion could not lock");
         }
         return clientName;
     }
 
-    public String getConnectionTime(int sessionNo) {
+    public String getConnectionTime(int sessionNo) throws InterruptedException {
         KomTime ctime = null;
-        try {
-            ctime = s.getStaticSessionInfo(sessionNo).getConnectionTime();
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                ctime = lks.getStaticSessionInfo(sessionNo).getConnectionTime();
+            } catch (RpcFailure e) {
+                Log.d(TAG, "getConnectionTime " + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "getConnectionTime " + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "getConnectionTime could not lock");
+        }
+        if (ctime != null) {
             Date CreationTime = ctime.getTime();
             SimpleDateFormat sdf = new SimpleDateFormat("[yyyy-MM-dd HH:mm]");
             return sdf.format(CreationTime);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "getConnectionTime " + e);
-            //e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "getConnectionTime " + e);
-            //e.printStackTrace();
-        }
-        return "";
+        } else
+            return "";
     }
 
-    public Text getTextbyNo(int textNo) {
-        Text text=null;
-        if(s==null) {
+    public Text getTextbyNo(int textNo) throws InterruptedException {
+        Text text = null;
+        if (lks == null) {
             return null;
         }
         Log.d(TAG, "getTextbyNo Trying to get text#: " + textNo);
-        try {
-            text=s.getText(textNo);
-        } catch (RpcFailure e) {
-            if(e.getError()==14) {
-                Log.d(TAG, "komserver.getTextbyNo No such text#:" + e.getErrorStatus());
-                throw(e);
-            } else {
-                Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                text = lks.getText(textNo);
+            } catch (RpcFailure e) {
+                if (e.getError() == 14) {
+                    Log.d(TAG,
+                            "komserver.getTextbyNo No such text#:"
+                                    + e.getErrorStatus());
+                    throw (e);
+                } else {
+                    Log.d(TAG, "komserver.getTextbyNo new_text RpcFailure:" + e);
+                }
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "komserver.getTextbyNo new_text IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
             }
-            // e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "komserver.getTextbyNo new_text IOException:" + e);
-            // e.printStackTrace();
-        }
-        if(text==null){
-            Log.d(TAG, "getTextbyNo could not get a text for "+textNo);
         } else {
-            Log.d(TAG, "getTextbyNo returning a text for "+textNo);
+            Log.d(TAG, "getTextbyNo could not lock");
+        }
+
+        if (text == null) {
+            Log.d(TAG, "getTextbyNo could not get a text for " + textNo);
+        } else {
+            Log.d(TAG, "getTextbyNo returning a text for " + textNo);
         }
         return text;
     }
     
-    public ConfInfo[] lookupName(String name, boolean wantPersons, boolean wantConfs) {
-        ConfInfo[] text=null;
-        if(s==null) {
+    public ConfInfo[] lookupName(String name, boolean wantPersons,
+            boolean wantConfs) throws InterruptedException {
+        ConfInfo[] text = null;
+        if (lks == null) {
             return null;
         }
-        try {
-            text=s.lookupName(name, wantPersons, wantConfs);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.lookupName new_text RpcFailure:" + e);
-            // e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "komserver.lookupName new_text IOException:" + e);
-            // e.printStackTrace();
-        } catch (ArrayIndexOutOfBoundsException e) {
-            Log.d(TAG, "Ran out of index, trying to recover. name="+name+" wantPersons="+wantPersons+" wantConfs="+wantConfs);
-            e.printStackTrace();
+
+        Log.d(TAG, "komserver.lookupName tryLock");
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                text = lks.lookupName(name, wantPersons, wantConfs);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "komserver.lookupName new_text RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "komserver.lookupName new_text IOException:" + e);
+                // e.printStackTrace();
+            } catch (ArrayIndexOutOfBoundsException e) {
+                Log.d(TAG, "Ran out of index, trying to recover. name=" + name
+                        + " wantPersons=" + wantPersons + " wantConfs="
+                        + wantConfs);
+                e.printStackTrace();
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "komserver.lookupName unlocked");
+            }
+        } else {
+            Log.d(TAG, "komserver.lookupName could not lock");
         }
         return text;
     }
 
-    public TextStat getTextStat(int textNo, boolean refreshCache) {
+    public TextStat getTextStat(int textNo, boolean refreshCache) throws InterruptedException {
         TextStat text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
-        try {
-            text = s.getTextStat(textNo, refreshCache);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getTextStat trying to recover from RpcFailure:" + e);
-            // e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "komserver.getTextStat trying to recover from IOException:" + e);
-            // e.printStackTrace();
-        } catch (ClassCastException e) {
-            Log.d(TAG, "komserver.getTextStat trying to recover from ClassCastException:" + e);
-        } catch (Exception e) {
-            Log.d(TAG, "komserver.getTextStat trying to recover from Exception:" + e);
-            e.printStackTrace();
+        Log.d(TAG, "getTextStat tryLock");
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            Log.d(TAG, "getTextStat got Lock");
+            try {
+                text = lks.getTextStat(textNo, refreshCache);
+            } catch (RpcFailure e) {
+                Log.d(TAG,
+                        "komserver.getTextStat trying to recover from RpcFailure:"
+                                + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG,
+                        "komserver.getTextStat trying to recover from IOException:"
+                                + e);
+                // e.printStackTrace();
+            } catch (ClassCastException e) {
+                Log.d(TAG,
+                        "komserver.getTextStat trying to recover from ClassCastException:"
+                                + e);
+                // } catch (Exception e) {
+                // Log.d(TAG,
+                // "komserver.getTextStat trying to recover from Exception:"
+                // + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "getTextStat unlocked");
+            }
+        } else {
+            Log.d(TAG, "getTextStat failed Lock");
         }
         return text;
     }
     
-    public RpcCall doMarkAsRead(int confNo, int[] localTextNo) {
+    public RpcCall doMarkAsRead(int confNo, int[] localTextNo) throws InterruptedException {
         RpcCall text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
-        try {
-            text = s.doMarkAsRead(confNo, localTextNo);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.doMarkAsRead new_text RpcFailure:" + e);
-            // e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "komserver.doMarkAsRead new_text IOException:" + e);
-            // e.printStackTrace();
+        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+            try {
+                text = lks.doMarkAsRead(confNo, localTextNo);
+            } catch (RpcFailure e) {
+                Log.d(TAG, "komserver.doMarkAsRead new_text RpcFailure:" + e);
+                // e.printStackTrace();
+            } catch (IOException e) {
+                Log.d(TAG, "komserver.doMarkAsRead new_text IOException:" + e);
+                // e.printStackTrace();
+            } finally {
+                slock.unlock();
+            }
+        } else {
+            Log.d(TAG, "komserver.doMarkAsRead could not lock");
         }
         return text;
     }
  
-    public nu.dll.lyskom.Conference getConfStat(int confNo) {
+    public nu.dll.lyskom.Conference getConfStat(int confNo)
+            throws InterruptedException {
         nu.dll.lyskom.Conference text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.getConfStat(confNo);
+            //Log.d(TAG, "mKom.getConfStat tryLock");
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                //Log.d(TAG, "mKom.getConfStat got Lock");
+                try {
+                    text = lks.getConfStat(confNo);
+                } finally {
+                    slock.unlock();
+                    //Log.d(TAG, "mKom.getConfStat unlocked");
+                }
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.getConfStat new_text RpcFailure:" + e);
             // e.printStackTrace();
@@ -1550,13 +2037,26 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public byte[] getConfName(int confNo) {
+    public byte[] getConfName(int confNo) throws InterruptedException {
+        Log.d(TAG, "byte [] mKom.getConfName id=" + confNo);
         byte[] text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.getConfName(confNo);
+            Log.d(TAG, "mKom.getConfName tryLock");
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                Log.d(TAG, "mKom.getConfName got Lock");
+                try {
+                    text = lks.getConfName(confNo);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.getConfStat unlocked");
+                }
+            } else {
+                Log.d(TAG, "komserver.getConfName could not lock");
+            }
+            Log.d(TAG, "komserver.getConfName got name:" + text);
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.getConfName new_text RpcFailure:" + e);
             // e.printStackTrace();
@@ -1569,11 +2069,11 @@ public class KomServer extends Service implements RpcEventListener,
 
     public String toString(byte[] buf) {
         String text = null;
-        if ((s == null)||(buf==null)) {
+        if ((lks == null)||(buf==null)) {
             return null;
         }
         try {
-            text = s.toString(buf);
+            text = lks.toString(buf);
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.toString new_text RpcFailure:" + e);
             // e.printStackTrace();
@@ -1584,13 +2084,23 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public boolean isMemberOf(int confNo) {
+    public boolean isMemberOf(int confNo) throws InterruptedException {
         boolean text = false;
-        if (s == null) {
+        if (lks == null) {
             return false;
         }
         try {
-            text = s.isMemberOf(confNo);
+            Log.d(TAG, "mKom.isMemberOf tryLock");
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.isMemberOf(confNo);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.isMemberOf unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.isMemberOf could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.isMemberOf new_text RpcFailure:" + e);
             // e.printStackTrace();
@@ -1598,32 +2108,53 @@ public class KomServer extends Service implements RpcEventListener,
             Log.d(TAG, "komserver.isMemberOf new_text IOException:" + e);
             // e.printStackTrace();
         } catch (java.lang.NullPointerException e) {
-            Log.d(TAG, "komserver.isMemberOf new_text NullPointerException:" + e);
+            Log.d(TAG, "komserver.isMemberOf new_text NullPointerException:"
+                    + e);
         }
         return text;
     }
 
-    public List<Integer> getUnreadConfsListCached() {
+    public List<Integer> getUnreadConfsListCached() throws InterruptedException {
         List<Integer> text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.getUnreadConfsListCached();
+            Log.d(TAG, "mKom.getUnreadConfsListCached tryLock");
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.getUnreadConfsListCached();
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.getUnreadConfsListCached unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.getUnreadConfsListCached could not lock");
+            }
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getUnreadConfsListCached new_text RpcFailure:" + e);
+            Log.d(TAG,
+                    "komserver.getUnreadConfsListCached new_text RpcFailure:"
+                            + e);
             // e.printStackTrace();
         }
         return text;
     }
 
-    public Membership queryReadTexts(int persNo, int confNo, boolean refresh) {
+    public Membership queryReadTexts(int persNo, int confNo, boolean refresh) throws InterruptedException {
         Membership text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.queryReadTexts(persNo, confNo, refresh);
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.queryReadTexts(persNo, confNo, refresh);
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "komserver.queryReadTexts could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.queryReadTexts new_text RpcFailure:" + e);
             // e.printStackTrace();
@@ -1634,13 +2165,24 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public UConference getUConfStat(int confNo) {
+    public UConference getUConfStat(int confNo) throws InterruptedException {
         UConference text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.getUConfStat(confNo);
+            Log.d(TAG, "mKom.getUConfStat tryLock");
+
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.getUConfStat(confNo);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.getUConfStat unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.getUConfStat could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.getUConfStat RpcFailure:" + e);
             // e.printStackTrace();
@@ -1652,13 +2194,22 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public TextMapping localToGlobal(int confNo, int firstLocalNo,
-            int noOfExistingTexts) {
+            int noOfExistingTexts) throws InterruptedException {
         TextMapping text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.localToGlobal(confNo, firstLocalNo, noOfExistingTexts);
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.localToGlobal(confNo, firstLocalNo,
+                            noOfExistingTexts);
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "komserver.localToGlobal could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.localToGlobal RpcFailure:" + e);
             // e.printStackTrace();
@@ -1670,13 +2221,22 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public TextMapping localToGlobalReverse(int confNo, int firstLocalNo,
-            int noOfExistingTexts) {
+            int noOfExistingTexts) throws InterruptedException {
         TextMapping text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.localToGlobalReverse(confNo, firstLocalNo, noOfExistingTexts);
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.localToGlobalReverse(confNo, firstLocalNo,
+                            noOfExistingTexts);
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "komserver.localToGlobalReverse could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.localToGlobalReverse RpcFailure:" + e);
             // e.printStackTrace();
@@ -1688,13 +2248,22 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public TextMapping mapCreatedTextsReverse(int confNo, int firstLocalNo,
-            int noOfExistingTexts) {
+            int noOfExistingTexts) throws InterruptedException {
         TextMapping text = null;
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            text = s.mapCreatedTextsReverse(confNo, firstLocalNo, noOfExistingTexts);
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.mapCreatedTextsReverse(confNo, firstLocalNo,
+                            noOfExistingTexts);
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "komserver.mapCreatedTextsReverse could not lock");
+            }
         } catch (RpcFailure e) {
             Log.d(TAG, "komserver.mapCreatedTextsReverse RpcFailure:" + e);
             // e.printStackTrace();
@@ -1707,16 +2276,18 @@ public class KomServer extends Service implements RpcEventListener,
 
     public List<TextInfo> populateSeeAgain(final SeeAgainTextList seeAgainTextList, int confNo, int numTexts, boolean douser) {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
-        final TextMapping data;
+        TextMapping data  = null;
 
-        if (s == null) {
-            return null;
-        }
         try {
-            if(douser) {
-                data = mapCreatedTextsReverse(confNo, 0, numTexts);
-            } else {
-                data = localToGlobalReverse(confNo, 0, numTexts);                
+            try {
+                if (douser) {
+                    data = mapCreatedTextsReverse(confNo, 0, numTexts);
+                } else {
+                    data = localToGlobalReverse(confNo, 0, numTexts);
+                }
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             if (data != null) {
                 Log.d(TAG,
@@ -1751,18 +2322,35 @@ public class KomServer extends Service implements RpcEventListener,
         return ret_data;
    }
     
-    public int createText(Text t, boolean autoreadmarkowntext) throws IOException {
+    public int createText(Text t, boolean autoreadmarkowntext)
+            throws IOException, InterruptedException {
         int text = 0;
-        if (s == null) {
+        if (lks == null) {
             return 0;
         }
         try {
-            text = s.createText(t);
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.createText(t);
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "createText did not lock 1");
+            }
             if (text == 0) {
                 Log.d(TAG, "createText did not get a textnumber");
             } else {
                 if (autoreadmarkowntext) {
-                    s.markAsRead(text);
+                    if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                        try {
+                            lks.markAsRead(text);
+                        } finally {
+                            slock.unlock();
+                        }
+                    } else {
+                        Log.d(TAG, "createText could not lock 2");
+                    }
                 }
             }
         } catch (RpcFailure e) {
@@ -1775,92 +2363,127 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
 
-    public int getCurrentConference() {
+    public int getCurrentConference() throws InterruptedException {
         int text = 0;
-        if (s == null) {
+        if (lks == null) {
             return 0;
         }
         try {
-            text = s.getCurrentConference();
+            Log.d(TAG, "mKom.getCurrentConference tryLock");
+
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    text = lks.getCurrentConference();
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.getCurrentConference unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.getCurrentConference could not lock");
+            }
         } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getCurrentConference new_text RpcFailure:" + e);
+            Log.d(TAG, "komserver.getCurrentConference new_text RpcFailure:"
+                    + e);
             // e.printStackTrace();
         }
         return text;
     }
 
-    public List<TextInfo> nextUnreadTexts(int ConfNo) {
+    public List<TextInfo> nextUnreadTexts(int ConfNo) throws InterruptedException {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
         List<Integer> data = null;
 
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            data = s.nextUnreadTexts(ConfNo, false, 20);
+            Log.d(TAG, "mKom.nextUnreadTexts tryLock");
+
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    data = lks.nextUnreadTexts(ConfNo, false, 20);
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.nextUnreadTexts unlocked");
+                }
+            } else {
+                Log.d(TAG, "mKom.nextUnreadTexts could not lock");
+            }
+            if(data == null) {
+                return null;
+            }
             Iterator<Integer> iter = data.iterator();
-            while(iter.hasNext()) {
+            while (iter.hasNext()) {
                 Integer textno = iter.next();
-                Log.d(TAG, "nextUnreadTexts Next text: "+textno);
+                Log.d(TAG, "nextUnreadTexts Next text: " + textno);
                 TextInfo text = getKomText(textno);
                 if (text != null) {
                     ret_data.add(text);
                 } else {
-                    Log.d(TAG, "nextUnreadTexts could not find textno "+textno);
+                    Log.d(TAG, "nextUnreadTexts could not find textno "
+                            + textno);
                 }
-                Log.d(TAG, "nextUnreadTexts Author: "+text.getAuthor());
-                Log.d(TAG, "nextUnreadTexts Date: "+text.getDate());
-                Log.d(TAG, "nextUnreadTexts Subject: "+text.getSubject());
+                Log.d(TAG, "nextUnreadTexts Author: " + text.getAuthor());
+                Log.d(TAG, "nextUnreadTexts Date: " + text.getDate());
+                Log.d(TAG, "nextUnreadTexts Subject: " + text.getSubject());
             }
         } catch (RpcFailure e) {
             Log.d(TAG, "nextUnreadTexts " + e);
-            //e.printStackTrace();
+            // e.printStackTrace();
         } catch (IOException e) {
             Log.d(TAG, "nextUnreadTexts " + e);
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         return ret_data;
     }
 
-    public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(MarkedTextList markedTextList) {
+    public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(
+            MarkedTextList markedTextList) throws InterruptedException {
         List<TextInfo> ret_data = new ArrayList<TextInfo>();
         Mark[] data = null;
 
-        if (s == null) {
+        if (lks == null) {
             return null;
         }
         try {
-            data = s.getMarks();
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    data = lks.getMarks();
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "populateSeeAgain could not lock");
+            }
             if (data != null) {
-                Log.d(TAG,
-                        "populateSeeAgain found number of texts: "
-                                + data.length);
+                Log.d(TAG, "populateSeeAgain found number of texts: "
+                        + data.length);
                 markedTextList.setPBMax(data.length);
             } else {
                 Log.d(TAG, "populateSeeAgain found null: ");
             }
             int counter = 0;
-            for(Mark i:data) {
+            for (Mark i : data) {
                 Integer textno = i.getText();
-                Log.d(TAG, "getMarkedTexts Next text: "+textno);
+                Log.d(TAG, "getMarkedTexts Next text: " + textno);
                 TextInfo text = getKomText(textno);
                 if (text != null) {
                     ret_data.add(text);
                 } else {
-                    Log.d(TAG, "getMarkedTexts could not find textno "+textno);
+                    Log.d(TAG, "getMarkedTexts could not find textno " + textno);
                 }
-                Log.d(TAG, "getMarkedTexts Author: "+text.getAuthor());
-                Log.d(TAG, "getMarkedTexts Date: "+text.getDate());
-                Log.d(TAG, "getMarkedTexts Subject: "+text.getSubject());
+                Log.d(TAG, "getMarkedTexts Author: " + text.getAuthor());
+                Log.d(TAG, "getMarkedTexts Date: " + text.getDate());
+                Log.d(TAG, "getMarkedTexts Subject: " + text.getSubject());
                 counter++;
                 markedTextList.setPBprogress(counter);
             }
         } catch (RpcFailure e) {
             Log.d(TAG, "getMarkedTexts " + e);
-            //e.printStackTrace();
+            // e.printStackTrace();
         } catch (IOException e) {
             Log.d(TAG, "getMarkedTexts " + e);
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         return ret_data;
     }
@@ -1927,46 +2550,67 @@ public class KomServer extends Service implements RpcEventListener,
             Log.d(TAG, "setUser got bad params! " + userId + " server:"
                     + server + " port:" + port);
             Thread.dumpStack();
-            logout();
+            try {
+                logout();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
         }
     }
 
     public boolean isConnected() {
+        boolean val = false;
         if (!connected) {
-            return false;
+            return val;
         }
-        if (s != null) {
-            try {
-                synchronized (s) {
-                    if (s != null) {
-                        return s.getConnected();
-                    }
-                }
-            } catch (Exception e) {
-                Log.d(TAG, "isConnected caught exception:" + e);
+        try {
+            if (lks != null) {
+                val = lks.getConnected();
             }
+        } catch (Exception e) {
+            Log.d(TAG, "isConnected caught exception:" + e);
         }
-        return false;
+        return val;
     }
 
     public void setConnected(boolean val) {
         connected = val;
         if (val) {
-            if (s==null || s.getState()==Session.STATE_DISCONNECTED) {
+            if (lks == null || lks.getState() == Session.STATE_DISCONNECTED) {
+                Log.d(TAG,
+                        "mKom.setConnected set connected failed. trying to reconnect");
                 new ReconnectTask().execute();
             }
         } else {
-            if (s != null) {
-                try {
-                    s.disconnect(true);
-                } catch (Exception e) {
-                    Log.d(TAG, "setConnected False failed:" + e);
+            try {
+                Log.d(TAG, "mKom.setConnected tryLock");
+                if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                    Log.d(TAG, "mKom.setConnected got Lock");
+                    try {
+                        if (lks != null) {
+                            lks.disconnect(true);
+                        } else {
+                            Log.d(TAG,
+                                    "mKom.setConnected no session to disconnect");
+                        }
+                    } finally {
+                        slock.unlock();
+                        Log.d(TAG, "mKom.setConnected unlocked");
+                    }
+                } else {
+                    Log.d(TAG, "mKom.setConnected could not lock");
                 }
-                s = null;
+            } catch (InterruptedException e) {
+                Log.d(TAG, "onCreate tryLock interrupted");
+                e.printStackTrace();
+            } catch (Exception e) {
+                Log.d(TAG, "setConnected False failed:" + e);
+                lks = null;
             }
         }
     }
-	
+    
 	public void error(String s) {
 		Log.e("androkom", s);
 	}
@@ -1975,8 +2619,9 @@ public class KomServer extends Service implements RpcEventListener,
 		Log.d("androkom KomServer", s);
 	}
 
-	private Session s = null;
-
+	private Session lks = null;
+	private volatile Lock slock = new ReentrantLock();
+	
 	private boolean connected = false;
 	
 	private int mLastTextNo = 0;
@@ -1996,6 +2641,8 @@ public class KomServer extends Service implements RpcEventListener,
     private int re_port=0; // for reconnect
 	private boolean re_useSSL=true; // for reconnect
     private int re_cert_level=0; // for reconnect
+
+    private String mConfName = "";
 
     private List<TextInfo> mTexts;
     

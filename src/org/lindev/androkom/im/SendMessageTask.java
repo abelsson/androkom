@@ -50,6 +50,9 @@ public class SendMessageTask extends AsyncTask<Void, Void, String> {
         }
         catch (final IOException e) {
             return mContext.getString(R.string.im_network_error);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return null;
     }

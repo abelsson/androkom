@@ -49,7 +49,15 @@ public class AddNewRecipientToText extends Activity implements ServiceConnection
 
         @Override
         protected String doInBackground(final Integer... args) {
-            return mKom.addNewRecipientToText(mTextNo, args[0], mTextType);
+            String result = "broken error";
+
+            try {
+                result =  mKom.addNewRecipientToText(mTextNo, args[0], mTextType);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return result;
         }
 
         @Override

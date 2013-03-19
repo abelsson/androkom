@@ -69,6 +69,10 @@ public class LookupNameTask extends AsyncTask<Void, Void, ConfInfo[]> {
         }
         catch (final NullPointerException e) {
             return null;
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+            return null;
         }
     }
 

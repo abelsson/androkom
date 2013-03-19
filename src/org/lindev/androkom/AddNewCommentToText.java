@@ -40,7 +40,14 @@ public class AddNewCommentToText extends Activity implements ServiceConnection {
 
         @Override
         protected String doInBackground(final Integer... args) {
-            return mKom.addNewCommentToText(mTextNo, args[0]);
+            String result = "broken error";
+            try {
+                result =  mKom.addNewCommentToText(mTextNo, args[0]);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            return result;
         }
 
         @Override

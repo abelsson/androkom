@@ -14,8 +14,11 @@ import android.database.sqlite.SQLiteOpenHelper;
 import android.os.Bundle;
 import android.os.Message;
 import android.provider.BaseColumns;
+import android.util.Log;
 
 public class IMLogger extends Observable implements AsyncMessageSubscriber {
+    public static final String TAG = "Androkom IMLogger";
+
     private final SQLHelper dbHelper;
     private final KomServer mKom;
     private final Object mWriteLock;
@@ -346,8 +349,20 @@ public class IMLogger extends Observable implements AsyncMessageSubscriber {
     public void sendMessage(final int toId, final String msgStr) {
         final int myId = mKom.getUserId();
         final int fromId = myId;
-        final String fromStr = mKom.getConferenceName(fromId);
-        final String toStr = mKom.getConferenceName(toId);
+        String fromStr = null;
+        try {
+            fromStr = mKom.getConferenceName(fromId);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "sendMessage InterruptedException 1");
+        }
+        String toStr = null;
+        try {
+            toStr = mKom.getConferenceName(toId);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "sendMessage InterruptedException 2");
+        }
         final int convId = toId;
         final String convStr = toStr;
 

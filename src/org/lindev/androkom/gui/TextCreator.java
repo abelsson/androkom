@@ -106,6 +106,9 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                 }
             } catch (final RpcFailure e) {
                 return null;
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             return recipients;
         }
@@ -342,7 +345,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             if (mReplyTo > 0) {
                 try {
                     // TODO: Don't quote image, at least not as text...
-                    textToInsert = mKom.getTextbyNo(mReplyTo).getBodyString();
+                    try {
+                        textToInsert = mKom.getTextbyNo(mReplyTo).getBodyString();
+                    } catch (InterruptedException e) {
+                        // TODO Auto-generated catch block
+                        e.printStackTrace();
+                    }
                 } catch (UnsupportedEncodingException e) {
                     Log.d(TAG, "onOptionsItemSelected:" + e);
                     e.printStackTrace();
@@ -522,7 +530,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             new CopyRecipientsTask().execute(mReplyTo);
         }
         else if (isMail) {
-            add(new Recipient(mKom.getApplicationContext(), mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            try {
+                add(new Recipient(mKom.getApplicationContext(), mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "addInitialRecipients InterruptedException 1");
+            }
             showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_USERS);
         }
         else {
@@ -533,7 +546,12 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             mSubject.setText(subject);
         }
         if (recipient > 0) {
-            add(new Recipient(mKom.getApplicationContext(), recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+            try {
+                add(new Recipient(mKom.getApplicationContext(), recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "addInitialRecipients InterruptedException 2");
+            }
         }
     }
 
@@ -555,9 +573,14 @@ public class TextCreator extends TabActivity implements ServiceConnection {
             try {
                 mKom.activateUser();
             } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:"+e1);
+                Log.i(TAG, "Failed to activate user, exception:"+e1);
                 //e1.printStackTrace();
-                mKom.logout();
+                try {
+                    mKom.logout();
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
             }
             return null;
         }

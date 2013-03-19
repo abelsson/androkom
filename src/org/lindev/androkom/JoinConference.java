@@ -43,7 +43,12 @@ public class JoinConference extends Activity implements ServiceConnection {
 
         @Override
         protected Void doInBackground(final Integer... args) {
-            mKom.joinconference(args[0]);
+            try {
+                mKom.joinconference(args[0]);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
             return null;
         }
 

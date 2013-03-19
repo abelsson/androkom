@@ -56,6 +56,9 @@ public class SendTextTask extends AsyncTask<Void, Void, String> {
         }
         catch (final IOException e) {
             return "IOException";
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
         }
         return null;
     }

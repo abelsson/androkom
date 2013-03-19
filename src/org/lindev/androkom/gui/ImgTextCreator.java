@@ -93,6 +93,9 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             }
             catch (final RpcFailure e) {
                 return null;
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
             return recipients;
         }
@@ -415,7 +418,12 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             new CopyRecipientsTask().execute(mReplyTo);
         }
         else if (isMail) {
-            add(new Recipient(mKom.getApplicationContext(), mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            try {
+                add(new Recipient(mKom.getApplicationContext(), mKom.getUserId(), mKom.getConferenceName(mKom.getUserId()), RecipientType.RECP_TO));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "addInitialRecipients InterruptedException 1");
+            }
             showAddRecipientDialog(RecipientType.RECP_TO, LookupType.LOOKUP_USERS);
         }
         else {
@@ -426,7 +434,12 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             mSubject.setText(subject);
         }
         if (recipient > 0) {
-            add(new Recipient(mKom.getApplicationContext(), recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+            try {
+                add(new Recipient(mKom.getApplicationContext(), recipient, mKom.getConferenceName(recipient), RecipientType.RECP_TO));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "addInitialRecipients InterruptedException 2");
+            }
         }
     }
 

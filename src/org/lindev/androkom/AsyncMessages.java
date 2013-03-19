@@ -151,11 +151,19 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
             } catch (java.lang.ArrayIndexOutOfBoundsException e) {
                 Log.d(TAG, "processMessage login caught ArrayIndexOutOfBoundsException.");
                 Log.d(TAG, ""+e);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "processMessage login caught InterruptedException.");
             }
             break;
 
         case nu.dll.lyskom.Asynch.logout:
-            b.putString(ASYNC_MESSAGE_NAME, mKom.getConferenceName(params[0].intValue()));
+            try {
+                b.putString(ASYNC_MESSAGE_NAME, mKom.getConferenceName(params[0].intValue()));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "processMessage logout caught InterruptedException.");
+            }
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
@@ -166,8 +174,18 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         case nu.dll.lyskom.Asynch.send_message:
             b.putInt(ASYNC_MESSAGE_FROM_ID, params[1].intValue());
             b.putInt(ASYNC_MESSAGE_TO_ID, params[0].intValue());
-            b.putString(ASYNC_MESSAGE_FROM, mKom.getConferenceName(params[1].intValue()));
-            b.putString(ASYNC_MESSAGE_TO, mKom.getConferenceName(params[0].intValue()));
+            try {
+                b.putString(ASYNC_MESSAGE_FROM, mKom.getConferenceName(params[1].intValue()));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "processMessage send_message caught InterruptedException 1.");
+            }
+            try {
+                b.putString(ASYNC_MESSAGE_TO, mKom.getConferenceName(params[0].intValue()));
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                Log.d(TAG, "processMessage send_message caught InterruptedException 2.");
+            }
             b.putString(ASYNC_MESSAGE_MSG, ((Hollerith) params[2]).getContentString());
             mKom.setLatestIMSender(b.getString(ASYNC_MESSAGE_FROM));
             break;
@@ -199,7 +217,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
             b.putInt(ASYNC_TEXT_NO, params[0].intValue());
-            new LoadMessageTask().execute(params[0]);
+            //new LoadMessageTask().execute(params[0]);
             break;
 
         case nu.dll.lyskom.Asynch.new_recipient:
