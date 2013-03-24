@@ -200,13 +200,15 @@ public class Login extends Activity implements ServiceConnection
      * alert. Otherwise save username and password for successive sessions.
      */
     private class LoginTask extends AsyncTask<Void, Integer, String> {
-        private final ProgressDialog dialog = new ProgressDialog(Login.this);
+        private ProgressDialog dialog = null;
 
         String username;
         String password;
 
         protected void onPreExecute() {
             try {
+                dialog = new ProgressDialog(Login.this);
+                
                 this.dialog.setCancelable(true);
                 this.dialog.setIndeterminate(true);
                 this.dialog.setMessage("Logging in...");
@@ -224,6 +226,9 @@ public class Login extends Activity implements ServiceConnection
 
         protected String doInBackground(final Void... args) 
         {
+            if( (username.length()<1) || (password .length() < 1)) {
+                return "Username and password needed";
+            }
             Log.d(TAG, "LoginTask doInBackground ");
 			String server = Prefs.getServer(getBaseContext());
 			int port = Prefs.getPortno(getBaseContext());

@@ -301,7 +301,10 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="bgcolour_title">Background colour</string>
     <string name="bgcolour_summary">Colour of background in textview</string>
     <string name="fgcolour_title">Text colour</string>
-    <string name="fgcolour_summary">Colour of text in textview</string>
+    <string name="fgcolour_summary">Colour of text in textview\n
+Supported formats are:
+#RRGGBB #AARRGGBB \'red\', \'blue\', \'green\', \'black\', \'white\', \'gray\',
+\'cyan\', \'magenta\', \'yellow\', \'lightgray\', \'darkgray\'</string>
     <string name="linkcolour_title">Link colour</string>
     <string name="linkcolour_summary">Colour of link in textview</string>
     <string name="fontsize_title">Font size</string>
