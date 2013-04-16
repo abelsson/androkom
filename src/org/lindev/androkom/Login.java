@@ -226,7 +226,10 @@ public class Login extends Activity implements ServiceConnection
 
         protected String doInBackground(final Void... args) 
         {
-            if( (username.length()<1) || (password .length() < 1)) {
+            if( (username == null) ||
+                    (password == null) ||
+                    (username.length()<1) ||
+                    (password.length() < 1)) {
                 return "Username and password needed";
             }
             Log.d(TAG, "LoginTask doInBackground ");
@@ -242,18 +245,26 @@ public class Login extends Activity implements ServiceConnection
         		if(selectedUser>0) {
                     Log.d(TAG, "LoginTask login userid");
                     mKom.reconnect();
-        			String msg = "Broken error";
+        			String msg = "Login failed 1 (default)";
                     try {
                         msg = mKom.login(selectedUser, password, server, port, useSSL, cert_level);
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
+                        msg = "Login failed 1 (Interrupted)";
                         e.printStackTrace();
+                        if(mKom != null) {
+                            try {
+                                mKom.logout();
+                            } catch (InterruptedException e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
                     }
         			selectedUser=0;
                     Log.d(TAG, "LoginTask logged in userid");
             		return msg;
         		} else {
-        		    String result = "login broken error";
+        		    String result = "Login failed 2 (default)";
                     Log.d(TAG, "LoginTask login username");
         		    
         		    try {
@@ -261,13 +272,37 @@ public class Login extends Activity implements ServiceConnection
         		        result = mKom.login(username, password, server, port, useSSL, cert_level);
         		    }
         		    catch(NullPointerException e) {
-        		        result = "Failed to login";
+        		        result = "Login failed 3 (nullpointer)";
+                        if(mKom != null) {
+                            try {
+                                mKom.logout();
+                            } catch (InterruptedException e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
         		    } catch (RpcFailure e) {
-                        // TODO Auto-generated catch block
+                        result = "Login failed 4 (RpcFailure)";
                         e.printStackTrace();
+                        if(mKom != null) {
+                            try {
+                                mKom.logout();
+                            } catch (InterruptedException e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
                     } catch (InterruptedException e) {
-                        // TODO Auto-generated catch block
+                        result = "Login failed 5 (Interrupted)";
                         e.printStackTrace();
+                        if(mKom != null) {
+                            try {
+                                mKom.logout();
+                            } catch (InterruptedException e1) {
+                                // TODO Auto-generated catch block
+                                e1.printStackTrace();
+                            }
+                        }
                     }
                     Log.d(TAG, "LoginTask logged in userid?");
             		return result;

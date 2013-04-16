@@ -1,6 +1,5 @@
 package org.lindev.androkom;
 
-import java.io.IOException;
 import java.util.Date;
 import java.util.List;
 import java.util.Timer;
@@ -8,7 +7,6 @@ import java.util.TimerTask;
 
 import nu.dll.lyskom.KomToken;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
-import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
@@ -80,8 +78,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		getApp().doBindService(this);
 	}
 
-    int localtimer = 60;
-
     /**
      * While activity is active, keep a timer running to periodically refresh
      * the list of conferences with unread messages.
@@ -93,7 +89,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         Log.d(TAG, "onResume");
 
         localtimer = 0;
-        mAdapter.clear();
+        //mAdapter.clear();
         
         mTimer = new Timer();
         mTimer.scheduleAtFixedRate(new TimerTask() {
@@ -175,6 +171,20 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 e.printStackTrace();
             }
             finish();
+            break;
+        case Consts.MESSAGE_UPD_CONF:
+            mAdapter.clear();
+            mConferences = (List<ConferenceInfo>) msg.obj;
+            String str;
+            for (ConferenceInfo elem : mConferences) {
+                if(elem.numUnread > 0) {
+                    str = "(" + elem.numUnread + ") " + elem.name;
+                } else {
+                    str = "() " + elem.name;
+                }
+                mAdapter.add(str);
+            }
+            mAdapter.notifyDataSetChanged();
             break;
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
@@ -356,7 +366,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		@Override
 		protected void onPreExecute() {
             Log.d(TAG, "PopulateConferenceTask onPreExecute 1:");
-			setProgressBarIndeterminateVisibility(true);
+            setProgressBarIndeterminateVisibility(true);
+            mAdapter.clear();
+            mConferences = null;
 		}
 
 		// worker thread (separate from UI thread)
@@ -367,7 +379,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 mKom.reconnect();
             }
             Log.d(TAG, "PopulateConferenceTask doInBackground 2:");
-            List<ConferenceInfo> confList = fetchConferences();
+            List<ConferenceInfo> confList = fetchConferences(mHandler);
             Log.d(TAG, "PopulateConferenceTask doInBackground 3:");
             try {
                 if (mKom != null) {
@@ -388,7 +400,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		@Override
         protected void onPostExecute(final List<ConferenceInfo> fetched) {
-            setProgressBarIndeterminateVisibility(false);
             Log.d(TAG, "PopulateConferenceTask onPostExecute 1:");
             
             mAdapter.clear();
@@ -440,12 +451,13 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 }
             }
             //updateTheme(null);
+            setProgressBarIndeterminateVisibility(false);
             Log.d(TAG, "PopulateConferenceTask onPostExecute 3:");
 		}
 
 	}
 
-	private List<ConferenceInfo> fetchConferences() {
+	private List<ConferenceInfo> fetchConferences(Handler mHandler2) {
 		List<ConferenceInfo> retlist = null;
 
 		try {
@@ -453,7 +465,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			if (app != null) {
 				if (mKom != null) {
 					if (mKom.isConnected()) {
-						retlist = mKom.fetchConferences();
+						retlist = mKom.fetchConferences(mHandler2);
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
 					}
@@ -522,10 +534,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             // e.printStackTrace();
         }
        */ 
-       
-        Message msg = new Message();
-        msg.what = Consts.MESSAGE_POPULATE;
-        mHandler.sendMessage(msg);
     }
 
     /**
@@ -755,6 +763,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
 	private Timer mTimer = null;
+    int localtimer = 60;
 
 	private int re_userId = 0;
     private String re_userPSW = null;

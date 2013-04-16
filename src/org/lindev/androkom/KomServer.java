@@ -67,7 +67,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -691,12 +691,13 @@ public class KomServer extends Service implements RpcEventListener,
 
     /**
      * Fetch a list of conferences with unread texts.
+     * @param msgHandler 
      * @throws IOException 
      * @throws RpcFailure 
      * @throws UnsupportedEncodingException 
      * @throws InterruptedException 
      */
-    public List<ConferenceInfo> fetchConferences()
+    public List<ConferenceInfo> fetchConferences(Handler msgHandler)
             throws UnsupportedEncodingException, RpcFailure, IOException,
             InterruptedException {
         List<ConferenceInfo> arr = new ArrayList<ConferenceInfo>();
@@ -704,14 +705,28 @@ public class KomServer extends Service implements RpcEventListener,
         if (slock.tryLock(60, TimeUnit.SECONDS)) {
             Log.d(TAG, "mKom.fetchConferences got Lock");
             try {
-                for (int conf : lks.getMyUnreadConfsList(true)) {
-                    final String name = lks.toString(lks.getConfName(conf));
-                    Log.i(TAG, name + " <" + conf + ">");
+                List<Integer> confList = lks.getMyUnreadConfsList(true);
+                int arrIndex;
+                for (int conf : confList) {
+                    arrIndex = arr.size();
                     final ConferenceInfo info = new ConferenceInfo();
+                    final String name = lks.toString(lks.getConfName(conf));
                     info.id = conf;
                     info.name = name;
-                    info.numUnread = lks.getUnreadCount(conf);
+                    info.numUnread = 0;
                     arr.add(info);
+                    Message msg = new Message();
+                    msg.what = Consts.MESSAGE_UPD_CONF;
+                    msg.obj = new ArrayList<ConferenceInfo>(arr);
+                    msgHandler.sendMessage(msg);
+
+                    Log.i(TAG, name + " <" + conf + ">");
+                    info.numUnread = lks.getUnreadCount(conf);
+                    arr.set(arrIndex, info);
+                    msg = new Message();
+                    msg.what = Consts.MESSAGE_UPD_CONF;
+                    msg.obj = new ArrayList<ConferenceInfo>(arr);
+                    msgHandler.sendMessage(msg);
                 }
             } finally {
                 slock.unlock();
