@@ -318,4 +318,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="seeagaintextlist_label">See again text list</string>
     <string name="radio_conf_label">Conference</string>
     <string name="radio_user_label">User</string>
+    <string name="dumplog_title">Dump log</string>
+    <string name="dumplog_summary">Write log file to external storage</string>
 </resources>

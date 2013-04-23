@@ -23,4 +23,8 @@ public class Consts {
     static final int MESSAGE_PERS_INFO = 18;
     static final int MESSAGE_PROGRESS = 19;
     static final int MESSAGE_LOGOUT_AND_FINISH = 20;
+    
+    public static final int MESSAGE_SENDTEXT = 21;
+    public static final int MESSAGE_FINISH = 22;
+
 }

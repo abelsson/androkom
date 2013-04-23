@@ -1,6 +1,11 @@
 package org.lindev.androkom;
 
+import java.io.BufferedOutputStream;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.UnsupportedEncodingException;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
@@ -49,6 +54,7 @@ import android.content.pm.PackageInfo;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -2633,6 +2639,64 @@ public class KomServer extends Service implements RpcEventListener,
 	public void debug(String s) {
 		Log.d("androkom KomServer", s);
 	}
+
+	/**
+     * Logcat to file
+     */
+    public void dumpLog() {
+        if (ConferencePrefs.getDumpLog(getBaseContext())) {
+            Process process = null;
+            try {
+                process = Runtime.getRuntime().exec("logcat -d");
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return;
+            }
+
+            BufferedReader bufferedReader = new BufferedReader(
+                    new InputStreamReader(process.getInputStream()));
+            File tempFile = null;
+            FileOutputStream fos = null;
+            File sdDir = Environment.getExternalStorageDirectory();
+            final String EXPORT_DIR_NAME = sdDir.getAbsolutePath()+"/Android/data/org.lindev.androkom/files";
+            final String EXPORT_FILE_NAME = EXPORT_DIR_NAME+"/androkom.log";
+            Log.d(TAG, "dumpLOG: "+EXPORT_FILE_NAME);
+            try {
+                tempFile = new File(EXPORT_DIR_NAME);
+                tempFile.mkdirs();
+                tempFile = new File(EXPORT_FILE_NAME);
+                tempFile.createNewFile();
+                fos = new FileOutputStream(tempFile);
+            } catch (IOException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
+                return;
+            }
+            BufferedOutputStream out = new BufferedOutputStream(fos);
+
+            String newline = "\n";
+            byte[] nlbytes = newline.getBytes();
+            try {
+                String line;
+                while ((line = bufferedReader.readLine()) != null) {
+                    out.write(line.getBytes());
+                    out.write(nlbytes);
+                }
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                return;
+            }
+            try {
+                out.close();
+                bufferedReader.close();
+            } catch (IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+        }
+    }
 
 	private Session lks = null;
 	private volatile Lock slock = new ReentrantLock();

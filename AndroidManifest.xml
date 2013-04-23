@@ -11,7 +11,8 @@
   <uses-permission android:name="org.openintents.safe.ACCESS_INTENTS" />
   <uses-permission android:name="android.permission.ACCESS_FINE_LOCATION" />
   <uses-permission android:name="android.permission.GET_ACCOUNTS" />
-
+  <uses-permission android:name="android.permission.WRITE_EXTERNAL_STORAGE"/>
+  
   <!-- Needed to check when the network connection changes -->
   <uses-permission android:name="android.permission.ACCESS_NETWORK_STATE"/>
 

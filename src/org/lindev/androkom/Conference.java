@@ -828,6 +828,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             Context context = getBaseContext();
+            mKom.dumpLog();
             activateUser();
             Log.d(TAG, "onSingleTapConfirmed");
             if (!ConferencePrefs.getEnableTapToNext(context)) {
@@ -1185,6 +1186,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     	float newtextsize;
     	
     	Log.d(TAG, "onOptionsItemSelected");
+
+    	mKom.dumpLog();
+
         activateUser();
     	
         // Handle item selection

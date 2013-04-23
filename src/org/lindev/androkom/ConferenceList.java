@@ -247,6 +247,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         }
     }
 
+
 	/**
 	 * Show options menu. Currently does nothing useful.
 	 */
@@ -267,6 +268,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		Log.d(TAG, "onOptionsItemSelected");
 		activateUser();
 
+		mKom.dumpLog();
+		
 		// Handle item selection
 		switch (item.getItemId()) {
 

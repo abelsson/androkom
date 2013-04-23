@@ -12,7 +12,9 @@ import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
+import org.lindev.androkom.ConferenceInfo;
 import org.lindev.androkom.ConferencePrefs;
+import org.lindev.androkom.Consts;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
@@ -37,9 +39,12 @@ import android.graphics.BitmapFactory;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.util.Log;
 import android.view.View;
+import android.view.Window;
 import android.widget.AdapterView;
 import android.widget.AdapterView.OnItemClickListener;
 import android.widget.ArrayAdapter;
@@ -113,7 +118,15 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     @Override
     protected void onCreate(final Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
+        requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         setContentView(R.layout.create_new_imgtext_layout);
+
+        mHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeMessage(msg);
+            }
+        };
 
         initializeCommon();
         initializeRecipients();
@@ -341,6 +354,41 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         builder.create().show();
     }
 
+    protected void consumeMessage(final Message msg) {
+        switch (msg.what) {
+        case Consts.MESSAGE_SENDTEXT:
+            String subject = (String) msg.obj;
+            CreateText ct = new CreateText(mKom, subject, imgFilename, imgdata, mReplyTo, mRecipients);
+            Text text = ct.process(ConferencePrefs.getIncludeLocation(this));
+            try {
+                final int id = mKom.createText(text, ConferencePrefs.getAutoMarkOwnTextRead(this));
+                if(id!=0) {
+                    mKom.mPendingSentTexts.add(id);
+                } else {
+                    Log.d(TAG, "Failed to create text");
+                }
+            }
+            catch (final IOException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+            }
+            setProgressBarIndeterminateVisibility(false);
+            Message rmsg = new Message();
+            rmsg.what = Consts.MESSAGE_FINISH;
+            rmsg.obj = subject;
+            mHandler.sendMessage(rmsg);
+            break;
+        case Consts.MESSAGE_FINISH:
+            finish();
+        default:
+            Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
+            return;
+        }
+    }
+
     private void sendMessage() {
         Log.d(TAG, "sendMessage 1");
         final String subject = mSubject.getText().toString();
@@ -353,17 +401,13 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             return;
         }
         Log.d(TAG, "sendMessage 3");
-
-        new CreateTextTask(this, mKom, subject, imgFilename, imgdata, mReplyTo, mRecipients, new CreateTextRunnable() {
-            public void run(final Text text) {
-                new SendTextTask(ImgTextCreator.this, mKom, text, new Runnable() {
-                    public void run() {
-                        Log.d(TAG, "sendMessage 4");
-                        finish();
-                    }
-                }).execute();
-            }
-        }).execute();
+        
+        setProgressBarIndeterminateVisibility(true);
+        
+        Message msg = new Message();
+        msg.what = Consts.MESSAGE_SENDTEXT;
+        msg.obj = subject;
+        mHandler.sendMessage(msg);
     }
 
     private void remove(final Recipient recipient) {
@@ -464,4 +508,6 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
 
     byte[] imgdata = null;
     String imgFilename = null;
+    
+    private static Handler mHandler=null;
 }

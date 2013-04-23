@@ -180,6 +180,12 @@
     android:defaultValue="14"
     android:digits="0123456789"
     />
+  <CheckBoxPreference
+    android:key="dumplog"
+    android:title="@string/dumplog_title"
+    android:summary="@string/dumplog_summary"
+    android:defaultValue="true"
+    />
   
   </PreferenceCategory>
 </PreferenceScreen>

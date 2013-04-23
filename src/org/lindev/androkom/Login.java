@@ -542,7 +542,7 @@ public class Login extends Activity implements ServiceConnection
     public void onServiceConnected(ComponentName name, IBinder service) {
         try {
             mKom = ((LocalBinder<KomServer>) service).getService();
-
+            mKom.dumpLog();
             create_image();
         } catch (Exception e) {
             Log.d(TAG, "Exception: " + e);

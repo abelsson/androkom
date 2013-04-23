@@ -75,6 +75,10 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_LINKCOLOUR = "linkcolour";
     private static final String OPT_LINKCOLOUR_DEF = "blue";
 
+    private static final String OPT_DUMPLOG = "dumplog";
+    private static final Boolean OPT_DUMPLOG_DEF = true;
+
+
     private static final String TAG = "Androkom ConferencePrefs";
     
     protected void onCreate(Bundle savedInstanceState) {
@@ -175,7 +179,9 @@ public class ConferencePrefs extends PreferenceActivity {
     }
 
     public static boolean getforce646decode(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_FORCE646DECODE, OPT_FORCE646DECODE_DEF);    }
+        return PreferenceManager.getDefaultSharedPreferences(context)
+                .getBoolean(OPT_FORCE646DECODE, OPT_FORCE646DECODE_DEF);
+    }
 
     public static int getMaxImageSizePix(Context context) {
         String butval = PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_MAXIMAGESIZEPIX, OPT_MAXIMAGESIZEPIX_DEF);
@@ -199,5 +205,9 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static String getLinkColour(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_LINKCOLOUR, OPT_LINKCOLOUR_DEF);
+    }
+
+    public static boolean getDumpLog(Context context) {
+        return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_DUMPLOG, OPT_DUMPLOG_DEF);
     }
 }

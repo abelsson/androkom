@@ -101,22 +101,30 @@ class TextCache {
                 Log.d(TAG, "TextFetcherTask getTextFromServer RpcFailure: " + e);
                 // e.printStackTrace();
                 if(e.getError()==14) {
+                    Log.d(TAG, "TextFetcherTask Error 14 no such text or not allowed to read");
                     //Text does not exist or we are not allowed to read.
                     return new TextInfo(mKom.getBaseContext(), textNo, username,
                             0, "-", "FINNS EJ",
                             "FINNS EJ", "FINNS EJ", "FINNS EJ",
                             null, 0);                    
                 }
-                return null;
+                return new TextInfo(mKom.getBaseContext(), textNo, username,
+                        0, "-", "FINNS EJ",
+                        "FINNS EJ", "FINNS EJ", "RpcFailure"+e.getError(),
+                        ("RpcFailure"+e.getError()).getBytes(), 0);                    
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
+                Log.d(TAG, "TextFetcherTask InterruptedException");
                 e.printStackTrace();
             }
 
             if(text == null) {
-                Log.d(TAG, "TextFetcherTask failed to get eext: ");
+                Log.d(TAG, "TextFetcherTask failed to get text: ");
+                return new TextInfo(mKom.getBaseContext(), textNo, username,
+                        0, "-", "FINNS EJ",
+                        "FINNS EJ", "FINNS EJ", "FINNS EJ",
+                        null, 0);                    
             } else {
-                Log.d(TAG, "TextFetcherTask got Text: ");
+                Log.d(TAG, "TextFetcherTask got Text: "+text.getNo());
             }
 
             authorid = text.getAuthor();
@@ -396,7 +404,7 @@ class TextCache {
                 text = getTextFromServer(mTextNo);
             } catch (Exception e) {
                 Log.d(TAG, "TextFetcherTask.background caught error:" + e);
-                // e.printStackTrace();
+                e.printStackTrace();
                 text = null;
             }
             if (text == null) {
@@ -458,7 +466,7 @@ class TextCache {
         }
 
         final Thread currentThread = Thread.currentThread();
-        int MaxWaits = 40;
+        int MaxWaits = 80;
         
         while (!currentThread.isInterrupted() && text == null && MaxWaits>0 && (textNo>0)) {
             synchronized(mTextCache) {
@@ -473,7 +481,8 @@ class TextCache {
                     try {
                         mTextCache.wait(1000);
                     } catch (final InterruptedException e) {
-                        return null;
+                        Log.d(TAG, " getText InterruptedException. Continue...");
+                        //return null;
                     }
                 }
             }

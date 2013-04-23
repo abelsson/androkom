@@ -319,4 +319,6 @@ Supported formats are:
     <string name="seeagaintextlist_label">Återse senaste text lista</string>
     <string name="radio_conf_label">Möte</string>
     <string name="radio_user_label">Användare</string>
+    <string name="dumplog_title">Dump log</string>
+    <string name="dumplog_summary">Spara logfil till externt minne</string>
 </resources>
