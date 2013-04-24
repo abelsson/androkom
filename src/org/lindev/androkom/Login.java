@@ -354,14 +354,18 @@ public class Login extends Activity implements ServiceConnection
                     selectedUser = 0;
                     // Check for exact match
                     for (ConferenceInfo user : users) {
-                        if (user.name.compareToIgnoreCase(username) == 0) {
-                            Log.d(TAG, "Exact username found, id: "+user.id);
-                            selectedUser = user.id;
-                            // Restart task by message
-                            Message msg = new Message();
-                            msg.obj = selectedUser;
-                            msg.what = 1;
-                            mHandler.sendMessage(msg);
+                        if ((username != null) && (user != null)
+                                && (user.name != null)) {
+                            if (user.name.compareToIgnoreCase(username) == 0) {
+                                Log.d(TAG, "Exact username found, id: "
+                                        + user.id);
+                                selectedUser = user.id;
+                                // Restart task by message
+                                Message msg = new Message();
+                                msg.obj = selectedUser;
+                                msg.what = 1;
+                                mHandler.sendMessage(msg);
+                            }
                         }
                     }
                     if (selectedUser == 0) {
