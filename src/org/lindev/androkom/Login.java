@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -122,6 +123,7 @@ public class Login extends Activity implements ServiceConnection
         if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
             img_intent.putExtra("bild_uri", share_uri.toString());
+            img_intent.putExtra("BitmapImage", (Bitmap)null);
             startActivity(img_intent);
             finish();
         }        

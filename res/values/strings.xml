@@ -92,7 +92,7 @@
     <string name="createnewmail_shortcut">M</string>
     <string name="messaging_label">Messaging</string>
     <string name="messaging_shortcut">I</string>
-    <string name="title_submenu_mark">Mark ...</string>
+    <string name="title_submenu_mark">"Mark ..."</string>
     <string name="marktext_label">Mark text</string>
     <string name="marktext_shortcut">M</string>
     <string name="unmarktext_label">Unmark text</string>
@@ -119,7 +119,7 @@
     <string name="cancel">Cancel</string>
     <string name="conference_list">Conference list</string>
     <string name="conference">Conference</string>
-    <string name="reply">Reply</string>
+    <string name="reply">Textreply</string>
     <string name="to">To</string>
     <string name="create_text">Create reply</string>
     <string name="create_new_text">Create text</string>
@@ -320,4 +320,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="radio_user_label">User</string>
     <string name="dumplog_title">Dump log</string>
     <string name="dumplog_summary">Write log file to external storage</string>
+    <string name="title_submenu_reply">Reply...</string>
+    <string name="img_reply">Image</string>
+    <string name="cam_reply">Photo</string>
 </resources>

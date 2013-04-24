@@ -184,7 +184,7 @@
     android:key="dumplog"
     android:title="@string/dumplog_title"
     android:summary="@string/dumplog_summary"
-    android:defaultValue="true"
+    android:defaultValue="!KomServer.RELEASE_BUILD"
     />
   
   </PreferenceCategory>

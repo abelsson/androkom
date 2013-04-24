@@ -76,7 +76,7 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_LINKCOLOUR_DEF = "blue";
 
     private static final String OPT_DUMPLOG = "dumplog";
-    private static final Boolean OPT_DUMPLOG_DEF = true;
+    private static final Boolean OPT_DUMPLOG_DEF = !KomServer.RELEASE_BUILD;
 
 
     private static final String TAG = "Androkom ConferencePrefs";

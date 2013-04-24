@@ -1,6 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="@string/reply"></item>
+    <item android:id="@+id/menu_submenu_reply"
+          android:title="@string/title_submenu_reply" >
+          <!-- "reply" submenu -->
+          <menu>
+            <item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="@string/reply"></item>
+            <item android:visible="true" android:enabled="true" android:id="@+id/cam_reply" android:title="@string/cam_reply"></item>
+            <item android:visible="true" android:enabled="true" android:id="@+id/img_reply" android:title="@string/img_reply"></item>
+            </menu>
+    </item>
     <item android:id="@+id/menu_messaging_id" android:title="@string/messaging_label" android:alphabeticShortcut="@string/messaging_shortcut"/>
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
@@ -57,12 +65,6 @@
           android:title="@string/title_submenu_textsize" >
           <!-- "textsize" submenu -->
           <menu>
-            <item android:title="@string/biggerfontsize_label"
-                  android:alphabeticShortcut="@string/biggerfontsize_shortcut"
-                  android:id="@+id/menu_biggerfontsize_id"/>
-            <item android:title="@string/smallerfontsize_label"
-                  android:alphabeticShortcut="@string/smallerfontsize_shortcut"
-                  android:id="@+id/menu_smallerfontsize_id"/>
             <item android:title="@string/monospaced_label"
                   android:alphabeticShortcut="@string/monospaced_shortcut"
                   android:id="@+id/menu_monospaced_id"/>

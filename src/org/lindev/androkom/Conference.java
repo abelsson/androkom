@@ -1,6 +1,8 @@
 package org.lindev.androkom;
 
+import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
@@ -15,6 +17,7 @@ import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.ImgTextCreator;
 import org.lindev.androkom.gui.MessageLog;
 import org.lindev.androkom.gui.TextCreator;
 
@@ -1175,6 +1178,31 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         return mState;
     }
 
+    @Override
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        super.onActivityResult(requestCode, resultCode, data);
+
+        Intent img_intent = new Intent(Conference.this,
+                ImgTextCreator.class);
+        img_intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent().getSubject());
+        img_intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent().getTextNo());
+
+        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
+            Bitmap photo = (Bitmap) data.getExtras().get("data");
+            img_intent.putExtra("bild_uri", "");
+            img_intent.putExtra("BitmapImage", photo);
+            startActivity(img_intent);
+            finish();
+        }
+        if (requestCode == IMG_REQUEST && resultCode == RESULT_OK) {
+            Bitmap bitmap = null;
+            img_intent.putExtra("bild_uri", data.getData().toString());
+            img_intent.putExtra("BitmapImage", bitmap);
+            startActivity(img_intent);
+            finish();
+        }
+    }
+    
     /**
      * Called when user has selected a menu item from the 
      * menu button popup. 
@@ -1182,8 +1210,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     @Override
     public boolean onOptionsItemSelected(MenuItem item) 
     {
-    	TextView t1;
-    	float newtextsize;
+    	TextView t1 = null;
+    	float newtextsize = 0;
+        Intent intent = null;
     	
     	Log.d(TAG, "onOptionsItemSelected");
 
@@ -1199,42 +1228,30 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
          * CreateText activity. 
          */
         case R.id.reply:
-            Intent intent = new Intent(this, TextCreator.class);
+            intent = new Intent(this, TextCreator.class);
             intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent().getSubject());
             intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent().getTextNo());
             startActivity(intent);
             return true;
 
+        case R.id.img_reply:
+            intent = new Intent();
+            intent.setType("image/*");
+            intent.setAction(Intent.ACTION_GET_CONTENT);
+            intent.addCategory(Intent.CATEGORY_OPENABLE);
+            startActivityForResult(intent, IMG_REQUEST);
+            return true;
+
+        case R.id.cam_reply:
+            intent=new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+            startActivityForResult(intent, CAMERA_REQUEST);
+            return true;
+
+
 		case R.id.menu_settings_id :
 			Log.d(TAG, "Starting menu");
 			startActivity(new Intent(this, ConferencePrefs.class));
 			return true;
-
-		case R.id.menu_biggerfontsize_id :
-			Log.d(TAG, "Change fontsize+");
-			t1 = getCurrentTextView();
-			newtextsize = (float) (t1.getTextSize()*1.1);
-			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-			t1.invalidate();
-
-			t1 = getOtherTextView();
-			t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-			
-			storeFontSize(newtextsize);
-			return true;
-
-		case R.id.menu_smallerfontsize_id :
-            Log.d(TAG, "Change fontsize-");
-            t1 = getCurrentTextView();
-            newtextsize = (float) (t1.getTextSize() * 0.9);
-            t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-            t1.invalidate();
-
-            t1 = getOtherTextView();
-            t1.setTextSize(android.util.TypedValue.COMPLEX_UNIT_PX, newtextsize);
-
-            storeFontSize(newtextsize);
-            return true;
 
 		case R.id.menu_monospaced_id :
             Log.d(TAG, "Change to monospaced");
@@ -2317,4 +2334,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
     
     private TextToSpeech tts=null;
     private static Handler mHandler=null;
+    
+    private static final int CAMERA_REQUEST = 1;
+    private static final int IMG_REQUEST = 2;
 }

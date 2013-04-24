@@ -156,18 +156,22 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
 
     private void initializeImg() {
         String uri_string = getIntent().getStringExtra("bild_uri");
-        Uri uri = Uri.parse(uri_string);
+        Bitmap bmImg = null;
+        if (uri_string.length() > 0) {
+            Uri uri = Uri.parse(uri_string);
 
-        Log.d(TAG, "got filename="+uri.getPath());
-        imgFilename = uri.getLastPathSegment();
-        
+            Log.d(TAG, "got filename=" + uri.getPath());
+            imgFilename = uri.getLastPathSegment();
+
+            // Query gallery for camera picture via
+            // Android ContentResolver interface
+            ContentResolver cr = getContentResolver();
+
+            bmImg = getBitmap(cr, uri);
+        } else {
+            bmImg = (Bitmap) getIntent().getParcelableExtra("BitmapImage");
+        }
         ImageView imgView = (ImageView) findViewById(R.id.imageView1);
-
-        // Query gallery for camera picture via
-        // Android ContentResolver interface
-        ContentResolver cr = getContentResolver();
-
-        Bitmap bmImg = getBitmap(cr, uri);
         imgView.setImageBitmap(bmImg);
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         bmImg.compress(Bitmap.CompressFormat.JPEG, 85, buffer);
@@ -175,7 +179,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             buffer.flush();
         } catch (IOException e) {
             Log.d(TAG, "initializeImg " + e);
-            //e.printStackTrace();
+            // e.printStackTrace();
         }
         imgdata = buffer.toByteArray();
         Log.d(TAG, "compressed imagesize:" + imgdata.length);
