@@ -565,5 +565,5 @@ public class Login extends Activity implements ServiceConnection
     private EditText mPassword;	
 	private KomServer mKom = null;
 	private Uri share_uri=null;
-	private static Handler mHandler=null;
+	private Handler mHandler=null;
 }

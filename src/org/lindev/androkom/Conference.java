@@ -1,6 +1,9 @@
 package org.lindev.androkom;
 
+import java.io.BufferedOutputStream;
+import java.io.File;
 import java.io.FileNotFoundException;
+import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.util.List;
@@ -36,8 +39,10 @@ import android.graphics.BitmapFactory;
 import android.graphics.Color;
 import android.graphics.Rect;
 import android.graphics.Typeface;
+import android.net.Uri;
 import android.os.AsyncTask;
 import android.os.Bundle;
+import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
@@ -1353,12 +1358,64 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         case R.id.menu_speaktext_id:
             speakText();
             return true;
-            
+        case R.id.menu_showimage_id:
+            showImage();
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }
     }
 
+    private void showImage() {
+        File tempFile = null;
+        FileOutputStream fos = null;
+        File sdDir = Environment.getExternalStorageDirectory();
+        final String EXPORT_DIR_NAME = sdDir.getAbsolutePath()
+                + "/Android/data/org.lindev.androkom/files";
+        final String EXPORT_FILE_NAME = EXPORT_DIR_NAME + "/img.png";
+        Log.d(TAG, "TEMP IMAGE: " + EXPORT_FILE_NAME);
+        try {
+            tempFile = new File(EXPORT_DIR_NAME);
+            tempFile.mkdirs();
+            tempFile = new File(EXPORT_FILE_NAME);
+            tempFile.createNewFile();
+            fos = new FileOutputStream(tempFile);
+        } catch (IOException e1) {
+            // TODO Auto-generated catch block
+            e1.printStackTrace();
+            return;
+        }
+        BufferedOutputStream out = new BufferedOutputStream(fos);
+
+        TextInfo text = mState.getCurrent();
+        if (text.getAllHeaders().contains("ContentType:image/")) {
+            Log.d(TAG, "Text contains image");
+            
+            byte[] bilden = text.getRawBody();
+            Bitmap bmImg = BitmapFactory.decodeByteArray(bilden, 0,
+                    bilden.length);
+            if (bmImg != null) {
+                bmImg.compress(Bitmap.CompressFormat.PNG, 100, out);
+                try {
+                    out.flush();
+                    out.close();
+                    
+                    Intent intent = new Intent(Intent.ACTION_VIEW);
+                    intent.setDataAndType(Uri.fromFile(new File(EXPORT_FILE_NAME)), "image/png");
+                    startActivity(intent);
+                } catch (IOException e) {
+                    Log.d(TAG, "IOException "+e);
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.image_decode_failed),
+                        Toast.LENGTH_LONG).show();
+            }
+        }
+    }
+    
     private void gilla_current_text() {
         int CurrentText = mState.getCurrent().getTextNo();        
         try {
