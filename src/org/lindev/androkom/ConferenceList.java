@@ -2,8 +2,6 @@ package org.lindev.androkom;
 
 import java.util.Date;
 import java.util.List;
-import java.util.Timer;
-import java.util.TimerTask;
 
 import nu.dll.lyskom.KomToken;
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
@@ -79,7 +77,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
     /**
-     * While activity is active, keep a timer running to periodically refresh
+     * While activity is resumed, refresh
      * the list of conferences with unread messages.
      */
     @Override
@@ -87,52 +85,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         super.onResume();
 
         Log.d(TAG, "onResume");
-
-        localtimer = 0;
-        //mAdapter.clear();
         
-        mTimer = new Timer();
-        mTimer.scheduleAtFixedRate(new TimerTask() {
-
-        
-            @Override
-            public void run() {
-
-                // Must populate list in UI thread.
-                runOnUiThread(new Runnable() {
-                    public void run() {
-                        Log.d(TAG, "onResume Runnable");
-                        if (localtimer > 0) {
-                            if ((mKom != null) && mKom.isConnected()) {
-                                mEmptyView
-                                        .setText(getString(R.string.no_unreads)
-                                                + "\n"
-                                                + currentDateTimeString
-                                                + "\n"
-                                                + getString(R.string.server_time)
-                                                + "\n" + localtimer);
-                            } else {
-                                mEmptyView
-                                        .setText(getString(R.string.not_connected)
-                                                + " " + localtimer);
-                            }
-                            localtimer--;
-                        } else {
-                            Message msg = new Message();
-                            msg.what = Consts.MESSAGE_POPULATE;
-                            mHandler.sendMessage(msg);
-
-                            localtimer = 60;
-                        }
-                    }
-                });
-            }
-
-        }, 0, 1000);
-
-        // Message msg = new Message();
-        // msg.what = Consts.MESSAGE_POPULATE;
-        // mHandler.sendMessage(msg);
+        Message rmsg = new Message();
+        rmsg.what = Consts.MESSAGE_POPULATE;
+        mHandler.sendMessage(rmsg);
     }
 
 	/**
@@ -142,7 +98,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onPause() {
 		super.onPause();
         Log.d(TAG, "onPause");
-		mTimer.cancel();
 	}
 
     @Override
@@ -156,6 +111,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
     }
 
     protected void consumeMessage(final Message msg) {
+        Intent intent;
         switch (msg.what) {
         case Consts.MESSAGE_POPULATE:
             new PopulateConferenceTask().execute();
@@ -170,6 +126,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 // TODO Auto-generated catch block
                 e.printStackTrace();
             }
+            
+            intent = new Intent(this, Login.class);
+            startActivity(intent);
+
             finish();
             break;
         case Consts.MESSAGE_UPD_CONF:
@@ -313,14 +273,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             return true;
             
         case R.id.menu_logout_id:
-            mTimer.cancel();
             Log.i(TAG, "User opted back to login");
             Message msg = new Message();
             msg.what = Consts.MESSAGE_LOGOUT_AND_FINISH;
             mHandler.sendMessage(msg);
-            
-            intent = new Intent(this, Login.class);
-            startActivity(intent);
             return true;
             
 		case R.id.menu_message_log_id:
@@ -338,6 +294,12 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             startActivity(intent);
             return true;
 
+        case R.id.menu_refresh_id:
+            Message rmsg = new Message();
+            rmsg.what = Consts.MESSAGE_POPULATE;
+            mHandler.sendMessage(rmsg);
+            return true;
+            
 		default:
 			return super.onOptionsItemSelected(item);
 		}
@@ -642,18 +604,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     }
 
-	public void asyncMessage(Message msg) {
-		if (msg.what == nu.dll.lyskom.Asynch.new_text) {
-			Log.d(TAG, "New text created, update unread list");
-		
-			runOnUiThread(new Runnable() {
-				public void run() {					
-					//new PopulateConferenceTask().execute();
-				}
-			});
-		}
-		
-	}
+    public void asyncMessage(Message msg) {
+        if (msg.what == nu.dll.lyskom.Asynch.new_text) {
+            Log.d(TAG, "New text created, update unread list");
+
+            Message rmsg = new Message();
+            rmsg.what = Consts.MESSAGE_POPULATE;
+            mHandler.sendMessage(rmsg);
+        }
+    }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "ConfList onServiceConnected");
@@ -765,8 +724,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
-	private Timer mTimer = null;
-    int localtimer = 60;
 
 	private int re_userId = 0;
     private String re_userPSW = null;

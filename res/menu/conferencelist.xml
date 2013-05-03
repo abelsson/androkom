@@ -26,7 +26,9 @@
 		android:alphabeticShortcut="@string/seefriendsison_shortcut"
 		android:id="@+id/menu_seefriendsison_id"></item>
 
-    <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
+    <item android:title="@string/menu_refresh_label" android:id="@+id/menu_refresh_id"></item>
+
+	<item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
 
     <item android:title="@string/logout_label"
         android:alphabeticShortcut="@string/logout_shortcut"

@@ -325,4 +325,5 @@ Supported formats are:
     <string name="img_reply">Bild</string>
     <string name="cam_reply">Foto</string>
     <string name="menu_showimage_label">Visa bild</string>
+    <string name="menu_refresh_label">Uppdatera</string>
 </resources>
