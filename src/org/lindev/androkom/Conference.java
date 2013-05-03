@@ -2,10 +2,8 @@ package org.lindev.androkom;
 
 import java.io.BufferedOutputStream;
 import java.io.File;
-import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
-import java.io.InputStream;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
@@ -18,6 +16,7 @@ import nu.dll.lyskom.AuxItem;
 import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
+import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.TextInfo;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.ImgTextCreator;
@@ -87,7 +86,7 @@ import android.widget.ViewSwitcher;
  * @author henrik
  *
  */
-public class Conference extends Activity implements OnTouchListener, ServiceConnection, OnInitListener
+public class Conference extends Activity implements AsyncMessageSubscriber, OnTouchListener, ServiceConnection, OnInitListener
 {
     private static final String TAG = "Androkom Conference";
 
@@ -256,7 +255,10 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                consumeMessage(msg);
+                // Ignore duplicate messages
+                if (!hasMessages(msg.what)) {
+                    consumeMessage(msg);
+                }
             }
         };
 
@@ -322,6 +324,9 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         }
         
 		super.onDestroy();
+        if (mKom != null) {
+            mKom.removeAsyncSubscriber(this);
+        }
 		Log.d(TAG, "Destroyed");
 	}
 
@@ -624,6 +629,7 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             });
             backgroundThread.start();
             break;
+            
         case Consts.MESSAGE_CONF_INIT:
             Log.d(TAG, "consumeMessage MESSAGE_CONF_INIT");
 
@@ -644,6 +650,13 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
             Log.d(TAG, "consumeMessage Post Init Task");
             break;
 
+        case Consts.MESSAGE_UPDATE:
+            Log.d(TAG, "consumeMessage MESSAGE_UPDATE Pre");
+            textNo = mState.getCurrent().getTextNo();
+            loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
+            Log.d(TAG, "consumeMessage MESSAGE_UPDATE Post");
+            break;
+            
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
             break;
@@ -2201,9 +2214,101 @@ public class Conference extends Activity implements OnTouchListener, ServiceConn
         }        
     }
     
+    public void asyncMessage(Message msg) {
+        int currentTextNo = -1;
+
+        Log.d(TAG, "asyncMessage received");
+
+        if (mState != null) {
+            TextInfo currentText = mState.getCurrent();
+            if ((currentText != null) && (currentText.getTextNo() > 0)) {
+                currentTextNo = currentText.getTextNo();
+                Log.d(TAG, "asyncMessage currentTextNo=" + currentTextNo);
+            }
+        }
+        switch (msg.what) {
+        case nu.dll.lyskom.Asynch.new_recipient:
+            if (msg.arg1 == currentTextNo) {
+                Log.d(TAG, "New recipient added, update view");
+                try {
+                    mKom.getTextStat(currentTextNo, true);
+                    // TODO: Refresh cache in androkom too?
+                    Message rmsg = new Message();
+                    rmsg.what = Consts.MESSAGE_UPDATE;
+                    mHandler.sendMessage(rmsg);
+                } catch (InterruptedException e) {
+                    // TODO Auto-generated catch block
+                    e.printStackTrace();
+                }
+            } else {
+                Log.d(TAG, "New recipient added, NOT update view");
+            }
+            break;
+        case nu.dll.lyskom.Asynch.sub_recipient:
+            if (msg.arg1 == currentTextNo) {
+                Log.d(TAG, "Recipient removed, update view");
+                // TODO: Refresh cache
+                Message rmsg = new Message();
+                rmsg.what = Consts.MESSAGE_UPDATE;
+                mHandler.sendMessage(rmsg);
+            } else {
+                Log.d(TAG, "Recipient removed, NOT update view");
+            }
+            break;
+        case nu.dll.lyskom.Asynch.text_aux_changed:
+            if (msg.arg1 == currentTextNo) {
+                Log.d(TAG, "Aux changed, update view");
+                // TODO: Refresh cache
+                Message rmsg = new Message();
+                rmsg.what = Consts.MESSAGE_UPDATE;
+                mHandler.sendMessage(rmsg);
+            } else {
+                Log.d(TAG, "Aux changed, NOT update view");
+            }
+            break;
+        case nu.dll.lyskom.Asynch.leave_conf:
+            if (msg.arg1 == mState.conferenceNo) {
+                Log.d(TAG, "Not a member anymore, leaving");
+                finish();
+            } else {
+                Log.d(TAG, "Not a member anymore, NOT leaving" + msg.arg1 + " "
+                        + mState.conferenceNo);
+            }
+            break;
+        case nu.dll.lyskom.Asynch.deleted_text:
+            if (msg.arg1 == currentTextNo) {
+                Log.d(TAG, "Text deleted, leaving");
+                finish();
+            } else {
+                Log.d(TAG, "Text deleted, NOT leaving");
+            }
+            break;
+        case nu.dll.lyskom.Asynch.new_text:
+            Log.d(TAG, "New text, not implemented");
+            /* TODO: something like:
+            final TextInfo text;
+            text = mKom.getKomText(msg.arg1);
+            if (text != null) {
+                if((text.comments == currentTextNo) ||
+                   (text.commented == currentTextNo)) {
+                Log.d(TAG, "Current text changed, update view");
+                Message rmsg = new Message();
+                rmsg.what = Consts.MESSAGE_UPDATE;
+                mHandler.sendMessage(rmsg);
+            } else {
+                Log.d(TAG, "New text, but not related to current");
+            }
+            */
+            break;
+        default:
+            Log.d(TAG, "Unknown async message received#" + msg.what);
+        }
+    }
+    
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected start");
         mKom = ((LocalBinder<KomServer>) service).getService();
+        mKom.addAsyncSubscriber(this);
         mKom.setShowHeadersLevel(mState.ShowHeadersLevel);
         if(mKom == null) {
             Log.d(TAG, "onServiceConnected Failed to get mKom service");

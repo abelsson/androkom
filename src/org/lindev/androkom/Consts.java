@@ -26,5 +26,5 @@ public class Consts {
     
     public static final int MESSAGE_SENDTEXT = 21;
     public static final int MESSAGE_FINISH = 22;
-
+    public static final int MESSAGE_UPDATE = 23;
 }

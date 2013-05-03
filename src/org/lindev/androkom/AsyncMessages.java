@@ -32,6 +32,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
     public static final String ASYNC_MESSAGE_TO = "to";
     public static final String ASYNC_MESSAGE_MSG = "msg";
     public static final String ASYNC_TEXT_NO = "textno";
+    public static final String ASYNC_AUX_CHANGED = "text-aux-changed";
 
     private final App app;
     private final Set<AsyncMessageSubscriber> subscribers;
@@ -204,6 +205,9 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
 
         case nu.dll.lyskom.Asynch.leave_conf:
             Log.d(TAG, "No longer member of a conference.");
+            b.putInt(ASYNC_TEXT_NO, params[0].intValue());
+            msg.arg1 = params[0].intValue();
+            Log.d(TAG, "No longer member of a conference." + msg.arg1);
             break;
 
         case nu.dll.lyskom.Asynch.rejected_connection:
@@ -212,26 +216,42 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
 
         case nu.dll.lyskom.Asynch.deleted_text:
             Log.d(TAG, "Text deleted.");
+            b.putInt(ASYNC_TEXT_NO, params[0].intValue());
+            msg.arg1 = params[0].intValue();
+            Log.d(TAG, "Text deleted." + msg.arg1);
             break;
 
         case nu.dll.lyskom.Asynch.new_text:
             Log.d(TAG, "New text created.");
             b.putInt(ASYNC_TEXT_NO, params[0].intValue());
+            msg.arg1 = params[0].intValue();
             //new LoadMessageTask().execute(params[0]);
             break;
 
         case nu.dll.lyskom.Asynch.new_recipient:
             Log.d(TAG, "New recipient added to text.");
+            b.putInt(ASYNC_TEXT_NO, params[0].intValue());
+            msg.arg1 = params[0].intValue();
             break;
 
         case nu.dll.lyskom.Asynch.sub_recipient:
             Log.d(TAG, "Recipient removed from text.");
+            b.putInt(ASYNC_TEXT_NO, params[0].intValue());
+            msg.arg1 = params[0].intValue();
+            Log.d(TAG, "Recipient removed from textno "+msg.arg1);
             break;
 
         case nu.dll.lyskom.Asynch.new_membership:
             Log.d(TAG, "New recipient added to text.");
             break;
-
+            
+        case nu.dll.lyskom.Asynch.text_aux_changed:
+            Log.d(TAG, "Aux data updated.");
+            b.putInt(ASYNC_AUX_CHANGED, params[0].intValue());
+            msg.arg1 = params[0].intValue();
+            Log.d(TAG, "Aux data updated." + msg.arg1);
+            break;
+            
         default:
             Log.d(TAG, "Unknown async message received#" + msg.what);
         }
