@@ -320,7 +320,8 @@ Supported formats are:
     <string name="radio_conf_label">Möte</string>
     <string name="radio_user_label">Användare</string>
     <string name="dumplog_title">Dump log</string>
-    <string name="dumplog_summary">Spara logfil till externt minne</string>
+    <string name="dumplog_summary">Spara logfil till externt minne:
+/storage/sdcard0/Android/data/org.lindev.androkom/files/androkom.log</string>
     <string name="title_submenu_reply">Svara...</string>
     <string name="img_reply">Bild</string>
     <string name="cam_reply">Foto</string>

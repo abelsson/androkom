@@ -68,10 +68,7 @@ public class Login extends Activity implements ServiceConnection
 
         Button loginButton = (Button) findViewById(R.id.login);
 
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
-
-        mUsername.setText(prefs.getString("username", ""));
-        mPassword.setText(getPsw());
+        getPrefs();
 
         mHandler = new Handler() {
             @Override
@@ -110,6 +107,8 @@ public class Login extends Activity implements ServiceConnection
 
 		Log.d(TAG, "onWindowFocusChanged");
 
+		activityVisible = true;
+		
 		// autologin
 		if (hasFocus && Prefs.getAutologin(getBaseContext())
 				&& !(Prefs.getUseOISafe(getBaseContext()))
@@ -119,6 +118,10 @@ public class Login extends Activity implements ServiceConnection
 		}
 	}
 
+	protected void onPause () {
+	    super.onPause();
+	    activityVisible = false;
+	}
     void create_image() {
         if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
@@ -129,6 +132,18 @@ public class Login extends Activity implements ServiceConnection
         }        
     }
 
+    private void getPrefs() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+
+                mUsername.setText(prefs.getString("username", ""));
+                mPassword.setText(getPsw());
+            }
+        });
+        backgroundThread.start();
+    }
+    
     private String getPsw() {
     	String password;
     	
@@ -450,26 +465,29 @@ public class Login extends Activity implements ServiceConnection
         case 2: // Ambiguous name, resolve it
             final ConferenceInfo[] users = (ConferenceInfo[]) msg.obj;
 
-            AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
-            builder.setTitle(getString(R.string.pick_a_name));
-            String[] vals = new String[users.length];
-            for (int i = 0; i < users.length; i++)
-                vals[i] = users[i].name;
-            builder.setSingleChoiceItems(vals, -1,
-                    new DialogInterface.OnClickListener() {
-                        public void onClick(DialogInterface dialog, int item) {
-                            Toast.makeText(getApplicationContext(),
-                                    users[item].name, Toast.LENGTH_SHORT)
-                                    .show();
-                            dialog.cancel();
-                            selectedUser = users[item].id;
-                            Log.d(TAG, "Selected user:" + selectedUser + ":"
-                                    + new String(users[item].name));
-                            doLogin();
-                        }
-                    });
-            AlertDialog alert = builder.create();
-            alert.show();
+            if (activityVisible) {
+                AlertDialog.Builder builder = new AlertDialog.Builder(
+                        Login.this);
+                builder.setTitle(getString(R.string.pick_a_name));
+                String[] vals = new String[users.length];
+                for (int i = 0; i < users.length; i++)
+                    vals[i] = users[i].name;
+                builder.setSingleChoiceItems(vals, -1,
+                        new DialogInterface.OnClickListener() {
+                            public void onClick(DialogInterface dialog, int item) {
+                                Toast.makeText(getApplicationContext(),
+                                        users[item].name, Toast.LENGTH_SHORT)
+                                        .show();
+                                dialog.cancel();
+                                selectedUser = users[item].id;
+                                Log.d(TAG, "Selected user:" + selectedUser
+                                        + ":" + new String(users[item].name));
+                                doLogin();
+                            }
+                        });
+                AlertDialog alert = builder.create();
+                alert.show();
+            }
             break;
             
         case Consts.MESSAGE_INTENT_CONFLIST:
@@ -548,7 +566,7 @@ public class Login extends Activity implements ServiceConnection
     public void onServiceConnected(ComponentName name, IBinder service) {
         try {
             mKom = ((LocalBinder<KomServer>) service).getService();
-            mKom.dumpLog();
+            dumpLog();
             create_image();
         } catch (Exception e) {
             Log.d(TAG, "Exception: " + e);
@@ -556,6 +574,15 @@ public class Login extends Activity implements ServiceConnection
         }
     }
 
+    void dumpLog() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                mKom.dumpLog();
+            }
+        });
+        backgroundThread.start();
+    }
+    
 	public void onServiceDisconnected(ComponentName name) {
 		mKom = null;		
 	}
@@ -566,4 +593,5 @@ public class Login extends Activity implements ServiceConnection
 	private KomServer mKom = null;
 	private Uri share_uri=null;
 	private Handler mHandler=null;
+	private boolean activityVisible=false;
 }

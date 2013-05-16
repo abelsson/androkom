@@ -305,7 +305,7 @@ class Prefetcher {
         return tc.textNo;
     }
     
-    TextInfo getNextUnreadText(final boolean cacheRelevant) {
+    TextInfo getNextUnreadText(final boolean cacheRelevant, final boolean peekQueue) {
         Log.d(TAG, " +++ getNextUnreadText +++");
         if(!mKom.isConnected()) {
             Log.d(TAG, " getNextUnreadText not connected");
@@ -320,9 +320,13 @@ class Prefetcher {
         // Get the next unread text from the queue
         final TextConf tc;
         try {
-            //Log.d(TAG, " getNextUnreadText take1");
-            tc = mUnreadQueue.poll(10, TimeUnit.SECONDS);
-            //Log.d(TAG, " getNextUnreadText take2");
+            if (peekQueue) {
+                tc = mUnreadQueue.peek();
+            } else {
+                // Log.d(TAG, " getNextUnreadText take1");
+                tc = mUnreadQueue.poll(10, TimeUnit.SECONDS);
+                // Log.d(TAG, " getNextUnreadText take2");
+            }
         } catch (final InterruptedException e) {
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
@@ -344,7 +348,7 @@ class Prefetcher {
         // If the text is already locally marked as read, get the next one instead
         if (mKom.isLocalRead(tc.textNo)) {
             //Log.d(TAG, " getNextUnreadText already read, get another");
-            return getNextUnreadText(cacheRelevant);
+            return getNextUnreadText(cacheRelevant, peekQueue);
         }
 
         // Switch conference name
@@ -389,6 +393,14 @@ class Prefetcher {
         mUnreadQueue.clear();
         mPrefetchRunner = new PrefetchNextUnread(confNo);
         mPrefetchRunner.start();
+    }
+
+    void interruptPrefetcher() {
+        if (mPrefetchRunner != null) {
+            Log.i(TAG, "TextFetcher interruptPrefetch(), interrupting old PrefetchRunner");
+            mPrefetchRunner.mIsInterrupted = true;
+            mPrefetchRunner.interrupt();
+        }
     }
 
     private class CacheRelevantTask extends AsyncTask<Integer, Void, Void> {
@@ -462,6 +474,12 @@ class Prefetcher {
             //if(android.os.Build.VERSION.SDK_INT > 12) {
                 //new CacheRelevantTask().executeOnExecutor(AsyncTask.THREAD_POOL_EXECUTOR, textNo);
             new CacheRelevantTask().execute(textNo);
+        }
+    }
+
+    public void removeTextFromCache(int textNo) {
+        synchronized (mTextCache) {
+            mTextCache.removeTextFromCache(textNo);
         }
     }
 

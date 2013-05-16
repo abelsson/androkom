@@ -4,6 +4,7 @@ import java.util.Date;
 import java.util.List;
 
 import nu.dll.lyskom.KomToken;
+
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.MessageLog;
@@ -49,6 +50,29 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+		
+        // Use this when bumping to SdkVersion to 9
+        /*if(!KomServer.RELEASE_BUILD) {
+         // Activate StrictMode
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                .detectAll()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork() 
+                 // alternatively .detectAll() for all detectable problems
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                 .detectLeakedSqlLiteObjects()
+                // .detectLeakedClosableObjects()
+                // alternatively .detectAll() for all detectable problems
+                 .detectAll()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+        }*/
+
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
         Log.d(TAG, "onCreate");
 		// Use a custom layout file
@@ -57,7 +81,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		mHandler = new Handler() {
             @Override
             public void handleMessage(Message msg) {
-                consumeMessage(msg);
+                if (!hasMessages(msg.what)) {
+                    consumeMessage(msg);
+                }
             }
         };
         
@@ -228,7 +254,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		Log.d(TAG, "onOptionsItemSelected");
 		activateUser();
 
-		mKom.dumpLog();
+		dumpLog();
 		
 		// Handle item selection
 		switch (item.getItemId()) {
@@ -320,6 +346,12 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		return false;
 	}
 
+    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
+        if (resultCode == RESULT_CANCELED) {
+            Log.d(TAG, "Child activity canceled.");
+        }
+    }
+
 	protected void seewhoison(int type) {
 		Intent intent = new Intent(this, WhoIsOn.class);
 		intent.putExtra("who_type", type);
@@ -401,9 +433,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                             e1.printStackTrace();
                         }
                         mEmptyView.setText(getString(R.string.not_connected));
+                        Message rmsg = new Message();
+                        rmsg.what = Consts.MESSAGE_POPULATE;
+                        mHandler.sendMessageDelayed(rmsg, 45*1000);
                     }
                 } else {
                     mEmptyView.setText(getString(R.string.not_connected));
+                    Message rmsg = new Message();
+                    rmsg.what = Consts.MESSAGE_POPULATE;
+                    mHandler.sendMessageDelayed(rmsg, 45*1000);
                 }
                 if((mKom!=null) && (!mKom.isConnected())) {
                     if(mKom.getUserId()>0) {
@@ -608,15 +646,31 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         if (msg.what == nu.dll.lyskom.Asynch.new_text) {
             Log.d(TAG, "New text created, update unread list");
 
-            Message rmsg = new Message();
-            rmsg.what = Consts.MESSAGE_POPULATE;
-            mHandler.sendMessage(rmsg);
+            long currentTime = System.currentTimeMillis() / 1000;
+
+            if ((currentTime < latestUpdate)
+                    || ((currentTime - latestUpdate) > 30)) {
+                Message rmsg = new Message();
+                rmsg.what = Consts.MESSAGE_POPULATE;
+                mHandler.sendMessage(rmsg);
+                latestUpdate = currentTime;
+            }
         }
+    }
+
+    void dumpLog() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                mKom.dumpLog();
+            }
+        });
+        backgroundThread.start();
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "ConfList onServiceConnected");
         mKom = ((LocalBinder<KomServer>) service).getService();
+        mKom.setClientMessageHandler(mHandler);
         mKom.addAsyncSubscriber(this);
         if ((re_userId > 0) && (re_userPSW != null)
                 && (re_userPSW.length() > 0) && mKom != null) {
@@ -643,6 +697,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 	public void onServiceDisconnected(ComponentName name) {
         Log.d(TAG, "ConfList onServiceDisconnected");
+        mKom.setClientMessageHandler(null);
 		mKom=null;
 	}
 	
@@ -721,7 +776,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
     }
 
     String currentDateTimeString = "-";
-
+    long latestUpdate;
     private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
 

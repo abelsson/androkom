@@ -536,4 +536,10 @@ class TextCache {
             mSent.clear();
         }
     }
+
+    public void removeTextFromCache(int textNo) {
+        synchronized (mTextCache) {
+            mTextCache.remove(textNo);
+        }
+    }
 }

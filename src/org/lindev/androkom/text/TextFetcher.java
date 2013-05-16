@@ -34,10 +34,10 @@ public class TextFetcher {
         return mPrefetcher.getNextUnreadTextNo();
     }
 
-    public TextInfo getNextUnreadText() {
+    public TextInfo getNextUnreadText(final boolean peekQueue) {
         boolean doCacheRelevant = true;
         Log.d(TAG, "getNextUnreadText");
-        return mPrefetcher.getNextUnreadText(doCacheRelevant);
+        return mPrefetcher.getNextUnreadText(doCacheRelevant, peekQueue);
     }
 
     public TextInfo getParentToText(final int textNo) {
@@ -77,7 +77,16 @@ public class TextFetcher {
         }
     }
 
+    public void interruptPrefetcher() {
+        mPrefetcher.interruptPrefetcher();
+    }
+
     public void setShowHeadersLevel(final int mShowHeadersLevel) {
         mTextCache.setShowHeadersLevel(mShowHeadersLevel);
+    }
+
+    public void removeTextFromCache(int textNo) {
+        mTextCache.removeTextFromCache(textNo);
+        mPrefetcher.removeTextFromCache(textNo);
     }
 }

@@ -102,11 +102,33 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
+        Log.d(TAG, "onCreate initialize");
     	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
     	
         super.onCreate(savedInstanceState);
 
-        Log.d(TAG, "onCreate initialize");
+        // Use this when bumping to SdkVersion to 9
+        /*if(!KomServer.RELEASE_BUILD) {
+         // Activate StrictMode
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                //.detectAll()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork() 
+                 // alternatively .detectAll() for all detectable problems
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                 .detectLeakedSqlLiteObjects()
+                // .detectLeakedClosableObjects()  // API-level 11
+                // alternatively .detectAll() for all detectable problems
+                 //.detectAll()
+                .penaltyLog()
+                .penaltyDeath()
+                .build());
+        }*/
+        
         
         setContentView(R.layout.conference);
 
@@ -314,6 +336,10 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     
 	@Override
 	protected void onDestroy() {
+        Log.d(TAG, "onDestroy");
+	    if(mKom != null) {
+	        mKom.interruptPrefetcher();
+	    }
         getApp().doUnbindService(this);
 
         // Don't forget to shutdown tts!
@@ -329,6 +355,23 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }
 		Log.d(TAG, "Destroyed");
 	}
+
+    @Override
+    protected void onStop() {
+        super.onStop();
+        mSwitcher.setDisplayedChild(0);
+    }
+    
+    @Override
+    protected void onPause() {
+        super.onPause();
+    }
+
+    @Override
+    protected void onRestart() {
+        super.onRestart();
+        mSwitcher.setDisplayedChild(0);
+    }
 
     void doButtonClick(int buttonno) {
         Log.d(TAG, "Click button:" + buttonno);
@@ -452,12 +495,17 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     } else {
                         Log.d(TAG, "consumeMessage failed to get text "
                                 + textNo);
+                        finish();
                     }
                 }
             });
             backgroundThread.start();
             break;
 
+        case Consts.MESSAGE_PREFETCH_NEXT:
+            text = mKom.getNextUnreadText(true);
+            break;
+            
         case Consts.MESSAGE_TYPE_NEXT:
             Log.i(TAG, "consumeMessage Trying to get next unread text");
             if(msgobj == null) {
@@ -484,7 +532,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     }
 
                     Log.i(TAG, "consumeMessage pre session");
-                    text = mKom.getNextUnreadText();
+                    text = mKom.getNextUnreadText(false);
                     Log.i(TAG, "consumeMessage post session");
                     if (text == null) {
                         int looplevel = 0;
@@ -530,7 +578,10 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                 setMessage(text);
                             }
                         });
-                    }
+                        Message msgout = new Message();
+                        msgout.what = Consts.MESSAGE_PREFETCH_NEXT;
+                        lmHandler.sendMessage(msgout);
+                   }
                 }
             });
             backgroundThread.start();
@@ -548,18 +599,23 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             break;
 
         case Consts.MESSAGE_TYPE_ACTIVATEUSER:
-            try {
-                mKom.activateUser();
-            } catch (Exception e1) {
-                Log.i(TAG, "Failed to activate user exception:" + e1);
-                // e1.printStackTrace();
-                try {
-                    mKom.logout();
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    try {
+                        mKom.activateUser();
+                    } catch (Exception e1) {
+                        Log.i(TAG, "Failed to activate user exception:" + e1);
+                        // e1.printStackTrace();
+                        try {
+                            mKom.logout();
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            e.printStackTrace();
+                        }
+                    }
                 }
-            }
+            });
+            backgroundThread.start();
             break;
 
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
@@ -849,8 +905,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             Context context = getBaseContext();
-            mKom.dumpLog();
-            activateUser();
+            dumpLog();
             Log.d(TAG, "onSingleTapConfirmed");
             if (!ConferencePrefs.getEnableTapToNext(context)) {
                 Log.d(TAG, "Tap disabled");
@@ -901,7 +956,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         vibrator.vibrate(ConferencePrefs
                                 .getVibrateTimeTap(context));
                     }
+                    setProgressBarIndeterminateVisibility(true);
                     moveToNextText(true);
+                    activateUser();
                     return true;
                 }
                 if (e.getRawX() < 0.4 * width) {
@@ -911,7 +968,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         vibrator.vibrate(ConferencePrefs
                                 .getVibrateTimeTap(context));
                     }
+                    setProgressBarIndeterminateVisibility(true);
                     moveToPrevText();
+                    activateUser();
                     return true;
                 }
             }
@@ -921,7 +980,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         @Override
         public boolean onFling(MotionEvent e1, MotionEvent e2, float velocityX,
                 float velocityY) {
-            activateUser();
             Log.d(TAG, "onFling");
             try {
                 // Horizontal swipes
@@ -929,11 +987,14 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     // right to left swipe
                     if (e1.getX() - e2.getX() > SWIPE_MIN_DISTANCE
                             && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        setProgressBarIndeterminateVisibility(true);
                         moveToNextText(true);
                         return true;
                     } else if (e2.getX() - e1.getX() > SWIPE_MIN_DISTANCE
                             && Math.abs(velocityX) > SWIPE_THRESHOLD_VELOCITY) {
+                        setProgressBarIndeterminateVisibility(true);
                         moveToPrevText();
+                        activateUser();
                         return true;
                     }
                 }
@@ -943,7 +1004,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     // top to bottom swipe
                     if (e2.getY() - e1.getY() > SWIPE_MIN_DISTANCE
                             && Math.abs(velocityY) > SWIPE_THRESHOLD_VELOCITY) {
+                        setProgressBarIndeterminateVisibility(true);
                         moveToParentText();
+                        activateUser();
                         return true;
                     }
                 }
@@ -987,6 +1050,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             TextInfo text = mState.currentText
                     .elementAt(mState.currentTextIndex);
             setTextInView(text);
+            setProgressBarIndeterminateVisibility(false);
         }
     }
 
@@ -1069,6 +1133,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             Log.i(TAG, stackAsString());
 
             setTextInView(mState.currentText.elementAt(mState.currentTextIndex));
+            setProgressBarIndeterminateVisibility(false);
         }
     }
 
@@ -1231,10 +1296,11 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     	TextView t1 = null;
     	float newtextsize = 0;
         Intent intent = null;
+        Message msg = null;
     	
     	Log.d(TAG, "onOptionsItemSelected");
 
-    	mKom.dumpLog();
+    	dumpLog();
 
         activateUser();
     	
@@ -1250,6 +1316,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent().getSubject());
             intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent().getTextNo());
             startActivity(intent);
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.img_reply:
@@ -1258,11 +1330,23 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             intent.setAction(Intent.ACTION_GET_CONTENT);
             intent.addCategory(Intent.CATEGORY_OPENABLE);
             startActivityForResult(intent, IMG_REQUEST);
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.cam_reply:
             intent=new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
             startActivityForResult(intent, CAMERA_REQUEST);
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
 
@@ -1305,10 +1389,22 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
 		case R.id.menu_marktext_id:
             markCurrentText();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
 			return true;
 
 		case R.id.menu_unmarktext_id:
             unmarkCurrentText();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
 			return true;
 
 		case R.id.menu_seetextagain_id:
@@ -1342,22 +1438,52 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             
         case R.id.menu_add_recipient_id:
             addRecipient();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_sub_recipient_id:
             subRecipient();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_add_comment_id:
             addComment();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_sub_comment_id:
             subComment();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_gilla_id:
             gilla_current_text();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_next_no_readmark_id:
@@ -1366,6 +1492,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         case R.id.menu_sharetext_id:
             shareIt();
+            msg = new Message();
+            msg.obj = 0;
+            msg.arg1 = mState.getCurrent().getTextNo();
+            msg.arg2 = 0;
+            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            mHandler.sendMessage(msg);
             return true;
 
         case R.id.menu_speaktext_id:
@@ -2024,7 +2156,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         String linkColString = null;
 
         try {
-            bgColString = ConferencePrefs.getBGColour(getBaseContext());
+            bgColString = ConferencePrefs.getBGColour(getBaseContext()).trim();
             bgCol = Color.parseColor(bgColString);
         } catch (IllegalArgumentException e) {
             Toast.makeText(getApplicationContext(),
@@ -2033,7 +2165,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }
             
         try {
-            fgColString = ConferencePrefs.getFGColour(getBaseContext());
+            fgColString = ConferencePrefs.getFGColour(getBaseContext()).trim();
             fgCol = Color.parseColor(fgColString);
         } catch (IllegalArgumentException e) {
             Toast.makeText(getApplicationContext(),
@@ -2042,7 +2174,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }
         
         try {
-            linkColString = ConferencePrefs.getLinkColour(getBaseContext());
+            linkColString = ConferencePrefs.getLinkColour(getBaseContext()).trim();
             linkCol = Color.parseColor(linkColString);
         } catch (IllegalArgumentException e) {
             Toast.makeText(getApplicationContext(),
@@ -2083,13 +2215,15 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         text2h.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
         text1.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
         text2.setTextSize(TypedValue.COMPLEX_UNIT_SP, fontSize);
-    }
+        Log.d(TAG, "finished updateTheme");
+   }
     
     /**
      * Set switch to show image
      * 
      */
     public void setOtherImgSwitch() {
+        Log.d(TAG, "setOtherImgSwitch");
         int currentViewId = mSwitcher.getCurrentView().getId();
         ViewSwitcher switcher=null;
         
@@ -2101,6 +2235,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         switcher.setDisplayedChild(1); // see order in XML
         
         updateTheme(switcher.getChildAt(1));
+        Log.d(TAG, "finished setOtherImgSwitch");
     }
 
     /**
@@ -2217,6 +2352,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     public void asyncMessage(Message msg) {
         int currentTextNo = -1;
 
+        // TODO: Much of this should probably be done for any text in cache and no matter
+        // what activity happens to be visible
+        
         Log.d(TAG, "asyncMessage received");
 
         if (mState != null) {
@@ -2230,16 +2368,10 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case nu.dll.lyskom.Asynch.new_recipient:
             if (msg.arg1 == currentTextNo) {
                 Log.d(TAG, "New recipient added, update view");
-                try {
-                    mKom.getTextStat(currentTextNo, true);
-                    // TODO: Refresh cache in androkom too?
-                    Message rmsg = new Message();
-                    rmsg.what = Consts.MESSAGE_UPDATE;
-                    mHandler.sendMessage(rmsg);
-                } catch (InterruptedException e) {
-                    // TODO Auto-generated catch block
-                    e.printStackTrace();
-                }
+                mKom.updateText(currentTextNo);
+                Message rmsg = new Message();
+                rmsg.what = Consts.MESSAGE_UPDATE;
+                mHandler.sendMessage(rmsg);
             } else {
                 Log.d(TAG, "New recipient added, NOT update view");
             }
@@ -2247,7 +2379,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case nu.dll.lyskom.Asynch.sub_recipient:
             if (msg.arg1 == currentTextNo) {
                 Log.d(TAG, "Recipient removed, update view");
-                // TODO: Refresh cache
+                mKom.updateText(currentTextNo);
                 Message rmsg = new Message();
                 rmsg.what = Consts.MESSAGE_UPDATE;
                 mHandler.sendMessage(rmsg);
@@ -2258,7 +2390,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case nu.dll.lyskom.Asynch.text_aux_changed:
             if (msg.arg1 == currentTextNo) {
                 Log.d(TAG, "Aux changed, update view");
-                // TODO: Refresh cache
+                mKom.updateText(currentTextNo);
                 Message rmsg = new Message();
                 rmsg.what = Consts.MESSAGE_UPDATE;
                 mHandler.sendMessage(rmsg);
@@ -2284,21 +2416,43 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             }
             break;
         case nu.dll.lyskom.Asynch.new_text:
-            Log.d(TAG, "New text, not implemented");
-            /* TODO: something like:
-            final TextInfo text;
-            text = mKom.getKomText(msg.arg1);
-            if (text != null) {
-                if((text.comments == currentTextNo) ||
-                   (text.commented == currentTextNo)) {
-                Log.d(TAG, "Current text changed, update view");
-                Message rmsg = new Message();
-                rmsg.what = Consts.MESSAGE_UPDATE;
-                mHandler.sendMessage(rmsg);
-            } else {
-                Log.d(TAG, "New text, but not related to current");
+            Log.d(TAG, "New text #" + msg.arg1);
+
+            Text text = null;
+            try {
+                text = mKom.getTextbyNo(msg.arg1);
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
+                text = null;
             }
-            */
+            if (text != null) {
+                boolean reloadCurrent = false;
+                for (int commented : text.getCommented()) {
+                    if (commented == currentTextNo) {
+                        reloadCurrent = true;
+                    }
+                }
+                for (int comment : text.getComments()) {
+                    if (comment == currentTextNo) {
+                        reloadCurrent = true;
+                    }
+                }
+                if (reloadCurrent) {
+                    Log.d(TAG, "Current text changed, update view");
+                    mKom.updateText(currentTextNo);
+                    Message rmsg = new Message();
+                    rmsg.what = Consts.MESSAGE_UPDATE;
+                    mHandler.sendMessage(rmsg);
+                } else {
+                    Log.d(TAG, "New text is not related to current text");
+                }
+            } else {
+                Log.d(TAG, "Could not get text");
+            }
+            break;
+        case nu.dll.lyskom.Asynch.login:
+            //ignore
             break;
         default:
             Log.d(TAG, "Unknown async message received#" + msg.what);
@@ -2332,7 +2486,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 re_server = mKom.getServer();
                 re_port = mKom.getServerPortNo();
                 re_useSSL = mKom.getUseSSL();
-                re_cert_level = mKom.getCertLevel();                
+                re_cert_level = mKom.getCertLevel();
+                
+                setTitle(mKom.getConferenceName());
             }
             if(re_userId<1){
                 Log.d(TAG, "no userId");
@@ -2383,12 +2539,17 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                             "InitConnectionTask IOException failed to toast:"
                                     + e2);
                 }
-                try {
-                    mKom.logout();
-                } catch (InterruptedException e1) {
-                    // TODO Auto-generated catch block
-                    e1.printStackTrace();
-                }
+                Thread backgroundThread = new Thread(new Runnable() {
+                    public void run() {
+                        try {
+                            mKom.logout();
+                        } catch (InterruptedException e1) {
+                            // TODO Auto-generated catch block
+                            e1.printStackTrace();
+                        }
+                    }
+                });
+                backgroundThread.start();
                 finish();
             } catch (InterruptedException e) {
                 // TODO Auto-generated catch block
@@ -2444,6 +2605,15 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         } else {
             Log.e(TAG, "onInit: Initilization Failed!");
         }
+    }
+    
+    void dumpLog() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                mKom.dumpLog();
+            }
+        });
+        backgroundThread.start();
     }
     
     App getApp() 

@@ -73,7 +73,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = false;
+	public static boolean RELEASE_BUILD = true;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -92,6 +92,12 @@ public class KomServer extends Service implements RpcEventListener,
             if (activeNetInfo != null) {
                 //Log.d(TAG, "onReceive5");
                 Log.d(TAG, "mConnReceiver isConnected:"+activeNetInfo.isConnected());
+                if (isConnected() && (!activeNetInfo.isConnected())
+                        && (mHandler != null)) {
+                    Message rmsg = new Message();
+                    rmsg.what = Consts.MESSAGE_POPULATE;
+                    mHandler.sendMessage(rmsg);
+                }
                 setConnected(activeNetInfo.isConnected());
                 //Log.d(TAG, "onReceive6");
             } else {
@@ -440,7 +446,7 @@ public class KomServer extends Service implements RpcEventListener,
                 e.printStackTrace();
             }
         } else {
-            Log.d(TAG, "Can't reconnect because no userid");
+            Log.d(TAG, "Can't reconnect because no userid. dumpStack:");
             Thread.dumpStack();
             try {
                 logout();
@@ -1403,6 +1409,25 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     /**
+     * Remove text from cache and reread from server 
+     */
+    public void updateText(final int textNo) {
+        textFetcher.restartPrefetcher();
+        //getKomText(textNo);
+        try {
+            getTextStat(textNo, true);
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "updateText InterruptedExcpetion");
+            e.printStackTrace();
+        }
+    }
+
+    public void interruptPrefetcher() {
+        textFetcher.interruptPrefetcher();
+    }
+
+    /**
      * Fetch next unread text, as a HTML formatted string. 
      */
     private final TextFetcher textFetcher = new TextFetcher(this);
@@ -1415,8 +1440,8 @@ public class KomServer extends Service implements RpcEventListener,
         return textFetcher.getNextUnreadTextNo();
     }
 
-    public TextInfo getNextUnreadText() {
-        return textFetcher.getNextUnreadText();
+    public TextInfo getNextUnreadText(final boolean peekQueue) {
+        return textFetcher.getNextUnreadText(peekQueue);
     }
 
     public TextInfo getParentToText(final int textNo) {
@@ -2698,6 +2723,10 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
+    public void setClientMessageHandler(Handler clientHandler) {
+        mHandler = clientHandler;
+    }
+
 	private Session lks = null;
 	private volatile Lock slock = new ReentrantLock();
 	
@@ -2730,5 +2759,6 @@ public class KomServer extends Service implements RpcEventListener,
 	private boolean hidden_session = !RELEASE_BUILD;
 
 	public AsyncMessages asyncMessagesHandler;
+	private static Handler mHandler=null;
 	public IMLogger imLogger;
 }
