@@ -73,7 +73,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -242,7 +242,6 @@ public class KomServer extends Service implements RpcEventListener,
     public void onCreate() 
     {
         super.onCreate();
-        
         Log.d(TAG, "onCreate");
         
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
@@ -279,6 +278,12 @@ public class KomServer extends Service implements RpcEventListener,
     {
         Log.d(TAG, "onBind");
         return new LocalBinder<KomServer>(this);
+    }
+
+    @Override
+    public void onRebind(Intent arg0) 
+    {
+        Log.d(TAG, "onRebind");
     }
 
     public boolean onUnbind (Intent intent) {
@@ -336,7 +341,6 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void nolock_logout() throws InterruptedException {
         Log.d(TAG, "KomServer logout");
-        Log.d(TAG, "KomServer logout Locked Session");
         if (lks != null) {
             try {
                 if (lks.getState() == Session.STATE_LOGIN)
@@ -396,12 +400,14 @@ public class KomServer extends Service implements RpcEventListener,
 
         // worker thread (separate from UI thread)
         protected Void doInBackground(final KomToken... args) {
+            Log.d(TAG, "ReconnectTask.doInBackground");
             try {
                 reconnect();
             } catch (Exception e1) {
                 Log.i(TAG, "Failed to reconnect exception:"+e1);
                 //e1.printStackTrace();
             }
+            Log.d(TAG, "ReconnectTask.doInBackground done");
             return null;
         }
     }
@@ -450,10 +456,19 @@ public class KomServer extends Service implements RpcEventListener,
             Thread.dumpStack();
             try {
                 logout();
+                Log.d(TAG, "reconnect. Forced logout");
             } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
+                Log.d(TAG, "reconnect tried logout. got InterruptedException:"+e);
+                e.printStackTrace();
+            } catch (Exception e) {
+                Log.d(TAG, "reconnect tried logout. got Exception:"+e);
                 e.printStackTrace();
             }
+            Log.d(TAG, "reconnect. Failed for now. Be right back.");
+            // kill kill kill... Not really recommended but we should not be here anyway.
+            //android.os.Process.killProcess(android.os.Process.myPid());
+            //System.runFinalizersOnExit(true);
+            //System.exit(0);
         }
     }
 
@@ -1805,7 +1820,7 @@ public class KomServer extends Service implements RpcEventListener,
                     tiden = lks.getTime().getTime();
                 }
             } catch (IOException e) {
-                // TODO Auto-generated catch block
+                Log.d(TAG, "getServerTime failed to get time, see trace:");
                 e.printStackTrace();
             } finally {
                 slock.unlock();
@@ -2711,7 +2726,6 @@ public class KomServer extends Service implements RpcEventListener,
             } catch (IOException e) {
                 // TODO Auto-generated catch block
                 e.printStackTrace();
-                return;
             }
             try {
                 out.close();

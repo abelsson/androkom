@@ -243,7 +243,8 @@ public class SeeAgainTextList extends ListActivity implements ServiceConnection 
 		case android.view.KeyEvent.KEYCODE_Q:
 		case 4: // back in emulator
 			finish();
-		default:
+            break;
+        default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}
 		return false;

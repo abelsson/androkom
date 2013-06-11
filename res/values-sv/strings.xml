@@ -61,9 +61,6 @@
     <string name="speakasynch_summary">Speak out asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
-    <string name="preferredlanguage_title">Språk</string>
-    <string name="preferredlanguage_summary">Välj språk</string>
-    <string name="preferredlanguage_dialog_title_prefs">Språk dialog titel</string>
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
     <string name="title_submenu_textsize">Text storlek...</string>

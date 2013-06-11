@@ -8,8 +8,9 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.res.Configuration;
-import android.os.AsyncTask;
+import android.os.Handler;
 import android.os.IBinder;
+import android.os.Message;
 import android.os.PowerManager;
 import android.preference.PreferenceManager;
 import android.util.Log;
@@ -36,23 +37,25 @@ public class App extends Application implements ServiceConnection
 	public void onCreate()
 	{
 		super.onCreate();
-
 		Log.d(TAG, "onCreate");
 		
-		Configuration config = getBaseContext().getResources()
-        .getConfiguration();
+        mHandler = new CustomHandler(this);
+        
+/*        Configuration config = getResources().getConfiguration();
 		
-        String lang = ConferencePrefs.getPreferredLanguage(getBaseContext());
+        String lang = ConferencePrefs.getPreferredLanguage(this);
         if (!"".equals(lang) && !config.locale.getLanguage().equals(lang)) {
+            Log.d(TAG, "onCreate setting locale");
             locale = new Locale(lang);
             Locale.setDefault(locale);
             config.locale = locale;
-            getBaseContext().getResources().updateConfiguration(config,
-                    getBaseContext().getResources().getDisplayMetrics());
+            getResources().updateConfiguration(config,
+                    getResources().getDisplayMetrics());
+            Log.d(TAG, "onCreate setting locale done");
         }
-
+*/        
         // keep screen on, depending on preferences
-        boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(getBaseContext()).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
+        boolean keepScreenOn = PreferenceManager.getDefaultSharedPreferences(this).getBoolean(OPT_KEEPSCREENON, OPT_KEEPSCREENON_DEF);
 		Log.d(TAG, "keepscreenon="+keepScreenOn);
 
 		if (keepScreenOn) {
@@ -60,51 +63,56 @@ public class App extends Application implements ServiceConnection
 			mWakeLock = pm.newWakeLock(PowerManager.SCREEN_DIM_WAKE_LOCK, "My Tag");
 			mWakeLock.acquire();
 		}
+        Log.d(TAG, "onCreate done");
 	}
-	
+
+    protected void consumeAppMessage(Message msg) {
+        Log.d(TAG, "consumeAppMessage");
+        ServiceConnection connection;
+        switch (msg.what) {
+        case Consts.MESSAGE_UNBIND_SERVICE:
+            connection = (ServiceConnection) msg.obj;
+            Log.d(TAG, "doing delayed doUnbind: " + connection.toString());
+            try {
+                unbindService(connection);
+            } catch (Exception e) {
+                Log.d(TAG, "Couldn't unbind service:" + e);
+            }
+            nrServiceUsers--;
+            Log.d(TAG, "SERVICE fewer users:" + nrServiceUsers);
+            Log.d(TAG, "done delayed doUnbind: " + connection.toString());
+            break;
+        default:
+            Log.d(TAG, "unknown message: " + msg.what);
+        }
+        Log.d(TAG, "consumeAppMessage done");
+    }
+
     public void doBindService(ServiceConnection connection) 
     {
-    	bindService(new Intent(App.this, KomServer.class), connection, Context.BIND_AUTO_CREATE);
+        Log.d(TAG, "SERVICE trying to bind new connection: "+connection);
+    	if(bindService(new Intent(App.this, KomServer.class), connection, Context.BIND_AUTO_CREATE)) {
+            Log.d(TAG, "SERVICE Succedeed to bind");    	    
+    	} else {
+            Log.d(TAG, "SERVICE FAILED TO BIND");
+    	}
     	nrServiceUsers++;
     	Log.d(TAG, "SERVICE more users:"+nrServiceUsers);
     }
     
     public void doUnbindService(ServiceConnection connection)
     {
-        new DelayedUnbindTask().execute(connection);
-        nrServiceUsers--;
-        Log.d(TAG, "SERVICE fewer users:"+nrServiceUsers);
-    }
-
-    
-    private class DelayedUnbindTask extends
-            AsyncTask<ServiceConnection, Void, ServiceConnection> {
-        @SuppressWarnings("unused")
-        protected void onPreExecute(ServiceConnection connection) {
+        Log.d(TAG, "doUnbindService");
+        if (mHandler != null) {
+            Message msg = new Message();
+            msg.obj = connection;
+            msg.what = Consts.MESSAGE_UNBIND_SERVICE;
+            mHandler.sendMessageDelayed(msg, 500);
+            Log.d(TAG, "doUnbindService message sent for: "+connection);
+        } else {
+            Log.d(TAG, "doUnbindService null handler");
         }
-
-        // worker thread (separate from UI thread)
-        protected ServiceConnection doInBackground(final ServiceConnection... args) {
-            Log.d(TAG, "waiting to doUnbind");
-            try {
-                Thread.sleep(500);
-            } catch (InterruptedException e) {
-                // TODO Auto-generated catch block
-                Log.d(TAG, "DelayedUnbindTask doInBackground interrupted:"+e);
-                //e.printStackTrace();
-            }
-            return args[0];
-        }
-
-        protected void onPostExecute(ServiceConnection connection) {
-            Log.d(TAG, "doing delayed doUnbind: "+connection.toString());
-            try {
-                unbindService(connection);
-            } catch (Exception e) {
-                Log.d(TAG, "Couldn't unbind service:" + e);
-            }
-        }
-
+        Log.d(TAG, "doUnbindService done");
     }
     
     private PowerManager.WakeLock mWakeLock = null;
@@ -112,7 +120,6 @@ public class App extends Application implements ServiceConnection
 	public void onServiceConnected(ComponentName name, IBinder service)
 	{
         Log.d(TAG, "onServiceConnected:"+name);
-        		
 	}
 
 	public void onServiceDisconnected(ComponentName name) 
@@ -130,16 +137,55 @@ public class App extends Application implements ServiceConnection
             mWakeLock.release();
             mWakeLock = null;
         }
+        
+        mHandler = null;
     }
 	
     @Override
     public void onConfigurationChanged(Configuration newConfig) {
         super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged (done)");
+    }
+    
+/*    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged");
         if (locale != null) {
+            Log.d(TAG, "onConfigurationChanged setting locale: "+locale.toString());
             newConfig.locale = locale;
             Locale.setDefault(locale);
-            getBaseContext().getResources().updateConfiguration(newConfig,
-                    getBaseContext().getResources().getDisplayMetrics());
+            // getResources().updateConfiguration(newConfig,
+            // getResources().getDisplayMetrics());
+            getResources().updateConfiguration(newConfig,
+                    getResources().getDisplayMetrics());
+            Log.d(TAG, "onConfigurationChanged setting locale done");
+        }
+        Log.d(TAG, "onConfigurationChanged done");
+    }
+*/    
+    public void onLowMemory() {
+        //super.onLowMemory();
+        Log.d(TAG, "onLowMemeory");
+    }
+
+    private static class CustomHandler extends Handler {
+        private App activity;
+
+        public CustomHandler(App app) {
+            super();
+            this.activity = app;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            try {
+                activity.consumeAppMessage(msg);
+            } catch (Exception e) {
+                Log.d(TAG, "handleMessage failed to consume:"+msg+" " + e);
+            }
         }
     }
+    
+    private static Handler mHandler=null;
 }

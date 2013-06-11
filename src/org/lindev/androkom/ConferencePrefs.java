@@ -40,9 +40,6 @@ public class ConferencePrefs extends PreferenceActivity {
     private static final String OPT_ENABLETAPTONEXT = "enabletaptonext";
     private static final Boolean OPT_ENABLETAPTONEXT_DEF = true;
 
-    private static final String OPT_PREFERREDLANGUAGE = "preferredlanguage";
-    private static final String OPT_PREFERREDLANGUAGE_DEF = "";
-
     private static final String OPT_USERBUTTONS = "userbuttons";
     private static final Boolean OPT_USERBUTTONS_DEF = false;
     private static final String OPT_USERBUTTON1 = "userbutton1";
@@ -116,10 +113,6 @@ public class ConferencePrefs extends PreferenceActivity {
 
     public static Boolean getToastForAsynch(Context context) {
         return PreferenceManager.getDefaultSharedPreferences(context).getBoolean(OPT_TOASTFORASYNCH, OPT_TOASTFORASYNCH_DEF);
-    }
-
-    public static String getPreferredLanguage(Context context) {
-        return PreferenceManager.getDefaultSharedPreferences(context).getString(OPT_PREFERREDLANGUAGE, OPT_PREFERREDLANGUAGE_DEF);
     }
 
     public static Boolean getUserButtons(Context context) {

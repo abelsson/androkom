@@ -75,7 +75,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
                     + msg.getData().getString(ASYNC_MESSAGE_MSG)
                     + app.getString(R.string.x_to_y)
                     + msg.getData().getString(ASYNC_MESSAGE_TO);
-            Context context = app.getBaseContext();
+            Context context = app;
             if (ConferencePrefs.getVibrateForAsynch(context)) {
                 Vibrator vibrator = (Vibrator) context
                         .getSystemService(Context.VIBRATOR_SERVICE);
@@ -112,11 +112,11 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
                 if (msg.what == nu.dll.lyskom.Asynch.send_message) {
                     length = Toast.LENGTH_LONG;
                 }
-                // Context context = app.getBaseContext();
-                if (ConferencePrefs.getToastForAsynch(app.getBaseContext())) {
+                // Context context = app;
+                if (ConferencePrefs.getToastForAsynch(app)) {
                     Toast.makeText(app, str, length).show();
                 }
-                if (ConferencePrefs.getSpeakAsynch(app.getBaseContext())) {
+                if (ConferencePrefs.getSpeakAsynch(app)) {
                     if (tts != null) {
                         tts.speak(mKom.stripParanthesis(str), TextToSpeech.QUEUE_ADD, null);
                     }
@@ -135,7 +135,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         this.subscribers = new HashSet<AsyncMessageSubscriber>();
         this.messageLog = new ArrayList<Message>();
         this.publicLog = Collections.unmodifiableList(this.messageLog);
-        this.tts = new TextToSpeech(app.getBaseContext(), this);
+        this.tts = new TextToSpeech(app, this);
     }
 
     private Message processMessage(final AsynchMessage asynchMessage) {
@@ -294,7 +294,13 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         @Override
         protected Message doInBackground(final AsynchMessage... message) {
             Log.d(TAG, "AsyncHandlerTask doInBackground");
-            Message msg = processMessage(message[0]);
+            Message msg = null;
+            if(message != null) {
+                Log.d(TAG, "AsyncHandlerTask got a message");
+                msg = processMessage(message[0]);
+            } else {
+                Log.d(TAG, "AsyncHandlerTask got null message");
+            }
             Log.d(TAG, "AsyncHandlerTask doInBackground done");
             return msg;
         }
@@ -305,9 +311,14 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         @Override
         protected void onPostExecute(final Message msg) {
             Log.d(TAG, "Number of async subscribers: " + subscribers.size());
-            messageLog.add(msg);
-            for (AsyncMessageSubscriber subscriber : subscribers) {
-                subscriber.asyncMessage(msg);
+            if (msg == null) {
+                Log.d(TAG, "onPostExecute got null message");
+                // TODO: disconnect?
+            } else {
+                messageLog.add(msg);
+                for (AsyncMessageSubscriber subscriber : subscribers) {
+                    subscriber.asyncMessage(msg);
+                }
             }
             Log.d(TAG, "AsyncHandlerTask onPostExecute done");
         }
@@ -328,6 +339,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
         }
     }
 
+    /* There is no onDestroy for a plain object
     public void onDestroy() {
         // Don't forget to shutdown tts!
         if (tts != null) {
@@ -335,19 +347,23 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
             tts.shutdown();
             tts = null;
         }
-        //super.onDestroy();
-    }
+        super.onDestroy();
+    } */
 
     public void onInit(int status) {
         if (status == TextToSpeech.SUCCESS) {
+            if (tts != null) {
+                Log.d(TAG, "onInit: TTS initialized, setting language");
+                int result = tts.setLanguage(Locale.getDefault());
 
-            int result = tts.setLanguage(Locale.getDefault());
-
-            if (result == TextToSpeech.LANG_MISSING_DATA
-                    || result == TextToSpeech.LANG_NOT_SUPPORTED) {
-                Log.e(TAG, "onInit: This Language is not supported");
+                if (result == TextToSpeech.LANG_MISSING_DATA
+                        || result == TextToSpeech.LANG_NOT_SUPPORTED) {
+                    Log.e(TAG, "onInit: This Language is not supported");
+                } else {
+                    Log.d(TAG, "onInit: TTS initialized OK");
+                }
             } else {
-                Log.d(TAG, "onInit: TTS initialized OK");
+                Log.d(TAG, "onInit: TTS initialized OK but still tts==null");
             }
         } else {
             Log.e(TAG, "onInit: Initilization Failed!");

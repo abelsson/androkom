@@ -45,6 +45,7 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.StrictMode;
 import android.os.Vibrator;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
@@ -102,13 +103,13 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     @Override
     public void onCreate(Bundle savedInstanceState) 
     {
+        super.onCreate(savedInstanceState);
+
         Log.d(TAG, "onCreate initialize");
     	requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
     	
-        super.onCreate(savedInstanceState);
-
         // Use this when bumping to SdkVersion to 9
-        /*if(!KomServer.RELEASE_BUILD) {
+        if(!KomServer.RELEASE_BUILD) {
          // Activate StrictMode
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 //.detectAll()
@@ -117,7 +118,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 .detectNetwork() 
                  // alternatively .detectAll() for all detectable problems
                 .penaltyLog()
-                .penaltyDeath()
+                //.penaltyDeath()
                 .build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
                  .detectLeakedSqlLiteObjects()
@@ -125,9 +126,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 // alternatively .detectAll() for all detectable problems
                  //.detectAll()
                 .penaltyLog()
-                .penaltyDeath()
+                //.penaltyDeath()
                 .build());
-        }*/
+        }
         
         
         setContentView(R.layout.conference);
@@ -294,10 +295,15 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         getApp().doBindService(this);
     }
     
-
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+    
     protected void onResume() {
-        Log.d(TAG, "onResume");
         super.onResume();
+        Log.d(TAG, "onResume");
 
         if((re_userId>0)&&(re_userPSW!=null)&&(re_userPSW.length()>0)&&(mKom!=null)) {
             Log.d(TAG, "onResume resets username");
@@ -336,6 +342,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     
 	@Override
 	protected void onDestroy() {
+        super.onDestroy();
         Log.d(TAG, "onDestroy");
 	    if(mKom != null) {
 	        mKom.interruptPrefetcher();
@@ -349,7 +356,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             tts = null;
         }
         
-		super.onDestroy();
         if (mKom != null) {
             mKom.removeAsyncSubscriber(this);
         }
@@ -359,17 +365,20 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     @Override
     protected void onStop() {
         super.onStop();
+        Log.d(TAG, "onStop");
         mSwitcher.setDisplayedChild(0);
     }
     
     @Override
     protected void onPause() {
         super.onPause();
+        Log.d(TAG, "onPause");
     }
 
     @Override
     protected void onRestart() {
         super.onRestart();
+        Log.d(TAG, "onRestart");
         mSwitcher.setDisplayedChild(0);
     }
 
@@ -1217,9 +1226,11 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 			// skicka med mState.getCurrent().getTextNo() ?
 			XDialog dialog = new XDialog(this);
 			dialog.show();
+			return true;
 		case android.view.KeyEvent.KEYCODE_Q:
 		case 4: // back in emulator
 			finish();
+			return true;
 		default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}
@@ -1253,6 +1264,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
      * When we're being temporarily destroyed, due to, for example 
      * the user rotating the screen, save our state so we can restore
      * it again.
+     * 
+     * TODO: deprecated method!
      */
     @Override
     public Object onRetainNonConfigurationInstance() 
@@ -1807,37 +1820,39 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     }
     
     protected Dialog onCreateDialog(int id) {
-        // Assume id = DIALOG_NUMBER_ENTRY for now 
-    	AlertDialog.Builder alert = new AlertDialog.Builder(this);
+        // Assume id = DIALOG_NUMBER_ENTRY for now
+        AlertDialog.Builder alert = new AlertDialog.Builder(this);
 
-    	alert.setTitle(getString(R.string.seetextagain_label));
-    	alert.setMessage(getString(R.string.alert_dialog_text_entry));
+        alert.setTitle(getString(R.string.seetextagain_label));
+        alert.setMessage(getString(R.string.alert_dialog_text_entry));
 
-    	// Set an EditText view to get user input 
-    	final EditText input = new EditText(this);
-    	input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
-    	alert.setView(input);
+        // Set an EditText view to get user input
+        final EditText input = new EditText(this);
+        input.setInputType(android.text.InputType.TYPE_CLASS_NUMBER);
+        alert.setView(input);
 
-    	alert.setPositiveButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
-    	public void onClick(DialogInterface dialog, int whichButton) {
-    	  String textvalue = input.getText().toString();
-  		  Log.i(TAG, "trying to parse " + textvalue);
-		  int textNo = Integer.parseInt(textvalue);
-		  Log.i(TAG, "fetching text " + textNo);
+        alert.setPositiveButton(getString(R.string.alert_dialog_ok),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        String textvalue = input.getText().toString();
+                        Log.i(TAG, "trying to parse " + textvalue);
+                        int textNo = Integer.parseInt(textvalue);
+                        Log.i(TAG, "fetching text " + textNo);
 
-		  mSwitcher.setInAnimation(mSlideLeftIn);
-		  mSwitcher.setOutAnimation(mSlideLeftOut);
-		  loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
-    	  }
-    	});
+                        mSwitcher.setInAnimation(mSlideLeftIn);
+                        mSwitcher.setOutAnimation(mSlideLeftOut);
+                        loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
+                    }
+                });
 
-    	alert.setNegativeButton(getString(R.string.alert_dialog_cancel), new DialogInterface.OnClickListener() {
-    	  public void onClick(DialogInterface dialog, int whichButton) {
-    	    // Canceled.
-    	  }
-    	});
+        alert.setNegativeButton(getString(R.string.alert_dialog_cancel),
+                new DialogInterface.OnClickListener() {
+                    public void onClick(DialogInterface dialog, int whichButton) {
+                        // Canceled.
+                    }
+                });
 
-    	return alert.create();
+        return alert.create();
     }
 
     /* start new intent to let user add new comment to existing text
@@ -2169,7 +2184,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             fgCol = Color.parseColor(fgColString);
         } catch (IllegalArgumentException e) {
             Toast.makeText(getApplicationContext(),
-                    getString(R.string.illegal_colour)+bgColString, Toast.LENGTH_SHORT)
+                    getString(R.string.illegal_colour)+fgColString, Toast.LENGTH_SHORT)
                     .show();
         }
         
@@ -2276,6 +2291,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     @Override
     protected void onSaveInstanceState(Bundle outState) {
         Log.d(TAG, "onSaveInstanceState");
+        //super.onSaveInstanceState(outState);
         super.onSaveInstanceState(outState);
 
         // Save UI state changes to the savedInstanceState.
@@ -2289,6 +2305,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             outState.putInt("UserServerPortNo", re_port);
             outState.putBoolean("UserUseSSL", re_useSSL);
             outState.putInt("UserCertLevel", re_cert_level);
+            Log.d(TAG, "onSaveInstanceState, stored state with local id");
         } else {
             if (mKom != null) {
                 int userId = mKom.getUserId();
@@ -2300,9 +2317,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     outState.putInt("UserServerPortNo", mKom.getServerPortNo());
                     outState.putBoolean("UserUseSSL", mKom.getUseSSL());
                     outState.putInt("UserCertLevel", mKom.getCertLevel());
+                    Log.d(TAG, "onSaveInstanceState, stored state with mKom id");
                 } else {
-                    Log.d(TAG, "No userid, bailing out");
+                    Log.d(TAG, "onSaveInstanceState: No userid, bailing out");
                 }
+            } else {
+                Log.d(TAG, "onSaveInstanceState: No mKom, bailing out");
             }
         }
     }

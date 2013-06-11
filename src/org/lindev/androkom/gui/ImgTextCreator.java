@@ -387,6 +387,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             break;
         case Consts.MESSAGE_FINISH:
             finish();
+            break;
         default:
             Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
             return;

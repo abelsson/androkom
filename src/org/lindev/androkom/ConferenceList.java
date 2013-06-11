@@ -22,6 +22,7 @@ import android.os.Bundle;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.StrictMode;
 import android.util.Log;
 import android.util.TypedValue;
 import android.view.KeyEvent;
@@ -50,9 +51,10 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
 		
         // Use this when bumping to SdkVersion to 9
-        /*if(!KomServer.RELEASE_BUILD) {
+        if(!KomServer.RELEASE_BUILD) {
          // Activate StrictMode
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
                 .detectAll()
@@ -61,7 +63,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 .detectNetwork() 
                  // alternatively .detectAll() for all detectable problems
                 .penaltyLog()
-                .penaltyDeath()
+                //.penaltyDeath()
                 .build());
             StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
                  .detectLeakedSqlLiteObjects()
@@ -69,12 +71,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                 // alternatively .detectAll() for all detectable problems
                  .detectAll()
                 .penaltyLog()
-                .penaltyDeath()
+                //.penaltyDeath()
                 .build());
-        }*/
+        }
 
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
-        Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
@@ -88,7 +89,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         };
         
         if (savedInstanceState != null) {
-            Log.d(TAG, "Got a bundle");
+            Log.d(TAG, "onCreate Got a bundle");
             restoreBundle(savedInstanceState);
         }
 		
@@ -102,6 +103,18 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		getApp().doBindService(this);
 	}
 
+    @Override
+    public void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+    
+    @Override
+    public void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
+    
     /**
      * While activity is resumed, refresh
      * the list of conferences with unread messages.
@@ -127,10 +140,16 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	}
 
     @Override
+    public void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+    }
+
+    @Override
     protected void onDestroy() {
+        super.onDestroy();
         Log.d(TAG, "onDestroy");
         getApp().doUnbindService(this);
-        super.onDestroy();
         if (mKom != null) {
             mKom.removeAsyncSubscriber(this);
         }
@@ -340,7 +359,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		case android.view.KeyEvent.KEYCODE_Q:
 		case 4: // back in emulator
 			finish();
-		default:
+            break;
+        default:
 			Log.d(TAG, "onKeyup unknown key:" + keyCode + " " + event);
 		}
 		return false;
@@ -372,6 +392,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		@Override
 		protected List<ConferenceInfo> doInBackground(final Void... args) {
             Log.d(TAG, "PopulateConferenceTask doInBackground 1:");
+
             if((mKom!=null) && (!mKom.isConnected())) {
                 mKom.reconnect();
             }
@@ -453,7 +474,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
                     }
                 }
             }
-            //updateTheme(null);
+            updateTheme();
             setProgressBarIndeterminateVisibility(false);
             Log.d(TAG, "PopulateConferenceTask onPostExecute 3:");
 		}
@@ -544,7 +565,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
      * @param view 
      * 
      */
-    public void updateTheme(View view) {
+    public void updateTheme() {
         Log.d(TAG, "updateTheme");
 
         int bgCol = Color.parseColor("black");
@@ -704,8 +725,8 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	
     @Override
     protected void onSaveInstanceState(Bundle outState) {
-        Log.d(TAG, "onSaveInstanceState");
         super.onSaveInstanceState(outState);
+        Log.d(TAG, "onSaveInstanceState");
 
         // Save UI state changes to the savedInstanceState.
         // This bundle will be passed to onCreate if the process is

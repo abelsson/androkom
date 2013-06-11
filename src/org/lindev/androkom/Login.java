@@ -14,6 +14,7 @@ import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
 import android.content.SharedPreferences;
+import android.content.res.Configuration;
 import android.graphics.Bitmap;
 import android.net.Uri;
 import android.os.AsyncTask;
@@ -22,6 +23,7 @@ import android.os.Debug;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.StrictMode;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -49,6 +51,32 @@ public class Login extends Activity implements ServiceConnection
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
+        Log.d(TAG, "onCreate");
+
+        // Use this when bumping to SdkVersion to 9
+        if(!KomServer.RELEASE_BUILD) {
+         // Activate StrictMode
+            StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
+                //.detectAll()
+                .detectDiskReads()
+                .detectDiskWrites()
+                .detectNetwork() 
+                 // alternatively .detectAll() for all detectable problems
+                .penaltyLog()
+                //.penaltyDeath()
+                .build());
+            StrictMode.setVmPolicy(new StrictMode.VmPolicy.Builder()
+                 .detectLeakedSqlLiteObjects()
+                // .detectLeakedClosableObjects()  // API-level 11
+                // alternatively .detectAll() for all detectable problems
+                 //.detectAll()
+                .penaltyLog()
+                //.penaltyDeath()
+                .build());
+        }
+
+        getApp().doBindService(this);
+
         setContentView(R.layout.login);
 
         // if this is from the share menu
@@ -63,65 +91,128 @@ public class Login extends Activity implements ServiceConnection
             }
         }
 
-        mUsername = (EditText) findViewById(R.id.username);
-        mPassword = (EditText) findViewById(R.id.password);
+        mUsername = (EditText) findViewById(R.id.akl_username);
+        mPassword = (EditText) findViewById(R.id.akl_password);
 
-        Button loginButton = (Button) findViewById(R.id.login);
+        Button loginButton = (Button) findViewById(R.id.akl_login);
 
         getPrefs();
-
-        mHandler = new Handler() {
-            @Override
-            public void handleMessage(Message msg) {
-                consumeLoginMessage(msg);
-            }
-        };
 
         loginButton.setOnClickListener(new View.OnClickListener() {
             public void onClick(View view) { doLogin(); }
         });        
-        getApp().doBindService(this);
         
-        Debug.MemoryInfo memoryInfo = new Debug.MemoryInfo();
-        Debug.getMemoryInfo(memoryInfo);
+        try {
+            Debug.MemoryInfo memoryInfo = new Debug.MemoryInfo();
+            Debug.getMemoryInfo(memoryInfo);
 
-        String memMessage = String.format(
-            "Memory: Pss=%.2f MB, Private=%.2f MB, Shared=%.2f MB",
-            memoryInfo.getTotalPss() / 1024.0,
-            memoryInfo.getTotalPrivateDirty() / 1024.0,
-            memoryInfo.getTotalSharedDirty() / 1024.0);
-        Log.d(TAG, memMessage);
-        double max = Runtime.getRuntime().maxMemory();
-        Log.d(TAG, "max memory:"+max);
+            String memMessage = String.format(
+                    "Memory: Pss=%.2f MB, Private=%.2f MB, Shared=%.2f MB",
+                    memoryInfo.getTotalPss() / 1024.0,
+                    memoryInfo.getTotalPrivateDirty() / 1024.0,
+                    memoryInfo.getTotalSharedDirty() / 1024.0);
+            Log.d(TAG, memMessage);
+            double max = Runtime.getRuntime().maxMemory();
+            Log.d(TAG, "max memory:" + max);
+        } catch (Exception e) {
+            Log.d(TAG, "Catched exception " + e);
+            e.printStackTrace();
+        }
+        Log.d(TAG, "onCreate done");
+    }
+
+    @Override
+    protected void onStart() {
+        super.onStart();
+        Log.d(TAG, "onStart");
+    }
+
+    @Override
+    protected void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState(Bundle savedInstanceState)");
     }
     
     @Override
+    protected void onRestart() {
+        super.onRestart();
+        Log.d(TAG, "onRestart");
+    }
+
+    @Override
+    protected void onResume() {
+        super.onResume();
+        Log.d(TAG, "onResume");
+        mHandler = new CustomHandler(this);
+        Log.d(TAG, "onResume done");
+    }
+
+    @Override
 	protected void onDestroy() {
+        super.onDestroy();
 	    Log.d(TAG, "onDestroy");
         getApp().doUnbindService(this);
-		super.onDestroy();
-	}
-   
-	public void onWindowFocusChanged(boolean hasFocus) {
-		super.onWindowFocusChanged(hasFocus);
-
-		Log.d(TAG, "onWindowFocusChanged");
-
-		activityVisible = true;
-		
-		// autologin
-		if (hasFocus && Prefs.getAutologin(getBaseContext())
-				&& !(Prefs.getUseOISafe(getBaseContext()))
-				&& (!loginFailed)
-				&& (getPsw().length() > 0)) {
-			doLogin();
-		}
 	}
 
-	protected void onPause () {
+    @Override
+    public void onLowMemory() {
+        super.onLowMemory();
+        Log.d(TAG, "onLowMemory");
+    }
+
+    @Override
+    public void finish() {
+        super.finish();
+        Log.d(TAG, "finish");
+    }
+
+    public void onWindowFocusChanged(boolean hasFocus) {
+        super.onWindowFocusChanged(hasFocus);
+        Log.d(TAG, "onWindowFocusChanged: " + hasFocus);
+
+        if (hasFocus) {
+            activityVisible = true;
+
+            Log.d(TAG, "onWindowFocusChanged Checking prefs");
+            // autologin
+            if (hasFocus && Prefs.getAutologin(this)
+                    && !(Prefs.getUseOISafe(this))
+                    && (!loginFailed) && (getPsw().length() > 0)) {
+                Log.d(TAG, "onWindowFocusChanged do auto login");
+                doLogin();
+            }
+        }
+        Log.d(TAG, "onWindowFocusChanged done");
+    }
+
+    @Override
+	protected void onPause() {	    
 	    super.onPause();
+        Log.d(TAG, "onPause");
 	    activityVisible = false;
 	}
+
+    @Override
+	protected void onStop() {
+        super.onStop();
+        Log.d(TAG, "onStop");
+        activityVisible = false;
+        
+        Log.d(TAG, "onStop  getChangingConfigurations: "+ getChangingConfigurations());
+    }
+    
+    @Override
+    public void onBackPressed() {
+        super.onBackPressed();
+        Log.d(TAG, "onBackPressed()");
+    }
+    
+    @Override
+    public void onConfigurationChanged(Configuration newConfig) {
+        super.onConfigurationChanged(newConfig);
+        Log.d(TAG, "onConfigurationChanged");
+    }
+    
     void create_image() {
         if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
@@ -133,21 +224,26 @@ public class Login extends Activity implements ServiceConnection
     }
 
     private void getPrefs() {
+        Log.d(TAG, "getPrefs");
         Thread backgroundThread = new Thread(new Runnable() {
             public void run() {
+                Log.d(TAG, "getPrefs thread");
                 SharedPreferences prefs = getPreferences(MODE_PRIVATE);
 
                 mUsername.setText(prefs.getString("username", ""));
                 mPassword.setText(getPsw());
+                Log.d(TAG, "getPrefs thread done");
             }
         });
         backgroundThread.start();
+        Log.d(TAG, "getPrefs done");
     }
     
     private String getPsw() {
     	String password;
     	
-    	if(Prefs.getUseOISafe(getBaseContext())) {
+        Log.d(TAG, "getPsw Checking prefs");
+    	if(Prefs.getUseOISafe(this)) {
     		Intent i = new Intent();
     		i.setAction("org.openintents.action.GET_PASSWORD");
     		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
@@ -155,12 +251,12 @@ public class Login extends Activity implements ServiceConnection
     		try {
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
-    			Toast.makeText(getBaseContext(),
+    			Toast.makeText(this,
     					getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to get password from OISafe(1)");
     		} catch (java.lang.SecurityException e) {
-                Toast.makeText(getBaseContext(),
+                Toast.makeText(this,
                         getString(R.string.error_oisafe_not_error),
                         Toast.LENGTH_LONG).show();
                 Log.e(TAG, "failed to get password from OISafe(2)");
@@ -180,11 +276,12 @@ public class Login extends Activity implements ServiceConnection
     	if (resultCode != RESULT_CANCELED) {
     		mUsername.setText(data.getStringExtra("org.openintents.extra.USERNAME"));
     		mPassword.setText(data.getStringExtra("org.openintents.extra.PASSWORD"));
-    		if(Prefs.getAutologin(getBaseContext())) {
+            Log.d(TAG, "onActivityResult Checking prefs");
+    		if(Prefs.getAutologin(this)) {
     			doLogin();
     		}
     	} else {
-    		Log.d(TAG, "no result");
+    		Log.d(TAG, "onActivityResult: no result");
     	}
     }
     
@@ -205,7 +302,7 @@ public class Login extends Activity implements ServiceConnection
             return true;
 		case R.id.save_oisafe_psw_id:
     		savePsw(mUsername.getText().toString(), mPassword.getText().toString());
-
+    		return true;
 		default:
 				Log.d(TAG, "Unknown menu selected");
 		}
@@ -223,6 +320,7 @@ public class Login extends Activity implements ServiceConnection
         String password;
 
         protected void onPreExecute() {
+            Log.d(TAG, "LoginTask onPreExecute 1");
             try {
                 dialog = new ProgressDialog(Login.this);
                 
@@ -239,23 +337,28 @@ public class Login extends Activity implements ServiceConnection
                 e.printStackTrace();
                 finish();
             }
+            Log.d(TAG, "LoginTask onPreExecute 2");
         }
 
         protected String doInBackground(final Void... args) 
         {
+            Log.d(TAG, "LoginTask doInBackground 1");
             if( (username == null) ||
                     (password == null) ||
                     (username.length()<1) ||
                     (password.length() < 1)) {
                 return "Username and password needed";
             }
-            Log.d(TAG, "LoginTask doInBackground ");
-			String server = Prefs.getServer(getBaseContext());
-			int port = Prefs.getPortno(getBaseContext());
-			boolean useSSL = Prefs.getUseSSL(getBaseContext());
-			int cert_level = Prefs.getCertLevel(getBaseContext());
+            Log.d(TAG, "LoginTask doInBackground 2");
+            
+            //Context context = getBaseContext();
+            Context context = getApp();
+			String server = Prefs.getServer(context);
+			int port = Prefs.getPortno(context);
+			boolean useSSL = Prefs.getUseSSL(context);
+			int cert_level = Prefs.getCertLevel(context);
         	if(server.equals("@")) {
-            	server = Prefs.getOtherServer(getBaseContext());        	
+            	server = Prefs.getOtherServer(context);        	
         	}
         	Log.d(TAG, "LoginTask Connecting to "+server);
         	if(server.length()>0) {
@@ -328,8 +431,8 @@ public class Login extends Activity implements ServiceConnection
        		return getString(R.string.No_server_selected);
         }
 
-        protected void onPostExecute(final String result) 
-        { 
+        protected void onPostExecute(final String result) {
+            Log.d(TAG, "LoginTask onPostExecute 1");
             try {
                 this.dialog.dismiss();
             } catch (Exception e) {
@@ -346,8 +449,7 @@ public class Login extends Activity implements ServiceConnection
                                     getString(R.string.alert_dialog_ok),
                                     new DialogInterface.OnClickListener() {
                                         public void onClick(
-                                                DialogInterface dialog,
-                                                int id) {
+                                                DialogInterface dialog, int id) {
                                             dialog.cancel();
                                         }
                                     });
@@ -358,12 +460,13 @@ public class Login extends Activity implements ServiceConnection
                     Log.d(TAG, "Something bad happened:" + e);
                     finish();
                 }
+                Log.d(TAG, "LoginTask onPostExecute 2");
                 return;
             }
-            
+
             if (result.length() > 0) {
-            	// Login failed, check why
-            	final ConferenceInfo[] users = mKom.getUserNames();
+                // Login failed, check why
+                final ConferenceInfo[] users = mKom.getUserNames();
                 if (users != null && users.length > 1) {
                     // Ambiguous name
                     selectedUser = 0;
@@ -416,20 +519,21 @@ public class Login extends Activity implements ServiceConnection
                         finish();
                     }
                 }
-            }
-            else {
-            	// Login succeded: Store psw, start new activity and kill this.
+            } else {
+                Log.d(TAG, "will store password");
+                // Login succeded: Store psw, start new activity and kill this.
                 SharedPreferences settings = getPreferences(MODE_PRIVATE);
                 SharedPreferences.Editor editor = settings.edit();
                 editor.putString("username", username);
 
-                Log.d(TAG, "will store password");
-                if(Prefs.getSavePsw(getBaseContext())) {
-                	if(Prefs.getUseOISafe(getBaseContext())) {
-                		//Can't work with OISafe here
-                	} else {
-                		editor.putString("password", password);
-                	}		
+                // Context context = getBaseContext();
+                Context context = getApp();
+                if (Prefs.getSavePsw(context)) {
+                    if (Prefs.getUseOISafe(context)) {
+                        // Can't work with OISafe here
+                    } else {
+                        editor.putString("password", password);
+                    }
                 }
 
                 // Commit the edits!
@@ -445,6 +549,7 @@ public class Login extends Activity implements ServiceConnection
                     mHandler.sendMessage(msg);
                 }
             }
+            Log.d(TAG, "LoginTask onPostExecute 3");
         }
     }
 
@@ -455,7 +560,8 @@ public class Login extends Activity implements ServiceConnection
 
     protected void consumeLoginMessage(Message msg) {
         Intent intent;
-        Context context = getBaseContext();
+        //Context context = getBaseContext();
+        final Context context = this;
         
         switch (msg.what) {
         case 1:  // Name resolved, just try login again
@@ -475,7 +581,7 @@ public class Login extends Activity implements ServiceConnection
                 builder.setSingleChoiceItems(vals, -1,
                         new DialogInterface.OnClickListener() {
                             public void onClick(DialogInterface dialog, int item) {
-                                Toast.makeText(getApplicationContext(),
+                                Toast.makeText(context,
                                         users[item].name, Toast.LENGTH_SHORT)
                                         .show();
                                 dialog.cancel();
@@ -491,7 +597,6 @@ public class Login extends Activity implements ServiceConnection
             break;
             
         case Consts.MESSAGE_INTENT_CONFLIST:
-            //Context context = Login.this;
             intent = new Intent(context, ConferenceList.class);
             startActivity(intent);
             finish();
@@ -510,12 +615,13 @@ public class Login extends Activity implements ServiceConnection
 
     private void doClearPsw()
     {
+        Log.d(TAG, "doClearPsw");
         SharedPreferences settings = getPreferences(MODE_PRIVATE);
         SharedPreferences.Editor editor = settings.edit();
         editor.remove("password");
         editor.commit();
 
-        if (Prefs.getUseOISafe(getBaseContext())) {
+        if (Prefs.getUseOISafe(this)) {
     		Intent i = new Intent();
     		i.putExtra("org.openintents.extra.UNIQUE_NAME", "AndroKom");
     		i.putExtra("org.openintents.extra.USERNAME", "");
@@ -524,12 +630,12 @@ public class Login extends Activity implements ServiceConnection
     		try {
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
-    			Toast.makeText(getBaseContext(),
+    			Toast.makeText(this,
     			        getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
             } catch (java.lang.SecurityException e) {
-                Toast.makeText(getBaseContext(),
+                Toast.makeText(this,
                         getString(R.string.error_oisafe_not_error),
                         Toast.LENGTH_LONG).show();
                 Log.e(TAG, "failed to store password in OISafe(2)");
@@ -550,7 +656,7 @@ public class Login extends Activity implements ServiceConnection
 		try {
 			startActivityForResult(i, 17);
 		} catch (ActivityNotFoundException e) {
-			Toast.makeText(getBaseContext(),
+			Toast.makeText(this,
 			        getString(R.string.error_oisafe_not_found),
 					Toast.LENGTH_LONG).show();
 			Log.e(TAG, "failed to store password in OISafe");
@@ -564,6 +670,7 @@ public class Login extends Activity implements ServiceConnection
     }
 
     public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
         try {
             mKom = ((LocalBinder<KomServer>) service).getService();
             dumpLog();
@@ -572,6 +679,7 @@ public class Login extends Activity implements ServiceConnection
             Log.d(TAG, "Exception: " + e);
             e.printStackTrace();
         }
+        Log.d(TAG, "onServiceConnected done");
     }
 
     void dumpLog() {
@@ -584,14 +692,33 @@ public class Login extends Activity implements ServiceConnection
     }
     
 	public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
 		mKom = null;		
 	}
 	
+    private static class CustomHandler extends Handler {
+        private Login activity;
+
+        public CustomHandler(Login activity) {
+            super();
+            this.activity = activity;
+        }
+
+        @Override
+        public void handleMessage(Message msg) {
+            try {
+                activity.consumeLoginMessage(msg);
+            } catch (Exception e) {
+                Log.d(TAG, "handleMessage failed to consume:"+e);
+            }
+        }
+    }
+
     private int selectedUser=0;
     private EditText mUsername;
     private EditText mPassword;	
 	private KomServer mKom = null;
 	private Uri share_uri=null;
-	private Handler mHandler=null;
+	private static Handler mHandler=null;
 	private boolean activityVisible=false;
 }
