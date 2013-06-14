@@ -30,4 +30,6 @@ public class Consts {
     protected static final int MESSAGE_PREFETCH_NEXT = 24;
     
     protected static final int MESSAGE_UNBIND_SERVICE = 25;
+    public static final int MESSAGE_TYPE_UPDATENUMUNREADS = 26;
+    protected static final int MESSAGE_TYPE_UPDATENUMUNREADS_GUI = 27;
 }

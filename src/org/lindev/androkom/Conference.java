@@ -31,7 +31,6 @@ import android.content.Context;
 import android.content.DialogInterface;
 import android.content.Intent;
 import android.content.ServiceConnection;
-import android.content.SharedPreferences;
 import android.content.res.Resources;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -627,6 +626,33 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             backgroundThread.start();
             break;
 
+        case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
+            Log.d(TAG, "updateNumUnreads processing message");
+
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    int num = -1;
+                    try {
+                        Log.d(TAG, "updateNumUnreads trying to get num");
+                        num = mKom.getConferenceUnreadsNo();
+                    } catch (Exception e1) {
+                        Log.i(TAG, "Failed to update unreads exception:" + e1);
+                        // e1.printStackTrace();
+                    }
+                    Message lmsg = new Message();
+                    lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI;
+                    lmsg.arg1 = num;
+                    mHandler.sendMessage(lmsg);
+                }
+            });
+            backgroundThread.start();
+            break;
+
+        case Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI:
+            Log.d(TAG, "updateNumUnreads GUI updating GUI : "+msg.arg1);
+            setTitle(getTitle()+":"+msg.arg1);
+            break;
+            
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
             textNo = (Integer) msg.arg1;
             backgroundThread = new Thread(new Runnable() {
@@ -1072,12 +1098,20 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         mHandler.sendMessage(msg);
     }
 
+    public void updateNumUnreads() {
+        Log.d(TAG, "updateNumUnreads sending message");
+        Message msg = new Message();
+        msg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS;
+        mHandler.sendMessage(msg);
+    }
+    
     private void moveToNextText(boolean markTextAsRead) {
         if(mState.textListIndex >= 0) {
             moveToNextListText(markTextAsRead);
         } else {
             moveToNextUnreadText(markTextAsRead);
         }
+        updateNumUnreads();
     }
     
     private void moveToNextListText(boolean markTextAsRead) {
@@ -1310,7 +1344,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     public boolean onOptionsItemSelected(MenuItem item) 
     {
     	TextView t1 = null;
-    	float newtextsize = 0;
         Intent intent = null;
         Message msg = null;
     	
@@ -1585,21 +1618,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             // TODO Auto-generated catch block
             e.printStackTrace();
         }
-    }
-
-
-    protected void storeFontSize(float size) {
-        SharedPreferences settings = getPreferences(MODE_PRIVATE);
-        SharedPreferences.Editor editor = settings.edit();
-        editor.putFloat("conference_body_textsize", size);
-        editor.commit();
-    }
-
-    protected void setCurrentFontSize() {
-        SharedPreferences prefs =  getPreferences(MODE_PRIVATE);
-    	
-		TextView t1 = getCurrentTextView();
-		t1.setTextSize(prefs.getFloat("conference_body_textsize", 12));
     }
 
     private class markCurrentTextTask extends AsyncTask<Void, Void, Integer> {

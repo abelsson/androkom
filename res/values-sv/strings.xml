@@ -305,7 +305,7 @@ Supported formats are:
     <string name="linkcolour_title">Länkfärg</string>
     <string name="linkcolour_summary">Textfärg på länkar</string>
     <string name="fontsize_title">Typsnittsstorlek</string>
-    <string name="fontsize_summary">Typsnittsstorlek (dip)</string>
+    <string name="fontsize_summary">Typsnittsstorlek (sp)</string>
     <string name="im_conversations_list_label">IM Konversationer</string>
     <string name="illegal_colour">"Okänt färgnamn: "</string>
     <string name="speakBtnLabel">Tala</string>

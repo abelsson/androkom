@@ -305,7 +305,7 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="linkcolour_title">Link colour</string>
     <string name="linkcolour_summary">Colour of link in textview</string>
     <string name="fontsize_title">Font size</string>
-    <string name="fontsize_summary">Font size in points (dip)</string>
+    <string name="fontsize_summary">Font size in points (sp)</string>
     <string name="illegal_colour">"Unknown colourname: "</string>
     <string name="speakBtnLabel">Speak</string>
     <string name="menu_speaktext_label">Speak text</string>
