@@ -1059,8 +1059,11 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             TextInfo text = mState.currentText
                     .elementAt(mState.currentTextIndex);
             setTextInView(text);
-            setProgressBarIndeterminateVisibility(false);
+        } else {
+            Toast.makeText(getApplicationContext(), "No previous text",
+                    Toast.LENGTH_SHORT).show();
         }
+        setProgressBarIndeterminateVisibility(false);
     }
 
     public void activateUser() {
@@ -2644,7 +2647,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     private class State {
         public int textListIndex = -1;
         public int conferenceNo;
-        int currentTextIndex;
+        int currentTextIndex = -1;
         Stack<TextInfo> currentText;
         Queue<Integer> textQueue;
 
