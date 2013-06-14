@@ -57,8 +57,8 @@
     <string name="showfullheaders_summary">Visa text info, som kommentarer</string>
     <string name="marktextread_title">Läsmarkera</string>
     <string name="marktextread_summary">Markera visade texter som lästa</string>
-    <string name="speakasynch_title">Speak asynch</string>
-    <string name="speakasynch_summary">Speak out asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
+    <string name="speakasynch_title">Tala asynch</string>
+    <string name="speakasynch_summary">Tala asynch meddelanden. Not: för att få närvaromeddelanden, måste de vara påslagna på servern.</string>
     <string name="toastforasynch_title">Toast asynch</string>
     <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
@@ -210,7 +210,7 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="userbutton3_summary">"Knapp 3"</string>
     <string name="userbutton4_title">"Knapp 4"</string>
     <string name="userbutton4_summary">"Knapp 4"</string>
-    <string name="asynch_prefs_title">"Asynch prefs"</string>
+    <string name="asynch_prefs_title">"Asynch inställningar"</string>
     <string name="vibratefortap_title">"Vibrera"</string>
     <string name="vibratefortap_summary">"Vibrera vid tap textbyte"</string>
     <string name="vibratetimetap_title">"Vibrationstid tap"</string>
@@ -267,8 +267,8 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="portnum_title">Portnum</string>
     <string name="portnum_dialog_title_prefs">Portnum dialog title</string>
     <string name="portnum_summary">Portnummer</string>
-    <string name="certlevel_summary">certlevel summary</string>
-    <string name="certlevel_dialog_title_prefs">certlevel dialog title</string>
+    <string name="certlevel_summary">certlevel beskrivning</string>
+    <string name="certlevel_dialog_title_prefs">certlevel dialog titel</string>
     <string name="certlevel_title">certlevel</string>
     <string name="autoreadmarkowntext_title">Läsmarkera egna texter</string>
     <string name="autoreadmarkowntext_summary">Läsmarkera egna texter</string>
@@ -295,17 +295,17 @@ Guran vill helst sätta en giftpil i dig."</string>
     <string name="menu_sharetext_label">Kopiera</string>
     <string name="shared_subject">Delat från Lyskom</string>
     <string name="clipboard_cant_handle_image">Klippbordet hanterar inte bilder.</string>
-    <string name="bgcolour_title">Background colour</string>
-    <string name="bgcolour_summary">Colour of background in textview</string>
-    <string name="fgcolour_title">Text colour</string>
+    <string name="bgcolour_title">Bakgrundsfärg</string>
+    <string name="bgcolour_summary">Bakgrundsfärg på text</string>
+    <string name="fgcolour_title">Textfärg</string>
     <string name="fgcolour_summary">Colour of text in textview\n
 Supported formats are:
 #RRGGBB #AARRGGBB \'red\', \'blue\', \'green\', \'black\', \'white\', \'gray\',
 \'cyan\', \'magenta\', \'yellow\', \'lightgray\', \'darkgray\'</string>
-    <string name="linkcolour_title">Link colour</string>
-    <string name="linkcolour_summary">Colour of link in textview</string>
-    <string name="fontsize_title">Font size</string>
-    <string name="fontsize_summary">Font size in points (dip)</string>
+    <string name="linkcolour_title">Länkfärg</string>
+    <string name="linkcolour_summary">Textfärg på länkar</string>
+    <string name="fontsize_title">Typsnittsstorlek</string>
+    <string name="fontsize_summary">Typsnittsstorlek (dip)</string>
     <string name="im_conversations_list_label">IM Konversationer</string>
     <string name="illegal_colour">"Okänt färgnamn: "</string>
     <string name="speakBtnLabel">Tala</string>
@@ -324,4 +324,6 @@ Supported formats are:
     <string name="cam_reply">Foto</string>
     <string name="menu_showimage_label">Visa bild</string>
     <string name="menu_refresh_label">Uppdatera</string>
+    <string name="default_name_hint">namn</string>
+    <string name="default_number_hint">123</string>
 </resources>

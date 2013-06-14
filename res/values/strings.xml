@@ -323,4 +323,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="cam_reply">Photo</string>
     <string name="menu_showimage_label">Show image</string>
     <string name="menu_refresh_label">Refresh</string>
+    <string name="default_number_hint">123</string>
+    <string name="default_name_hint">name</string>
 </resources>

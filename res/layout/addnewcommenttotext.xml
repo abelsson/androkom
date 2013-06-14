@@ -18,7 +18,7 @@ android:id="@+id/commentno"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text=""
-android:hint="123"
+android:hint="@string/default_number_hint"
 android:inputType="number"
 android:textSize="18sp"
 >

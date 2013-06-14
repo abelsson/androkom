@@ -18,7 +18,7 @@ android:id="@+id/confname"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text=""
-android:hint="name"
+android:hint="@string/default_name_hint"
 android:textSize="18sp"
 >
 </EditText>
