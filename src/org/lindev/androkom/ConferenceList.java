@@ -394,6 +394,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             Log.d(TAG, "PopulateConferenceTask doInBackground 1:");
 
             if((mKom!=null) && (!mKom.isConnected())) {
+                Log.d(TAG, "PopulateConferenceTask doInBackground request reconnect");
                 mKom.reconnect();
             }
             Log.d(TAG, "PopulateConferenceTask doInBackground 2:");

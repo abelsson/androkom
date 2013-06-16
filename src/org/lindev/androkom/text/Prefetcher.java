@@ -383,11 +383,21 @@ class Prefetcher {
         
     }
 
+    void start(final int confNo) {
+        if (mPrefetchRunner != null) {
+            Log.i(TAG, "TextFetcher startPrefetcher(), already started");
+        } else {
+            Log.i(TAG, "TextFetcher startPrefetcher(), starting");
+            mUnreadQueue.clear();
+            mPrefetchRunner = new PrefetchNextUnread(confNo);
+            mPrefetchRunner.start();
+        }
+    }
+
     void restart(final int confNo) {
         if (mPrefetchRunner != null) {
             Log.i(TAG, "TextFetcher restartPrefetcher(), interrupting old PrefetchRunner");
-            mPrefetchRunner.mIsInterrupted = true;
-            mPrefetchRunner.interrupt();
+            interruptPrefetcher();
             mTextCache.clearCacheStat();
         }
         mUnreadQueue.clear();

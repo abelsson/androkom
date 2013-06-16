@@ -24,6 +24,7 @@ import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
 import android.os.StrictMode;
+import android.text.Html;
 import android.util.Log;
 import android.view.Menu;
 import android.view.MenuInflater;
@@ -32,6 +33,7 @@ import android.view.View;
 import android.view.WindowManager.BadTokenException;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -91,6 +93,8 @@ public class Login extends Activity implements ServiceConnection
             }
         }
 
+        titleWidget = (TextView) findViewById(R.id.akl_tw_title);
+        
         mUsername = (EditText) findViewById(R.id.akl_username);
         mPassword = (EditText) findViewById(R.id.akl_password);
 
@@ -673,6 +677,12 @@ public class Login extends Activity implements ServiceConnection
         Log.d(TAG, "onServiceConnected");
         try {
             mKom = ((LocalBinder<KomServer>) service).getService();
+
+            String rawTitle = getString(R.string.login_title);
+            String fs = String.format(rawTitle,
+                               ""+mKom.getVersionName()+" ("+mKom.getVersionCode()+")");
+            titleWidget.setText(Html.fromHtml(fs));
+
             dumpLog();
             create_image();
         } catch (Exception e) {
@@ -717,6 +727,7 @@ public class Login extends Activity implements ServiceConnection
     private int selectedUser=0;
     private EditText mUsername;
     private EditText mPassword;	
+    private TextView titleWidget;
 	private KomServer mKom = null;
 	private Uri share_uri=null;
 	private static Handler mHandler=null;

@@ -131,11 +131,12 @@ public class KomServer extends Service implements RpcEventListener,
         public static final int ERROR_FETCHING_TEXT=2;
         public static final int NO_PARENT=3;
 
-        public TextInfo(Context context, int textNo, String author, int authorno,
+        public TextInfo(Context context, int textNo, int confNo, String author, int authorno,
                 String date, String all_headers, String visible_headers,
                 String subject, String body, byte[] rawBody,
                 int ShowHeadersLevel) {
             this.textNo = textNo;
+            this.confNo = confNo;
             this.author = author;
             this.authorno = authorno;
             this.date = date;
@@ -153,19 +154,19 @@ public class KomServer extends Service implements RpcEventListener,
             switch (id) {
             case ALL_READ:
                 Log.d(TAG, "createText ALL_READ");
-                return new TextInfo(context, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -1, -1, "", 0, "", "", "", "", context
                         .getString(R.string.all_read), null, 1);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
-                return new TextInfo(context, -2, "", 0, "", "", "", "", context
+                return new TextInfo(context, -2, -1, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
-                return new TextInfo(context, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -1, -1, "", 0, "", "", "", "", context
                         .getString(R.string.error_no_parent), null, 1);
             default:
                 Log.d(TAG, "createText default");
-                return new TextInfo(context, -2, "", 0, "", "", "", "", context
+                return new TextInfo(context, -2, -1, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             }
         }
@@ -202,6 +203,10 @@ public class KomServer extends Service implements RpcEventListener,
             return textNo;
         }
 
+        public int getConfNo() {
+            return confNo;
+        }
+
         public Spannable getSpannableHeaders() {
             return spannableHeaders;
         }
@@ -215,6 +220,7 @@ public class KomServer extends Service implements RpcEventListener,
         }
 
         private int textNo;
+        private int confNo;
         private String date;
         private String subject;
         private String visible_headers;
@@ -922,7 +928,7 @@ public class KomServer extends Service implements RpcEventListener,
                     try {
                         lks.changeConference(confNo);
                         readMarker.clear();
-                        textFetcher.restartPrefetcher();
+                        //textFetcher.restartPrefetcher();
                     } catch (java.lang.NullPointerException e) {
                         Log.d(TAG,
                                 "setConference Handled an NullpointerException");
@@ -938,6 +944,14 @@ public class KomServer extends Service implements RpcEventListener,
         } else {
             Log.d(TAG, "mKom.setConference could not lock");
         }
+    }
+
+    public void startPrefetcher() {
+        textFetcher.startPrefetcher();
+    }
+
+    public void restartPrefetcher() {
+        textFetcher.restartPrefetcher();
     }
 
     /*
@@ -1155,6 +1169,16 @@ public class KomServer extends Service implements RpcEventListener,
         return "unknown";
       }
     }
+
+    public int getVersionCode() {
+        try {
+            PackageInfo pinfo = getBaseContext().getPackageManager().getPackageInfo("org.lindev.androkom", 0);
+            return pinfo.versionCode;
+        } catch (android.content.pm.PackageManager.NameNotFoundException e) {
+        return -1;
+      }
+    }
+
 
     public void endast(int confNo, int no) {
         try {

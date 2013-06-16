@@ -199,7 +199,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         int textNo = 0;
 
         if (data != null) {
-            Log.d(TAG, "Got data!");
+            Log.d(TAG, "onCreate Got data!");
             mState = (State) data;
             if (mState.hasCurrent()) {
                 try {
@@ -216,6 +216,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 Log.d(TAG, "Broken error");
             }
         } else {
+            Log.d(TAG, "onCreate Initialize without bundle data");
             mState = new State();
             mState.currentText = new Stack<TextInfo>();
             if(textNo > 0) {
@@ -329,6 +330,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             if ((mKom!=null) && (mState.textListIndex >= 0)) {
                 List<TextInfo> textList = mKom.getCurrentTextList();
                 if (textList != null) {
+                    Log.d(TAG, "onResume textList exists");
                     int textNo = textList.get(mState.textListIndex).getTextNo();
                     mState.textQueue = new ArrayBlockingQueue<Integer>(10);
                     mState.textQueue.offer(textNo);
@@ -584,6 +586,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 setMessage(text);
+                                
+                                updateNumUnreads();
                             }
                         });
                         Message msgout = new Message();
@@ -654,7 +658,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             break;
             
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
-            textNo = (Integer) msg.arg1;
+            textNo = msg.arg1;
             backgroundThread = new Thread(new Runnable() {
                 public void run() {
                     if (textNo > 0) {
@@ -680,7 +684,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             break;
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST2:
             text = (TextInfo) msg.obj;
-            textNo = (Integer) msg.arg1;
+            textNo = msg.arg1;
             backgroundThread = new Thread(new Runnable() {
                 public void run() {
                     if ((text != null) && (text.getTextNo() > 0)) {
@@ -690,7 +694,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                 && (parentText.getTextNo() > 0)) {
                             Log.i(TAG, "Trying to get parent text of"
                                     + parentText.getTextNo());
-                            int looplevel = (Integer) msg.arg2;
+                            int looplevel = msg.arg2;
                             looplevel++;
                             if (looplevel > 100) {
                                 // Timeout
@@ -725,6 +729,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             Log.d(TAG, "consumeMessage MESSAGE_CONF_INIT");
 
             if ((mKom != null) && (mState.textListIndex >= 0)) {
+                Log.d(TAG, "consumeMessage MESSAGE_CONF_INIT textList");
                 List<TextInfo> textList = mKom.getCurrentTextList();
                 if (textList != null) {
                     textNo = textList.get(mState.textListIndex).getTextNo();
@@ -822,6 +827,17 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     tview.setText(spannedText);
                     resetOtherScroll();
                     setOtherTextSwitch();
+                    // Switch conference if the new text is from another
+                    // conference
+                    final int confNo = mKom.getCurrentConference();
+                    if (text.getConfNo() != confNo) {
+                        try {
+                            mKom.setConference(text.getConfNo());
+                        } catch (final Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                    
                     mSwitcher.showNext();
                 }
                 if (mState.textListIndex >= 0) {
@@ -848,18 +864,19 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         setProgressBarIndeterminateVisibility(true);
 
         Message msg = new Message();
+        msg.obj = 1;
+        msg.arg1 = textNo;
+        msg.arg2 = markTextAsReadint;
+        msg.what = msgType;
+        mHandler.sendMessage(msg);
+
+        msg = new Message();
         msg.obj = 0;
         msg.arg1 = textNo;
         msg.arg2 = markTextAsReadint;
         msg.what = Consts.MESSAGE_TYPE_MARKREAD;
         mHandler.sendMessage(msg);
 
-        msg = new Message();
-        msg.obj = (Integer) 1;
-        msg.arg1 = textNo;
-        msg.arg2 = markTextAsReadint;
-        msg.what = msgType;
-        mHandler.sendMessage(msg);
     }
 
 
@@ -1111,7 +1128,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         } else {
             moveToNextUnreadText(markTextAsRead);
         }
-        updateNumUnreads();
     }
     
     private void moveToNextListText(boolean markTextAsRead) {
@@ -2562,7 +2578,13 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
             try {
                 Log.d(TAG, "InitConnectionTask setConf 1");
+                int oldConf = mKom.getCurrentConference();
                 mKom.setConference(mState.conferenceNo);
+                if(oldConf != mState.conferenceNo) {
+                    mKom.restartPrefetcher();
+                } else {
+                    mKom.startPrefetcher();
+                }
                 Log.d(TAG, "InitConnectionTask setConf 2");
             } catch (RpcFailure e) {
                 // TODO Auto-generated catch block

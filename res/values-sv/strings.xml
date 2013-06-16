@@ -326,4 +326,6 @@ Supported formats are:
     <string name="menu_refresh_label">Uppdatera</string>
     <string name="default_name_hint">namn</string>
     <string name="default_number_hint">123</string>
+    <string name="login_title"><![CDATA[<h1>Androkom %s</h1><br></br><p>Hjälp finns i \"Androkom - Komklient för Android\" i LysLysKom</p>]]></string>
+    <string name="default_password_hint">lösenord</string>
 </resources>

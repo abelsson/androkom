@@ -325,4 +325,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="menu_refresh_label">Refresh</string>
     <string name="default_number_hint">123</string>
     <string name="default_name_hint">name</string>
+    <string name="login_title"><![CDATA[<h1>Androkom %s</h1><br></br><p>For help see \"Androkom - Komklient för Android\" in LysLysKom</p>]]></string>
+    <string name="default_password_hint">password</string>
 </resources>

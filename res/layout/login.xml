@@ -6,6 +6,13 @@
     android:orientation="vertical" >
 
     <TextView
+        android:id="@+id/akl_tw_title"
+        android:layout_width="wrap_content"
+        android:layout_height="wrap_content"
+        android:text="@string/login_title" >
+    </TextView>
+
+    <TextView
         android:id="@+id/akl_widget31"
         android:layout_width="wrap_content"
         android:layout_height="wrap_content"
@@ -16,7 +23,7 @@
         android:id="@+id/akl_username"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="name"
+        android:hint="@string/default_name_hint"
         android:inputType="textPersonName"
         android:text=""
         android:textSize="18sp" >
@@ -33,7 +40,7 @@
         android:id="@+id/akl_password"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:hint="password"
+        android:hint="@string/default_password_hint"
         android:inputType="textPassword"
         android:text=""
         android:textSize="18sp" >

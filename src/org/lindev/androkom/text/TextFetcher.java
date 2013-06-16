@@ -68,6 +68,15 @@ public class TextFetcher {
         return TextInfo.createText(mKom.getBaseContext(), TextInfo.NO_PARENT);
     }
 
+    public void startPrefetcher() {
+        try {
+            mPrefetcher.start(mKom.getCurrentConference());
+        } catch (InterruptedException e) {
+            // TODO Auto-generated catch block
+            e.printStackTrace();
+        }
+    }
+
     public void restartPrefetcher() {
         try {
             mPrefetcher.restart(mKom.getCurrentConference());
