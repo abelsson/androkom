@@ -115,6 +115,10 @@ public class App extends Application implements ServiceConnection
         Log.d(TAG, "doUnbindService done");
     }
     
+    public int getUsers() {
+        return nrServiceUsers;
+    }
+    
     private PowerManager.WakeLock mWakeLock = null;
 
 	public void onServiceConnected(ComponentName name, IBinder service)

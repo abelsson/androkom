@@ -77,6 +77,17 @@ public class Login extends Activity implements ServiceConnection
                 .build());
         }
 
+        if (getApp().getUsers() > 0) {
+            Log.d(TAG, "onCreate Too many users (" + getApp().getUsers()
+                    + "). Starting ConfList");
+            Toast.makeText(this, "Already logged in", Toast.LENGTH_SHORT)
+                    .show();
+            Intent intent = new Intent(this, ConferenceList.class);
+            startActivity(intent);
+            finish();
+            return;
+        }
+        
         getApp().doBindService(this);
 
         setContentView(R.layout.login);
