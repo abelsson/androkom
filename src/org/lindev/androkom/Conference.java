@@ -566,7 +566,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                     Message msgout = new Message();
                                     // msgout.arg1 = lmsgarg1;
                                     // msgout.arg2 = lmsgarg2;
-                                    Integer ll = looplevel++;
+                                    Integer ll = looplevel+1;
                                     Log.d(TAG, "consumeMessage new looplevel:"+ll);
                                     msgout.obj = ll;
                                     msgout.what = lmsgwhat;

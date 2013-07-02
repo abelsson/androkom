@@ -80,8 +80,11 @@ public class Login extends Activity implements ServiceConnection
         if (getApp().getUsers() > 0) {
             Log.d(TAG, "onCreate Too many users (" + getApp().getUsers()
                     + "). Starting ConfList");
-            Toast.makeText(this, "Already logged in", Toast.LENGTH_SHORT)
-                    .show();
+            if (!KomServer.RELEASE_BUILD) {
+                Toast.makeText(this, "Already logged in: "+getApp().getUsers(), Toast.LENGTH_SHORT)
+                        .show();
+            }
+            //getApp().resetUsers();
             Intent intent = new Intent(this, ConferenceList.class);
             startActivity(intent);
             finish();

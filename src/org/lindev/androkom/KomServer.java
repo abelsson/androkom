@@ -2449,8 +2449,9 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public int getCurrentConference() throws InterruptedException {
-        int text = 0;
+        int confNo = 0;
         if (lks == null) {
+            Log.d(TAG, "mKom.getCurrentConference No Session");
             return 0;
         }
         try {
@@ -2458,7 +2459,7 @@ public class KomServer extends Service implements RpcEventListener,
 
             if (slock.tryLock(60, TimeUnit.SECONDS)) {
                 try {
-                    text = lks.getCurrentConference();
+                    confNo = lks.getCurrentConference();
                 } finally {
                     slock.unlock();
                     Log.d(TAG, "mKom.getCurrentConference unlocked");
@@ -2471,7 +2472,7 @@ public class KomServer extends Service implements RpcEventListener,
                     + e);
             // e.printStackTrace();
         }
-        return text;
+        return confNo;
     }
 
     public List<TextInfo> nextUnreadTexts(int ConfNo) throws InterruptedException {

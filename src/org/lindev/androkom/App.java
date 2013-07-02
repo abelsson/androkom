@@ -110,7 +110,13 @@ public class App extends Application implements ServiceConnection
             mHandler.sendMessageDelayed(msg, 500);
             Log.d(TAG, "doUnbindService message sent for: "+connection);
         } else {
-            Log.d(TAG, "doUnbindService null handler");
+            Log.d(TAG, "doUnbindService null handler, trying to unbind directly");
+            try {
+                unbindService(connection);
+            } catch (Exception e) {
+                Log.d(TAG, "Couldn't unbind service:" + e);
+            }
+            nrServiceUsers--;
         }
         Log.d(TAG, "doUnbindService done");
     }
@@ -118,7 +124,11 @@ public class App extends Application implements ServiceConnection
     public int getUsers() {
         return nrServiceUsers;
     }
-    
+ 
+    public void resetUsers() {
+        nrServiceUsers = 0;
+    }
+
     private PowerManager.WakeLock mWakeLock = null;
 
 	public void onServiceConnected(ComponentName name, IBinder service)

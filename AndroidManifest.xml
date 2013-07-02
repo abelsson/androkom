@@ -24,17 +24,20 @@
                  
     	<!--  List of conferences with unread texts -->
         <activity android:name=".ConferenceList"
-                  android:label="@string/conference_list">          
+                  android:label="@string/conference_list"
+                  android:launchMode="singleTop">          
         </activity>
         
         <!--  List of unread texts in current conference -->
         <activity android:name=".ConferenceTextList"
-                  android:label="@string/conference_text_list">          
+                  android:label="@string/conference_text_list"
+                  android:launchMode="singleTop">          
         </activity>
         
         <!--  A single conference -->
          <activity android:name=".Conference"       
-                   android:label="@string/conference">
+                   android:label="@string/conference"
+                   android:launchMode="singleTop">
         </activity>
         
          <!--  Create a KOM message -->
@@ -45,53 +48,63 @@
         
          <!--  Who Is On -->
          <activity android:name=".WhoIsOn"       
-                   android:label="@string/seewhoison_label">
+                   android:label="@string/seewhoison_label"
+                   android:launchMode="singleTop">
         </activity>
 
          <!--  Endast -->
          <activity android:name=".Endast"       
-                   android:label="@string/endast_label">
+                   android:label="@string/endast_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  See again dialog -->
          <activity android:name=".SeeAgainTexts"       
-                   android:label="@string/seeagaintexts_label">
+                   android:label="@string/seeagaintexts_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  See again text list -->
          <activity android:name=".SeeAgainTextList"       
-                   android:label="@string/seeagaintextlist_label">
+                   android:label="@string/seeagaintextlist_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  Lista markerade -->
          <activity android:name=".MarkedTextList"       
-                   android:label="@string/showmarkedtexts_label">
+                   android:label="@string/showmarkedtexts_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  Join Conference -->
          <activity android:name=".JoinConference"       
-                   android:label="@string/joinconference_label">
+                   android:label="@string/joinconference_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  Add Recipient -->
          <activity android:name=".AddNewRecipientToText"       
-                   android:label="@string/add_recipient_label">
+                   android:label="@string/add_recipient_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  Add Comment -->
          <activity android:name=".AddNewCommentToText"       
-                   android:label="@string/add_comment_label">
+                   android:label="@string/add_comment_label"
+                   android:launchMode="singleTop">
          </activity>
         
              <!--  MessageLog -->
          <activity android:name=".gui.MessageLog"
-                   android:label="@string/message_log_label">
+                   android:label="@string/message_log_label"
+                   android:launchMode="singleTop">
          </activity>
         
          <!--  Login dialog -->
          <activity android:name=".Login"       
                    android:label="@string/app_name"
-                   android:windowSoftInputMode="stateVisible|adjustResize">
+                   android:windowSoftInputMode="stateVisible|adjustResize"
+                   android:launchMode="singleTop">
 
            <intent-filter>
                 <action android:name="android.intent.action.MAIN" />
@@ -107,11 +120,13 @@
         </activity>
 
         <activity android:name=".Prefs"
-                  android:label="@string/settings_title">
+                  android:label="@string/settings_title"
+                  android:launchMode="singleTop">
         </activity>
         
         <activity android:name=".ConferencePrefs"
-                  android:label="@string/settings_title">
+                  android:label="@string/settings_title"
+                  android:launchMode="singleTop">
         </activity>
         
         <!--  Connection to the KOM server -->
