@@ -31,6 +31,7 @@ import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
 import android.view.WindowManager.BadTokenException;
+import android.view.inputmethod.InputMethodManager;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.TextView;
@@ -162,6 +163,7 @@ public class Login extends Activity implements ServiceConnection
         super.onResume();
         Log.d(TAG, "onResume");
         mHandler = new CustomHandler(this);
+        
         Log.d(TAG, "onResume done");
     }
 
@@ -193,11 +195,16 @@ public class Login extends Activity implements ServiceConnection
 
             Log.d(TAG, "onWindowFocusChanged Checking prefs");
             // autologin
-            if (hasFocus && Prefs.getAutologin(this)
-                    && !(Prefs.getUseOISafe(this))
+            if (Prefs.getAutologin(this) && !(Prefs.getUseOISafe(this))
                     && (!loginFailed) && (getPsw().length() > 0)) {
                 Log.d(TAG, "onWindowFocusChanged do auto login");
                 doLogin();
+            } else {
+                if ((mHandler != null) && (getPsw().length() > 0)) {
+                    Message msg = new Message();
+                    msg.what = Consts.MESSAGE_SET_LOGIN_FOCUS;
+                    mHandler.sendMessage(msg);
+                }
             }
         }
         Log.d(TAG, "onWindowFocusChanged done");
@@ -250,6 +257,7 @@ public class Login extends Activity implements ServiceConnection
 
                 mUsername.setText(prefs.getString("username", ""));
                 mPassword.setText(getPsw());
+                
                 Log.d(TAG, "getPrefs thread done");
             }
         });
@@ -626,6 +634,25 @@ public class Login extends Activity implements ServiceConnection
             startActivity(intent);
             finish();
             break;
+            
+        case Consts.MESSAGE_SET_LOGIN_FOCUS:
+            Log.d(TAG, "consumeLoginMessage Hide keyboard");
+            
+            InputMethodManager inputMethodManager = (InputMethodManager)  this.getSystemService(Activity.INPUT_METHOD_SERVICE);
+            if(inputMethodManager != null) {
+                //View focus = this.getCurrentFocus();
+                View focus = getWindow().getDecorView().getRootView();
+                if(focus != null) {
+                    inputMethodManager.hideSoftInputFromWindow(focus.getWindowToken(), 0);
+                } else {
+                    Log.d(TAG, "consumeLoginMessage No view");
+                }
+            } else {
+                Log.d(TAG, "consumeLoginMessage No inputmgr");
+            }
+            
+            break;
+            
         default:
             Log.d(TAG, "consumeLoginMessage ERROR unknown msg.what=" + msg.what);
         }
@@ -734,6 +761,7 @@ public class Login extends Activity implements ServiceConnection
                 activity.consumeLoginMessage(msg);
             } catch (Exception e) {
                 Log.d(TAG, "handleMessage failed to consume:"+e);
+                e.printStackTrace();
             }
         }
     }
