@@ -100,24 +100,14 @@ public class App extends Application implements ServiceConnection
     	Log.d(TAG, "SERVICE more users:"+nrServiceUsers);
     }
     
-    public void doUnbindService(ServiceConnection connection)
-    {
-        Log.d(TAG, "doUnbindService");
-        if (mHandler != null) {
-            Message msg = new Message();
-            msg.obj = connection;
-            msg.what = Consts.MESSAGE_UNBIND_SERVICE;
-            mHandler.sendMessageDelayed(msg, 500);
-            Log.d(TAG, "doUnbindService message sent for: "+connection);
-        } else {
-            Log.d(TAG, "doUnbindService null handler, trying to unbind directly");
-            try {
-                unbindService(connection);
-            } catch (Exception e) {
-                Log.d(TAG, "Couldn't unbind service:" + e);
-            }
-            nrServiceUsers--;
+    public void doUnbindService(ServiceConnection connection) {
+        Log.d(TAG, "doUnbindService:"+connection);
+        try {
+            unbindService(connection);
+        } catch (Exception e) {
+            Log.d(TAG, "Couldn't unbind service:" + e);
         }
+        nrServiceUsers--;
         Log.d(TAG, "doUnbindService done");
     }
     

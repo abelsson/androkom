@@ -320,8 +320,8 @@ Supported formats are:
     <string name="dumplog_summary">Spara logfil till externt minne:
 /storage/sdcard0/Android/data/org.lindev.androkom/files/androkom.log</string>
     <string name="title_submenu_reply">Svara...</string>
-    <string name="img_reply">Bild</string>
-    <string name="cam_reply">Foto</string>
+    <string name="img_reply">Album</string>
+    <string name="cam_reply">Kamera</string>
     <string name="menu_showimage_label">Visa bild</string>
     <string name="menu_refresh_label">Uppdatera</string>
     <string name="default_name_hint">namn</string>

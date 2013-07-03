@@ -319,8 +319,8 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="dumplog_summary">Write log file to external storage:
 /storage/sdcard0/Android/data/org.lindev.androkom/files/androkom.log</string>
     <string name="title_submenu_reply">Reply...</string>
-    <string name="img_reply">Image</string>
-    <string name="cam_reply">Photo</string>
+    <string name="img_reply">Gallery</string>
+    <string name="cam_reply">Camera</string>
     <string name="menu_showimage_label">Show image</string>
     <string name="menu_refresh_label">Refresh</string>
     <string name="default_number_hint">123</string>
