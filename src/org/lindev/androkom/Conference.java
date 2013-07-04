@@ -46,6 +46,7 @@ import android.os.IBinder;
 import android.os.Message;
 import android.os.StrictMode;
 import android.os.Vibrator;
+import android.provider.MediaStore;
 import android.speech.tts.TextToSpeech;
 import android.speech.tts.TextToSpeech.OnInitListener;
 import android.text.Html;
@@ -404,10 +405,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             Log.d(TAG, "Unknown button selection");
         }
         Log.d(TAG, "Doing action:" + butval);
+        Intent intent = null;
+        TextInfo currentText = null;
         switch (butval) {
         case 1: // Svara
-            Intent intent = new Intent(this, TextCreator.class);
-            TextInfo currentText = mState.getCurrent();
+            intent = new Intent(this, TextCreator.class);
+            currentText = mState.getCurrent();
             if ((currentText != null) && (currentText.getTextNo() > 0)) {
                 intent.putExtra(TextCreator.INTENT_SUBJECT,
                         currentText.getSubject());
@@ -437,6 +440,38 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case 6: // SPC
             moveToNextText(true);
             break;
+        case 7: // Svara Kamera
+            currentText = mState.getCurrent();
+            if ((currentText != null) && (currentText.getTextNo() > 0)) {
+                doCamReply();
+            } else {
+                Log.d(TAG, "doButtonClick case 7: no current text");
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.no_text_loaded), Toast.LENGTH_SHORT)
+                        .show();
+            }
+            break;
+        case 8: // Svara Album
+            currentText = mState.getCurrent();
+            if ((currentText != null) && (currentText.getTextNo() > 0)) {
+                intent = new Intent();
+                intent.setType("image/*");
+                intent.setAction(Intent.ACTION_GET_CONTENT);
+                intent.addCategory(Intent.CATEGORY_OPENABLE);
+                startActivityForResult(intent, IMG_REQUEST);
+                Message msg = new Message();
+                msg.obj = 0;
+                msg.arg1 = currentText.getTextNo();
+                msg.arg2 = 0;
+                msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                mHandler.sendMessage(msg);
+            } else {
+                Log.d(TAG, "doButtonClick case 8: no current text");
+                Toast.makeText(getApplicationContext(),
+                        getString(R.string.no_text_loaded), Toast.LENGTH_SHORT)
+                        .show();
+            }
+            break;
         default:
             Log.d(TAG, "Unknown action, doing nothing.");
         }
@@ -448,8 +483,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         final int textNo;
         final TextInfo text;
 	    
-        final int msgarg1 = msg.arg1;
-        final int msgarg2 = msg.arg2;
         final Object msgobj = msg.obj;
         final int msgwhat = msg.what;
 
@@ -1327,31 +1360,145 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         return mState;
     }
 
+    private Bitmap getPic() {
+        Bitmap bitmap = null;
+        String mCurrentPhotoPath = "dummy";//cameraTempFilename;
+
+        File checkExistFile = new File(mCurrentPhotoPath);
+        if (checkExistFile.exists()) {
+            // Get the dimensions of the View
+            int targetW = (int) Math.sqrt(ConferencePrefs
+                    .getMaxImageSizePix(this)) * 4;
+            int targetH = (int) Math.sqrt(ConferencePrefs
+                    .getMaxImageSizePix(this)) * 4;
+
+            // Get the dimensions of the bitmap
+            BitmapFactory.Options bmOptions = new BitmapFactory.Options();
+            bmOptions.inJustDecodeBounds = true;
+            BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+            int photoW = bmOptions.outWidth;
+            int photoH = bmOptions.outHeight;
+
+            // Determine how much to scale down the image
+            int scaleFactor = Math.min(photoW / targetW, photoH / targetH);
+
+            // Decode the image file into a Bitmap sized to fill the View
+            bmOptions.inJustDecodeBounds = false;
+            bmOptions.inSampleSize = scaleFactor;
+            bmOptions.inPurgeable = true;
+
+            bitmap = BitmapFactory.decodeFile(mCurrentPhotoPath, bmOptions);
+        } else {
+            Log.d(TAG, "getPic File does not exist:" + checkExistFile);
+        }
+        return bitmap;
+    }
+    
     @Override
     protected void onActivityResult(int requestCode, int resultCode, Intent data) {
         super.onActivityResult(requestCode, resultCode, data);
+        Log.d(TAG, "onActivityResult");
 
-        Intent img_intent = new Intent(Conference.this,
+        final Intent img_intent = new Intent(Conference.this,
                 ImgTextCreator.class);
-        img_intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent().getSubject());
-        img_intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent().getTextNo());
+        img_intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent()
+                .getSubject());
+        img_intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent()
+                .getTextNo());
 
-        if (requestCode == CAMERA_REQUEST && resultCode == RESULT_OK) {
-            Bitmap photo = (Bitmap) data.getExtras().get("data");
-            img_intent.putExtra("bild_uri", "");
-            img_intent.putExtra("BitmapImage", photo);
-            startActivity(img_intent);
-            finish();
+        switch (requestCode) {
+        case CAMERA_REQUEST:
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "onActivityResult got Camera result OK");
+                Bitmap bitmap = null;
+                img_intent.putExtra("bild_uri", cameraTempFilename);
+                img_intent.putExtra("BitmapImage", bitmap);
+                startActivity(img_intent);
+            } else {
+                Log.d(TAG, "onActivityResult got Camera result cancel");
+                Toast.makeText(this, getString(R.string.camera_canceled),
+                        Toast.LENGTH_SHORT).show();
+            }
+            break;
+        case IMG_REQUEST:
+            if (resultCode == RESULT_OK) {
+                Log.d(TAG, "onActivityResult got Gallery result OK");
+                Bitmap bitmap = null;
+                img_intent.putExtra("bild_uri", data.getData().toString());
+                img_intent.putExtra("BitmapImage", bitmap);
+                startActivity(img_intent);
+            } else {
+                Log.d(TAG, "onActivityResult got Gallery result Cancel");
+                Toast.makeText(this, getString(R.string.gallery_canceled),
+                        Toast.LENGTH_SHORT).show();
+            }
+            break;
+        default:
+            Log.d(TAG, "onActivityResult got unknown requestCode:"
+                    + requestCode);
         }
-        if (requestCode == IMG_REQUEST && resultCode == RESULT_OK) {
-            Bitmap bitmap = null;
-            img_intent.putExtra("bild_uri", data.getData().toString());
-            img_intent.putExtra("BitmapImage", bitmap);
-            startActivity(img_intent);
-            finish();
+        Log.d(TAG, "onActivityResult done");
+    }
+
+    @SuppressWarnings("null")
+    private String getAlbumDir() {
+        File storageDir = null;
+
+        if (Environment.MEDIA_MOUNTED.equals(Environment
+                .getExternalStorageState())) {
+
+            storageDir = new File(
+                    Environment
+                            .getExternalStoragePublicDirectory(Environment.DIRECTORY_PICTURES),
+                    "Androkom");
+
+            if (storageDir != null) {
+                if (!storageDir.mkdirs()) {
+                    if (!storageDir.exists()) {
+                        Log.d(TAG, "getAlmbumDir failed to create directory");
+                        return null;
+                    }
+                }
+            }
+
+        } else {
+            Log.v(getString(R.string.app_name),
+                    "External storage is not mounted READ/WRITE.");
         }
+
+        if(storageDir != null) {
+            return storageDir.toString();
+        }
+        return null;
     }
     
+    private void doCamReply() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                final String EXPORT_DIR_NAME = getAlbumDir(); 
+                final String EXPORT_FILE_NAME = EXPORT_DIR_NAME + File.separatorChar+"img.png";
+                File tempFile = null;
+                tempFile = new File(EXPORT_DIR_NAME);
+                tempFile.mkdirs();
+                tempFile = new File(EXPORT_FILE_NAME);
+                Log.d(TAG, "doCamReply() tempfile = " + tempFile.toString());
+                Uri cameraTempFileUri = Uri.fromFile(tempFile);
+                cameraTempFilename = cameraTempFileUri.toString();
+                Intent intent = new Intent(
+                        android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
+                intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraTempFileUri);
+                startActivityForResult(intent, CAMERA_REQUEST);
+                Message msg = new Message();
+                msg.obj = 0;
+                msg.arg1 = mState.getCurrent().getTextNo();
+                msg.arg2 = 0;
+                msg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                mHandler.sendMessage(msg);
+            }
+        });
+        backgroundThread.start();
+    }
+
     /**
      * Called when user has selected a menu item from the 
      * menu button popup. 
@@ -1404,14 +1551,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             return true;
 
         case R.id.cam_reply:
-            intent=new Intent(android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
-            startActivityForResult(intent, CAMERA_REQUEST);
-            msg = new Message();
-            msg.obj = 0;
-            msg.arg1 = mState.getCurrent().getTextNo();
-            msg.arg2 = 0;
-            msg.what = Consts.MESSAGE_TYPE_MARKREAD;
-            mHandler.sendMessage(msg);
+            doCamReply();
             return true;
 
 
@@ -2159,9 +2299,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         if (currentViewId == R.id.scrollView1) {
             return (TextView) findViewById(R.id.flipper_text2_id);
-        } else {
-            return (TextView) findViewById(R.id.flipper_text1_id);
         }
+        return (TextView) findViewById(R.id.flipper_text1_id);
     }
 
     /**
@@ -2173,9 +2312,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         if (currentViewId == R.id.scrollView1) {
             return (ImageView) findViewById(R.id.flipper_imageView2);
-        } else {
-            return (ImageView) findViewById(R.id.flipper_imageView1);
         }
+        return (ImageView) findViewById(R.id.flipper_imageView1);
     }
 
     /**
@@ -2187,9 +2325,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         if (currentViewId == R.id.scrollView1) {
             return (TextView) findViewById(R.id.flipper_text1_id);
-        } else {
-            return (TextView) findViewById(R.id.flipper_text2_id);
         }
+        return (TextView) findViewById(R.id.flipper_text2_id);
     }
 
     /**
@@ -2698,8 +2835,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         TextInfo getCurrent() {
             if (currentTextIndex >= 0 && currentTextIndex < currentText.size())
                 return currentText.elementAt(currentTextIndex);
-            else
-                return null;
+            return null;
         }
 
         int ShowHeadersLevel;
@@ -2732,4 +2868,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     
     private static final int CAMERA_REQUEST = 1;
     private static final int IMG_REQUEST = 2;
+    
+    private String cameraTempFilename = null;
 }

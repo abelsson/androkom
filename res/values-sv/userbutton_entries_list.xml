@@ -7,6 +7,8 @@
     <item>Vilka vänner</item>
     <item>IM</item>
     <item>SPC</item>
+    <item>Kamerasvar</item>
+    <item>Albumsvar</item>
   </array>
   <array name="userbutton_values_list">
     <item>"1"</item>
@@ -15,5 +17,7 @@
     <item>"4"</item>
     <item>"5"</item>
     <item>"6"</item>
+    <item>"7"</item>
+    <item>"8"</item>
   </array>
 </resources>

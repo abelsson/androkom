@@ -1,12 +1,14 @@
 <?xml version="1.0" encoding="utf-8"?>
 <resources>
   <array name="userbutton_entries_list">
-    <item>Svara</item>
-    <item>Avmarkera</item>
-    <item>Markera</item>
-    <item>Vilka vänner</item>
+    <item>Reply</item>
+    <item>Unmark</item>
+    <item>Mark</item>
+    <item>Which friends</item>
     <item>IM</item>
     <item>SPC</item>
+    <item>Camerareply</item>
+    <item>Galleryreply</item>
   </array>
   <array name="userbutton_values_list">
     <item>"1"</item>
@@ -15,5 +17,7 @@
     <item>"4"</item>
     <item>"5"</item>
     <item>"6"</item>
+    <item>"7"</item>
+    <item>"8"</item>
   </array>
 </resources>

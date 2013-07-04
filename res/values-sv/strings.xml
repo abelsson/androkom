@@ -328,4 +328,6 @@ Supported formats are:
     <string name="default_number_hint">123</string>
     <string name="login_title"><![CDATA[<h1>Androkom %s</h1><br></br><p>Hjälp finns i \"Androkom - Komklient för Android\" i LysLysKom</p>]]></string>
     <string name="default_password_hint">lösenord</string>
+    <string name="camera_canceled">Kamera avbruten</string>
+    <string name="gallery_canceled">Album avbruten</string>
 </resources>
