@@ -96,7 +96,12 @@ class Prefetcher {
                 Log.d(TAG, "initialize unreadConfList==null");
                 return;
             }
-            int startIdx = unreadConfList.indexOf(confNo);
+            int startIdx;
+            if(confNo > 0) {
+                startIdx = unreadConfList.indexOf(confNo);
+            } else {
+                startIdx = 0;
+            }
             if (startIdx < 0) {
                 startIdx = 0;
             }
@@ -225,6 +230,7 @@ class Prefetcher {
                 } else if (!mUnreadConfs.isEmpty()) {
                     // Ask the server for more (possibly) unread texts
                     try {
+                        Log.i(TAG, "PrefetchNextUnread asks for more");
                         mMaybeUnreadIter = askServerForMore();
                     } catch (NullPointerException e) {
                         Log.d(TAG, " run not connected (NullPointer)");
@@ -232,6 +238,8 @@ class Prefetcher {
                     }
                     if ((mMaybeUnreadIter == null)
                             || (!mMaybeUnreadIter.hasNext())) {
+                        Log.i(TAG,
+                                "PrefetchNextUnread might be more to read but connection is probably gone");
                         mIsInterrupted = true; /*
                                                 * might be more to read but
                                                 * connection is probably gone
@@ -240,6 +248,7 @@ class Prefetcher {
                 } else {
                     // No more unread in conference, and no more unread
                     // conferences
+                    Log.d(TAG, " run: no more unread");
                     mIsInterrupted = false;
                     break;
                 }
@@ -261,6 +270,8 @@ class Prefetcher {
                 Log.i(TAG,
                         "PrefetchNextUnread is exiting because it was interrupted 2");
             }
+            Log.i(TAG,
+                    "PrefetchNextUnread is exiting.");
         }
     }
 
@@ -313,7 +324,7 @@ class Prefetcher {
         }
         // If mPrefetchRunner is null, we have already reached the end of the queue
         if (mPrefetchRunner == null) {
-            Log.d(TAG, " getNextUnreadText end of queue");
+            Log.d(TAG, " getNextUnreadText end of queue. No mPrefetchRunner.");
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ALL_READ);
         }
 
@@ -328,10 +339,13 @@ class Prefetcher {
                 // Log.d(TAG, " getNextUnreadText take2");
             }
         } catch (final InterruptedException e) {
+            Log.d(TAG, " getNextUnreadText exception: "+e);
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ERROR_FETCHING_TEXT);
         }
+        Log.d(TAG, " getNextUnreadText mUnreadQueue.size="+mUnreadQueue.size());
         if(tc==null) {
-            Log.d(TAG, " getNextUnreadText next text would be kind of null?");
+            Log.d(TAG, " getNextUnreadText next text would be kind of null. IE timeout.");
+            Log.d(TAG, " getNextUnreadText mPrefetchRunner==null:"+(mPrefetchRunner==null));
             return null;
         } else {
             //Log.d(TAG, " getNextUnreadText next text would be:" + tc.textNo);
@@ -348,7 +362,9 @@ class Prefetcher {
         // If the text is already locally marked as read, get the next one instead
         if (mKom.isLocalRead(tc.textNo)) {
             //Log.d(TAG, " getNextUnreadText already read, get another");
-            return getNextUnreadText(cacheRelevant, peekQueue);
+            //Seems to run out of stack sometimes
+            //return getNextUnreadText(cacheRelevant, peekQueue);
+            return null;
         }
 
         // Switch conference name
@@ -386,12 +402,12 @@ class Prefetcher {
     void start(final int confNo) {
         if (mPrefetchRunner != null) {
             Log.i(TAG, "TextFetcher startPrefetcher(), already started");
-        } else {
-            Log.i(TAG, "TextFetcher startPrefetcher(), starting");
-            mUnreadQueue.clear();
-            mPrefetchRunner = new PrefetchNextUnread(confNo);
-            mPrefetchRunner.start();
+            mPrefetchRunner.interrupt();
         }
+        Log.i(TAG, "TextFetcher startPrefetcher(), starting");
+        mUnreadQueue.clear();
+        mPrefetchRunner = new PrefetchNextUnread(confNo);
+        mPrefetchRunner.start();
     }
 
     void restart(final int confNo) {

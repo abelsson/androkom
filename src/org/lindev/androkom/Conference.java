@@ -485,6 +485,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 	    
         final Object msgobj = msg.obj;
         final int msgwhat = msg.what;
+        final int msgarg1 = msg.arg1;
+        final int msgarg2 = msg.arg2;
 
         switch (msg.what) {
         case Consts.MESSAGE_TYPE_PARENT_TO:
@@ -555,23 +557,24 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 Log.i(TAG, "consumeMessage msgobj == null");
             } else {
                 int looplevel = (Integer) msgobj;
-                Log.i(TAG, "consumeMessage msgobj = "+looplevel);
+                Log.i(TAG, "consumeMessage msgobj/looplevel = "+looplevel);
             }
             backgroundThread = new Thread(new Runnable() {
-                //final int lmsgarg1 = msgarg1;
-                //final int lmsgarg2 = msgarg2;
+                final int lmsgarg1 = msgarg1;
+                final int lmsgarg2 = msgarg2;
                 final Object lmsgobj = msgobj;
                 final int lmsgwhat = msgwhat;
                 final Handler lmHandler = mHandler;
                 
                 public void run() {
                     final TextInfo text;
+                    Log.i(TAG, "consumeMessage bg thread begins");
                     
                     if(lmsgobj == null) {
                         Log.i(TAG, "consumeMessage lmsgobj == null");
                     } else {
                         int looplevel = (Integer) lmsgobj;
-                        Log.i(TAG, "consumeMessage lmsgobj = "+looplevel);
+                        //Log.i(TAG, "consumeMessage lmsgobj = "+looplevel);
                     }
 
                     Log.i(TAG, "consumeMessage pre session");
@@ -584,12 +587,13 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         }
                         Log.d(TAG, "consumeMessage Failed to get text, loop "
                                 + looplevel);
-                        if (looplevel > 1500) {
+                        if (looplevel > 20) {
                             // Timeout
                             Log.d(TAG, "consumeMessage Could not find text");
                             runOnUiThread(new Runnable() {
                                 public void run() {
                                     setProgressBarIndeterminateVisibility(false);
+                                    finish();
                                 }
                             });
                         } else {
@@ -598,7 +602,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                     Log.d(TAG, "consumeMessage sending message");
                                     Message msgout = new Message();
                                     // msgout.arg1 = lmsgarg1;
-                                    // msgout.arg2 = lmsgarg2;
+                                    msgout.arg2 = msg.arg2;
                                     Integer ll = looplevel+1;
                                     Log.d(TAG, "consumeMessage new looplevel:"+ll);
                                     msgout.obj = ll;
@@ -614,19 +618,54 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                 e.printStackTrace();
                             }
                         }
+                    } else if(text.getTextNo() == 0) {
+                        Log.d(TAG, "consumeMessage got zero text");
+                        runOnUiThread(new Runnable() {
+                            public void run() {
+                                setProgressBarIndeterminateVisibility(false);
+                            }
+                        });
+                        finish();
                     } else {
                         Log.i(TAG, "consumeMessage Got text");
+                        Log.i(TAG, "consumeMessage Got text:"+text.getTextNo());
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 setMessage(text);
-                                
-                                updateNumUnreads();
                             }
                         });
+                        //Yield to the UI
+                        try {
+                            Thread.sleep(10);
+                        } catch (InterruptedException e) {
+                            // TODO Auto-generated catch block
+                            //e.printStackTrace();
+                        }
+                        if (text.getTextNo() == lmsgarg1) {
+                            Log.i(TAG,
+                                    "consumeMessage ERROR trying to readmark visible text");
+                        } else if (0 == lmsgarg1) {
+                            Log.i(TAG,
+                                    "consumeMessage ERROR trying to readmark 0");
+                        } else {
+                            Log.i(TAG,
+                                    "consumeMessage visible text:"+text.getTextNo());
+                            Log.i(TAG,
+                                    "consumeMessage mark read text:"+lmsgarg1);
+                            Message lmsg = new Message();
+                            lmsg.obj = 0;
+                            lmsg.arg1 = lmsgarg1;
+                            lmsg.arg2 = lmsgarg2;
+                            lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                            mHandler.sendMessage(lmsg);
+                        }
+                        updateNumUnreads();
+
                         Message msgout = new Message();
                         msgout.what = Consts.MESSAGE_PREFETCH_NEXT;
                         lmHandler.sendMessage(msgout);
                    }
+                   Log.i(TAG, "consumeMessage bg thread done");
                 }
             });
             backgroundThread.start();
@@ -634,16 +673,18 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         case Consts.MESSAGE_TYPE_MARKREAD:
             if (mState.hasCurrent()) {
-                Log.d(TAG, "consumeMessage doInBackground hasCurrent");
+                Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent");
                 if ((msg.arg2 == 0)
                         && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
-                    Log.d(TAG, "consumeMessage doInBackground getMarkTextRead");
-                    mKom.markTextAsRead(mState.getCurrent().getTextNo());
+                    Log.d(TAG, "consumeMessage doInBackground getMarkTextRead:"+msg.arg1);
+                    mKom.markTextAsRead(msg.arg1);
                 }
+                Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD done");
             }
             break;
 
         case Consts.MESSAGE_TYPE_ACTIVATEUSER:
+            Log.d(TAG, "consumeMessage MESSAGE_TYPE_ACTIVATEUSER");
             backgroundThread = new Thread(new Runnable() {
                 public void run() {
                     try {
@@ -658,6 +699,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                             e.printStackTrace();
                         }
                     }
+                    Log.d(TAG, "consumeMessage MESSAGE_TYPE_ACTIVATEUSER done");
                 }
             });
             backgroundThread.start();
@@ -680,6 +722,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI;
                     lmsg.arg1 = num;
                     mHandler.sendMessage(lmsg);
+                    Log.d(TAG, "updateNumUnreads processing message done");
                 }
             });
             backgroundThread.start();
@@ -902,14 +945,6 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         msg.arg2 = markTextAsReadint;
         msg.what = msgType;
         mHandler.sendMessage(msg);
-
-        msg = new Message();
-        msg.obj = 0;
-        msg.arg1 = textNo;
-        msg.arg2 = markTextAsReadint;
-        msg.what = Consts.MESSAGE_TYPE_MARKREAD;
-        mHandler.sendMessage(msg);
-
     }
 
 
@@ -1027,6 +1062,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             Log.d(TAG, "onSingleTapUp e.getRawX():"+e.getRawX());
             Log.d(TAG, "onSingleTapUp e.getY():"+e.getY());
             Log.d(TAG, "onSingleTapUp e.getDownTime():"+e.getDownTime());
+            Log.d(TAG, "onSingleTapUp e.getDownTime():"+e.getEventTime());
 
             int topLimit = 0;
             if (android.os.Build.VERSION.SDK_INT > 10) {
@@ -1095,10 +1131,17 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         return true;
                     }
                 }
-
+                Log.d(TAG, "onFling not much movement:");
+                Log.d(TAG, "onFling e1.getX():"+e1.getX());
+                Log.d(TAG, "onFling e2.getX():"+e2.getX());
+                Log.d(TAG, "onFling e1.getY():"+e1.getY());
+                Log.d(TAG, "onFling e2.getY():"+e2.getY());
+                Log.d(TAG, "onFling velocityX:"+velocityX);
+                Log.d(TAG, "onFling velocityY:"+velocityY);
             } catch (Exception e) {
                 // nothing
             }
+            Log.d(TAG, "onFling done");
             return false;
         }
     }
@@ -1220,7 +1263,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             //if (android.os.Build.VERSION.SDK_INT > 12) {
                 //new LoadMessageTask().executeOnExecutor(
                         //AsyncTask.THREAD_POOL_EXECUTOR, MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-            loadMessage(Consts.MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
+            int currentText = mState.getCurrent().getTextNo();
+            Log.i(TAG, "moveToNextUnreadText currentText="+currentText);
+            loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText, markTextAsReadint);
         } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.
@@ -2543,7 +2588,16 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }        
     }
     
-    public void asyncMessage(Message msg) {
+    public void asyncMessage(final Message msg) {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                asyncMessageBG(msg);
+            }
+        });
+        backgroundThread.start();
+    }
+    
+    public void asyncMessageBG(Message msg) {
         int currentTextNo = -1;
 
         // TODO: Much of this should probably be done for any text in cache and no matter

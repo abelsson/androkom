@@ -73,7 +73,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -881,12 +881,16 @@ public class KomServer extends Service implements RpcEventListener,
     public int getConferenceUnreadsNo() throws InterruptedException {
         int unreads = 0;
 
+        Log.d(TAG, "getConferenceUnreadsNo");
         if (slock.tryLock(60, TimeUnit.SECONDS)) {
             try {
                 if (lks != null) {
                     int confNo = lks.getCurrentConference();
                     if (confNo > 0) {
                         unreads = lks.getUnreadCount(confNo);
+                        Log.d(TAG, "getConferenceUnreadsNo num unreads="+unreads);
+                    } else {
+                        Log.d(TAG, "getConferenceUnreadsNo no current conference");
                     }
                 } else {
                     Log.d(TAG, "getConferenceUnreadsNo no session");
@@ -904,10 +908,9 @@ public class KomServer extends Service implements RpcEventListener,
                 slock.unlock();
             }
         } else {
-            Log.d(TAG, "getConferenceUnreadsNo faile to get lock");
+            Log.d(TAG, "getConferenceUnreadsNo failed to get lock");
         }
-        Log.d(TAG,
-                "getConferenceUnreadsNo no current conference (or exception)");
+        Log.d(TAG, "getConferenceUnreadsNo done");
         return unreads;
     }
 
@@ -2450,14 +2453,14 @@ public class KomServer extends Service implements RpcEventListener,
 
     public int getCurrentConference() throws InterruptedException {
         int confNo = 0;
-        if (lks == null) {
-            Log.d(TAG, "mKom.getCurrentConference No Session");
-            return 0;
-        }
         try {
             Log.d(TAG, "mKom.getCurrentConference tryLock");
 
             if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                if (lks == null) {
+                    Log.d(TAG, "mKom.getCurrentConference No Session");
+                    return 0;
+                }
                 try {
                     confNo = lks.getCurrentConference();
                 } finally {
