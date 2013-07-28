@@ -7,6 +7,7 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
+import nu.dll.lyskom.RpcCall;
 import nu.dll.lyskom.Selection;
 import nu.dll.lyskom.TextStat;
 import android.util.Log;
@@ -28,6 +29,7 @@ public class ReadMarker {
     private class MarkerThread extends Thread {
         @Override
         public void run() {
+            Log.d(TAG, "MarkerThread begun");
             while (!isInterrupted()) {
                 int textNo = -1;
                 try {
@@ -40,6 +42,7 @@ public class ReadMarker {
                     markToServer(textNo);
                 }
             }
+            Log.d(TAG, "MarkerThread done");
         }
     }
 
@@ -70,7 +73,7 @@ public class ReadMarker {
                 if (rcpt > 0) {
                     int local = selection.getIntValue(TextStat.miscLocNo);
                     Log.i(TAG, "markAsRead: global " + textNo + " rcpt " + rcpt + " local " + local);
-                    mKom.doMarkAsRead(rcpt, new int[] { local });
+                    mKom.markAsRead(rcpt, new int[] { local });
                 }
             }
         }
@@ -81,6 +84,9 @@ public class ReadMarker {
             // TODO Auto-generated catch block
             Log.d(TAG, "markToServer Handled a InterruptedException:"+e);
             e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "markToServer Handled an Exception:"+e);
+            e.printStackTrace();
         }
         Log.i(TAG, "Mark as read finished: " + textNo);
     }
@@ -88,15 +94,20 @@ public class ReadMarker {
     public void mark(final int textNo) {
         boolean needServerMark = !isLocalRead(textNo);
         if (!needServerMark) {
+            Log.i(TAG, "markAsRead mark: no server mark for " + textNo);
             return;
         }
         synchronized (mMarked) {
+            Log.i(TAG, "markAsRead mark: adding text as marked on server " + textNo);
             needServerMark = (mMarked.put(textNo, textNo) == null);
         }
         if (needServerMark) {
             synchronized (mToMark) {
+                Log.i(TAG, "markAsRead mark: adding text to queue " + textNo);
                 mToMark.add(textNo);
             }
+        } else {
+            Log.i(TAG, "markAsRead mark: no 2-server mark for " + textNo);
         }
     }
 

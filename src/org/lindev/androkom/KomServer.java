@@ -73,7 +73,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -2075,27 +2075,26 @@ public class KomServer extends Service implements RpcEventListener,
         return text;
     }
     
-    public RpcCall doMarkAsRead(int confNo, int[] localTextNo) throws InterruptedException {
-        RpcCall text = null;
+    public void markAsRead(int confNo, int[] localTextNo) throws InterruptedException {
         if (lks == null) {
-            return null;
+            Log.d(TAG, "komserver.markAsRead no session");
+            return;
         }
         if (slock.tryLock(60, TimeUnit.SECONDS)) {
             try {
-                text = lks.doMarkAsRead(confNo, localTextNo);
+                lks.markAsRead(confNo, localTextNo);
             } catch (RpcFailure e) {
-                Log.d(TAG, "komserver.doMarkAsRead new_text RpcFailure:" + e);
+                Log.d(TAG, "komserver.markAsRead new_text RpcFailure:" + e);
                 // e.printStackTrace();
             } catch (IOException e) {
-                Log.d(TAG, "komserver.doMarkAsRead new_text IOException:" + e);
+                Log.d(TAG, "komserver.markAsRead new_text IOException:" + e);
                 // e.printStackTrace();
             } finally {
                 slock.unlock();
             }
         } else {
-            Log.d(TAG, "komserver.doMarkAsRead could not lock");
+            Log.d(TAG, "komserver.markAsRead could not lock");
         }
-        return text;
     }
  
     public nu.dll.lyskom.Conference getConfStat(int confNo)

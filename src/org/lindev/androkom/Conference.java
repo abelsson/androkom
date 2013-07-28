@@ -497,12 +497,22 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             backgroundThread = new Thread(new Runnable() {
                 public void run() {
                     final TextInfo text;
+                    final int lmsgarg1 = msgarg1;
+                    final int lmsgarg2 = msgarg2;
                     text = mKom.getParentToText(textNo);
                     if ((text != null) && (text.getTextNo() > 0)) {
                         Log.i(TAG, "consumeMessage Got text");
                         runOnUiThread(new Runnable() {
                             public void run() {
                                 setMessage(text);
+                                Log.i(TAG,
+                                        "consumeMessage PARENT_TO:"+lmsgarg1);
+                                Message lmsg = new Message();
+                                lmsg.obj = 0;
+                                lmsg.arg1 = lmsgarg1;
+                                lmsg.arg2 = lmsgarg2;
+                                lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                                mHandler.sendMessage(lmsg);
                             }
                         });
                     } else {
@@ -672,15 +682,14 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             break;
 
         case Consts.MESSAGE_TYPE_MARKREAD:
-            if (mState.hasCurrent()) {
-                Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent");
-                if ((msg.arg2 == 0)
-                        && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
-                    Log.d(TAG, "consumeMessage doInBackground getMarkTextRead:"+msg.arg1);
-                    mKom.markTextAsRead(msg.arg1);
-                }
-                Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD done");
+            Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent");
+            if ((msg.arg2 == 0)
+                    && (ConferencePrefs.getMarkTextRead(getBaseContext()))) {
+                Log.d(TAG, "consumeMessage doInBackground getMarkTextRead:"
+                        + msg.arg1);
+                mKom.markTextAsRead(msg.arg1);
             }
+            Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD done");
             break;
 
         case Consts.MESSAGE_TYPE_ACTIVATEUSER:
@@ -777,6 +786,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                 Log.d(TAG, "Stuck in loop or long thread");
                                 runOnUiThread(new Runnable() {
                                     public void run() {
+                                        Message lmsg = new Message();
+                                        lmsg.obj = 0;
+                                        lmsg.arg1 = mState.getCurrent().getTextNo();
+                                        lmsg.arg2 = 0;
+                                        lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                                        mHandler.sendMessage(lmsg);
                                         setMessage(parentText);
                                     }
                                 });
@@ -791,6 +806,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                             Log.i(TAG, "consumeMessage Got text");
                             runOnUiThread(new Runnable() {
                                 public void run() {
+                                    Message lmsg = new Message();
+                                    lmsg.obj = 0;
+                                    lmsg.arg1 = mState.getCurrent().getTextNo();
+                                    lmsg.arg2 = 0;
+                                    lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                                    mHandler.sendMessage(lmsg);
                                     setMessage(text);
                                 }
                             });
@@ -1147,6 +1168,13 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     }
 
     private void moveToPrevText() {
+        Message lmsg = new Message();
+        lmsg.obj = 0;
+        lmsg.arg1 = mState.getCurrent().getTextNo();
+        lmsg.arg2 = 0;
+        lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+        mHandler.sendMessage(lmsg);
+
         if (mState.textListIndex >= 0) {
             moveToPrevListText();
         } else {
