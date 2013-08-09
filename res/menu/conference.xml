@@ -61,13 +61,16 @@
                 android:id="@+id/menu_seeoriginalpost_id"/>
           </menu>
     </item>
-    <item android:id="@+id/menu_submenu_textsize"
-          android:title="@string/title_submenu_textsize" >
+    <item android:id="@+id/menu_submenu_texts"
+          android:title="@string/title_submenu_texts" >
           <!-- "textsize" submenu -->
           <menu>
             <item android:title="@string/monospaced_label"
                   android:alphabeticShortcut="@string/monospaced_shortcut"
                   android:id="@+id/menu_monospaced_id"/>
+            <item android:title="@string/menu_rot13_label" android:id="@+id/menu_rot13_id"></item>
+            <item android:title="@string/menu_speaktext_label" android:id="@+id/menu_speaktext_id"></item>
+            <item android:title="@string/menu_showimage_label" android:id="@+id/menu_showimage_id"></item>
             </menu>
     </item>
     <item android:id="@+id/menu_submenu_others"
@@ -81,10 +84,7 @@
             <item android:title="@string/sub_comment_label" android:id="@+id/menu_sub_comment_id"></item>
             <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
             <item android:title="@string/leaveconference_label" android:id="@+id/menu_leaveconference_id"></item>
-            <item android:title="@string/menu_rot13_label" android:id="@+id/menu_rot13_id"></item>
             <item android:title="@string/menu_sharetext_label" android:id="@+id/menu_sharetext_id"></item>
-            <item android:title="@string/menu_speaktext_label" android:id="@+id/menu_speaktext_id"></item>
-            <item android:title="@string/menu_showimage_label" android:id="@+id/menu_showimage_id"></item>
             </menu>
     </item>
             

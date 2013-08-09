@@ -63,7 +63,6 @@
     <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
-    <string name="title_submenu_textsize">Text storlek...</string>
     <string name="smallerfontsize_label">Mindre typsnitt</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
@@ -326,8 +325,9 @@ Supported formats are:
     <string name="menu_refresh_label">Uppdatera</string>
     <string name="default_name_hint">namn</string>
     <string name="default_number_hint">123</string>
-    <string name="login_title"><![CDATA[<h1>Androkom %s</h1><br></br><p>Hjälp finns i \"Androkom - Komklient för Android\" i LysLysKom</p>]]></string>
+    <string name="login_title"><![CDATA[<h1>Androkom %s</h1><br></br><p>For help see \"Androkom - Komklient för Android\" in LysLysKom</p>]]></string>
     <string name="default_password_hint">lösenord</string>
     <string name="camera_canceled">Kamera avbruten</string>
     <string name="gallery_canceled">Album avbruten</string>
+    <string name="title_submenu_texts">Text hantering...</string>
 </resources>

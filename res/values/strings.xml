@@ -71,7 +71,6 @@
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
     <string name="usessl_title">Use SSL</string>
     <string name="usessl_summary">Encrypted connection (SSL)</string>
-    <string name="title_submenu_textsize">Text size...</string>
     <string name="smallerfontsize_label">Smaller fontsize</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Bigger fontsize</string>
@@ -329,4 +328,5 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="default_password_hint">password</string>
     <string name="camera_canceled">Camera canceled</string>
     <string name="gallery_canceled">Gallery canceled</string>
+    <string name="title_submenu_texts">Text stuff...</string>
 </resources>
