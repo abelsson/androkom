@@ -277,9 +277,9 @@ public class Login extends Activity implements ServiceConnection
     		try {
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
-    			Toast.makeText(this,
-    					getString(R.string.error_oisafe_not_found),
-    					Toast.LENGTH_LONG).show();
+    			//Toast.makeText(this,
+    			//		getString(R.string.error_oisafe_not_found),
+    			//		Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to get password from OISafe(1)");
     		} catch (java.lang.SecurityException e) {
                 Toast.makeText(this,
