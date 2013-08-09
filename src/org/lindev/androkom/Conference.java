@@ -1291,9 +1291,18 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             //if (android.os.Build.VERSION.SDK_INT > 12) {
                 //new LoadMessageTask().executeOnExecutor(
                         //AsyncTask.THREAD_POOL_EXECUTOR, MESSAGE_TYPE_NEXT, 0, markTextAsReadint);
-            int currentText = mState.getCurrent().getTextNo();
-            Log.i(TAG, "moveToNextUnreadText currentText="+currentText);
-            loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText, markTextAsReadint);
+            if(mState != null) {
+                TextInfo current = mState.getCurrent();
+                if(current != null) {
+                    int currentText = current.getTextNo();
+                    Log.i(TAG, "moveToNextUnreadText currentText="+currentText);
+                    loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText, markTextAsReadint);
+                } else {
+                    finish();
+                }
+            } else {
+                finish();
+            }
         } else {
             Log.i(TAG, "Moving in old fetched text");
             // Display old text, already fetched.

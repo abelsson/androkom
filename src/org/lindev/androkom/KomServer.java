@@ -27,7 +27,6 @@ import nu.dll.lyskom.KomToken;
 import nu.dll.lyskom.Mark;
 import nu.dll.lyskom.Membership;
 import nu.dll.lyskom.Person;
-import nu.dll.lyskom.RpcCall;
 import nu.dll.lyskom.RpcEvent;
 import nu.dll.lyskom.RpcEventListener;
 import nu.dll.lyskom.RpcFailure;
@@ -73,7 +72,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
