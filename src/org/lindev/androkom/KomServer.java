@@ -1491,8 +1491,13 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     private final ReadMarker readMarker = new ReadMarker(this);
+
     public void markTextAsRead(final int textNo) {
-        readMarker.mark(textNo);
+        if (textNo > 0) {
+            readMarker.mark(textNo);
+        } else {
+            Log.d(TAG, "markTextAsRead ignore request to mark text 0 as read");
+        }
     }
 
     public boolean isLocalRead(final int textNo) {
