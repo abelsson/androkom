@@ -243,7 +243,7 @@ public class IMConversation extends ListActivity implements ServiceConnection, O
                 mIMLogger.clearConversationHistory(mConvId);
             }
         });
-        builder.setNegativeButton(getString(R.string.yes), null);
+        builder.setNegativeButton(getString(R.string.no), null);
         builder.create().show();
     }
 
