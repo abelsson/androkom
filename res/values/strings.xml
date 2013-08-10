@@ -329,4 +329,6 @@ Be ashamed of being You! You have a very good reason."</string>
     <string name="camera_canceled">Camera canceled</string>
     <string name="gallery_canceled">Gallery canceled</string>
     <string name="title_submenu_texts">Text stuff...</string>
+    <string name="title_submenu_filters">Filter...</string>
+    <string name="menu_superhoppa_label">Super-jump</string>
 </resources>

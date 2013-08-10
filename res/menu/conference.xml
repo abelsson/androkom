@@ -63,7 +63,7 @@
     </item>
     <item android:id="@+id/menu_submenu_texts"
           android:title="@string/title_submenu_texts" >
-          <!-- "textsize" submenu -->
+          <!-- "texts" submenu -->
           <menu>
             <item android:title="@string/monospaced_label"
                   android:alphabeticShortcut="@string/monospaced_shortcut"
@@ -71,7 +71,14 @@
             <item android:title="@string/menu_rot13_label" android:id="@+id/menu_rot13_id"></item>
             <item android:title="@string/menu_speaktext_label" android:id="@+id/menu_speaktext_id"></item>
             <item android:title="@string/menu_showimage_label" android:id="@+id/menu_showimage_id"></item>
-            </menu>
+            <item android:id="@+id/menu_submenu_filters"
+                  android:title="@string/title_submenu_filters" >
+                  <!-- "filters" submenu -->
+                 <menu>
+                        <item android:title="@string/menu_superhoppa_label" android:id="@+id/menu_superhoppa_id"></item>
+                 </menu>
+            </item>
+         </menu>
     </item>
     <item android:id="@+id/menu_submenu_others"
           android:title="@string/title_submenu_others" >

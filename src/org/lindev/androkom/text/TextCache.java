@@ -93,7 +93,8 @@ class TextCache {
             StringBuilder headersString;
             String SubjectString = null;
             String BodyString = null;
-
+            int[] emptyarr = {-1};
+            
             try {
                 Log.d(TAG, "TextFetcherTask get textno:" + textNo);
                 text = mKom.getTextbyNo(textNo);
@@ -103,12 +104,12 @@ class TextCache {
                 if(e.getError()==14) {
                     Log.d(TAG, "TextFetcherTask Error 14 no such text or not allowed to read");
                     //Text does not exist or we are not allowed to read.
-                    return new TextInfo(mKom.getBaseContext(), textNo, -1, username,
+                    return new TextInfo(mKom.getBaseContext(), textNo, emptyarr, username,
                             0, "-", "FINNS EJ",
                             "FINNS EJ", "FINNS EJ", "FINNS EJ",
                             null, 0);                    
                 }
-                return new TextInfo(mKom.getBaseContext(), textNo, -1, username,
+                return new TextInfo(mKom.getBaseContext(), textNo, emptyarr, username,
                         0, "-", "FINNS EJ",
                         "FINNS EJ", "FINNS EJ", "RpcFailure"+e.getError(),
                         ("RpcFailure"+e.getError()).getBytes(), 0);                    
@@ -119,7 +120,7 @@ class TextCache {
 
             if(text == null) {
                 Log.d(TAG, "TextFetcherTask failed to get text: ");
-                return new TextInfo(mKom.getBaseContext(), textNo, -1, username,
+                return new TextInfo(mKom.getBaseContext(), textNo, emptyarr, username,
                         0, "-", "FINNS EJ",
                         "FINNS EJ", "FINNS EJ", "FINNS EJ",
                         null, 0);                    
@@ -375,10 +376,9 @@ class TextCache {
             allHeadersString.append("ContentType:" + text.getContentType());
             
             // TODO: what is really current conf? Kind of philosophical question?
-            int confNo = text.getRecipients()[0];
 
             Log.d(TAG, "getTextFromServer returning");
-            return new TextInfo(mKom.getBaseContext(), textNo, confNo, username,
+            return new TextInfo(mKom.getBaseContext(), textNo, text.getRecipients(), username,
                     authorid, CreationTimeString, allHeadersString.toString(),
                     headersString.toString(), SubjectString, BodyString,
                     text.getBody(), mShowHeadersLevel);

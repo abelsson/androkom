@@ -4,6 +4,7 @@ import java.io.BufferedOutputStream;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.Arrays;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
@@ -689,6 +690,20 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         + msg.arg1);
                 mKom.markTextAsRead(msg.arg1);
             }
+            TextInfo current = mState.getCurrent();
+            if (current != null) {
+                int[] confNos = current.getConfNos();
+                for (int confNo : confNos) {                    
+                if (mKom.containsSuperJumpFiler(confNo, current.getSubject())) {
+                    int currentText = current.getTextNo();
+                    loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText, msg.arg2);
+                }
+                }
+            } else {
+                Log.d(TAG,
+                        "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent no current 1");
+                finish();
+            }
             Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD done");
             break;
 
@@ -927,9 +942,10 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     // Switch conference if the new text is from another
                     // conference
                     final int confNo = mKom.getCurrentConference();
-                    if (text.getConfNo() != confNo) {
+                    List<int[]> confNos = Arrays.asList(text.getConfNos());
+                    if (!confNos.contains(confNo)) {
                         try {
-                            mKom.setConference(text.getConfNo());
+                            mKom.setConference(confNos.get(0)[0]);
                         } catch (final Exception e) {
                             e.printStackTrace();
                         }
@@ -1793,6 +1809,9 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case R.id.menu_showimage_id:
             showImage();
             return true;
+        case R.id.menu_superhoppa_id:
+            superJump();
+            return true;
         default:
             return super.onOptionsItemSelected(item);
         }
@@ -1846,6 +1865,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         Toast.LENGTH_LONG).show();
             }
         }
+    }
+
+    private void superJump() {
+        TextInfo currentText = mState.getCurrent();      
+        mKom.addSuperJumpFiler(mState.conferenceNo, currentText.getSubject());
+        loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText.getTextNo(), 0);
     }
     
     private void gilla_current_text() {

@@ -330,4 +330,6 @@ Supported formats are:
     <string name="camera_canceled">Kamera avbruten</string>
     <string name="gallery_canceled">Album avbruten</string>
     <string name="title_submenu_texts">Text hantering...</string>
+    <string name="title_submenu_filters">Filter...</string>
+    <string name="menu_superhoppa_label">Superhoppa</string>
 </resources>

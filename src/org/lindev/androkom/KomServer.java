@@ -14,6 +14,7 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.List;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.locks.Lock;
@@ -130,12 +131,12 @@ public class KomServer extends Service implements RpcEventListener,
         public static final int ERROR_FETCHING_TEXT=2;
         public static final int NO_PARENT=3;
 
-        public TextInfo(Context context, int textNo, int confNo, String author, int authorno,
+        public TextInfo(Context context, int textNo, int[] confNos, String author, int authorno,
                 String date, String all_headers, String visible_headers,
                 String subject, String body, byte[] rawBody,
                 int ShowHeadersLevel) {
             this.textNo = textNo;
-            this.confNo = confNo;
+            this.confNos = confNos;
             this.author = author;
             this.authorno = authorno;
             this.date = date;
@@ -150,22 +151,23 @@ public class KomServer extends Service implements RpcEventListener,
         }
 
         public static TextInfo createText(Context context, int id) {
+            int[] emptyarr = {-1};
             switch (id) {
             case ALL_READ:
                 Log.d(TAG, "createText ALL_READ");
-                return new TextInfo(context, -1, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -1, emptyarr, "", 0, "", "", "", "", context
                         .getString(R.string.all_read), null, 1);
             case ERROR_FETCHING_TEXT:
                 Log.d(TAG, "createText ERROR_FETCHING_TEXT");
-                return new TextInfo(context, -2, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -2, emptyarr, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             case NO_PARENT:
                 Log.d(TAG, "createText NO_PARENT");
-                return new TextInfo(context, -1, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -1, emptyarr, "", 0, "", "", "", "", context
                         .getString(R.string.error_no_parent), null, 1);
             default:
                 Log.d(TAG, "createText default");
-                return new TextInfo(context, -2, -1, "", 0, "", "", "", "", context
+                return new TextInfo(context, -2, emptyarr, "", 0, "", "", "", "", context
                         .getString(R.string.error_fetching_text), null, 1);
             }
         }
@@ -202,8 +204,8 @@ public class KomServer extends Service implements RpcEventListener,
             return textNo;
         }
 
-        public int getConfNo() {
-            return confNo;
+        public int[] getConfNos() {
+            return confNos;
         }
 
         public Spannable getSpannableHeaders() {
@@ -219,7 +221,7 @@ public class KomServer extends Service implements RpcEventListener,
         }
 
         private int textNo;
-        private int confNo;
+        private int[] confNos;
         private String date;
         private String subject;
         private String visible_headers;
@@ -230,7 +232,6 @@ public class KomServer extends Service implements RpcEventListener,
         private int authorno;
         private Spannable spannable;
         private Spannable spannableHeaders;
-
     }
     
     public KomServer() {
@@ -2386,7 +2387,6 @@ public class KomServer extends Service implements RpcEventListener,
             int counter = 0;
             while (data != null && data.hasMoreElements()) {
                 final int globalNo = (Integer) data.nextElement();
-                final int localNo = data.local();
 
                 Log.d(TAG, "populateSeeAgain Next text: "+globalNo);
                 TextInfo text = getKomText(globalNo);
@@ -2522,6 +2522,26 @@ public class KomServer extends Service implements RpcEventListener,
             // e.printStackTrace();
         }
         return ret_data;
+    }
+
+    public void addSuperJumpFiler(int author, String subject) {
+        java.util.Map.Entry<String,Integer> pair=new java.util.AbstractMap.SimpleEntry<String, Integer>(subject,author);
+        Log.d(TAG, "addSuperJumpFiler added filter author="+author+" subject="+subject);
+        superJumpFilters.add(pair);
+    }
+
+    public boolean containsSuperJumpFiler(int author, String subject) {
+        Log.d(TAG, "containsSuperJumpFiler testing for author="+author+" subject="+subject);
+        Iterator<Entry<String, Integer>> iter = superJumpFilters.iterator();
+        while (iter.hasNext()) {
+            Entry<String, Integer> filter = iter.next();
+            Log.d(TAG, "containsSuperJumpFiler compairing to author="+filter.getValue()+" subject="+filter.getKey());
+            if ((filter.getKey().equals(subject))
+                    && (filter.getValue() == author)) {
+                return true;
+            }
+        }
+        return false;
     }
 
     public <PopulateMarkedTextsTask> List<TextInfo> getMarkedTexts(
@@ -2766,7 +2786,9 @@ public class KomServer extends Service implements RpcEventListener,
     public void setClientMessageHandler(Handler clientHandler) {
         mHandler = clientHandler;
     }
-
+    
+    java.util.List<java.util.Map.Entry<String,Integer>> superJumpFilters = new java.util.ArrayList<Entry<String, Integer>>();
+    
 	private Session lks = null;
 	private volatile Lock slock = new ReentrantLock();
 	
