@@ -158,7 +158,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     private void initializeImg() {
         String uri_string = getIntent().getStringExtra("bild_uri");
         Bitmap bmImg = null;
-        if (uri_string.length() > 0) {
+        if ((uri_string != null) && (uri_string.length() > 0)) {
             Uri uri = Uri.parse(uri_string);
             if(uri != null) {
             Log.d(TAG, "got filename=" + uri.getPath());
