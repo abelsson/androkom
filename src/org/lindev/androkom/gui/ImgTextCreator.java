@@ -12,7 +12,6 @@ import nu.dll.lyskom.RpcFailure;
 import nu.dll.lyskom.Text;
 
 import org.lindev.androkom.App;
-import org.lindev.androkom.ConferenceInfo;
 import org.lindev.androkom.ConferencePrefs;
 import org.lindev.androkom.Consts;
 import org.lindev.androkom.KomServer;
@@ -21,18 +20,15 @@ import org.lindev.androkom.LookupNameTask;
 import org.lindev.androkom.LookupNameTask.LookupType;
 import org.lindev.androkom.LookupNameTask.RunOnSuccess;
 import org.lindev.androkom.R;
-import org.lindev.androkom.text.CreateTextTask;
-import org.lindev.androkom.text.CreateTextTask.CreateTextRunnable;
 import org.lindev.androkom.text.Recipient;
 import org.lindev.androkom.text.Recipient.RecipientType;
-import org.lindev.androkom.text.SendTextTask;
-
 import android.app.AlertDialog;
 import android.app.TabActivity;
 import android.content.ComponentName;
 import android.content.ContentResolver;
 import android.content.DialogInterface;
 import android.content.DialogInterface.OnClickListener;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.graphics.Bitmap;
 import android.graphics.BitmapFactory;
@@ -132,8 +128,13 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         initializeRecipients();
         initializeTabs();
         initializeButtons();
-        initializeImg();
-
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                initializeImg();
+            }
+        });
+        backgroundThread.start();
+        
         getApp().doBindService(this);
     }
     
@@ -159,7 +160,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         Bitmap bmImg = null;
         if (uri_string.length() > 0) {
             Uri uri = Uri.parse(uri_string);
-
+            if(uri != null) {
             Log.d(TAG, "got filename=" + uri.getPath());
             imgFilename = uri.getLastPathSegment();
 
@@ -168,13 +169,36 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             ContentResolver cr = getContentResolver();
 
             bmImg = getBitmap(cr, uri);
+            } else {
+                Log.d(TAG, "initializeImg got null uri. bailing out");
+                return;
+            }
         } else {
-            bmImg = (Bitmap) getIntent().getParcelableExtra("BitmapImage");
+            Log.d(TAG, "Got embedded image");
+            Intent intent = getIntent();
+            if(intent != null) {
+                bmImg = (Bitmap) intent.getParcelableExtra("BitmapImage");
+            } else {
+                Log.d(TAG, "initializeImg got null intent. bailing out");
+                return;
+            }
         }
-        ImageView imgView = (ImageView) findViewById(R.id.imageView1);
-        imgView.setImageBitmap(bmImg);
+        if(bmImg != null) {
+            Log.d(TAG, " initializeImg Height:"+bmImg.getHeight()+" with:"+bmImg.getWidth());
+        } else {
+            Log.d(TAG, " initializeImg got null bmImg. Bailing out");
+            return;
+        }
+        final ImageView imgView = (ImageView) findViewById(R.id.imageView1);
+        final Bitmap set_bmImg = bmImg;
+        runOnUiThread(new Runnable() {
+            public void run() {
+                imgView.setImageBitmap(set_bmImg);
+            }
+        });
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         bmImg.compress(Bitmap.CompressFormat.JPEG, 85, buffer);
+        Log.d(TAG, " initializeImg compressed Height:"+bmImg.getHeight()+" with:"+bmImg.getWidth());
         try {
             buffer.flush();
         } catch (IOException e) {
@@ -196,6 +220,8 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
             o.inJustDecodeBounds = true;
             BitmapFactory.decodeStream(is, null, o);
             is.close();
+
+            Log.d(TAG, " getBitmap Height:"+o.outHeight+" with:"+o.outWidth);
 
             int scale = 1;
             while ((o.outWidth * o.outHeight) * (1 / Math.pow(scale, 2)) > IMAGE_MAX_SIZE) {
