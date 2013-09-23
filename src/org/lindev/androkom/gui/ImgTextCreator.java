@@ -156,19 +156,20 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
     }
 
     private void initializeImg() {
+        Log.d(TAG, "initializeImg started");
         String uri_string = getIntent().getStringExtra("bild_uri");
         Bitmap bmImg = null;
         if ((uri_string != null) && (uri_string.length() > 0)) {
             Uri uri = Uri.parse(uri_string);
-            if(uri != null) {
-            Log.d(TAG, "got filename=" + uri.getPath());
-            imgFilename = uri.getLastPathSegment();
+            if (uri != null) {
+                Log.d(TAG, "got filename=" + uri.getPath());
+                imgFilename = uri.getLastPathSegment();
 
-            // Query gallery for camera picture via
-            // Android ContentResolver interface
-            ContentResolver cr = getContentResolver();
+                // Query gallery for camera picture via
+                // Android ContentResolver interface
+                ContentResolver cr = getContentResolver();
 
-            bmImg = getBitmap(cr, uri);
+                bmImg = getBitmap(cr, uri);
             } else {
                 Log.d(TAG, "initializeImg got null uri. bailing out");
                 return;
@@ -176,15 +177,16 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         } else {
             Log.d(TAG, "Got embedded image");
             Intent intent = getIntent();
-            if(intent != null) {
+            if (intent != null) {
                 bmImg = (Bitmap) intent.getParcelableExtra("BitmapImage");
             } else {
                 Log.d(TAG, "initializeImg got null intent. bailing out");
                 return;
             }
         }
-        if(bmImg != null) {
-            Log.d(TAG, " initializeImg Height:"+bmImg.getHeight()+" with:"+bmImg.getWidth());
+        if (bmImg != null) {
+            Log.d(TAG, " initializeImg Height:" + bmImg.getHeight() + " with:"
+                    + bmImg.getWidth());
         } else {
             Log.d(TAG, " initializeImg got null bmImg. Bailing out");
             return;
@@ -193,12 +195,14 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
         final Bitmap set_bmImg = bmImg;
         runOnUiThread(new Runnable() {
             public void run() {
+                Log.d(TAG, "initializeImg setImageBitmap");
                 imgView.setImageBitmap(set_bmImg);
             }
         });
         ByteArrayOutputStream buffer = new ByteArrayOutputStream();
         bmImg.compress(Bitmap.CompressFormat.JPEG, 85, buffer);
-        Log.d(TAG, " initializeImg compressed Height:"+bmImg.getHeight()+" with:"+bmImg.getWidth());
+        Log.d(TAG, " initializeImg compressed Height:" + bmImg.getHeight()
+                + " with:" + bmImg.getWidth());
         try {
             buffer.flush();
         } catch (IOException e) {

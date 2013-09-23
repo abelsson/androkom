@@ -2083,6 +2083,7 @@ public class KomServer extends Service implements RpcEventListener,
     public void markAsRead(int confNo, int[] localTextNo) throws InterruptedException {
         if (lks == null) {
             Log.d(TAG, "komserver.markAsRead no session");
+            // TODO: Fail in some way?
             return;
         }
         if (slock.tryLock(60, TimeUnit.SECONDS)) {
@@ -2090,15 +2091,18 @@ public class KomServer extends Service implements RpcEventListener,
                 lks.markAsRead(confNo, localTextNo);
             } catch (RpcFailure e) {
                 Log.d(TAG, "komserver.markAsRead new_text RpcFailure:" + e);
+                // TODO: Fail in some way?
                 // e.printStackTrace();
             } catch (IOException e) {
                 Log.d(TAG, "komserver.markAsRead new_text IOException:" + e);
+                // TODO: Fail in some way?
                 // e.printStackTrace();
             } finally {
                 slock.unlock();
             }
         } else {
             Log.d(TAG, "komserver.markAsRead could not lock");
+            // TODO: Fail in some way?
         }
     }
  

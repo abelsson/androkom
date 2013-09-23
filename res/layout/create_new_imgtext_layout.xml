@@ -25,42 +25,38 @@
                     android:id="@+id/label"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
                     android:text="@string/subject"/>
 
                 <EditText
                     android:id="@+id/subject"
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
                     android:hint="subject"
                     android:singleLine="true" >
                     <requestFocus />
                 </EditText>
 
                 <ImageView android:id="@+id/imageView1"
-                    android:layout_height="wrap_content"
+                    android:layout_height="0px"
                     android:layout_width="fill_parent"
+                    android:layout_weight="1"
                     android:src="@drawable/icon"
                     android:scaleType="fitCenter"/>
 
                 <LinearLayout
                     android:layout_width="fill_parent"
                     android:layout_height="wrap_content"
-                    android:layout_weight="2"
                     android:orientation="horizontal" >
 
                     <Button
                         android:id="@+id/cancel"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="@string/cancel"/>
                     <Button
                         android:id="@+id/send"
                         android:layout_width="wrap_content"
                         android:layout_height="wrap_content"
-                        android:layout_weight="4"
                         android:text="@string/send"/>
                 </LinearLayout>
             </LinearLayout>
@@ -71,7 +67,6 @@
                 android:orientation="vertical">
                 <ListView
                     android:id="@+id/recipients"
-                    android:layout_weight="1"
                     android:layout_width="fill_parent"
                     android:layout_height="fill_parent"/>
                 <LinearLayout
@@ -82,19 +77,16 @@
                         android:id="@+id/add_to"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="Add To"/>
                     <Button
                         android:id="@+id/add_cc"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="Add Cc"/>
                     <Button
                         android:id="@+id/add_bcc"
                         android:layout_width="fill_parent"
                         android:layout_height="wrap_content"
-                        android:layout_weight="1"
                         android:text="Add Bcc"/>
                 </LinearLayout>
             </LinearLayout>

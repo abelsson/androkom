@@ -382,7 +382,15 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     protected void onRestart() {
         super.onRestart();
         Log.d(TAG, "onRestart");
-        mSwitcher.setDisplayedChild(0);
+        // set current also
+        TextInfo currentText = mState.getCurrent();
+        if(currentText != null) {
+            int textNo = currentText.getTextNo();
+            loadMessage(Consts.MESSAGE_TYPE_TEXTNO, textNo, 0);
+        } else {
+            Log.d(TAG, "onRestart: no current text. bailing out.");
+            finish();
+        }
     }
 
     void doButtonClick(int buttonno) {
@@ -1496,17 +1504,37 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         final Intent img_intent = new Intent(Conference.this,
                 ImgTextCreator.class);
-        img_intent.putExtra(TextCreator.INTENT_SUBJECT, mState.getCurrent()
-                .getSubject());
-        img_intent.putExtra(TextCreator.INTENT_REPLY_TO, mState.getCurrent()
-                .getTextNo());
+        
+        if ((requestCode == CAMERA_REQUEST) || (requestCode == IMG_REQUEST)) {
+            if (mState == null) {
+                Toast.makeText(this,
+                        "Internal error, try again. (onActivityResult 1)",
+                        Toast.LENGTH_LONG).show();
+                Log.d(TAG, "onActivityResult error. Bailing out 1");
+                return;
+            }
+            TextInfo currentText = mState.getCurrent();
+            if (currentText == null) {
+                Toast.makeText(this,
+                        "Internal error, try again. (onActivityResult 2)",
+                        Toast.LENGTH_LONG).show();
+                Log.d(TAG, "onActivityResult error. Bailing out 2");
+                return;
+            }
+
+            img_intent.putExtra(TextCreator.INTENT_SUBJECT,
+                    currentText.getSubject());
+            img_intent.putExtra(TextCreator.INTENT_REPLY_TO,
+                    currentText.getTextNo());
+        }
 
         switch (requestCode) {
         case CAMERA_REQUEST:
             if (resultCode == RESULT_OK) {
                 Log.d(TAG, "onActivityResult got Camera result OK");
+                Log.d(TAG, "onActivityResult camera URI:"+mState.cameraTempFilename);
                 Bitmap bitmap = null;
-                img_intent.putExtra("bild_uri", cameraTempFilename);
+                img_intent.putExtra("bild_uri", mState.cameraTempFilename);
                 img_intent.putExtra("BitmapImage", bitmap);
                 startActivity(img_intent);
             } else {
@@ -1578,7 +1606,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 tempFile = new File(EXPORT_FILE_NAME);
                 Log.d(TAG, "doCamReply() tempfile = " + tempFile.toString());
                 Uri cameraTempFileUri = Uri.fromFile(tempFile);
-                cameraTempFilename = cameraTempFileUri.toString();
+                mState.cameraTempFilename = cameraTempFileUri.toString();
                 Intent intent = new Intent(
                         android.provider.MediaStore.ACTION_IMAGE_CAPTURE);
                 intent.putExtra(MediaStore.EXTRA_OUTPUT, cameraTempFileUri);
@@ -2952,6 +2980,8 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }
 
         int ShowHeadersLevel;
+        
+        private String cameraTempFilename = null;
     };
     
     State mState;
@@ -2981,6 +3011,4 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
     
     private static final int CAMERA_REQUEST = 1;
     private static final int IMG_REQUEST = 2;
-    
-    private String cameraTempFilename = null;
 }
