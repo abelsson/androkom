@@ -6,6 +6,7 @@ import java.util.Observer;
 import nu.dll.lyskom.ConfInfo;
 
 import org.lindev.androkom.App;
+import org.lindev.androkom.Consts;
 import org.lindev.androkom.KomServer;
 import org.lindev.androkom.LocalBinder;
 import org.lindev.androkom.LookupNameTask;
@@ -45,8 +46,6 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     private static final int MAX_CONVERSATIONS = 50;
     private static final int BACKGROUND_COLOR_ALL_READ = Color.BLACK;
     private static final int BACKGROUND_COLOR_UNREAD = 0xff303060;
-
-    public static final String INTENT_CONVERSATION_LIST_RECIPIENT = "recipient-str";
 
     private KomServer mKom = null;
     private IMLogger mIMLogger = null;
@@ -233,9 +232,9 @@ public class IMConversationList extends ListActivity implements ServiceConnectio
     }
 
     private void initialize(final Intent intent) {
-        if (intent.hasExtra(INTENT_CONVERSATION_LIST_RECIPIENT)) {
-            final String recipient = intent.getStringExtra(INTENT_CONVERSATION_LIST_RECIPIENT);
-            intent.removeExtra(INTENT_CONVERSATION_LIST_RECIPIENT);
+        if (intent.hasExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT)) {
+            final String recipient = intent.getStringExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT);
+            intent.removeExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT);
             if (recipient != null) {
                 mRecipientField.setText(recipient);
             }

@@ -2,6 +2,7 @@ package org.lindev.androkom;
 
 import nu.dll.lyskom.RpcFailure;
 
+import org.lindev.androkom.gui.IMConversationList;
 import org.lindev.androkom.gui.ImgTextCreator;
 
 import android.app.Activity;
@@ -77,23 +78,7 @@ public class Login extends Activity implements ServiceConnection
                 //.penaltyDeath()
                 .build());
         }
-
-        if (getApp().getUsers() > 0) {
-            Log.d(TAG, "onCreate Too many users (" + getApp().getUsers()
-                    + "). Starting ConfList");
-            if (!KomServer.RELEASE_BUILD) {
-                Toast.makeText(this, "Already logged in: "+getApp().getUsers(), Toast.LENGTH_SHORT)
-                        .show();
-            }
-            //getApp().resetUsers();
-            Intent intent = new Intent(this, ConferenceList.class);
-            startActivity(intent);
-            finish();
-            return;
-        }
-        
-        getApp().doBindService(this);
-
+       
         setContentView(R.layout.login);
 
         // if this is from the share menu
@@ -106,7 +91,25 @@ public class Login extends Activity implements ServiceConnection
                 share_uri = (Uri) extras.getParcelable(Intent.EXTRA_STREAM);
                 Log.d(TAG, "Called from Share");
             }
+        } else if (Intent.ACTION_SENDTO.equals(action)) {
+            String recipdata = intent.getData().getSchemeSpecificPart();
+            sendto_im_recipient = recipdata.replaceFirst("//[lL]yskom/", "");
+            Log.d(TAG, "ACTION_SENDTO "+sendto_im_recipient);
+        } else if (getApp().getUsers() > 0) {
+            Log.d(TAG, "onCreate Too many users (" + getApp().getUsers()
+                    + "). Starting ConfList");
+            if (!KomServer.RELEASE_BUILD) {
+                Toast.makeText(this, "Already logged in: "+getApp().getUsers(), Toast.LENGTH_SHORT)
+                        .show();
+            }
+            //getApp().resetUsers();
+            Intent clintent = new Intent(this, ConferenceList.class);
+            startActivity(clintent);
+            finish();
+            return;
         }
+
+        getApp().doBindService(this);
 
         titleWidget = (TextView) findViewById(R.id.akl_tw_title);
         
@@ -238,12 +241,18 @@ public class Login extends Activity implements ServiceConnection
         Log.d(TAG, "onConfigurationChanged");
     }
     
-    void create_image() {
+    void otherAction() {
         if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
             img_intent.putExtra("bild_uri", share_uri.toString());
             img_intent.putExtra("BitmapImage", (Bitmap)null);
             startActivity(img_intent);
+            finish();
+        }        
+        if((sendto_im_recipient != null) && (mKom!=null) && (mKom.isConnected())) {
+            Intent intent = new Intent(this, IMConversationList.class);
+            intent.putExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT, sendto_im_recipient);
+            startActivity(intent);
             finish();
         }        
     }
@@ -558,13 +567,17 @@ public class Login extends Activity implements ServiceConnection
                 // Commit the edits!
                 editor.commit();
 
-                if (share_uri == null) {
+                if (share_uri != null) {
                     Message msg = new Message();
-                    msg.what = Consts.MESSAGE_INTENT_CONFLIST;
+                    msg.what = Consts.MESSAGE_INTENT_IMGTEXTCREATOR;
+                    mHandler.sendMessage(msg);
+                } else if (sendto_im_recipient != null) {
+                    Message msg = new Message();
+                    msg.what = Consts.MESSAGE_INTENT_SENDTOIM;
                     mHandler.sendMessage(msg);
                 } else {
                     Message msg = new Message();
-                    msg.what = Consts.MESSAGE_INTENT_IMGTEXTCREATOR;
+                    msg.what = Consts.MESSAGE_INTENT_CONFLIST;
                     mHandler.sendMessage(msg);
                 }
             }
@@ -627,7 +640,14 @@ public class Login extends Activity implements ServiceConnection
             startActivity(intent);
             finish();
             break;
-            
+
+        case Consts.MESSAGE_INTENT_SENDTOIM:
+            intent = new Intent(this, IMConversationList.class);
+            intent.putExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT, sendto_im_recipient);
+            startActivity(intent);
+            finish();
+            break;
+
         case Consts.MESSAGE_SET_LOGIN_FOCUS:
             Log.d(TAG, "consumeLoginMessage Hide keyboard");
             
@@ -718,7 +738,7 @@ public class Login extends Activity implements ServiceConnection
             titleWidget.setText(Html.fromHtml(fs));
 
             dumpLog();
-            create_image();
+            otherAction();
         } catch (Exception e) {
             Log.d(TAG, "Exception: " + e);
             e.printStackTrace();
@@ -765,6 +785,7 @@ public class Login extends Activity implements ServiceConnection
     private TextView titleWidget;
 	private KomServer mKom = null;
 	private Uri share_uri=null;
+	private String sendto_im_recipient=null;
 	private static Handler mHandler=null;
 	private boolean activityVisible=false;
 }

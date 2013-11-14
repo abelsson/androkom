@@ -142,7 +142,7 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
                         case 1: // IM
                             Log.d(TAG, "Trying to create IM");
                             intent = new Intent(getBaseContext(), IMConversationList.class);
-                            intent.putExtra(IMConversationList.INTENT_CONVERSATION_LIST_RECIPIENT, selected_user);
+                            intent.putExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT, selected_user);
                             startActivity(intent);
                             finish();
                             break;
