@@ -1193,11 +1193,21 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
     private void moveToPrevText() {
         Message lmsg = new Message();
-        lmsg.obj = 0;
-        lmsg.arg1 = mState.getCurrent().getTextNo();
-        lmsg.arg2 = 0;
-        lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
-        mHandler.sendMessage(lmsg);
+        
+        if(mState != null) {
+            TextInfo current = mState.getCurrent();
+            if(current != null) {
+                lmsg.obj = 0;
+                lmsg.arg1 = current.getTextNo();
+                lmsg.arg2 = 0;
+                lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+                mHandler.sendMessage(lmsg);
+            } else {
+                Log.d(TAG, "moveToPrevText got current == null");
+            }
+        } else {
+            Log.d(TAG, "moveToPrevText got mState == null");
+        }
 
         if (mState.textListIndex >= 0) {
             moveToPrevListText();
