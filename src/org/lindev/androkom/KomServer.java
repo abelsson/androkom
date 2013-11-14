@@ -73,7 +73,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -381,6 +381,9 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public void logout() throws InterruptedException {
+        re_userid=0;
+        re_password=null; // for reconnect
+
         Log.d(TAG, "KomServer logout try lock");
         if (slock.tryLock(6, TimeUnit.SECONDS)) {
             try {

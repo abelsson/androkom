@@ -165,6 +165,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             cacheNames();
             break;
         case Consts.MESSAGE_LOGOUT_AND_FINISH:
+            re_userId = 0;
+            re_userPSW = null;
+
             try {
                 mKom.logout();
             } catch (InterruptedException e) {
