@@ -58,6 +58,8 @@ import android.os.Environment;
 import android.os.Handler;
 import android.os.IBinder;
 import android.os.Message;
+import android.os.Messenger;
+import android.os.RemoteException;
 import android.text.Spannable;
 import android.util.Log;
 import android.widget.Toast;
@@ -73,7 +75,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -93,10 +95,10 @@ public class KomServer extends Service implements RpcEventListener,
                 //Log.d(TAG, "onReceive5");
                 Log.d(TAG, "mConnReceiver isConnected:"+activeNetInfo.isConnected());
                 if (isConnected() && (!activeNetInfo.isConnected())
-                        && (mHandler != null)) {
+                        && (otherHandler != null)) {
                     Message rmsg = new Message();
                     rmsg.what = Consts.MESSAGE_POPULATE;
-                    mHandler.sendMessage(rmsg);
+                    otherHandler.sendMessage(rmsg);
                 }
                 setConnected(activeNetInfo.isConnected());
                 //Log.d(TAG, "onReceive6");
@@ -241,6 +243,14 @@ public class KomServer extends Service implements RpcEventListener,
         Session.setLog(this);
         mLastTextNo = -1;
         mPendingSentTexts = new HashSet<Integer>();
+        
+        msgHandler = new Handler() {
+            @Override
+            public void handleMessage(Message msg) {
+                consumeMessage(msg);
+            }
+        };
+
     }
 
 
@@ -324,6 +334,53 @@ public class KomServer extends Service implements RpcEventListener,
         super.onDestroy();
     }
 
+    
+    /**
+     * Handling low priority messages:
+     * Try to get session, if lock fails try again in a second
+     * 
+     */
+    protected void consumeMessage(final Message msg) {
+        final Object msgobj = msg.obj;
+        final int msgwhat = msg.what;
+        final int msgarg1 = msg.arg1;
+        final int msgarg2 = msg.arg2;
+
+        if (!slock.tryLock()) {
+            Log.d(TAG, "consumeMessage failed to lock");
+            consumeFailed++;
+            if(consumeFailed > 100) {
+                Log.d(TAG, "consumeMessage failed too much");
+                getApp().shutdown();
+            }
+            Message remsg = new Message();
+            remsg.copyFrom(msg);
+            msgHandler.sendMessageDelayed(remsg, 1*1000);
+        } else {
+            Log.d(TAG, "consumeMessage locked Session");
+            consumeFailed=0;
+            try {
+                switch (msg.what) {
+                case Consts.MESSAGE_TYPE_MARKREAD:
+                    readMarker.mark(msgarg1);
+                    break;
+                case Consts.MESSAGE_TYPE_ACTIVATEUSER:
+                    activateUserMsg();
+                    break;
+                case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
+                    getConferenceUnreadsNo(msg.replyTo);
+                    break;
+                default:
+                    Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
+                    break;
+                }
+            } finally {
+                slock.unlock();
+                Log.d(TAG, "consumeMessage Unlocked Session");
+            }
+        }
+    }
+    
     /**
      * When no need to wait for logout
      * 
@@ -879,42 +936,58 @@ public class KomServer extends Service implements RpcEventListener,
 
     /**
      * Return number of unreads for current conference.
+     * @param replyTo 
      * @throws InterruptedException 
      */
-    public int getConferenceUnreadsNo() throws InterruptedException {
+    public void getConferenceUnreadsNo(Messenger replyTo) {
         int unreads = 0;
 
         Log.d(TAG, "getConferenceUnreadsNo");
-        if (slock.tryLock(60, TimeUnit.SECONDS)) {
+        int confNo = lks.getCurrentConference();
+        if (confNo > 0) {
             try {
-                if (lks != null) {
-                    int confNo = lks.getCurrentConference();
-                    if (confNo > 0) {
-                        unreads = lks.getUnreadCount(confNo);
-                        Log.d(TAG, "getConferenceUnreadsNo num unreads="+unreads);
-                    } else {
-                        Log.d(TAG, "getConferenceUnreadsNo no current conference");
-                    }
-                } else {
-                    Log.d(TAG, "getConferenceUnreadsNo no session");
-                }
-            } catch (RpcFailure e) {
-                Log.d(TAG, "getConferenceUnreadsNo RpcFailure:" + e);
-                // e.printStackTrace();
+                unreads = lks.getUnreadCount(confNo);
             } catch (IOException e) {
-                Log.d(TAG, "getConferenceUnreadsNo IOException:" + e);
-                // e.printStackTrace();
-            } catch (NullPointerException e) {
-                Log.d(TAG, "getConferenceUnreadsNo NullPointerException:" + e);
+                Log.d(TAG,
+                        "getConferenceUnreadsNo IOException fallback to zero");
                 e.printStackTrace();
-            } finally {
-                slock.unlock();
+                unreads = 0;
             }
+            Log.d(TAG, "getConferenceUnreadsNo num unreads=" + unreads);
         } else {
-            Log.d(TAG, "getConferenceUnreadsNo failed to get lock");
+            Log.d(TAG, "getConferenceUnreadsNo no current conference");
         }
         Log.d(TAG, "getConferenceUnreadsNo done");
-        return unreads;
+        if (replyTo != null) {
+            Message lmsg = new Message();
+            lmsg.obj = 0;
+            lmsg.arg1 = unreads;
+            lmsg.arg2 = 0;
+            lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI;
+            try {
+                replyTo.send(lmsg);
+            } catch (RemoteException e) {
+                Log.d(TAG, "getConferenceUnreadsNo RemoteException");
+                e.printStackTrace();
+            }
+        } else {
+            Log.d(TAG, "getConferenceUnreadsNo nowhere to return number: "
+                    + unreads);
+        }
+    }
+
+    /**
+     * Return number of unreads for current conference by message.
+     * @param mHandler 
+     */
+    public void getConferenceUnreadsNo_msg(Handler mHandler) {
+        Message lmsg = new Message();
+        lmsg.obj = 0;
+        lmsg.arg1 = 0;
+        lmsg.arg2 = 0;
+        lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS;
+        lmsg.replyTo = new Messenger(mHandler);
+        msgHandler.sendMessageDelayed(lmsg, 1 * 1000);
     }
 
     /**
@@ -964,28 +1037,70 @@ public class KomServer extends Service implements RpcEventListener,
      * Send message about user active to server. Will not send more than once
      * every 30 sek to keep from flooding server.
      */
-    public void activateUser() throws InterruptedException, IOException, Exception {
+    public void activateUser() {
+        Message lmsg = new Message();
+        lmsg.obj = 0;
+        lmsg.arg1 = 0;
+        lmsg.arg2 = 0;
+        lmsg.what = Consts.MESSAGE_TYPE_ACTIVATEUSER;
+        msgHandler.sendMessageDelayed(lmsg, 1*1000);
+    }
+
+    /*
+     * Send message about user active to server. Will not send more than once
+     * every 30 sek to keep from flooding server.
+     */
+    public void activateUserMsg() {
+        long long_now = System.currentTimeMillis();
+    
+        try {
+            if (lks == null) {
+                Log.d(TAG, "mKom.activateUser: User not logged in");
+            }
+            if ((long_now - lastActivate) > (30 * 1000)) {
+                lks.doUserActive();
+                lastActivate = long_now;
+            }
+        } catch (IOException e) {
+            Log.d(TAG, "mKom.activateUser: IOException");
+            e.printStackTrace();
+        }
+    }
+
+    /*    public void activateUserMsg() {
         long long_now = System.currentTimeMillis();
         Log.d(TAG, "mKom.activateUser tryLock");
 
-        if (slock.tryLock(60, TimeUnit.SECONDS)) {
-            Log.d(TAG, "mKom.activateUser got lock");
-            try {
-                if (lks == null) {
-                    throw new Exception("Not logged in");
+        try {
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                Log.d(TAG, "mKom.activateUser got lock");
+                try {
+                    if (lks == null) {
+                        throw new Exception("Not logged in");
+                    }
+                    if ((long_now - lastActivate) > (30 * 1000)) {
+                        lks.doUserActive();
+                        lastActivate = long_now;
+                    }
+                } finally {
+                    slock.unlock();
+                    Log.d(TAG, "mKom.activateUser unlocked");
                 }
-                if ((long_now - lastActivate) > (30 * 1000)) {
-                    lks.doUserActive();
-                    lastActivate = long_now;
-                }
-            } finally {
-                slock.unlock();
-                Log.d(TAG, "mKom.activateUser unlocked");
+            } else {
+                Log.d(TAG, "mKom.activateUser could not get lock");
             }
-        } else {
-            Log.d(TAG, "mKom.activateUser could not get lock");
+        } catch (InterruptedException e) {
+            Log.d(TAG, "InterruptedException");
+            e.printStackTrace();
+        } catch (IOException e) {
+            Log.d(TAG, "IOException");
+            e.printStackTrace();
+        } catch (Exception e) {
+            Log.d(TAG, "Exception");
+            e.printStackTrace();
         }
     }
+*/
 
     /**
      * Log in to server.
@@ -1497,9 +1612,15 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void markTextAsRead(final int textNo) {
         if (textNo > 0) {
-            readMarker.mark(textNo);
+            //readMarker.mark(textNo);
+            Message lmsg = new Message();
+            lmsg.obj = 0;
+            lmsg.arg1 = textNo;
+            lmsg.arg2 = 0;
+            lmsg.what = Consts.MESSAGE_TYPE_MARKREAD;
+            msgHandler.sendMessageDelayed(lmsg, 1*1000);
         } else {
-            Log.d(TAG, "markTextAsRead ignore request to mark text 0 as read");
+            Log.d(TAG, "markTextAsRead ignore request to mark text 0 as read ("+textNo+")");
         }
     }
 
@@ -2536,13 +2657,13 @@ public class KomServer extends Service implements RpcEventListener,
         return ret_data;
     }
 
-    public void addSuperJumpFiler(int author, String subject) {
+    public void addSuperJumpFilter(int author, String subject) {
         java.util.Map.Entry<String,Integer> pair=new java.util.AbstractMap.SimpleEntry<String, Integer>(subject,author);
         Log.d(TAG, "addSuperJumpFiler added filter author="+author+" subject="+subject);
         superJumpFilters.add(pair);
     }
 
-    public boolean containsSuperJumpFiler(int author, String subject) {
+    public boolean containsSuperJumpFilter(int author, String subject) {
         Log.d(TAG, "containsSuperJumpFiler testing for author="+author+" subject="+subject);
         Iterator<Entry<String, Integer>> iter = superJumpFilters.iterator();
         while (iter.hasNext()) {
@@ -2796,7 +2917,7 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     public void setClientMessageHandler(Handler clientHandler) {
-        mHandler = clientHandler;
+        otherHandler = clientHandler;
     }
     
     java.util.List<java.util.Map.Entry<String,Integer>> superJumpFilters = new java.util.ArrayList<Entry<String, Integer>>();
@@ -2814,6 +2935,7 @@ public class KomServer extends Service implements RpcEventListener,
     //private final IBinder mBinder = new LocalBinder();
 
 	private long lastActivate = 0;
+	private int consumeFailed = 0;
 	
 	public HashSet<Integer> mPendingSentTexts;
 	ConfInfo usernames[] = null;
@@ -2833,6 +2955,7 @@ public class KomServer extends Service implements RpcEventListener,
 	private boolean hidden_session = !RELEASE_BUILD;
 
 	public AsyncMessages asyncMessagesHandler;
-	private static Handler mHandler=null;
+	private static Handler otherHandler=null; // for sending messages to other tasks
+    private static Handler msgHandler=null; // for sending message to myself
 	public IMLogger imLogger;
 }

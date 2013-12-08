@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.util.Arrays;
+import java.util.Iterator;
 import java.util.List;
 import java.util.Locale;
 import java.util.Queue;
@@ -497,6 +498,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         final int msgarg1 = msg.arg1;
         final int msgarg2 = msg.arg2;
 
+        TextInfo texti;
         switch (msg.what) {
         case Consts.MESSAGE_TYPE_PARENT_TO:
             textNo = msg.arg1;
@@ -567,7 +569,16 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             break;
 
         case Consts.MESSAGE_PREFETCH_NEXT:
-            text = mKom.getNextUnreadText(true);
+            Log.i(TAG, "consumeMessage MESSAGE_PREFETCH_NEXT 1");
+            backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    Log.i(TAG, "consumeMessage MESSAGE_PREFETCH_NEXT BG 1");
+                    TextInfo not_used_text = mKom.getNextUnreadText(true);
+                    Log.i(TAG, "consumeMessage MESSAGE_PREFETCH_NEXT BG 2");
+                }
+            });
+            backgroundThread.start();
+            Log.i(TAG, "consumeMessage MESSAGE_PREFETCH_NEXT 2");
             break;
             
         case Consts.MESSAGE_TYPE_NEXT:
@@ -587,7 +598,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 
                 public void run() {
                     final TextInfo text;
-                    Log.i(TAG, "consumeMessage bg thread begins");
+                    Log.i(TAG, "consumeMessage MESSAGE_TYPE_NEXT bg thread begins");
                     
                     if(lmsgobj == null) {
                         Log.i(TAG, "consumeMessage lmsgobj == null");
@@ -616,25 +627,19 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                 }
                             });
                         } else {
-                            try {
-                                if ((looplevel > 0) && (mKom.getConferenceUnreadsNo() > 0)) {
-                                    Log.d(TAG, "consumeMessage sending message");
-                                    Message msgout = new Message();
-                                    // msgout.arg1 = lmsgarg1;
-                                    msgout.arg2 = msg.arg2;
-                                    Integer ll = looplevel+1;
-                                    Log.d(TAG, "consumeMessage new looplevel:"+ll);
-                                    msgout.obj = ll;
-                                    msgout.what = lmsgwhat;
-                                    lmHandler.sendMessageDelayed(msgout, 200);
-                                } else {
-                                    Log.d(TAG, "consumeMessage NOT sending message");
-                                    finish();
-                                }
-                            } catch (InterruptedException e) {
-                                // TODO Auto-generated catch block
-                                Log.d(TAG, "consumeMessage NOT sending message 2");
-                                e.printStackTrace();
+                            if (looplevel > 0) {
+                                Log.d(TAG, "consumeMessage sending message");
+                                Message msgout = new Message();
+                                // msgout.arg1 = lmsgarg1;
+                                msgout.arg2 = msg.arg2;
+                                Integer ll = looplevel+1;
+                                Log.d(TAG, "consumeMessage new looplevel:"+ll);
+                                msgout.obj = ll;
+                                msgout.what = lmsgwhat;
+                                lmHandler.sendMessageDelayed(msgout, 200);
+                            } else {
+                                Log.d(TAG, "consumeMessage NOT sending message");
+                                finish();
                             }
                         }
                     } else if(text.getTextNo() == 0) {
@@ -648,18 +653,26 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     } else {
                         Log.i(TAG, "consumeMessage Got text");
                         Log.i(TAG, "consumeMessage Got text:"+text.getTextNo());
-                        runOnUiThread(new Runnable() {
+/*                        runOnUiThread(new Runnable() {
                             public void run() {
                                 setMessage(text);
                             }
                         });
+*/
+                        Message lmsg = new Message();
+                        lmsg.obj = text;
+                        lmsg.arg1 = 0;
+                        lmsg.arg2 = 0;
+                        lmsg.what = Consts.MESSAGE_TYPE_SET_TEXT;
+                        mHandler.sendMessage(lmsg);
                         //Yield to the UI
-                        try {
+/*                        try {
                             Thread.sleep(10);
                         } catch (InterruptedException e) {
                             // TODO Auto-generated catch block
                             //e.printStackTrace();
                         }
+*/
                         if (text.getTextNo() == lmsgarg1) {
                             Log.i(TAG,
                                     "consumeMessage ERROR trying to readmark visible text");
@@ -671,7 +684,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                                     "consumeMessage visible text:"+text.getTextNo());
                             Log.i(TAG,
                                     "consumeMessage mark read text:"+lmsgarg1);
-                            Message lmsg = new Message();
+                            lmsg = new Message();
                             lmsg.obj = 0;
                             lmsg.arg1 = lmsgarg1;
                             lmsg.arg2 = lmsgarg2;
@@ -682,12 +695,38 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
                         Message msgout = new Message();
                         msgout.what = Consts.MESSAGE_PREFETCH_NEXT;
+                        //lmHandler.sendMessageDelayed(msgout, 300);
                         lmHandler.sendMessage(msgout);
                    }
-                   Log.i(TAG, "consumeMessage bg thread done");
+                   Log.i(TAG, "consumeMessage MESSAGE_TYPE_NEXT bg thread done");
                 }
             });
+            Log.i(TAG, "consumeMessage Letting go to background");
+            backgroundThread.setPriority(Thread.MAX_PRIORITY);
             backgroundThread.start();
+            break;
+
+        case Consts.MESSAGE_TYPE_SET_TEXT:
+            Log.d(TAG, "consumeMessage MESSAGE_TYPE_SET_TEXT");
+            setMessage((TextInfo) msg.obj);
+            // check filters
+            TextInfo current = mState.getCurrent();
+            if (current != null) {
+                int[] confNos = current.getConfNos();
+                for (int confNo : confNos) {
+                    if (mKom.containsSuperJumpFilter(confNo,
+                            current.getSubject())) {
+                        int currentText = current.getTextNo();
+                        loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText,
+                                msg.arg2);
+                    }
+                }
+            } else {
+                Log.d(TAG,
+                        "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent no current 1");
+                finish();
+            }
+            Log.d(TAG, "consumeMessage MESSAGE_TYPE_SET_TEXT done");
             break;
 
         case Consts.MESSAGE_TYPE_MARKREAD:
@@ -698,71 +737,23 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                         + msg.arg1);
                 mKom.markTextAsRead(msg.arg1);
             }
-            TextInfo current = mState.getCurrent();
-            if (current != null) {
-                int[] confNos = current.getConfNos();
-                for (int confNo : confNos) {                    
-                if (mKom.containsSuperJumpFiler(confNo, current.getSubject())) {
-                    int currentText = current.getTextNo();
-                    loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText, msg.arg2);
-                }
-                }
-            } else {
-                Log.d(TAG,
-                        "consumeMessage MESSAGE_TYPE_MARKREAD hasCurrent no current 1");
-                finish();
-            }
             Log.d(TAG, "consumeMessage MESSAGE_TYPE_MARKREAD done");
             break;
 
         case Consts.MESSAGE_TYPE_ACTIVATEUSER:
             Log.d(TAG, "consumeMessage MESSAGE_TYPE_ACTIVATEUSER");
-            backgroundThread = new Thread(new Runnable() {
-                public void run() {
-                    try {
-                        mKom.activateUser();
-                    } catch (Exception e1) {
-                        Log.i(TAG, "Failed to activate user exception:" + e1);
-                        // e1.printStackTrace();
-                        try {
-                            mKom.logout();
-                        } catch (InterruptedException e) {
-                            // TODO Auto-generated catch block
-                            e.printStackTrace();
-                        }
-                    }
-                    Log.d(TAG, "consumeMessage MESSAGE_TYPE_ACTIVATEUSER done");
-                }
-            });
-            backgroundThread.start();
+            mKom.activateUser();
             break;
 
         case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
             Log.d(TAG, "updateNumUnreads processing message");
-
-            backgroundThread = new Thread(new Runnable() {
-                public void run() {
-                    int num = -1;
-                    try {
-                        Log.d(TAG, "updateNumUnreads trying to get num");
-                        num = mKom.getConferenceUnreadsNo();
-                    } catch (Exception e1) {
-                        Log.i(TAG, "Failed to update unreads exception:" + e1);
-                        // e1.printStackTrace();
-                    }
-                    Message lmsg = new Message();
-                    lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI;
-                    lmsg.arg1 = num;
-                    mHandler.sendMessage(lmsg);
-                    Log.d(TAG, "updateNumUnreads processing message done");
-                }
-            });
-            backgroundThread.start();
+            mKom.getConferenceUnreadsNo_msg(mHandler);
             break;
 
         case Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI:
             Log.d(TAG, "updateNumUnreads GUI updating GUI : "+msg.arg1);
-            setTitle(getTitle()+":"+msg.arg1);
+            // setTitle(mKom.getConferenceName()+":"+msg.arg1);  // not used since it might induce a delay
+            setTitle(getTitle()+":"+msg.arg1);  // may be ugly since it may add a number more than once
             break;
             
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
@@ -790,6 +781,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             });
             backgroundThread.start();
             break;
+
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST2:
             text = (TextInfo) msg.obj;
             textNo = msg.arg1;
@@ -950,10 +942,18 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     // Switch conference if the new text is from another
                     // conference
                     final int confNo = mKom.getCurrentConference();
-                    List<int[]> confNos = Arrays.asList(text.getConfNos());
-                    if (!confNos.contains(confNo)) {
+                    int[] confNos = text.getConfNos();
+                    boolean foundConf = false;
+                    for(int i : confNos) {
+                        if(i == confNo) {
+                            foundConf = true;
+                            break;
+                        }
+                    }
+                    if (!foundConf) {
                         try {
-                            mKom.setConference(confNos.get(0)[0]);
+                            Log.d(TAG, "setMessage switching from "+confNo+" to "+ confNos[0]);
+                            mKom.setConference(confNos[0]);
                         } catch (final Exception e) {
                             e.printStackTrace();
                         }
@@ -1052,7 +1052,30 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         return hasMatches;
     }
+
     
+    private void dumpWSizes(Window window) {
+        Log.d(TAG, "dumpSizes ----------------------");
+        Log.d(TAG, "dumpSizes height:" + window.getAttributes().height);
+        Log.d(TAG, "dumpSizes width:" + window.getAttributes().width);
+        Log.d(TAG, "dumpSizes x:" + window.getAttributes().x);
+        Log.d(TAG, "dumpSizes y:" + window.getAttributes().y);
+    }
+    
+    private void dumpChildrenSizes(Window window) {
+        //       
+    }
+    
+    private void dumpSizes() {
+        Window currentW = this.getWindow();
+        while(currentW != null) {
+            dumpWSizes(currentW);
+            currentW = currentW.getContainer();
+        }
+        dumpChildrenSizes(this.getWindow());
+    }
+    
+
     /**
      * A gesture detector that is used to navigate within and between texts.
      * 
@@ -1067,6 +1090,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
             return false;
         }
         
+        
         @Override
         public boolean onSingleTapConfirmed(MotionEvent e) {
             Context context = getBaseContext();
@@ -1076,6 +1100,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 Log.d(TAG, "Tap disabled");
                 return false;
             }
+            dumpSizes();
             Display display = getWindowManager().getDefaultDisplay();
             int width = display.getWidth();
             int height = display.getHeight();
@@ -1183,6 +1208,14 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 Log.d(TAG, "onFling e2.getY():"+e2.getY());
                 Log.d(TAG, "onFling velocityX:"+velocityX);
                 Log.d(TAG, "onFling velocityY:"+velocityY);
+                long downtime = e2.getDownTime()-e1.getDownTime(); 
+                double distance = Math.sqrt(e1.getX()*e1.getX()+e2.getX()*e2.getX());
+                if((downtime<20) && (distance < 20)) {
+                    Log.d(TAG, "onFling trying tap instead");
+                    onSingleTapConfirmed(e2);
+                } else {
+                    Log.d(TAG, "onFling too long downtime "+downtime);
+                }
             } catch (Exception e) {
                 // nothing
             }
@@ -1904,7 +1937,7 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
     private void superJump() {
         TextInfo currentText = mState.getCurrent();      
-        mKom.addSuperJumpFiler(mState.conferenceNo, currentText.getSubject());
+        mKom.addSuperJumpFilter(mState.conferenceNo, currentText.getSubject());
         loadMessage(Consts.MESSAGE_TYPE_NEXT, currentText.getTextNo(), 0);
     }
     
@@ -2799,6 +2832,12 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         case nu.dll.lyskom.Asynch.login:
             //ignore
             break;
+        case nu.dll.lyskom.Asynch.logout:
+            //ignore
+            break;
+        case nu.dll.lyskom.Asynch.sync_db:
+            //ignore
+            break;
         default:
             Log.d(TAG, "Unknown async message received#" + msg.what);
         }
@@ -2869,8 +2908,10 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                 int oldConf = mKom.getCurrentConference();
                 mKom.setConference(mState.conferenceNo);
                 if(oldConf != mState.conferenceNo) {
+                    Log.d(TAG, "Restart prefetcher");
                     mKom.restartPrefetcher();
                 } else {
+                    Log.d(TAG, "Start prefetcher");
                     mKom.startPrefetcher();
                 }
                 Log.d(TAG, "InitConnectionTask setConf 2");

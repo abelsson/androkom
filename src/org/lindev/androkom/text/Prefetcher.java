@@ -1,5 +1,6 @@
 package org.lindev.androkom.text;
 
+import java.io.UnsupportedEncodingException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -117,21 +118,31 @@ class Prefetcher {
         }
 
         private void enqueueAndPrefetch(final int textNo, final int confNo) {
+            Log.d(TAG, "PrefetchNextUnread.enqueueAndPrefetch " + textNo);
             final boolean notEnqueued = mEnqueued.add(textNo);
-            if(!mKom.isConnected()) {
-                Log.d(TAG, "PrefetchNextUnread.enqueueAndPrefetch not connected");
+            if (!mKom.isConnected()) {
+                Log.d(TAG,
+                        "PrefetchNextUnread.enqueueAndPrefetch not connected");
                 return;
             }
             if (notEnqueued && !mKom.isLocalRead(textNo)) {
                 try {
                     mUnreadQueue.put(new TextConf(textNo, confNo));
                 } catch (final InterruptedException e) {
-                    // Someone called interrupt() on this thread. We shouldn't do anything more, just exit.
+                    // Someone called interrupt() on this thread. We shouldn't
+                    // do anything more, just exit.
                     Log.i(TAG, "PrefetchNextUnread was interrupted");
                     return;
                 }
-                Log.i(TAG, "PrefetchNextUnread prefetching text " + textNo + " in conference " + confNo);
-                mTextCache.getCText(textNo);
+                Thread backgroundThread = new Thread(new Runnable() {
+                    public void run() {
+
+                        Log.i(TAG, "PrefetchNextUnread prefetching text "
+                                + textNo + " in conference " + confNo);
+                        mTextCache.getCText(textNo);
+                    }
+                });
+                backgroundThread.start();
             }
         }
 
@@ -215,6 +226,7 @@ class Prefetcher {
         @Override
         public void run() {
             while (!mIsInterrupted) {
+                Log.d(TAG, " run in new loop");
                 if (!mKom.isConnected()) {
                     Log.d(TAG, " run not connected");
                     mIsInterrupted = true;
@@ -334,9 +346,9 @@ class Prefetcher {
             if (peekQueue) {
                 tc = mUnreadQueue.peek();
             } else {
-                // Log.d(TAG, " getNextUnreadText take1");
+                Log.d(TAG, " getNextUnreadText take1");
                 tc = mUnreadQueue.poll(10, TimeUnit.SECONDS);
-                // Log.d(TAG, " getNextUnreadText take2");
+                Log.d(TAG, " getNextUnreadText take2");
             }
         } catch (final InterruptedException e) {
             Log.d(TAG, " getNextUnreadText exception: "+e);
@@ -348,12 +360,12 @@ class Prefetcher {
             Log.d(TAG, " getNextUnreadText mPrefetchRunner==null:"+(mPrefetchRunner==null));
             return null;
         } else {
-            //Log.d(TAG, " getNextUnreadText next text would be:" + tc.textNo);
+            Log.d(TAG, " getNextUnreadText next text would be:" + tc.textNo);
         }
         // This is how the prefetcher marks that there are no more unread texts. mPrefetchRunner should be finished,
         // so we can delete the reference to it.
         if (tc.textNo < 0) {
-            //Log.d(TAG, " getNextUnreadText mark no more unread");
+            Log.d(TAG, " getNextUnreadText mark no more unread");
 
             mPrefetchRunner = null;
             return TextInfo.createText(mKom.getBaseContext(), TextInfo.ALL_READ);
@@ -383,20 +395,26 @@ class Prefetcher {
         if(text==null) {
             Log.d(TAG, "Got null text!?!?");
         }
-        // Cache relevant info both for this text and for the next in the queue (if available)
+        // Cache relevant info both for this text and for the next in the queue
+        // (if available)
         if (cacheRelevant) {
-            //Log.d(TAG, " getNextUnreadText cache relevant");
-            doCacheRelevant(tc.textNo);
-            final TextConf tcNext = mUnreadQueue.peek();
-            if (tcNext != null) {
-                doCacheRelevant(tcNext.textNo);
-            }
-            //Log.d(TAG, " getNextUnreadText cache done");
+            Thread backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    // Log.d(TAG, " getNextUnreadText cache relevant");
+                    doCacheRelevant(tc.textNo);
+                    final TextConf tcNext = mUnreadQueue.peek();
+                    if (tcNext != null) {
+                        doCacheRelevant(tcNext.textNo);
+                    }
+                    // Log.d(TAG, " getNextUnreadText cache done");
+                }
+            });
+            backgroundThread.setPriority(Thread.MIN_PRIORITY);
+            backgroundThread.start();
         }
 
-        Log.d(TAG, " getNextUnreadText returning");
+        Log.d(TAG, " getNextUnreadText returning textno "+text.getTextNo());
         return text;
-        
     }
 
     void start(final int confNo) {
@@ -432,12 +450,13 @@ class Prefetcher {
     private class CacheRelevantTask extends AsyncTask<Integer, Void, Void> {
         @Override
         protected Void doInBackground(final Integer... args) {
+            Log.d(TAG, " CacheRelevantTask.doInBackground started");
             if(!mKom.isConnected()) {
                 Log.d(TAG, " CacheRelevantTask.doInBackground not connected");
                 return null;
             }
             final int textNo = args[0];
-            final TextInfo textInfo = mTextCache.getDText(textNo);
+            //final TextInfo textInfo = mTextCache.getDText(textNo);
             final Text text;
             try {
                 text = mKom.getTextbyNo(textNo);
@@ -461,22 +480,34 @@ class Prefetcher {
                 texts.add(commented);
             }
 
-            final Matcher m = TEXT_LINK_FINDER.matcher(textInfo.getBody());
-            while (m.find()) {
-                final String str = textInfo.getBody().substring(m.start(), m.end());
-                try {
-                    final int linkNo = Integer.valueOf(str);
-                    Log.i(TAG, "CacheRelevantTask, text number " + linkNo + " found in body of " + textNo);
-                    texts.add(linkNo);
-                } catch (final NumberFormatException e) {
-                    Log.i(TAG, "CacheRelevantTask, unable to parse " + str + " as text number in body of " + textNo);
+            String textbody;
+            try {
+                textbody = text.getBodyString();
+                // final Matcher m =
+                // TEXT_LINK_FINDER.matcher(textInfo.getBody());
+                final Matcher m = TEXT_LINK_FINDER.matcher(textbody);
+                while (m.find()) {
+                    final String str = textbody.substring(m.start(), m.end());
+                    try {
+                        final int linkNo = Integer.valueOf(str);
+                        Log.i(TAG, "CacheRelevantTask, text number " + linkNo
+                                + " found in body of " + textNo);
+                        texts.add(linkNo);
+                    } catch (final NumberFormatException e) {
+                        Log.i(TAG, "CacheRelevantTask, unable to parse " + str
+                                + " as text number in body of " + textNo);
+                    }
                 }
+            } catch (UnsupportedEncodingException e1) {
+                // TODO Auto-generated catch block
+                e1.printStackTrace();
             }
 
             for (final int t : texts) {
                 mTextCache.getCText(t);
             }
 
+            Log.d(TAG, " CacheRelevantTask.doInBackground done");
             return null;
         }
     }
@@ -503,10 +534,11 @@ class Prefetcher {
         }
     }
 
-    public void removeTextFromCache(int textNo) {
+/*    public void removeTextFromCache(int textNo) {
         synchronized (mTextCache) {
+            Log.d(TAG, "removeTextFromCache "+textNo);
             mTextCache.removeTextFromCache(textNo);
         }
     }
-
+*/
 }

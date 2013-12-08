@@ -6,6 +6,7 @@ import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -517,6 +518,13 @@ class TextCache {
         Log.d(TAG, "getCText:"+textNo);
         TextInfo text = mTextCache.get(textNo);
         if (text == null) {
+            Log.d(TAG, "getCText TEXT MISSING IN CACHE:"+textNo);
+            Log.d(TAG, "cache size "+mTextCache.size());
+            //Set<Entry<Integer, TextInfo>> allTexts = mTextCache.entrySet();
+            //for (Entry<Integer, TextInfo>s : allTexts) {
+            //    Integer textNum = s.getKey();
+            //    Log.d(TAG, "CACHE CONTAINS " + textNum);
+            //}
             Log.d(TAG, "getCText doGetText:"+textNo);
             doGetText(textNo);
         } else {
@@ -533,6 +541,7 @@ class TextCache {
     }
     
     void clearCacheStat() {
+        Log.d(TAG, "Clearing cache");
         synchronized (mTextCache) {
             mTextCache.clear();
             mTextCache.notifyAll();
@@ -542,9 +551,10 @@ class TextCache {
         }
     }
 
-    public void removeTextFromCache(int textNo) {
+/*    public void removeTextFromCache(int textNo) {
         synchronized (mTextCache) {
             mTextCache.remove(textNo);
         }
     }
+    */
 }

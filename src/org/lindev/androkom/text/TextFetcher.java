@@ -94,8 +94,9 @@ public class TextFetcher {
         mTextCache.setShowHeadersLevel(mShowHeadersLevel);
     }
 
-    public void removeTextFromCache(int textNo) {
+/*    public void removeTextFromCache(int textNo) {
         mTextCache.removeTextFromCache(textNo);
         mPrefetcher.removeTextFromCache(textNo);
     }
+    */
 }

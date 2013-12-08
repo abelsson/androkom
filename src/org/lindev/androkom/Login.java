@@ -259,10 +259,19 @@ public class Login extends Activity implements ServiceConnection
 
     private void getPrefs() {
         Log.d(TAG, "getPrefs");
-        SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                Log.d(TAG, "getPrefs BG");
 
-        mUsername.setText(prefs.getString("username", ""));
-        mPassword.setText(getPsw());
+                SharedPreferences prefs = getPreferences(MODE_PRIVATE);
+
+                mUsername.setText(prefs.getString("username", ""));
+                mPassword.setText(getPsw());
+
+                Log.d(TAG, "getPrefs BG done");
+            }
+        });
+        backgroundThread.start();
 
         Log.d(TAG, "getPrefs done");
     }
