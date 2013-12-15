@@ -1,6 +1,48 @@
 Androkom - utvecklingsmiljö i Eclipse
 =====================================
 
+Dagaktuellt (2013-12-15) förslag på byggmiljö:
+
+Ubuntu Server 13.10 64bits. Efter installation används knappt 5GB så
+rek minst 10GB disk (dvs 5GB + 1GB swap + slask) och 1GB ram.
+
+sudo apt-get install libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 libidn11:i386 libglu1-mesa:i386 lxde firefox emacs git
+
+reboot & justera bildupplösning vid behov
+
+Ladda ner & installera JDK från Oracle. jdk-7u45-linux-x64.tar.gz
+Om .tar.gz-filen väljs så räcker det med att packa upp den och lägga
+till följande i .bash_aliases:
+PATH=$PATH:~/jdk1.7.0_45/bin
+export PATH
+
+wget http://dl.google.com/android/adt/adt-bundle-linux-x86_64-20131030.zip
+unzip
+
+starta eclipse i ADT och installera stöd för Android 2.3.3 (API 10)
+och Android 4.2.2 (API 17):
+adt-bundle-linux-x86_64-20131030/eclipse/eclipse
+Window -> Android SDK manager -> Välj Package 2.3.3 och Install.
+
+Hämta källkoden, notera: ej i workspace-katalogen.
+
+cd 
+git clone https://github.com/jonasgit/androkom.git
+cd androkom
+git clone https://github.com/jonasgit/lattekom.git
+
+eclipse -> File -> import projekt, välj androkom som skapades med git
+
+Efter import kan man behöva rensa i bygginställningarna:
+Go to Project » Properties » Java Build Path » Libraries and
+remove all except the "Android X.Y" 
+
+git clone ovan skapar enbart en kopia av källkoden men ger inte
+rätt att checka in till github.
+
+----------------------------------------------------------
+Äldre instruktion:
+
 Note: Ersätt /home/jonas med lämplig sökväg hos dig.
 Note: jonasgit är mitt namn på github, ersätt med ditt.
 
@@ -60,4 +102,3 @@ trycka på F5.
 Om du vill provköra i virtuellt miljö så skapa en virtuell android
 med eclipse -> Window -> AVD manager -> New. Sedan ska det gå att
 köra med ctrl-F11 eller gröna pilen.
-
