@@ -51,6 +51,8 @@ import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.database.sqlite.SQLiteDatabase;
+import android.database.sqlite.SQLiteOpenHelper;
 import android.net.ConnectivityManager;
 import android.net.NetworkInfo;
 import android.os.AsyncTask;
@@ -380,7 +382,105 @@ public class KomServer extends Service implements RpcEventListener,
             }
         }
     }
-    
+
+/*
+    private class NameCache extends SQLiteOpenHelper {
+        static final String dbName="demoDB";
+        static final String employeeTable="Employees";
+        static final String colID="EmployeeID";
+        static final String colName="EmployeeName";
+        static final String colAge="Age";
+        static final String colDept="Dept";
+
+        static final String deptTable="Dept";
+        static final String colDeptID="DeptID";
+        static final String colDeptName="DeptName";
+
+        static final String viewEmps="ViewEmps";
+        
+        static final int dbSchemaVersion=1;
+        
+        public NameCache(Context context) {
+            super(context, dbName, null, dbSchemaVersion); 
+            }
+        
+        public void onCreate(SQLiteDatabase db) {
+            
+            db.execSQL("CREATE TABLE "+deptTable+" ("+colDeptID+ " INTEGER PRIMARY KEY , "+
+              colDeptName+ " TEXT)");
+            
+            db.execSQL("CREATE TABLE "+employeeTable+" 
+              ("+colID+" INTEGER PRIMARY KEY AUTOINCREMENT, "+
+                  colName+" TEXT, "+colAge+" Integer, "+colDept+" 
+              INTEGER NOT NULL ,FOREIGN KEY ("+colDept+") REFERENCES 
+              "+deptTable+" ("+colDeptID+"));");
+            
+            
+            db.execSQL("CREATE TRIGGER fk_empdept_deptid " +
+              " BEFORE INSERT "+
+              " ON "+employeeTable+
+              
+              " FOR EACH ROW BEGIN"+
+              " SELECT CASE WHEN ((SELECT "+colDeptID+" FROM "+deptTable+" 
+              WHERE "+colDeptID+"=new."+colDept+" ) IS NULL)"+
+              " THEN RAISE (ABORT,'Foreign Key Violation') END;"+
+              "  END;");
+            
+            db.execSQL("CREATE VIEW "+viewEmps+
+              " AS SELECT "+employeeTable+"."+colID+" AS _id,"+
+              " "+employeeTable+"."+colName+","+
+              " "+employeeTable+"."+colAge+","+
+              " "+deptTable+"."+colDeptName+""+
+              " FROM "+employeeTable+" JOIN "+deptTable+
+              " ON "+employeeTable+"."+colDept+" ="+deptTable+"."+colDeptID
+              );
+           }
+        
+        public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
+            db.execSQL("DROP TABLE IF EXISTS "+employeeTable);
+            db.execSQL("DROP TABLE IF EXISTS "+deptTable);
+            
+            db.execSQL("DROP TRIGGER IF EXISTS dept_id_trigger");
+            db.execSQL("DROP TRIGGER IF EXISTS dept_id_trigger22");
+            db.execSQL("DROP TRIGGER IF EXISTS fk_empdept_deptid");
+            db.execSQL("DROP VIEW IF EXISTS "+viewEmps);
+            onCreate(db);
+           }
+        
+        public void addRecord() {
+            SQLiteDatabase db=this.getWritableDatabase();
+            ContentValues cv=new ContentValues();
+              cv.put(colDeptID, 1);
+              cv.put(colDeptName, "Sales");
+              db.insert(deptTable, colDeptID, cv);
+
+              cv.put(colDeptID, 2);
+              cv.put(colDeptName, "IT");
+              db.insert(deptTable, colDeptID, cv);
+                                db.close();
+        }
+        
+        public int UpdateRecord(Employee emp)
+        {
+         SQLiteDatabase db=this.getWritableDatabase();
+         ContentValues cv=new ContentValues();
+         cv.put(colName, emp.getName());
+         cv.put(colAge, emp.getAge());
+         cv.put(colDept, emp.getDept());
+         return db.update(employeeTable, cv, colID+"=?", 
+          new String []{String.valueOf(emp.getID())});   
+        }
+        
+        Cursor getAllDepts()
+        {
+         SQLiteDatabase db=this.getReadableDatabase();
+         Cursor cur=db.rawQuery("SELECT "+colDeptID+" as _id, 
+          "+colDeptName+" from "+deptTable,new String [] {});
+         
+         return cur;
+        }
+    }
+  */  
     /**
      * When no need to wait for logout
      * 
@@ -859,6 +959,7 @@ public class KomServer extends Service implements RpcEventListener,
         return confName;
     }
 
+    
     public void setConferenceName(final String name) {
         mConfName = name;
     }
@@ -2252,36 +2353,6 @@ public class KomServer extends Service implements RpcEventListener,
             // e.printStackTrace();
         } catch (IOException e) {
             Log.d(TAG, "komserver.getConfStat new_text IOException:" + e);
-            // e.printStackTrace();
-        }
-        return text;
-    }
-
-    public byte[] getConfName(int confNo) throws InterruptedException {
-        Log.d(TAG, "byte [] mKom.getConfName id=" + confNo);
-        byte[] text = null;
-        if (lks == null) {
-            return null;
-        }
-        try {
-            Log.d(TAG, "mKom.getConfName tryLock");
-            if (slock.tryLock(60, TimeUnit.SECONDS)) {
-                Log.d(TAG, "mKom.getConfName got Lock");
-                try {
-                    text = lks.getConfName(confNo);
-                } finally {
-                    slock.unlock();
-                    Log.d(TAG, "mKom.getConfStat unlocked");
-                }
-            } else {
-                Log.d(TAG, "komserver.getConfName could not lock");
-            }
-            Log.d(TAG, "komserver.getConfName got name:" + text);
-        } catch (RpcFailure e) {
-            Log.d(TAG, "komserver.getConfName new_text RpcFailure:" + e);
-            // e.printStackTrace();
-        } catch (IOException e) {
-            Log.d(TAG, "komserver.getConfName new_text IOException:" + e);
             // e.printStackTrace();
         }
         return text;

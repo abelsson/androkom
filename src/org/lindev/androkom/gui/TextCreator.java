@@ -96,7 +96,7 @@ public class TextCreator extends TabActivity implements ServiceConnection {
                         if (confStat.getConfInfo().confType.original()) {
                             recip = confStat.getSuperConf();
                         }
-                        final String name = mKom.toString(mKom.getConfName(recip));
+                        final String name = mKom.getConferenceName(recip);
                         if (name != null) {
                             recipients.add(new Recipient(mKom
                                     .getApplicationContext(), recip, name,

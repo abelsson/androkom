@@ -36,6 +36,11 @@ class TextCache {
         this.mTextCache = new ConcurrentHashMap<Integer, TextInfo>();
     }
 
+    private String getConfName(int id) throws InterruptedException {
+        return mKom.getConferenceName(id);
+    }
+    
+
     private String getAuthorName(int textNo) {
         Log.d(TAG, "getAuthorName:"+textNo);
         if (!mKom.isConnected()) {
@@ -59,9 +64,7 @@ class TextCache {
             int authorid = text.getAuthor();
             if (authorid > 0) {
                 try {
-                    nu.dll.lyskom.Conference confStat = mKom
-                            .getConfStat(authorid);
-                    username = confStat.getNameString();
+                    username = getConfName(authorid);
                 } catch (final Exception e) {
                     username = mKom.getString(R.string.person) + authorid
                             + mKom.getString(R.string.does_not_exist);
@@ -89,6 +92,7 @@ class TextCache {
             Text text = null;
             StringBuilder allHeadersString;
             String username = mKom.getString(R.string.anonymous);
+            String authorname = mKom.getString(R.string.anonymous);
             int authorid;
             String CreationTimeString;
             StringBuilder headersString;
@@ -132,15 +136,9 @@ class TextCache {
             authorid = text.getAuthor();
             if (authorid > 0) {
                 try {
-                    nu.dll.lyskom.Conference confStat = mKom
-                            .getConfStat(authorid);
-                    if (confStat != null) {
-                        username = confStat.getNameString();
-                    } else {
-                        Log.d(TAG, "getTextFromServer Failed to get username");
-                    }
+                    authorname = getConfName(authorid);
                 } catch (final Exception e) {
-                    username = mKom.getString(R.string.person) + authorid
+                    authorname = mKom.getString(R.string.person) + authorid
                             + mKom.getString(R.string.does_not_exist);
                 }
             } else {
@@ -179,18 +177,13 @@ class TextCache {
                         headersString.append(mKom
                                 .getString(R.string.androkom_header_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom
-                                    .getConfStat(items[i]);
-                            if (confStat != null) {
-                                headersString.append(confStat.getNameString());
-                            } else {
-                                Log.d(TAG, "Failed to append header");
-                            }
+                            username = getConfName(items[i]);
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person)
                                     + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
+                        headersString.append(username);
                         headersString.append('\n');
                     }
                 }
@@ -200,18 +193,13 @@ class TextCache {
                         headersString.append(mKom
                                 .getString(R.string.header_cc_recipient));
                         try {
-                            nu.dll.lyskom.Conference confStat = mKom
-                                    .getConfStat(items[i]);
-                            if (confStat != null) {
-                                headersString.append(confStat.getNameString());
-                            } else {
-                                Log.d(TAG, "Failed to appen headers2");
-                            }
+                            username = getConfName(items[i]);
                         } catch (Exception e) {
                             username = mKom.getString(R.string.person)
                                     + authorid
                                     + mKom.getString(R.string.does_not_exist);
                         }
+                        headersString.append(username);
                         headersString.append('\n');
                     }
                 }
@@ -379,7 +367,7 @@ class TextCache {
             // TODO: what is really current conf? Kind of philosophical question?
 
             Log.d(TAG, "getTextFromServer returning");
-            return new TextInfo(mKom.getBaseContext(), textNo, text.getRecipients(), username,
+            return new TextInfo(mKom.getBaseContext(), textNo, text.getRecipients(), authorname,
                     authorid, CreationTimeString, allHeadersString.toString(),
                     headersString.toString(), SubjectString, BodyString,
                     text.getBody(), mShowHeadersLevel);

@@ -85,7 +85,7 @@ public class ImgTextCreator extends TabActivity implements ServiceConnection {
                         if (confStat.getConfInfo().confType.original()) {
                             recip = confStat.getSuperConf();
                         }
-                        final String name = mKom.toString(mKom.getConfName(recip));
+                        final String name = mKom.getConferenceName(recip);
                         recipients.add(new Recipient(mKom
                                 .getApplicationContext(), recip, name,
                                 RecipientType.RECP_TO));
