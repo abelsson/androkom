@@ -136,7 +136,12 @@ class Prefetcher {
                 }
                 Thread backgroundThread = new Thread(new Runnable() {
                     public void run() {
-
+                        try {
+                            Thread.sleep(200); // Yield to GUI, ie delay filling up queue at back until item at front has been processed
+                        } catch (InterruptedException e) {
+                            Log.i(TAG, "PrefetchNextUnread thread.sleep interrupted for prefetching text "
+                                    + textNo + " in conference " + confNo);
+                        }
                         Log.i(TAG, "PrefetchNextUnread prefetching text "
                                 + textNo + " in conference " + confNo);
                         mTextCache.getCText(textNo);
@@ -200,7 +205,11 @@ class Prefetcher {
                     // TODO Auto-generated catch block
                     e.printStackTrace();
                 }
-                Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
+                if(tm != null) {
+                    Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got " + tm.size());
+                } else {
+                    Log.i(TAG, "PrefetchNextUnread asked for " + ASK_AMOUNT + " texts in conf " + mCurrConf + ", got null");
+                }
             }
             else {
                 Log.i(TAG, "PrefetchNextUnread too high local number in " + mCurrConf);
@@ -209,7 +218,7 @@ class Prefetcher {
             while (tm != null && tm.hasMoreElements()) {
                 final int globalNo = (Integer) tm.nextElement();
                 final int localNo = tm.local();
-                if (!membership.isRead(localNo)) {
+                if ((membership != null) && (!membership.isRead(localNo))) {
                     Log.i(TAG, "PrefetchNextUnread adding localNo " + localNo + " (globalNo " + globalNo + ")");
                     maybeUnread.add(globalNo);
                 }
@@ -413,7 +422,11 @@ class Prefetcher {
             backgroundThread.start();
         }
 
-        Log.d(TAG, " getNextUnreadText returning textno "+text.getTextNo());
+        if(text != null) {
+            Log.d(TAG, " getNextUnreadText returning textno "+text.getTextNo());
+        } else {
+            Log.d(TAG, " getNextUnreadText returning null ");
+        }
         return text;
     }
 

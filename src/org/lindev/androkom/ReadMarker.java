@@ -7,7 +7,6 @@ import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 
-import nu.dll.lyskom.RpcCall;
 import nu.dll.lyskom.Selection;
 import nu.dll.lyskom.TextStat;
 import android.util.Log;

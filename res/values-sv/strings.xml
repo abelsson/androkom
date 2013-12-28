@@ -40,6 +40,8 @@
     <string name="settings_label">Inställningar</string>
     <string name="settings_title">Inställningar för Androkom</string>
     <string name="settings_shortcut">i</string>
+    <string name="login_clear_cache_label">Töm cache</string>
+    <string name="clear_cache_shortcut">c</string>
     <string name="servercat_title">Server inställningar</string>
     <string name="server_title">Server</string>
     <string name="server_summary">Välj server</string>

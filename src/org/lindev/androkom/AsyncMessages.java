@@ -168,6 +168,7 @@ public class AsyncMessages implements AsynchMessageReceiver, TextToSpeech.OnInit
             break;
 
         case nu.dll.lyskom.Asynch.new_name:
+            mKom.updateConferenceNameCache(params[0].intValue()); // update cache
             b.putString(ASYNC_MESSAGE_OLDNAME, ((Hollerith) params[1]).getContentString());
             b.putString(ASYNC_MESSAGE_NEWNAME, ((Hollerith) params[2]).getContentString());
             break;

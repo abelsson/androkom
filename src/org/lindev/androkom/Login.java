@@ -329,22 +329,31 @@ public class Login extends Activity implements ServiceConnection
 		return true;
 	}
 	
-	public boolean onOptionsItemSelected(MenuItem item) {
-		switch(item.getItemId()) {
-		case R.id.menu_settings_id :
-			startActivity(new Intent(this, Prefs.class));
-			return true;
-		case R.id.menu_clearpsw_id :
+    public boolean onOptionsItemSelected(MenuItem item) {
+        switch (item.getItemId()) {
+        case R.id.menu_settings_id:
+            startActivity(new Intent(this, Prefs.class));
+            return true;
+        case R.id.menu_clearpsw_id:
             doClearPsw();
             return true;
-		case R.id.save_oisafe_psw_id:
-    		savePsw(mUsername.getText().toString(), mPassword.getText().toString());
-    		return true;
-		default:
-				Log.d(TAG, "Unknown menu selected");
-		}
-		return false;
-	}
+        case R.id.clear_cache_id:
+            Thread backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    mKom.clearNameCache();
+                }
+            });
+            backgroundThread.start();
+            return true;
+        case R.id.save_oisafe_psw_id:
+            savePsw(mUsername.getText().toString(), mPassword.getText()
+                    .toString());
+            return true;
+        default:
+            Log.d(TAG, "Unknown menu selected");
+        }
+        return false;
+    }
 
     /**
      * Attempt to log in to server. If unsuccessful, show an 

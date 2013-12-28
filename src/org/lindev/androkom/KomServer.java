@@ -47,10 +47,12 @@ import android.accounts.Account;
 import android.accounts.AccountManager;
 import android.app.Service;
 import android.content.BroadcastReceiver;
+import android.content.ContentValues;
 import android.content.Context;
 import android.content.Intent;
 import android.content.IntentFilter;
 import android.content.pm.PackageInfo;
+import android.database.Cursor;
 import android.database.sqlite.SQLiteDatabase;
 import android.database.sqlite.SQLiteOpenHelper;
 import android.net.ConnectivityManager;
@@ -261,7 +263,16 @@ public class KomServer extends Service implements RpcEventListener,
     {
         super.onCreate();
         Log.d(TAG, "onCreate");
-        
+
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                //NameCache.dumpAll();
+                NameCache.setAllDirty();
+                //NameCache.dumpAll();
+            }
+        });
+        backgroundThread.start();
+
         asyncMessagesHandler = new AsyncMessages(getApp(), this);
         asyncMessagesHandler
                 .subscribe(asyncMessagesHandler.new MessageToaster());
@@ -348,6 +359,17 @@ public class KomServer extends Service implements RpcEventListener,
         final int msgarg1 = msg.arg1;
         final int msgarg2 = msg.arg2;
 
+        if((msgwhat == Consts.MESSAGE_TYPE_ACTIVATEUSER) && msgHandler.hasMessages(Consts.MESSAGE_TYPE_ACTIVATEUSER)) {
+            // Do not flood the server
+            Log.d(TAG, "consume ignore Consts.MESSAGE_TYPE_ACTIVATEUSER");
+            return;
+        }
+        if((msgwhat == Consts.MESSAGE_UPDATE_CONF_NAME) && msgHandler.hasMessages(Consts.MESSAGE_UPDATE_CONF_NAME)) {
+            // Do not flood the server
+            Log.d(TAG, "consume ignore Consts.MESSAGE_UPDATE_CONF_NAME for "+msgarg1);
+            return;
+        }
+        
         if (!slock.tryLock()) {
             Log.d(TAG, "consumeMessage failed to lock");
             consumeFailed++;
@@ -364,6 +386,7 @@ public class KomServer extends Service implements RpcEventListener,
             try {
                 switch (msg.what) {
                 case Consts.MESSAGE_TYPE_MARKREAD:
+                    Log.d(TAG, "consumeMessage TYPE_MARKREAD "+msgarg1);
                     readMarker.mark(msgarg1);
                     break;
                 case Consts.MESSAGE_TYPE_ACTIVATEUSER:
@@ -371,6 +394,9 @@ public class KomServer extends Service implements RpcEventListener,
                     break;
                 case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
                     getConferenceUnreadsNo(msg.replyTo);
+                    break;
+                case Consts.MESSAGE_UPDATE_CONF_NAME:
+                    updateConferenceNameCache(msgarg1);
                     break;
                 default:
                     Log.d(TAG, "consumeMessage ERROR unknown msg.what=" + msg.what);
@@ -383,104 +409,279 @@ public class KomServer extends Service implements RpcEventListener,
         }
     }
 
-/*
-    private class NameCache extends SQLiteOpenHelper {
-        static final String dbName="demoDB";
-        static final String employeeTable="Employees";
-        static final String colID="EmployeeID";
-        static final String colName="EmployeeName";
-        static final String colAge="Age";
-        static final String colDept="Dept";
+    static private class NameCacheClass extends SQLiteOpenHelper {
+        static final String dbName = "Androkom_NameCache_DB";
 
-        static final String deptTable="Dept";
-        static final String colDeptID="DeptID";
-        static final String colDeptName="DeptName";
+        static final String TableName = "ConfNamesTable";
+        static final String localNameID = "LocalUserID"; // Unique local ID
+        static final String confID = "ConfID"; // Conference ID at server
+        static final String confName = "ConfName";
+        static final String serverName = "ServerName";
+        static final String dirtyCol = "Dirty";
 
-        static final String viewEmps="ViewEmps";
-        
-        static final int dbSchemaVersion=1;
-        
-        public NameCache(Context context) {
-            super(context, dbName, null, dbSchemaVersion); 
-            }
-        
+        static final String viewEmps = "ViewEmps";
+
+        static final int dbSchemaVersion = 1;
+        static final int CLEAN_VAL = 0;
+        static final int DIRTY_VAL = 1;
+
+        public NameCacheClass(Context context) {
+            super(context, dbName, null, dbSchemaVersion);
+        }
+
         public void onCreate(SQLiteDatabase db) {
-            
-            db.execSQL("CREATE TABLE "+deptTable+" ("+colDeptID+ " INTEGER PRIMARY KEY , "+
-              colDeptName+ " TEXT)");
-            
-            db.execSQL("CREATE TABLE "+employeeTable+" 
-              ("+colID+" INTEGER PRIMARY KEY AUTOINCREMENT, "+
-                  colName+" TEXT, "+colAge+" Integer, "+colDept+" 
-              INTEGER NOT NULL ,FOREIGN KEY ("+colDept+") REFERENCES 
-              "+deptTable+" ("+colDeptID+"));");
-            
-            
-            db.execSQL("CREATE TRIGGER fk_empdept_deptid " +
-              " BEFORE INSERT "+
-              " ON "+employeeTable+
-              
-              " FOR EACH ROW BEGIN"+
-              " SELECT CASE WHEN ((SELECT "+colDeptID+" FROM "+deptTable+" 
-              WHERE "+colDeptID+"=new."+colDept+" ) IS NULL)"+
-              " THEN RAISE (ABORT,'Foreign Key Violation') END;"+
-              "  END;");
-            
-            db.execSQL("CREATE VIEW "+viewEmps+
-              " AS SELECT "+employeeTable+"."+colID+" AS _id,"+
-              " "+employeeTable+"."+colName+","+
-              " "+employeeTable+"."+colAge+","+
-              " "+deptTable+"."+colDeptName+""+
-              " FROM "+employeeTable+" JOIN "+deptTable+
-              " ON "+employeeTable+"."+colDept+" ="+deptTable+"."+colDeptID
-              );
-           }
-        
+            // Don't forget to increase dbSchemaVersion when needed
+            db.execSQL("CREATE TABLE " + TableName + " (" + localNameID
+                    + " INTEGER PRIMARY KEY AUTOINCREMENT, " + serverName
+                    + " TEXT , " + confID + " INTEGER , " + confName
+                    + " TEXT , " + dirtyCol + " INTEGER)");
+
+            /*
+             * db.execSQL("CREATE TRIGGER fk_empdept_deptid " +
+             * " BEFORE INSERT "+ " ON "+employeeTable+
+             * 
+             * " FOR EACH ROW BEGIN"+
+             * " SELECT CASE WHEN ((SELECT "+colDeptID+" FROM "+deptTable+"
+             * WHERE "+colDeptID+"=new."+colDept+" ) IS NULL)"+
+             * " THEN RAISE (ABORT,'Foreign Key Violation') END;"+ "  END;");
+             * 
+             * db.execSQL("CREATE VIEW "+viewEmps+
+             * " AS SELECT "+employeeTable+"."+colID+" AS _id,"+
+             * " "+employeeTable+"."+colName+","+
+             * " "+employeeTable+"."+colAge+","+
+             * " "+deptTable+"."+colDeptName+""+
+             * " FROM "+employeeTable+" JOIN "+deptTable+
+             * " ON "+employeeTable+"."+colDept+" ="+deptTable+"."+colDeptID );
+             */
+        }
+
         public void onUpgrade(SQLiteDatabase db, int oldVersion, int newVersion) {
-            db.execSQL("DROP TABLE IF EXISTS "+employeeTable);
-            db.execSQL("DROP TABLE IF EXISTS "+deptTable);
-            
+            db.execSQL("DROP TABLE IF EXISTS " + TableName);
+
             db.execSQL("DROP TRIGGER IF EXISTS dept_id_trigger");
             db.execSQL("DROP TRIGGER IF EXISTS dept_id_trigger22");
             db.execSQL("DROP TRIGGER IF EXISTS fk_empdept_deptid");
-            db.execSQL("DROP VIEW IF EXISTS "+viewEmps);
+            db.execSQL("DROP VIEW IF EXISTS " + viewEmps);
             onCreate(db);
-           }
-        
-        public void addRecord() {
-            SQLiteDatabase db=this.getWritableDatabase();
-            ContentValues cv=new ContentValues();
-              cv.put(colDeptID, 1);
-              cv.put(colDeptName, "Sales");
-              db.insert(deptTable, colDeptID, cv);
+        }
 
-              cv.put(colDeptID, 2);
-              cv.put(colDeptName, "IT");
-              db.insert(deptTable, colDeptID, cv);
-                                db.close();
+        /* check if conf with server id exists in database */
+        synchronized boolean testConf(SQLiteDatabase db, String server, int id) {
+            String[] columns = new String[] { localNameID };
+            Cursor c = db.query(TableName, columns, serverName + "=? AND "
+                    + confID + "=?",
+                    new String[] { server, String.valueOf(id) }, null, null,
+                    null);
+            if (c.getCount() < 1) {
+                Log.d(TAG, "testConf error db query no result. server="+server+" id="+id);
+                c.close();
+                return false;
+            }
+            Log.d(TAG, "testConf error db query found conf. server="+server+" id="+id);
+            c.close();
+            return true;
         }
-        
-        public int UpdateRecord(Employee emp)
-        {
-         SQLiteDatabase db=this.getWritableDatabase();
-         ContentValues cv=new ContentValues();
-         cv.put(colName, emp.getName());
-         cv.put(colAge, emp.getAge());
-         cv.put(colDept, emp.getDept());
-         return db.update(employeeTable, cv, colID+"=?", 
-          new String []{String.valueOf(emp.getID())});   
+
+        /* Note: id is at server */
+        synchronized public void addRecord(String server, String conf, int id) {
+            SQLiteDatabase db = this.getWritableDatabase();
+            boolean confExists = testConf(db, server, id);
+            if (confExists) {
+                Log.d(TAG, "addRecord already exists conf:" + conf + " id:"
+                        + id);
+                db.close();
+                return;
+            }
+            Log.d(TAG, "addRecord will add conf:" + conf + " id:" + id);
+            ContentValues cv = new ContentValues();
+            // cv.put(localNameID, CurrentMax+1);
+            cv.put(serverName, server);
+            cv.put(confName, conf);
+            cv.put(confID, id);
+            cv.put(dirtyCol, CLEAN_VAL);
+            db.insert(TableName, localNameID, cv);
+            db.close();
         }
-        
-        Cursor getAllDepts()
-        {
-         SQLiteDatabase db=this.getReadableDatabase();
-         Cursor cur=db.rawQuery("SELECT "+colDeptID+" as _id, 
-          "+colDeptName+" from "+deptTable,new String [] {});
-         
-         return cur;
+
+        /* find local id for conference */
+        synchronized private int findConfId(SQLiteDatabase db, String server, int conf) {
+            Log.d(TAG, "findConfId looking for server "+server+" confId "+conf);
+            String[] columns = new String[] { localNameID };
+            Cursor c = db.query(TableName, columns, serverName + "=? AND "
+                    + confID + "=?",
+                    new String[] { server, String.valueOf(conf) }, null, null,
+                    null);
+            if (c.getCount() < 1) {
+                Log.d(TAG, "findConfId error db query no result");
+                c.close();
+                return 0;
+            }
+            c.moveToFirst();
+            if (c.getCount() > 1) {
+                Log.d(TAG,
+                        "findConfId error db query result more than 1, will return first");
+                c.moveToFirst();
+                while (c.isAfterLast() == false) {
+                    String row="";
+                    for (int i = 0; i < c.getColumnNames().length; i++) {
+                        int columnIndex = c.getColumnIndex(c.getColumnName(i));
+                        String columnValue = c.getString(columnIndex);
+                        row+=columnValue+"\t";
+                    }
+                    Log.d(TAG, row);
+                    c.moveToNext();
+                }
+                Log.d(TAG, "done dumping");
+                c.moveToFirst();
+            }
+            int colIdx = c.getColumnIndexOrThrow(localNameID);
+            int id = c.getInt(colIdx);
+            c.close();
+            Log.d(TAG, "findConfId found id "+id);
+            return id;
+        }
+
+        synchronized public void setAllDirty() {
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.execSQL("UPDATE " + TableName + " SET " + dirtyCol + "='"+DIRTY_VAL+"'");
+            db.close();
+        }
+
+        synchronized public int UpdateRecord(String server, String oldconfname,
+                String newconfname, int confid) {
+            Log.d(TAG, "UpdateRecord start name:" + newconfname);
+            if (oldconfname != null) {
+                if (oldconfname.equals(newconfname)) {
+                    return 0;
+                }
+            }
+            int retval = 0;
+            SQLiteDatabase db = this.getWritableDatabase();
+            int localconfid = findConfId(db, server, confid);
+            Log.d(TAG, "UpdateRecord find localid:" + localconfid);
+            if (localconfid > 0) {
+                ContentValues cv = new ContentValues();
+                cv.put(serverName, server);
+                cv.put(confName, newconfname);
+                cv.put(confID, confid);
+                cv.put(dirtyCol, CLEAN_VAL);
+                retval = db.update(TableName, cv, localNameID + "=?",
+                        new String[] { String.valueOf(localconfid) });
+                db.close();
+            } else {
+                Log.d(TAG, "UpdateRecord conf not found. Try Add");
+                db.close();
+                addRecord(server, newconfname, confid);
+            }
+            Log.d(TAG, "UpdateRecord done name:" + newconfname);
+            return retval;
+        }
+
+        synchronized void dumpAll() {
+            Log.d(TAG, "dumpAll =============================== start");
+            SQLiteDatabase db = this.getReadableDatabase();
+            Cursor cur = db.rawQuery("SELECT * from " + TableName,
+                    new String[] {});
+
+            cur.moveToFirst();
+            while (cur.isAfterLast() == false) {
+                String row="";
+                for (int i = 0; i < cur.getColumnNames().length; i++) {
+                    int columnIndex = cur.getColumnIndex(cur.getColumnName(i));
+                    String columnValue = cur.getString(columnIndex);
+                    row+=columnValue+"\t";
+                }
+                Log.d(TAG, row);
+                cur.moveToNext();
+            }
+            cur.close();
+            db.close();
+            Log.d(TAG, "dumpAll =============================== end");
+        }
+
+        synchronized String getName(String server, int id) {
+            Log.d(TAG, "getName start");
+            if (id < 1) {
+                Log.d(TAG, "getName ignore request for id 0:" + id);
+                Thread.dumpStack();
+                return null;
+            }
+            String name = null;
+            Log.d(TAG, "getName synchronized");
+            SQLiteDatabase db = this.getReadableDatabase();
+            Log.d(TAG, "getName got DB");
+            String[] columns = new String[] { localNameID, confName, dirtyCol };
+            Cursor c = db.query(TableName, columns, serverName + "=? AND "
+                    + confID + "=?",
+                    new String[] { server, String.valueOf(id) }, null, null,
+                    null, null);
+            if (c.getCount() < 1) {
+                Log.d(TAG, "getName error db query no result server=" + server
+                        + " id=" + id);
+                c.close();
+                db.close();
+                dumpAll();
+                return null;
+            }
+            Log.d(TAG, "getName got results");
+            c.moveToFirst();
+            if (c.getCount() > 1) {
+                Log.d(TAG,
+                        "getName error db query result more than 1, will return first");
+                c.moveToFirst();
+                while (c.isAfterLast() == false) {
+                    String row = "";
+                    for (int i = 0; i < c.getColumnNames().length; i++) {
+                        int columnIndex = c.getColumnIndex(c.getColumnName(i));
+                        String columnValue = c.getString(columnIndex);
+                        row += columnValue + "\t";
+                    }
+                    Log.d(TAG, row);
+                    c.moveToNext();
+                }
+                Log.d(TAG, "done dumping");
+                c.moveToFirst();
+            }
+            int colIdx = c.getColumnIndexOrThrow(confName);
+            name = c.getString(colIdx);
+            int dirtyColIdx = c.getColumnIndexOrThrow(dirtyCol);
+            int dirtyVal = c.getInt(dirtyColIdx);
+            if (dirtyVal != CLEAN_VAL) {
+                Log.d(TAG, "Found dirty name: " + name + " id:" + id);
+                Message msg = new Message();
+                msg.obj = 0;
+                msg.arg1 = id;
+                msg.arg2 = 0;
+                msg.what = Consts.MESSAGE_UPDATE_CONF_NAME;
+                if (msg.arg1 > 0) {
+                    msgHandler.sendMessageDelayed(msg, 1 * 1000);
+                } else {
+                    Log.d(TAG, "Ignore request for id 0: " + name);
+                }
+            } else {
+                Log.d(TAG, "Found clean name: " + name);
+            }
+            c.close();
+            db.close();
+            Log.d(TAG, "getName done. got:" + name);
+            return name;
+        }
+
+        synchronized public void clear() {
+            Log.d(TAG, "Trying to clear database");
+            SQLiteDatabase db = this.getWritableDatabase();
+            db.delete(TableName, null, null);
+            db.close();
         }
     }
-  */  
+
+    public void clearNameCache() {
+        if(NameCache != null) {
+            NameCache.clear();
+        } else {
+            Log.d(TAG, "clearNameCache no DB to clear");
+        }
+    }
     /**
      * When no need to wait for logout
      * 
@@ -938,6 +1139,10 @@ public class KomServer extends Service implements RpcEventListener,
     public String getConferenceName(int conf) throws InterruptedException {
         Log.d(TAG, "mKom.getConferenceName id=" + conf);
         String confName = "";
+        confName = NameCache.getName(re_server, conf);
+        if(confName != null) {
+            return confName;
+        }
         Log.d(TAG, "mKom.getConferenceName tryLock");
         if (slock.tryLock(60, TimeUnit.SECONDS)) {
             Log.d(TAG, "mKom.getConferenceName got Lock");
@@ -956,16 +1161,57 @@ public class KomServer extends Service implements RpcEventListener,
         } else {
             Log.d(TAG, "mKom.getConferenceName failed to lock ");
         }
+        NameCache.addRecord(re_server, confName, conf);
         return confName;
     }
 
+    /**
+     * Return name for given conference.
+     * @throws InterruptedException 
+     */
+    public void updateConferenceNameCache(int conf) {
+        Log.d(TAG, "mKom.updateConferenceNameCache id=" + conf);
+        String name = null;
+        try {
+            name = lks.toString(lks.getConfName(conf));
+            Log.d(TAG, "mKom.updateConferenceNameCache got " + name);
+        } catch (UnsupportedEncodingException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "updateConferenceNameCache failed with exception " + e);
+            e.printStackTrace();
+        } catch (RpcFailure e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "updateConferenceNameCache failed with exception " + e);
+            e.printStackTrace();
+        } catch (IOException e) {
+            // TODO Auto-generated catch block
+            Log.d(TAG, "updateConferenceNameCache failed with exception " + e);
+            e.printStackTrace();
+        }
+        final String confName = name;
+        final int confid = conf;
+        if (confName != null) {
+            Thread backgroundThread = new Thread(new Runnable() {
+                public void run() {
+                    NameCache.UpdateRecord(re_server, null, confName, confid);
+                }
+            });
+            backgroundThread.start();
+        } else {
+            Log.d(TAG, "updateConferenceNameCache failed to get name for "+conf);
+        }
+        Log.d(TAG, "mKom.updateConferenceNameCache done id=" + conf);
+    }
     
+    /**
+     * Set name for current conference.
+     */
     public void setConferenceName(final String name) {
         mConfName = name;
     }
 
     /**
-     * Return name for given conference.
+     * Return name for current conference.
      */
     public String getConferenceName() {
         return mConfName;
@@ -1713,7 +1959,6 @@ public class KomServer extends Service implements RpcEventListener,
 
     public void markTextAsRead(final int textNo) {
         if (textNo > 0) {
-            //readMarker.mark(textNo);
             Message lmsg = new Message();
             lmsg.obj = 0;
             lmsg.arg1 = textNo;
@@ -3029,4 +3274,5 @@ public class KomServer extends Service implements RpcEventListener,
 	private static Handler otherHandler=null; // for sending messages to other tasks
     private static Handler msgHandler=null; // for sending message to myself
 	public IMLogger imLogger;
+    NameCacheClass NameCache = new NameCacheClass(this);
 }
