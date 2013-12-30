@@ -79,7 +79,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -358,6 +358,7 @@ public class KomServer extends Service implements RpcEventListener,
         final int msgwhat = msg.what;
         final int msgarg1 = msg.arg1;
         final int msgarg2 = msg.arg2;
+        final Messenger replyTo = msg.replyTo;
 
         if((msgwhat == Consts.MESSAGE_TYPE_ACTIVATEUSER) && msgHandler.hasMessages(Consts.MESSAGE_TYPE_ACTIVATEUSER)) {
             // Do not flood the server
@@ -379,11 +380,13 @@ public class KomServer extends Service implements RpcEventListener,
             }
             Message remsg = new Message();
             remsg.copyFrom(msg);
+            remsg.replyTo=msg.replyTo;
             msgHandler.sendMessageDelayed(remsg, 1*1000);
         } else {
             Log.d(TAG, "consumeMessage locked Session");
             consumeFailed=0;
             try {
+                Thread backgroundThread;
                 switch (msg.what) {
                 case Consts.MESSAGE_TYPE_MARKREAD:
                     Log.d(TAG, "consumeMessage TYPE_MARKREAD "+msgarg1);
@@ -393,7 +396,12 @@ public class KomServer extends Service implements RpcEventListener,
                     activateUserMsg();
                     break;
                 case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
-                    getConferenceUnreadsNo(msg.replyTo);
+                    backgroundThread = new Thread(new Runnable() {
+                        public void run() {
+                            getConferenceUnreadsNo(replyTo);
+                        }
+                    });
+                    backgroundThread.start();
                     break;
                 case Consts.MESSAGE_UPDATE_CONF_NAME:
                     updateConferenceNameCache(msgarg1);
@@ -606,62 +614,78 @@ public class KomServer extends Service implements RpcEventListener,
                 Thread.dumpStack();
                 return null;
             }
+            if ((server == null) || (server.length() < 2)) {
+                Log.d(TAG, "getName ignore when no server:" + server);
+                Thread.dumpStack();
+                return null;
+            }
             String name = null;
             Log.d(TAG, "getName synchronized");
             SQLiteDatabase db = this.getReadableDatabase();
-            Log.d(TAG, "getName got DB");
-            String[] columns = new String[] { localNameID, confName, dirtyCol };
-            Cursor c = db.query(TableName, columns, serverName + "=? AND "
-                    + confID + "=?",
-                    new String[] { server, String.valueOf(id) }, null, null,
-                    null, null);
-            if (c.getCount() < 1) {
-                Log.d(TAG, "getName error db query no result server=" + server
-                        + " id=" + id);
-                c.close();
-                db.close();
-                dumpAll();
+            if (db == null) {
+                Log.d(TAG, "getName faile to get db");
+                Thread.dumpStack();
                 return null;
             }
-            Log.d(TAG, "getName got results");
-            c.moveToFirst();
-            if (c.getCount() > 1) {
-                Log.d(TAG,
-                        "getName error db query result more than 1, will return first");
+            Log.d(TAG, "getName got DB");
+            try {
+                String[] columns = new String[] { localNameID, confName,
+                        dirtyCol };
+                Cursor c = db.query(TableName, columns, serverName + "=? AND "
+                        + confID + "=?",
+                        new String[] { server, String.valueOf(id) }, null,
+                        null, null, null);
+                if (c.getCount() < 1) {
+                    Log.d(TAG, "getName error db query no result server="
+                            + server + " id=" + id);
+                    c.close();
+                    db.close();
+                    dumpAll();
+                    return null;
+                }
+                Log.d(TAG, "getName got results");
                 c.moveToFirst();
-                while (c.isAfterLast() == false) {
-                    String row = "";
-                    for (int i = 0; i < c.getColumnNames().length; i++) {
-                        int columnIndex = c.getColumnIndex(c.getColumnName(i));
-                        String columnValue = c.getString(columnIndex);
-                        row += columnValue + "\t";
+                if (c.getCount() > 1) {
+                    Log.d(TAG,
+                            "getName error db query result more than 1, will return first");
+                    c.moveToFirst();
+                    while (c.isAfterLast() == false) {
+                        String row = "";
+                        for (int i = 0; i < c.getColumnNames().length; i++) {
+                            int columnIndex = c.getColumnIndex(c
+                                    .getColumnName(i));
+                            String columnValue = c.getString(columnIndex);
+                            row += columnValue + "\t";
+                        }
+                        Log.d(TAG, row);
+                        c.moveToNext();
                     }
-                    Log.d(TAG, row);
-                    c.moveToNext();
+                    Log.d(TAG, "done dumping");
+                    c.moveToFirst();
                 }
-                Log.d(TAG, "done dumping");
-                c.moveToFirst();
-            }
-            int colIdx = c.getColumnIndexOrThrow(confName);
-            name = c.getString(colIdx);
-            int dirtyColIdx = c.getColumnIndexOrThrow(dirtyCol);
-            int dirtyVal = c.getInt(dirtyColIdx);
-            if (dirtyVal != CLEAN_VAL) {
-                Log.d(TAG, "Found dirty name: " + name + " id:" + id);
-                Message msg = new Message();
-                msg.obj = 0;
-                msg.arg1 = id;
-                msg.arg2 = 0;
-                msg.what = Consts.MESSAGE_UPDATE_CONF_NAME;
-                if (msg.arg1 > 0) {
-                    msgHandler.sendMessageDelayed(msg, 1 * 1000);
+                int colIdx = c.getColumnIndexOrThrow(confName);
+                name = c.getString(colIdx);
+                int dirtyColIdx = c.getColumnIndexOrThrow(dirtyCol);
+                int dirtyVal = c.getInt(dirtyColIdx);
+                if (dirtyVal != CLEAN_VAL) {
+                    Log.d(TAG, "Found dirty name: " + name + " id:" + id);
+                    Message msg = new Message();
+                    msg.obj = 0;
+                    msg.arg1 = id;
+                    msg.arg2 = 0;
+                    msg.what = Consts.MESSAGE_UPDATE_CONF_NAME;
+                    if (msg.arg1 > 0) {
+                        msgHandler.sendMessageDelayed(msg, 1 * 1000);
+                    } else {
+                        Log.d(TAG, "Ignore request for id 0: " + name);
+                    }
                 } else {
-                    Log.d(TAG, "Ignore request for id 0: " + name);
+                    Log.d(TAG, "Found clean name: " + name);
                 }
-            } else {
-                Log.d(TAG, "Found clean name: " + name);
+                c.close();
+            } catch (IllegalArgumentException e) {
+                Log.d(TAG, "getName failed with IllegalArgumentException");
             }
-            c.close();
             db.close();
             Log.d(TAG, "getName done. got:" + name);
             return name;
@@ -1334,6 +1358,10 @@ public class KomServer extends Service implements RpcEventListener,
         lmsg.arg2 = 0;
         lmsg.what = Consts.MESSAGE_TYPE_UPDATENUMUNREADS;
         lmsg.replyTo = new Messenger(mHandler);
+        if(lmsg.replyTo == null) {
+            Log.d(TAG, "getConferenceUnreadsNo_msg: Failed to create Messenger. mHandler="+mHandler);
+            Thread.dumpStack();
+        }
         msgHandler.sendMessageDelayed(lmsg, 1 * 1000);
     }
 

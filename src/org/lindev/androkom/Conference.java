@@ -747,13 +747,20 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
 
         case Consts.MESSAGE_TYPE_UPDATENUMUNREADS:
             Log.d(TAG, "updateNumUnreads processing message");
+            if(mHandler == null) {
+                Log.d(TAG, "updateNumUnreads no handler!");
+            }
             mKom.getConferenceUnreadsNo_msg(mHandler);
             break;
 
         case Consts.MESSAGE_TYPE_UPDATENUMUNREADS_GUI:
             Log.d(TAG, "updateNumUnreads GUI updating GUI : "+msg.arg1);
             // setTitle(mKom.getConferenceName()+":"+msg.arg1);  // not used since it might induce a delay
-            setTitle(getTitle()+":"+msg.arg1);  // may be ugly since it may add a number more than once
+            runOnUiThread(new Runnable() {
+                public void run() {
+                    setTitle(getTitle()+":"+msg.arg1);  // may be ugly since it may add a number more than once
+                }
+            });
             break;
             
         case Consts.MESSAGE_TYPE_SEEORIGINALPOST1:
