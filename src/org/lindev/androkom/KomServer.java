@@ -79,7 +79,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -1190,10 +1190,25 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     /**
-     * Return name for given conference.
-     * @throws InterruptedException 
+     * Send a message to update name for a given conference
      */
-    public void updateConferenceNameCache(int conf) {
+    public void updateConferenceNameCacheMsg(int conf) {
+        Message msg = new Message();
+        msg.obj = 0;
+        msg.arg1 = conf;
+        msg.arg2 = 0;
+        msg.what = Consts.MESSAGE_UPDATE_CONF_NAME;
+        if (msg.arg1 > 0) {
+            msgHandler.sendMessageDelayed(msg, 1 * 1000);
+        } else {
+            Log.d(TAG, "Ignore request for id 0: " + conf);
+        }
+    }
+    
+    /**
+     * Get name for given conference and update cache
+     */
+    private void updateConferenceNameCache(int conf) {
         Log.d(TAG, "mKom.updateConferenceNameCache id=" + conf);
         String name = null;
         try {
@@ -1316,6 +1331,7 @@ public class KomServer extends Service implements RpcEventListener,
         Log.d(TAG, "getConferenceUnreadsNo");
         int confNo = lks.getCurrentConference();
         if (confNo > 0) {
+            // TODO: lock lks
             try {
                 unreads = lks.getUnreadCount(confNo);
             } catch (IOException e) {
@@ -1425,7 +1441,7 @@ public class KomServer extends Service implements RpcEventListener,
      * Send message about user active to server. Will not send more than once
      * every 30 sek to keep from flooding server.
      */
-    public void activateUserMsg() {
+    private void activateUserMsg() {
         long long_now = System.currentTimeMillis();
     
         try {
