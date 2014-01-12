@@ -2080,6 +2080,39 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     /**
+     * Get text number of first unread text in given conference, 
+     * or -1 if there is no suitable text.
+     */
+    public int getFirstUnreadTextNo(int ConfNo) {
+        int textNo = -1;
+
+        try {
+            if (slock.tryLock(60, TimeUnit.SECONDS)) {
+                try {
+                    textNo = lks.nextUnreadText(ConfNo, false);
+                } catch (RpcFailure e) {
+                    Log.d(TAG, "getFirstUnreadTextNo RpcFailure:" + e);
+                    // e.printStackTrace();
+                } catch (IOException e) {
+                    Log.d(TAG, "getFirstUnreadTextNo IOException:" + e);
+                    // e.printStackTrace();
+                } catch (NullPointerException e) {
+                    Log.d(TAG, "getFirstUnreadTextNo NullPointerException:" + e);
+                    // e.printStackTrace();
+                } finally {
+                    slock.unlock();
+                }
+            } else {
+                Log.d(TAG, "getFirstUnreadTextNo could not lock");
+            }
+        } catch (InterruptedException e) {
+            Log.d(TAG, "getFirstUnreadTextNo InterruptedException:" + e);
+            //e.printStackTrace();
+        }
+        return textNo;
+    }
+
+    /**
      * Get text number of last read text in current meeting, 
      * or -1 if there is no suitable text.
      */

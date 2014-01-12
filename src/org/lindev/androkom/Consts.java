@@ -37,7 +37,9 @@ public class Consts {
     public static final int MESSAGE_INTENT_SENDTOIM = 29;
     public static final int MESSAGE_TYPE_SET_TEXT = 30;
     public static final int MESSAGE_UPDATE_CONF_NAME = 31;
- 
+
+    public static final int MESSAGE_PREFETCH_TEXTS = 32;
+
     // Intent IDs
     public static final String INTENT_CONVERSATION_LIST_RECIPIENT = "recipient-str";
 }

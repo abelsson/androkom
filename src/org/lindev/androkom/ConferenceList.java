@@ -53,7 +53,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		super.onCreate(savedInstanceState);
         Log.d(TAG, "onCreate");
 		
-        // Use this when bumping to SdkVersion to 9
         if(!KomServer.RELEASE_BUILD) {
          // Activate StrictMode
             StrictMode.setThreadPolicy(new StrictMode.ThreadPolicy.Builder()
@@ -160,6 +159,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
         switch (msg.what) {
         case Consts.MESSAGE_POPULATE:
             new PopulateConferenceTask().execute();
+            break;
+        case Consts.MESSAGE_PREFETCH_TEXTS:
+            new PrefetchTextsTask().execute();
             break;
         case Consts.MESSAGE_CACHENAMES:
             cacheNames();
@@ -480,6 +482,11 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
             }
             updateTheme();
             setProgressBarIndeterminateVisibility(false);
+
+            Message rmsg = new Message();
+            rmsg.what = Consts.MESSAGE_PREFETCH_TEXTS;
+            mHandler.sendMessage(rmsg);
+            
             Log.d(TAG, "PopulateConferenceTask onPostExecute 3:");
 		}
 
@@ -515,6 +522,57 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		}
 		return retlist;
 	}
+
+    private class PrefetchTextsTask extends
+            AsyncTask<Void, Void, Boolean> {
+        @Override
+        protected void onPreExecute() {
+            Log.d(TAG, "PrefetchTextsTask onPreExecute 1:");
+            setProgressBarIndeterminateVisibility(true);
+        }
+
+        // worker thread (separate from UI thread)
+        @Override
+        protected Boolean doInBackground(final Void... args) {
+            Log.d(TAG, "PrefetchTextsTask doInBackground 1:");
+
+            if ((mKom != null) && (!mKom.isConnected())) {
+                Log.d(TAG, "PrefetchTextsTask doInBackground request reconnect");
+                mKom.reconnect();
+            }
+            Log.d(TAG, "PrefetchTextsTask doInBackground 2:");
+            if (mConferences != null && (!mConferences.isEmpty())) {
+                for (ConferenceInfo elem : mConferences) {
+                    int confNo = elem.id;
+                    int textNo = mKom.getFirstUnreadTextNo(confNo);
+                    if (textNo > 0) {
+                        try {
+                            Log.d(TAG, "PrefetchTextsTask fetching " + textNo);
+                            mKom.getTextbyNo(textNo);
+                        } catch (InterruptedException e) {
+                            Log.d(TAG, "InterruptedException when fetching "
+                                    + textNo);
+                            // e.printStackTrace();
+                        }
+                    } else {
+                        Log.d(TAG, "Found no unread text in conf " + confNo);
+                    }
+                }
+            } else {
+                Log.d(TAG, "PrefetchTextsTask failed, no Conferences");
+            }
+            return null;
+        }
+
+        @Override
+        protected void onPostExecute(final Boolean fetched) {
+            Log.d(TAG, "PrefetchTextsTask onPostExecute 1:");
+
+            setProgressBarIndeterminateVisibility(false);
+
+            Log.d(TAG, "PrefetchTextsTask onPostExecute 3:");
+        }
+    }
 
     public void activateUser() {
         new ActivateUserTask().execute();
