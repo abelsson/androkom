@@ -79,7 +79,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -476,6 +476,10 @@ public class KomServer extends Service implements RpcEventListener,
         /* check if conf with server id exists in database */
         synchronized boolean testConf(SQLiteDatabase db, String server, int id) {
             String[] columns = new String[] { localNameID };
+            if(id < 1) {
+                Log.d(TAG, "testConf nonexisting id:"+id);
+                return false;
+            }
             Cursor c = db.query(TableName, columns, serverName + "=? AND "
                     + confID + "=?",
                     new String[] { server, String.valueOf(id) }, null, null,
@@ -492,6 +496,10 @@ public class KomServer extends Service implements RpcEventListener,
 
         /* Note: id is at server */
         synchronized public void addRecord(String server, String conf, int id) {
+            if(id < 0) {
+                Log.d(TAG, "addRecord nonexisting id:"+id);
+                return;
+            }
             SQLiteDatabase db = this.getWritableDatabase();
             boolean confExists = testConf(db, server, id);
             if (confExists) {
@@ -514,6 +522,10 @@ public class KomServer extends Service implements RpcEventListener,
         /* find local id for conference */
         synchronized private int findConfId(SQLiteDatabase db, String server, int conf) {
             Log.d(TAG, "findConfId looking for server "+server+" confId "+conf);
+            if(conf < 1) {
+                Log.d(TAG, "findConfId nonexisting id:"+conf);
+                return 0;
+            }
             String[] columns = new String[] { localNameID };
             Cursor c = db.query(TableName, columns, serverName + "=? AND "
                     + confID + "=?",
@@ -1210,9 +1222,22 @@ public class KomServer extends Service implements RpcEventListener,
      */
     private void updateConferenceNameCache(int conf) {
         Log.d(TAG, "mKom.updateConferenceNameCache id=" + conf);
+        if(conf == 0) {
+            Log.d(TAG, "updateConferenceNameCache there is no conf:"+conf);
+            return;
+        }
+        if(lks == null) {
+            Log.d(TAG, "updateConferenceNameCache got no server");
+            return;
+        }
         String name = null;
         try {
-            name = lks.toString(lks.getConfName(conf));
+            byte[] confname = lks.getConfName(conf);
+            if(confname != null) {
+                name = lks.toString(confname);
+            } else {
+                Log.d(TAG, "updateConferenceNameCache got null for conf:"+conf);
+            }
             Log.d(TAG, "mKom.updateConferenceNameCache got " + name);
         } catch (UnsupportedEncodingException e) {
             // TODO Auto-generated catch block
