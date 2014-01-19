@@ -876,6 +876,54 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
         }
     }
 
+    void switchConf(final int[] confNos) {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                // Switch conference if the new text is from another
+                // conference
+                int confNo = -1;
+                try {
+                    confNo = mKom.getCurrentConference();
+                    boolean foundConf = false;
+                    for (int i : confNos) {
+                        if (i == confNo) {
+                            foundConf = true;
+                            break;
+                        }
+                    }
+                    if (!foundConf) {
+                        try {
+                            Log.d(TAG, "setMessage switching from " + confNo
+                                    + " to " + confNos[0]);
+                            mKom.setConference(confNos[0]);
+                        } catch (final Exception e) {
+                            e.printStackTrace();
+                        }
+                    }
+                } catch (InterruptedException e1) {
+                    // TODO Auto-generated catch block
+                    e1.printStackTrace();
+                }
+            }
+        });
+        backgroundThread.start();
+    }
+
+    void setTitleConfName() {
+        Thread backgroundThread = new Thread(new Runnable() {
+            public void run() {
+                final String title = mKom.getConferenceName();
+                runOnUiThread(new Runnable() {
+                    public void run() {
+                        setTitle(title);
+                    }
+                });
+            }
+        });
+        backgroundThread.start();
+    }
+
+    /* setMessage is run on UI-thread so don't do any delays or you will get ANR */
     void setMessage(TextInfo text) {
         try {
             Log.d(TAG, "setMessage");
@@ -944,32 +992,13 @@ public class Conference extends Activity implements AsyncMessageSubscriber, OnTo
                     tview.setText(spannedText);
                     resetOtherScroll();
                     setOtherTextSwitch();
-                    // Switch conference if the new text is from another
-                    // conference
-                    final int confNo = mKom.getCurrentConference();
-                    int[] confNos = text.getConfNos();
-                    boolean foundConf = false;
-                    for(int i : confNos) {
-                        if(i == confNo) {
-                            foundConf = true;
-                            break;
-                        }
-                    }
-                    if (!foundConf) {
-                        try {
-                            Log.d(TAG, "setMessage switching from "+confNo+" to "+ confNos[0]);
-                            mKom.setConference(confNos[0]);
-                        } catch (final Exception e) {
-                            e.printStackTrace();
-                        }
-                    }
-                    
+                    switchConf(text.getConfNos());
                     mSwitcher.showNext();
                 }
                 if (mState.textListIndex >= 0) {
                     setTitle("(återser)");
                 } else {
-                    setTitle(mKom.getConferenceName());
+                    setTitleConfName();
                 }
            } else {
                 Log.d(TAG, "setMessage error fetching text, probably lost connection");
