@@ -18,6 +18,7 @@
     <string name="all_read">Allt läst</string>
     <string name="error_fetching_unread_text">[problem att hämta oläst text]</string>
     <string name="error_fetching_text">[problem att hämta text]</string>
+    <string name="error_no_parent">"Texten är inte en kommentar"</string>
     <string name="anonymous">anonym</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" finns inte"</string>
@@ -25,6 +26,7 @@
     <string name="no_recipient_error">Ingen mottagare</string>
     <string name="no_conference_error">Inget sådant möte</string>
     <string name="no_unreads">Inga olästa</string>
+    <string name="fetching_conferences">Laddar olästalistan ...</string>
     <string name="local_time">(lokal)</string>
     
 	<string name="login_name">Användarnamn:</string>
@@ -47,6 +49,7 @@
 
     <string name="server_title">Server</string>
     <string name="server_summary">Välj server</string>
+    <string name="server_dialog_title_prefs">Server dialog title</string>
 
     <string name="otherserver_title">Annan server</string>
     <string name="otherserver_summary">Serverns adress</string>
@@ -65,15 +68,29 @@
     <string name="showfullheaders_title">Visa text info</string>
     <string name="showfullheaders_summary">Visa text info som kommentarer</string>
 
+    <string name="marktextread_title">Läsmarkera</string>
+    <string name="marktextread_summary">Markera visade texter som lästa</string>
+
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Visa toasts för asynch-meddelanden. För att se meddelanden om in/utloggning måste det vara påslaget i serverns userarea.</string>
+
+    <string name="preferredlanguage_title">Språk</string>
+    <string name="preferredlanguage_summary">Välj språk</string>
+    <string name="preferredlanguage_dialog_title_prefs">Språk dialog title</string>
+
     <string name="keepscreenon_title">Håll skärmen aktiv</string>
     <string name="keepscreenon_summary">Ingen skärmsläckare, tänk på batteriförbrukningen.</string>
 
-    <string name="smallerfontsize_label">Mindre text</string>
+    <string name="title_submenu_textsize">Text size...</string>
+    <string name="smallerfontsize_label">Mindre typsnitt</string>
     <string name="smallerfontsize_shortcut">-</string>
     <string name="biggerfontsize_label">Större text</string>
     <string name="biggerfontsize_shortcut">+</string>
     <string name="reconnect_label">Starta om</string>
     <string name="reconnect_shortcut">R</string>
+    
+    <string name="logout_label">Logout</string>
+    <string name="logout_shortcut">O</string>
     
     <string name="title_submenu_create">Skriv...</string>
     <string name="createnewtext_label">Nytt inlägg</string>
@@ -96,11 +113,14 @@
     <string name="seetextagain_shortcut">T</string>
     <string name="seewhoison_label">Vilka</string>
     <string name="seewhoison_shortcut">V</string>
+    <string name="no_friends_online">Inga vänner online</string>
+    <string name="seefriendsison_label">Vilka vänner</string>
+    <string name="seefriendsison_shortcut">W</string>
     <string name="alert_dialog_text_entry">Textnummer</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Avbryt</string>
     
-    <string name="subject">Ämne:</string>
+    <string name="subject">"Ämne: "</string>
     <string name="send">Skicka</string>
     <string name="cancel">Avbryt</string>
     <string name="conference_list">Möteslista</string>
@@ -121,4 +141,57 @@
     <string name="do_endast">Endast!</string>
     <string name="endast_label">Endast</string>
     <string name="endast_shortcut">E</string>
+
+    <string name="message_log_label">Meddelandelogg</string>
+    <string name="no_messages">Inga meddelanden</string>
+    
+    <string name="androkom_header_recipient">"Mottagare: "</string>
+    <string name="header_cc_recipient">"Kopiemottagare: "</string>
+    <string name="header_comment_to">"Kommentar till: "</string>
+    <string name="header_comment_in">"Kommentar i: "</string>
+    <string name="header_footnote_in">"Fotnot i: "</string>
+    <string name="header_footnote_to">"Fotnot till: "</string>
+    
+    <string name="appreciation_label">Få uppmuntran</string>
+    <string name="appreciation_shortcut">U</string>
+    <string name="abuse_label">Få skäll</string>
+    <string name="abuse_shortcut">Ä</string>
+    <string name="appreciation_text">"Du är mycket vacker och mycket klok. Många älskar dig både till kropp och till själ. Du kommer att överösas med rikedom och få stor lycka i ditt liv. Var glad att just du är du. Det har du all anledning att vara.
+Fantomen önskar dig en bra dag."</string>
+
+    <string name="abuse_text">"Du är mycket ful och mycket dum. Många hatar dig både till kropp och till själ. Du kommer att överösas med sjukdomar och inte få någon som helst lycka i ditt liv. Du borde verkligen ta dig samman och göra något av ditt liv även om det inte är mycket att starta med.
+Guran vill helst sätta en giftpil i dig."</string>
+
+    <string name="im_you">"Du: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Skickar meddelande ..."</string>
+    <string name="im_resolving_recipient">"Hittar mottagare ..."</string>
+    <string name="im_no_such_recipient">"Hittar ingen mottagare: "</string>
+    <string name="im_new_message">"Nytt meddelande:"</string>
+    <string name="im_new_message_to">"Nytt meddelande till:"</string>
+    <string name="im_message">"Meddelande:"</string>
+    <string name="im_isnt_logged_in">" är inte inloggad."</string>
+    <string name="im_network_error">"Nätverksfel under sändning."</string>
+    <string name="im_clear_history_q">"Rensa konversationshistorik?"</string>
+
+    <string name="yes">"Ja"</string>
+    <string name="no">"Nej"</string>
+
+    <string name="no_text_loaded">"[no text loaded]"</string>
+
+    <string name="creating_text">"Skapar text..."</string>
+    <string name="no_zero_texts">"tomma texter är inte tillåtna"</string>
+    <string name="error_could_not_connect">"Kunde inte ansluta till servern"</string>
+    <string name="error_unknown">"Okänt fel"</string>
+    <string name="error_ambigious_name">"Otillåtet/tvetydigt namn"</string>
+    <string name="error_invalid_password">"Felaktigt lösenord"</string>
+
+    <string name="not_a_number">"Inte ett textnummer: "</string>
+    <string name="must_not_be_negative">"Textnummer måste vara positiva"</string>
+
+    <string name="error_oisafe_not_found">"OISafe saknas"</string>
+    <string name="im_new_messages_title">"Nya meddelanden"</string>
+    <string name="im_new_messages_in">" nya meddelanden i "</string>
+    <string name="im_conversations">" konversationer."</string>
+    <string name="im_new_messages">" nya meddelanden."</string>
 </resources>

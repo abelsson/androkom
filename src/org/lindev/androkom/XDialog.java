@@ -1,5 +1,8 @@
 package org.lindev.androkom;
 
+import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.TextCreator;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
@@ -46,17 +49,16 @@ public class XDialog extends Dialog
         Intent intent;
 		switch(parse_string_for_command(keyBuffer)) {
 		case 0 :
-            intent = new Intent(myContext, CreateNewIM.class);    
+            intent = new Intent(myContext, IMConversationList.class);
             myContext.startActivity(intent);
             break;
 		case 1 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 1);
+            intent = new Intent(myContext, TextCreator.class);
             myContext.startActivity(intent);
             break;
 		case 2 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 2);
+            intent = new Intent(myContext, TextCreator.class);
+            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
             myContext.startActivity(intent);
             break;
 		}

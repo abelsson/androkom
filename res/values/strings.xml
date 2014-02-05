@@ -13,11 +13,12 @@
     <string name="x_to_y">" to "</string>
     <string name="lyskom_full">Lyskom is full, please make space</string>
     <string name="sync_db_msg">Syncing database</string>
-    <string name="loading_text">Loading text..</string>
-    <string name="loading">Loading...</string>
+    <string name="loading_text">Loading text ...</string>
+    <string name="loading">Loading ...</string>
     <string name="all_read">All read</string>
     <string name="error_fetching_unread_text">[error fetching unread text]</string>
     <string name="error_fetching_text">[error fetching text]</string>
+    <string name="error_no_parent">"Text has no parent"</string>
     <string name="anonymous">anonymous</string>
     <string name="person">"Person "</string>
     <string name="does_not_exist">" does not exist"</string>
@@ -26,7 +27,6 @@
     <string name="no_conference_error">No such conference</string>
     <string name="no_unreads">Nothing to read</string>
     <string name="fetching_conferences">Loading unreads ...</string>
-    <string name="no_messages">No messages</string>
     <string name="local_time">(local)</string>
     
 	<string name="login_name">Username:</string>
@@ -68,6 +68,16 @@
     <string name="showfullheaders_title">Show full headers</string>
     <string name="showfullheaders_summary">Show an more extensive set of text headers</string>
 
+    <string name="marktextread_title">Mark texts read</string>
+    <string name="marktextread_summary">Mark texts read</string>
+
+    <string name="toastforasynch_title">Toast asynch</string>
+    <string name="toastforasynch_summary">Show toasts for asynch messages. Note: to see presence messages, they must be enabled in server side user area.</string>
+
+    <string name="preferredlanguage_title">Language</string>
+    <string name="preferredlanguage_summary">Select language.</string>
+    <string name="preferredlanguage_dialog_title_prefs">Language dialog title</string>
+
     <string name="keepscreenon_title">Keep screen on</string>
     <string name="keepscreenon_summary">Lock screen on, beware of battery usage.</string>
 
@@ -78,16 +88,19 @@
     <string name="biggerfontsize_shortcut">+</string>
     <string name="reconnect_label">Reconnect</string>
     <string name="reconnect_shortcut">R</string>
+
+    <string name="logout_label">Logout</string>
+    <string name="logout_shortcut">O</string>
     
-    <string name="title_submenu_create">Create...</string>
+    <string name="title_submenu_create">Create ...</string>
     <string name="createnewtext_label">New text</string>
     <string name="createnewtext_shortcut">N</string>
     <string name="createnewmail_label">New mail</string>
     <string name="createnewmail_shortcut">M</string>
-    <string name="createnewIM_label">New IM</string>
-    <string name="createnewIM_shortcut">I</string>
+    <string name="messaging_label">Messaging</string>
+    <string name="messaging_shortcut">I</string>
 
-    <string name="title_submenu_mark">Mark...</string>
+    <string name="title_submenu_mark">Mark ...</string>
     <string name="marktext_label">Mark text</string>
     <string name="marktext_shortcut">M</string>
     <string name="unmarktext_label">Unmark text</string>
@@ -100,11 +113,14 @@
     <string name="seepresentation_shortcut">P</string>
     <string name="seewhoison_label">See who is on</string>
     <string name="seewhoison_shortcut">W</string>
+    <string name="no_friends_online">No friends online</string>
+    <string name="seefriendsison_label">See online friends</string>
+    <string name="seefriendsison_shortcut">V</string>
     <string name="alert_dialog_text_entry">Enter text number</string>
     <string name="alert_dialog_ok">OK</string>
     <string name="alert_dialog_cancel">Cancel</string>
     
-    <string name="subject">Subject:</string>
+    <string name="subject">"Subject: "</string>
     <string name="send">Send</string>
     <string name="cancel">Cancel</string>
     <string name="conference_list">Conference list</string>
@@ -122,9 +138,61 @@
     
     <string name="conf_name">Conference:</string>
     <string name="num_texts">Number of texts:</string>
-    <string name="do_endast">Endast!</string>
-    <string name="endast_label">Endast</string>
-    <string name="endast_shortcut">E</string>
+    <string name="do_endast">Only the last!</string>
+    <string name="endast_label">Only the last</string>
+    <string name="endast_shortcut">O</string>
     
     <string name="message_log_label">Message Log</string>
+    <string name="no_messages">No messages</string>
+    <string name="im_conversations_list_label">IM Conversations</string>
+
+    <string name="androkom_header_recipient">"Recipient: "</string>
+    <string name="header_cc_recipient">"CarbonCopy: "</string>
+    <string name="header_comment_to">"Comment to: "</string>
+    <string name="header_comment_in">"Comment in: "</string>
+    <string name="header_footnote_in">"Footnote in: "</string>
+    <string name="header_footnote_to">"Footnote to: "</string>
+    
+    <string name="appreciation_label">(Please) pat my head</string>
+    <string name="appreciation_shortcut">H</string>
+    <string name="abuse_label">(Please) kick my butt</string>
+    <string name="abuse_shortcut">B</string>
+    <string name="appreciation_text">"You are a very special person, beautiful and wise, respected by everybody around you. You are doing a splendid job. Many people love you, body and soul. You make life easier for others. You are a very warm and sensitive person. 
+Be proud of being You! You have a very good reason."</string>
+
+    <string name="abuse_text">"You are a nuisance, ugly and stupid, disrespected by everybody around you. You are doing a worthless job. Many people hate you, body and soul. You make life harder for others. You are a very cold and unfeeling person.
+Be ashamed of being You! You have a very good reason."</string>
+
+    <string name="im_you">"You: "</string>
+    <string name="im_prompt">": "</string>
+    <string name="im_sending_message">"Sending message ..."</string>
+    <string name="im_resolving_recipient">"Resolving recipient ..."</string>
+    <string name="im_no_such_recipient">"No such recipient: "</string>
+    <string name="im_new_message">"New message:"</string>
+    <string name="im_new_message_to">"New message to:"</string>
+    <string name="im_message">"Message:"</string>
+    <string name="im_isnt_logged_in">" isn't logged in."</string>
+    <string name="im_network_error">"Network error occured while sending message."</string>
+    <string name="im_clear_history_q">"Clear conversation history?"</string>
+
+    <string name="yes">"Yes"</string>
+    <string name="no">"No"</string>
+    
+    <string name="no_text_loaded">"[no text loaded]"</string>
+
+    <string name="creating_text">"Creating text..."</string>
+    <string name="no_zero_texts">"zero texts is not implemented"</string>
+    <string name="error_could_not_connect">"Couldn't connect to server"</string>
+    <string name="error_unknown">"Unknown error"</string>
+    <string name="error_ambigious_name">"Invalid/ambigious username"</string>
+    <string name="error_invalid_password">"Invalid password"</string>
+    
+    <string name="not_a_number">"Not a number: "</string>
+    <string name="must_not_be_negative">"Number of texts must be positive"</string>
+    
+    <string name="error_oisafe_not_found">"OISafe not found"</string>
+    <string name="im_new_messages_title">"New Messages"</string>
+    <string name="im_new_messages_in">" new messages in "</string>
+    <string name="im_conversations">" conversations."</string>
+    <string name="im_new_messages">" new messages."</string>
 </resources>

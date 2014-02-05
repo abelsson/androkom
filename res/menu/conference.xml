@@ -1,6 +1,7 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
 	<item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="@string/reply"></item>
+    <item android:id="@+id/menu_messaging_id" android:title="@string/messaging_label" android:alphabeticShortcut="@string/messaging_shortcut"/>
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
 		android:id="@+id/menu_settings_id"/>
@@ -14,9 +15,6 @@
           <item android:title="@string/createnewmail_label"
                 android:alphabeticShortcut="@string/createnewmail_shortcut"
                 android:id="@+id/menu_createnewmail_id"/>
-          <item android:title="@string/createnewIM_label"
-                android:alphabeticShortcut="@string/createnewIM_shortcut"
-                android:id="@+id/menu_createnewIM_id"/>
           </menu>
     </item>
     <item android:id="@+id/menu_submenu_setmark"

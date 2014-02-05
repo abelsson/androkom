@@ -7,6 +7,9 @@ import java.util.TimerTask;
 
 import org.lindev.androkom.AsyncMessages.AsyncMessageSubscriber;
 import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.MessageLog;
+import org.lindev.androkom.gui.TextCreator;
 
 import android.app.ListActivity;
 import android.content.ComponentName;
@@ -35,7 +38,7 @@ import android.widget.Toast;
  * 
  */
 public class ConferenceList extends ListActivity implements AsyncMessageSubscriber, ServiceConnection {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom ConferenceList";
 
 	/**
 	 * Instantiate activity.
@@ -44,10 +47,15 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onCreate(Bundle savedInstanceState) {
 		super.onCreate(savedInstanceState);
 		requestWindowFeature(Window.FEATURE_INDETERMINATE_PROGRESS);
+        Log.d(TAG, "onCreate");
 		// Use a custom layout file
 		setContentView(R.layout.main);
 
-		getApp().doBindService(this);
+        getApp().doBindService(this);
+
+        if (savedInstanceState != null) {
+            Log.d(TAG, "Got a bundle");
+        }
 		
 		mEmptyView = (TextView) findViewById(android.R.id.empty);
 		mAdapter = new ArrayAdapter<String>(this, R.layout.conflistconf);
@@ -55,8 +63,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 		ListView lv = getListView();
 		lv.setTextFilterEnabled(true);
-				
-				
 	}
 
 	/**
@@ -67,6 +73,7 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	public void onResume() {
 		super.onResume();
 
+        Log.d(TAG, "onResume");
 		mTimer = new Timer();
 		mTimer.scheduleAtFixedRate(new TimerTask() {
 
@@ -92,15 +99,19 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 	@Override
 	public void onPause() {
 		super.onPause();
+        Log.d(TAG, "onPause");
 		mTimer.cancel();
 	}
 
-	@Override
-	protected void onDestroy() {
-		super.onDestroy();
-		mKom.removeAsyncSubscriber(this);
-		getApp().doUnbindService(this);
-	}
+    @Override
+    protected void onDestroy() {
+        super.onDestroy();
+        Log.d(TAG, "onDestroy");
+        if (mKom != null) {
+            mKom.removeAsyncSubscriber(this);
+        }
+        getApp().doUnbindService(this);
+    }
 
 	/**
 	 * Called when a conference has been clicked. Switch to Conference activity,
@@ -144,29 +155,49 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 			return true;
 
 		case R.id.menu_createnewtext_id:
-			intent = new Intent(this, CreateNewText.class);
-			intent.putExtra("recipient_type", 1);
+			intent = new Intent(this, TextCreator.class);
 			startActivity(intent);
 			return true;
 
 		case R.id.menu_createnewmail_id:
-			intent = new Intent(this, CreateNewText.class);
-			intent.putExtra("recipient_type", 2);
+			intent = new Intent(this, TextCreator.class);
+			intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
 			startActivity(intent);
 			return true;
 
-		case R.id.menu_createnewIM_id:
-			intent = new Intent(this, CreateNewIM.class);
+		case R.id.menu_messaging_id:
+			intent = new Intent(this, IMConversationList.class);
 			startActivity(intent);
 			return true;
 
 		case R.id.menu_seewhoison_id:
-			seewhoison();
+			seewhoison(1);
+			return true;
+
+		case R.id.menu_seefriendsison_id:
+			seewhoison(2);
 			return true;
 
 		case R.id.menu_endast_id:
 			intent = new Intent(this, Endast.class);
 			startActivity(intent);
+			return true;
+			
+        case R.id.menu_logout_id:
+            mKom.logout();
+            intent = new Intent(this, Login.class);
+            startActivity(intent);
+            finish();
+            return true;
+            
+		case R.id.menu_appreciation_id:
+			Toast.makeText(getApplicationContext(), getString(R.string.appreciation_text),
+					Toast.LENGTH_LONG).show();
+			return true;
+			
+		case R.id.menu_abuse_id:
+			Toast.makeText(getApplicationContext(), getString(R.string.abuse_text),
+					Toast.LENGTH_LONG).show();
 			return true;
 			
 		case R.id.menu_message_log_id:
@@ -194,8 +225,9 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		return false;
 	}
 
-	protected void seewhoison() {
+	protected void seewhoison(int type) {
 		Intent intent = new Intent(this, WhoIsOn.class);
+		intent.putExtra("who_type", type);
 		startActivity(intent);
 	}
 
@@ -227,7 +259,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 				mAdapter.notifyDataSetChanged();
 			} else {
-				// TODO: Do something here?
 				Log.d(TAG, "populateConferences failed, no Conferences");
 				Log.d(TAG, "mConferences is null:" + (mConferences == null));
 				if (mConferences != null) {
@@ -254,18 +285,17 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 						retlist = mKom.fetchConferences();
 					} else {
 						Log.d(TAG, "Can't fetch conferences when no connection");
-						Toast.makeText(getApplicationContext(),
-								"Lost connection", Toast.LENGTH_SHORT).show();
 						mKom.reconnect();
 					}
+				} else {
+				    Log.d(TAG, "mKom==null");
 				}
+			} else {
+			    Log.d(TAG, "app == null");
 			}
 		} catch (Exception e) {
 			Log.d(TAG, "fetchConferences failed:" + e);
 			e.printStackTrace();
-			Toast.makeText(getApplicationContext(),
-					"fetchConferences failed, probably lost connection",
-					Toast.LENGTH_SHORT).show();
 		}
 		return retlist;
 	}
@@ -277,7 +307,6 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 
 
 	public void asyncMessage(Message msg) {
-		// TODO Auto-generated method stub
 		if (msg.what == nu.dll.lyskom.Asynch.new_text) {
 			Log.d(TAG, "New text created, update unread list");
 		
@@ -290,19 +319,36 @@ public class ConferenceList extends ListActivity implements AsyncMessageSubscrib
 		
 	}
 
-	public void onServiceConnected(ComponentName name, IBinder service) {
-		mKom = ((KomServer.LocalBinder)service).getService();
-		mKom.addAsyncSubscriber(this);		
-		
-	}
+    public void onServiceConnected(ComponentName name, IBinder service) {
+        Log.d(TAG, "onServiceConnected");
+        mKom = ((KomServer.LocalBinder) service).getService();
+        mKom.addAsyncSubscriber(this);
+    }
 
 	public void onServiceDisconnected(ComponentName name) {
+        Log.d(TAG, "onServiceDisconnected");
 		mKom = null;		
 	}
 	
+	
+    @Override
+    protected void onSaveInstanceState(Bundle outState) {
+        Log.d(TAG, "onSaveInstanceState");
+        super.onSaveInstanceState(outState);
+    }
+
+    public void onRestoreInstanceState(Bundle savedInstanceState) {
+        super.onRestoreInstanceState(savedInstanceState);
+        Log.d(TAG, "onRestoreInstanceState");
+
+        if (savedInstanceState != null) {
+            Log.d(TAG, "got a bundle");
+        }
+    }
+
 	private List<ConferenceInfo> mConferences;
 	private ArrayAdapter<String> mAdapter;
 	private Timer mTimer;
 	TextView mEmptyView;
-	KomServer mKom;
+	KomServer mKom=null;
 }

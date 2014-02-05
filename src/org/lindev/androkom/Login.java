@@ -1,8 +1,5 @@
 package org.lindev.androkom;
 
-import java.util.List;
-import java.util.Timer;
-
 import org.lindev.androkom.KomServer.ConferenceInfo;
 
 import android.app.Activity;
@@ -22,10 +19,8 @@ import android.view.Menu;
 import android.view.MenuInflater;
 import android.view.MenuItem;
 import android.view.View;
-import android.widget.ArrayAdapter;
 import android.widget.Button;
 import android.widget.EditText;
-import android.widget.TextView;
 import android.widget.Toast;
 
 /**
@@ -38,7 +33,7 @@ import android.widget.Toast;
  */
 public class Login extends Activity implements ServiceConnection
 {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom Login";
 	private boolean loginFailed = false;
 
     @Override
@@ -66,6 +61,7 @@ public class Login extends Activity implements ServiceConnection
 
 	@Override
 	protected void onDestroy() {
+	    Log.d(TAG, "onDestroy");
 		getApp().doUnbindService(this);
 		super.onDestroy();
 	}
@@ -96,7 +92,7 @@ public class Login extends Activity implements ServiceConnection
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
     			Toast.makeText(getBaseContext(),
-    					"OISafe not found",
+    					getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
     		}
@@ -215,7 +211,7 @@ public class Login extends Activity implements ServiceConnection
             		AlertDialog.Builder builder = new AlertDialog.Builder(Login.this);
             		builder.setMessage(result)
             		.setCancelable(false)
-            		.setNegativeButton("Ok", new DialogInterface.OnClickListener() {
+            		.setNegativeButton(getString(R.string.alert_dialog_ok), new DialogInterface.OnClickListener() {
             			public void onClick(DialogInterface dialog, int id) {
             				dialog.cancel();
             			}
@@ -272,7 +268,7 @@ public class Login extends Activity implements ServiceConnection
     			startActivityForResult(i, 17);
     		} catch (ActivityNotFoundException e) {
     			Toast.makeText(getBaseContext(),
-    					"OISafe not found",
+    			        getString(R.string.error_oisafe_not_found),
     					Toast.LENGTH_LONG).show();
     			Log.e(TAG, "failed to store password in OISafe");
     		}
@@ -293,7 +289,7 @@ public class Login extends Activity implements ServiceConnection
 			startActivityForResult(i, 17);
 		} catch (ActivityNotFoundException e) {
 			Toast.makeText(getBaseContext(),
-					"OISafe not found",
+			        getString(R.string.error_oisafe_not_found),
 					Toast.LENGTH_LONG).show();
 			Log.e(TAG, "failed to store password in OISafe");
 		}

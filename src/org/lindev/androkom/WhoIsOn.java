@@ -1,11 +1,17 @@
 package org.lindev.androkom;
 
 import java.util.List;
-import org.lindev.androkom.KomServer.ConferenceInfo;
 
+import org.lindev.androkom.KomServer.ConferenceInfo;
+import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.TextCreator;
+
+import android.app.AlertDialog;
 import android.app.ListActivity;
 import android.app.ProgressDialog;
 import android.content.ComponentName;
+import android.content.DialogInterface;
+import android.content.Intent;
 import android.content.ServiceConnection;
 import android.os.AsyncTask;
 import android.os.Bundle;
@@ -14,8 +20,6 @@ import android.util.Log;
 import android.view.View;
 import android.widget.ArrayAdapter;
 import android.widget.ListView;
-import android.widget.TextView;
-import android.widget.Toast;
 
 /**
  * Show a list of persons logged on.
@@ -25,7 +29,7 @@ import android.widget.Toast;
  */
 public class WhoIsOn extends ListActivity implements ServiceConnection
 {
-	public static final String TAG = "Androkom";
+	public static final String TAG = "Androkom WhoIsOn";
 	private KomServer mKom;
 
 	/**
@@ -35,9 +39,21 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     public void onCreate(Bundle savedInstanceState) 
     {
         super.onCreate(savedInstanceState);
-                
+
+		setContentView(R.layout.whoison);
         getApp().doBindService(this);
-        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison);
+        who_type = (Integer) getIntent().getExtras().get("who_type");
+
+        // Set Window Title
+        switch(who_type) {
+        	case 1 : setTitle(getString(R.string.seewhoison_label));
+        	         break;
+        	case 2 : setTitle(getString(R.string.seefriendsison_label));
+        	         break;
+        	default: setTitle("Title of window");
+        }
+        
+        mAdapter = new ArrayAdapter<ConferenceInfo>(this, R.layout.whoison_person);
         setListAdapter(mAdapter);
         
         ListView lv = getListView();
@@ -74,15 +90,47 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
      * Called when a person has been clicked. Switch to send message or mail?
      */
     @Override
-    protected void onListItemClick(ListView l, View v, int position, long id) 
+    protected void onListItemClick(ListView l, View v, int position, long id)
     {
-        Toast.makeText(getApplicationContext(), ((TextView)v).getText(), Toast.LENGTH_SHORT).show();    
-        
-        //Intent intent = new Intent(this, Conference.class);
-        //intent.putExtra("conference-id", mConferences.get((int)id).id);
-        //startActivity(intent);
-    }
-    
+        selected_user = ((ConferenceInfo) l.getItemAtPosition(position)).name;
+
+        AlertDialog.Builder builder = new AlertDialog.Builder(WhoIsOn.this);
+        builder.setTitle(getString(R.string.pick_a_name));
+        String vals[] = {
+                getString(R.string.createnewmail_label),
+                getString(R.string.create_new_IM)
+                };
+        builder.setSingleChoiceItems(vals, -1,
+                new DialogInterface.OnClickListener()
+                {
+                    public void onClick(DialogInterface dialog, int item)
+                    {
+                        dialog.cancel();
+                        Intent intent = null;
+                        switch (item)
+                        {
+                        case 0: // mail
+                            Log.d(TAG, "Trying to create mail");
+                            intent = new Intent(getBaseContext(), TextCreator.class);
+                            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
+                            intent.putExtra(TextCreator.INTENT_RECIPIENT, selected_user);
+                            startActivity(intent);
+                            finish();
+                            break;
+                        case 1: // IM
+                            Log.d(TAG, "Trying to create IM");
+                            intent = new Intent(getBaseContext(), IMConversationList.class);
+                            intent.putExtra(IMConversationList.INTENT_CONVERSATION_LIST_RECIPIENT, selected_user);
+                            startActivity(intent);
+                            finish();
+                            break;
+                        }
+                    }
+                });
+        AlertDialog alert = builder.create();
+        alert.show();
+
+    }    
 
     /**
      * Attempt to get all persons online.
@@ -95,15 +143,30 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
             this.dialog.setCancelable(true);
             this.dialog.setIndeterminate(false);
             this.dialog.setMessage(getString(R.string.loading));
-            this.dialog.setMax(100);
+            this.dialog.setMax(1);
             this.dialog.show();
         }
 
 		protected Integer doInBackground(Void... param) {
-	        tPersons = fetchPersons(this);
+    		int i=0;
+    		while ((mKom == null)&&(i<100)) {
+    			i++;
+    			try {
+					Thread.sleep(50);
+				} catch (InterruptedException e) {
+					// TODO Auto-generated catch block
+					e.printStackTrace();
+				}
+    		}
+    		Log.d(TAG, "populatePersonsTask slept "+i);
+	        tPersons = fetchPersons(this, who_type);
 			return 1;
 		}
 
+        void changeMax(int val) {
+            this.dialog.setMax(val);
+        }
+        
 		void updateProgress(int percent) {
 			publishProgress(percent);
 		}
@@ -126,7 +189,6 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
      */
     private void populatePersons() 
     {
-    	Log.d(TAG, "populatePersons");
         mAdapter.clear();
 
         if (mPersons != null && (!mPersons.isEmpty())) {
@@ -145,27 +207,24 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
         }
     }
  
-    private List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT) {
+    private List<ConferenceInfo> fetchPersons(populatePersonsTask populatePersonsT, int whoType) {
     	List<ConferenceInfo> retlist = null;
     	
-    	try {
-            App app = getApp();
-            if (app != null) {
-            	if (mKom != null) {
-            		if (mKom.isConnected()) {
-            			retlist = mKom.fetchPersons(populatePersonsT);
-            		} else {
-            			Log.d(TAG, "Can't fetch persons when no connection");
-            	        Toast.makeText(getApplicationContext(), "Lost connection", Toast.LENGTH_SHORT).show();
-            			mKom.reconnect();
-            		}
-            	}
-            }
-    	} catch (Exception e) {
-    		Log.d(TAG, "fetchPersons failed:"+e);
-    		e.printStackTrace();
-	        Toast.makeText(getApplicationContext(), "fetchPersons failed, probably lost connection", Toast.LENGTH_SHORT).show();
-    	}
+		try {
+			if (mKom != null) {
+				if (mKom.isConnected()) {
+					retlist = mKom.fetchPersons(populatePersonsT, whoType);
+				} else {
+					Log.d(TAG, "Can't fetch persons when no connection");
+					mKom.reconnect();
+				}
+			} else {
+				Log.d(TAG, "mKom is null");
+			}
+		} catch (Exception e) {
+			Log.d(TAG, "fetchPersons failed:" + e);
+			e.printStackTrace();
+		}
 		return retlist;
     }
     
@@ -184,4 +243,9 @@ public class WhoIsOn extends ListActivity implements ServiceConnection
     private List<ConferenceInfo> tPersons;
     private List<ConferenceInfo> mPersons;
     private ArrayAdapter<ConferenceInfo> mAdapter;
+    
+    private String selected_user = null;
+    
+    private int who_type = 0; // type 1 = all, type 2 = friends
+
  }
