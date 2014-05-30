@@ -20,6 +20,8 @@ import org.lindev.androkom.R;
 import android.os.AsyncTask;
 import android.util.Log;
 
+// Is this cach really needed? Lattekom got a cache too.
+
 class TextCache {
     private static final String TAG = "Androkom TextCache";
 

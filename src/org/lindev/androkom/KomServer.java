@@ -79,7 +79,7 @@ import android.widget.Toast;
 public class KomServer extends Service implements RpcEventListener,
 		nu.dll.lyskom.Log {
 	public static final String TAG = "Androkom KomServer";
-	public static boolean RELEASE_BUILD = true;
+	public static boolean RELEASE_BUILD = false;
 
 	private BroadcastReceiver mConnReceiver = new BroadcastReceiver() {
 	    @Override
@@ -718,6 +718,8 @@ public class KomServer extends Service implements RpcEventListener,
             Log.d(TAG, "clearNameCache no DB to clear");
         }
     }
+
+
     /**
      * When no need to wait for logout
      * 
@@ -2546,6 +2548,7 @@ public class KomServer extends Service implements RpcEventListener,
 
     public Text getTextbyNo(int textNo) throws InterruptedException {
         Text text = null;
+
         if (lks == null) {
             return null;
         }
