@@ -2,9 +2,9 @@
 <resources>
     <string name="app_name">Androkom</string>
     <string name="pick_a_name">Pick a name</string>
-    <string name="komserver_connected">KomServer connected</string>
-    <string name="komserver_disconnected">KomServer disconnected</string>
-    <string name="komserver_stopped">KomServer stopped</string>
+    <string name="komserver_connected">KomService connected</string>
+    <string name="komserver_disconnected">KomService disconnected</string>
+    <string name="komserver_stopped">KomService stopped</string>
     <string name="x_logged_in">" logged in"</string>
     <string name="x_logged_out">" logged out"</string>
     <string name="x_changed_to_y">" changed to "</string>
