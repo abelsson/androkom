@@ -242,19 +242,23 @@ public class Login extends Activity implements ServiceConnection
     }
     
     void otherAction() {
+        Log.d(TAG, "otherAction");
         if((share_uri != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent img_intent = new Intent(Login.this, ImgTextCreator.class);
             img_intent.putExtra("bild_uri", share_uri.toString());
             img_intent.putExtra("BitmapImage", (Bitmap)null);
             startActivity(img_intent);
+            Log.d(TAG, "otherAction finish image");
             finish();
         }        
         if((sendto_im_recipient != null) && (mKom!=null) && (mKom.isConnected())) {
             Intent intent = new Intent(this, IMConversationList.class);
             intent.putExtra(Consts.INTENT_CONVERSATION_LIST_RECIPIENT, sendto_im_recipient);
             startActivity(intent);
+            Log.d(TAG, "otherAction finish IM");
             finish();
         }        
+        Log.d(TAG, "otherAction done");
     }
 
     private void getPrefs() {
@@ -306,6 +310,7 @@ public class Login extends Activity implements ServiceConnection
 
         	password = prefs.getString("password", "");
     	}
+        Log.d(TAG, "getPsw Checking prefs done");
     	return password;
     }
     
@@ -748,7 +753,8 @@ public class Login extends Activity implements ServiceConnection
     public void onServiceConnected(ComponentName name, IBinder service) {
         Log.d(TAG, "onServiceConnected");
         try {
-            mKom = ((LocalBinder<KomServer>) service).getService();
+            LocalBinder<KomServer> localBinder = (LocalBinder<KomServer>) service;
+            mKom = localBinder.getService();
 
             String rawTitle = getString(R.string.login_title);
             String fs = String.format(rawTitle,

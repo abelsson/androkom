@@ -418,6 +418,8 @@ public class KomServer extends Service implements RpcEventListener,
     }
 
     static private class NameCacheClass extends SQLiteOpenHelper {
+        private volatile Lock NameCache_lock = new ReentrantLock(); // Lock db access to single thread
+
         static final String dbName = "Androkom_NameCache_DB";
 
         static final String TableName = "ConfNamesTable";
@@ -480,17 +482,30 @@ public class KomServer extends Service implements RpcEventListener,
                 Log.d(TAG, "testConf nonexisting id:"+id);
                 return false;
             }
-            Cursor c = db.query(TableName, columns, serverName + "=? AND "
-                    + confID + "=?",
-                    new String[] { server, String.valueOf(id) }, null, null,
-                    null);
-            if (c.getCount() < 1) {
-                Log.d(TAG, "testConf error db query no result. server="+server+" id="+id);
-                c.close();
-                return false;
+            try {
+                if(NameCache_lock.tryLock(60, TimeUnit.SECONDS)) {
+                    try {
+                        Cursor c = db.query(TableName, columns, serverName + "=? AND "
+                                + confID + "=?",
+                                new String[] { server, String.valueOf(id) }, null, null,
+                                null);
+                        if (c.getCount() < 1) {
+                            Log.d(TAG, "testConf error db query no result. server="+server+" id="+id);
+                            c.close();
+                            return false;
+                        }
+                        Log.d(TAG, "testConf error db query found conf. server="+server+" id="+id);
+                        c.close();
+                    } finally {
+                        NameCache_lock.unlock();
+                    }
+                } else {
+                    Log.d(TAG, "testConf could not lock");
+                }
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            Log.d(TAG, "testConf error db query found conf. server="+server+" id="+id);
-            c.close();
             return true;
         }
 
@@ -520,44 +535,63 @@ public class KomServer extends Service implements RpcEventListener,
         }
 
         /* find local id for conference */
-        synchronized private int findConfId(SQLiteDatabase db, String server, int conf) {
-            Log.d(TAG, "findConfId looking for server "+server+" confId "+conf);
-            if(conf < 1) {
-                Log.d(TAG, "findConfId nonexisting id:"+conf);
+        synchronized private int findConfId(SQLiteDatabase db, String server,
+                int conf) {
+            Log.d(TAG, "findConfId looking for server " + server + " confId "
+                    + conf);
+            if (conf < 1) {
+                Log.d(TAG, "findConfId nonexisting id:" + conf);
                 return 0;
             }
             String[] columns = new String[] { localNameID };
-            Cursor c = db.query(TableName, columns, serverName + "=? AND "
-                    + confID + "=?",
-                    new String[] { server, String.valueOf(conf) }, null, null,
-                    null);
-            if (c.getCount() < 1) {
-                Log.d(TAG, "findConfId error db query no result");
-                c.close();
-                return 0;
-            }
-            c.moveToFirst();
-            if (c.getCount() > 1) {
-                Log.d(TAG,
-                        "findConfId error db query result more than 1, will return first");
-                c.moveToFirst();
-                while (c.isAfterLast() == false) {
-                    String row="";
-                    for (int i = 0; i < c.getColumnNames().length; i++) {
-                        int columnIndex = c.getColumnIndex(c.getColumnName(i));
-                        String columnValue = c.getString(columnIndex);
-                        row+=columnValue+"\t";
+            int id = -1;
+            try {
+                if (NameCache_lock.tryLock(60, TimeUnit.SECONDS)) {
+                    try {
+                        Cursor c = db.query(TableName, columns, serverName
+                                + "=? AND "
+                                + confID + "=?",
+                                new String[] { server, String.valueOf(conf) },
+                                null, null, null);
+                        if (c.getCount() < 1) {
+                            Log.d(TAG, "findConfId error db query no result");
+                            c.close();
+                            return 0;
+                        }
+                        c.moveToFirst();
+                        if (c.getCount() > 1) {
+                            Log.d(TAG,
+                                    "findConfId error db query result more than 1, will return first");
+                            c.moveToFirst();
+                            while (c.isAfterLast() == false) {
+                                String row = "";
+                                for (int i = 0; i < c.getColumnNames().length; i++) {
+                                    int columnIndex = c.getColumnIndex(c
+                                            .getColumnName(i));
+                                    String columnValue = c
+                                            .getString(columnIndex);
+                                    row += columnValue + "\t";
+                                }
+                                Log.d(TAG, row);
+                                c.moveToNext();
+                            }
+                            Log.d(TAG, "done dumping");
+                            c.moveToFirst();
+                        }
+                        int colIdx = c.getColumnIndexOrThrow(localNameID);
+                        id = c.getInt(colIdx);
+                        c.close();
+                    } finally {
+                        NameCache_lock.unlock();
                     }
-                    Log.d(TAG, row);
-                    c.moveToNext();
+                } else {
+                    Log.d(TAG, "testConf could not lock");
                 }
-                Log.d(TAG, "done dumping");
-                c.moveToFirst();
+            } catch (InterruptedException e) {
+                // TODO Auto-generated catch block
+                e.printStackTrace();
             }
-            int colIdx = c.getColumnIndexOrThrow(localNameID);
-            int id = c.getInt(colIdx);
-            c.close();
-            Log.d(TAG, "findConfId found id "+id);
+            Log.d(TAG, "findConfId found id " + id);
             return id;
         }
 
@@ -1223,7 +1257,7 @@ public class KomServer extends Service implements RpcEventListener,
      * Get name for given conference and update cache
      */
     private void updateConferenceNameCache(int conf) {
-        Log.d(TAG, "mKom.updateConferenceNameCache id=" + conf);
+        Log.d(TAG, "mKom.updateConferenceNameCache id=" + Integer.toString(conf));
         if(conf == 0) {
             Log.d(TAG, "updateConferenceNameCache there is no conf:"+conf);
             return;
