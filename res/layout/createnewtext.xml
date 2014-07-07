@@ -12,7 +12,7 @@
         android:id="@+id/recipient"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:drawable/editbox_background"
+        android:hint="recipient"
         android:singleLine="true"/>
     <TextView
         android:id="@+id/label"
@@ -23,22 +23,28 @@
         android:id="@+id/subject"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:drawable/editbox_background"
+        android:hint="subject"
         android:singleLine="true"/>
     <EditText
         android:id="@+id/body"
         android:layout_width="fill_parent"
         android:layout_height="wrap_content"
-        android:background="@android:drawable/editbox_background"
         android:singleLine="false"
         android:layout_weight="1"
+        android:hint="text"
         android:inputType="textShortMessage|textAutoCorrect|textCapSentences|textMultiLine"
         android:gravity="top" />
     <LinearLayout 
       android:layout_width="fill_parent"
       android:layout_height="wrap_content"
       android:orientation="horizontal">   
-	    <Button
+        <Button
+            android:id="@+id/cancel"
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:layout_weight="1"
+            android:text="@string/cancel" />
+  	    <Button
 	        android:id="@+id/send"
 	        android:layout_width="wrap_content"
 	        android:layout_height="wrap_content"
@@ -47,11 +53,5 @@
 	        android:layout_alignParentRight="true"
 	        android:layout_marginLeft="10dip"
 	        android:text="@string/send" />
-	    <Button
-	        android:id="@+id/cancel"
-	        android:layout_width="wrap_content"
-	        android:layout_height="wrap_content"
-	        android:layout_weight="1"
-	        android:text="@string/cancel" />
     </LinearLayout>    
 </LinearLayout>

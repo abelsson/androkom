@@ -1,0 +1,33 @@
+fullständig Internetåtkomst / INTERNET
+
+  Komma åt internet är ganska bra för en sådan här applikation.
+
+
+förhindra pekdatorns viloläge förhindra mobilens viloläge / WAKE_LOCK
+
+  Förhindra skärmlås går ingång (se inställningar).
+
+
+kontrollera vibration / VIBRATE
+
+  Vibrera vid mottagande av snabbmeddelande/IM (se inställningar).
+
+
+ACCESS_INTENTS
+
+  För att lagra lösenord i OISafe (se inställningar).
+
+
+hitta plats (GPS) / ACCESS_FINE_LOCATION
+
+  Läsa GPS. Används dels för att klistra in aktuell position i text (menyval) alternativt tagga alla texter man skriver (se inställningar).
+
+
+GET_ACCOUNTS
+
+  För att plocka fram kontonamn som visas med t.ex. "Status session" i elisp-klienten.
+
+
+visa nätverksstatus / ACCESS_NETWORK_STATE
+
+  Att veta när nätverksanslutningen försvinner eller kommer tillbaks bör kunna ge stabilare applikation men används egentligen inte idag.

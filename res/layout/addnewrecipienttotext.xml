@@ -1,0 +1,32 @@
+<?xml version="1.0" encoding="utf-8"?>
+<LinearLayout
+android:id="@+id/widget0"
+android:layout_width="fill_parent"
+android:layout_height="fill_parent"
+xmlns:android="http://schemas.android.com/apk/res/android"
+android:orientation="vertical"
+>
+<TextView
+android:id="@+id/widget31"
+android:layout_width="wrap_content"
+android:layout_height="wrap_content"
+android:text="@string/conf_name"
+>
+</TextView>
+<EditText
+android:id="@+id/confname"
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+android:text=""
+android:hint="@string/default_name_hint"
+android:textSize="18sp"
+>
+</EditText>
+<Spinner android:layout_width="fill_parent" android:layout_height="wrap_content" android:id="@+id/textType_id"></Spinner>
+<Button
+android:id="@+id/do_addnewrecipienttotext"
+android:layout_width="fill_parent"
+android:layout_height="wrap_content"
+android:text="@string/do_addnewrecipienttotext"
+/>
+</LinearLayout>

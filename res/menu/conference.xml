@@ -1,6 +1,15 @@
 <?xml version="1.0" encoding="utf-8"?>
 <menu xmlns:android="http://schemas.android.com/apk/res/android">
-	<item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="@string/reply"></item>
+    <item android:id="@+id/menu_submenu_reply"
+          android:title="@string/title_submenu_reply" >
+          <!-- "reply" submenu -->
+          <menu>
+            <item android:visible="true" android:enabled="true" android:id="@+id/reply" android:title="@string/reply"></item>
+            <item android:visible="true" android:enabled="true" android:id="@+id/cam_reply" android:title="@string/cam_reply"></item>
+            <item android:visible="true" android:enabled="true" android:id="@+id/img_reply" android:title="@string/img_reply"></item>
+            </menu>
+    </item>
+    <item android:id="@+id/menu_messaging_id" android:title="@string/messaging_label" android:alphabeticShortcut="@string/messaging_shortcut"/>
 	<item android:title="@string/settings_label"
 		android:alphabeticShortcut="@string/settings_shortcut"
 		android:id="@+id/menu_settings_id"/>
@@ -14,9 +23,6 @@
           <item android:title="@string/createnewmail_label"
                 android:alphabeticShortcut="@string/createnewmail_shortcut"
                 android:id="@+id/menu_createnewmail_id"/>
-          <item android:title="@string/createnewIM_label"
-                android:alphabeticShortcut="@string/createnewIM_shortcut"
-                android:id="@+id/menu_createnewIM_id"/>
           </menu>
     </item>
     <item android:id="@+id/menu_submenu_setmark"
@@ -29,6 +35,9 @@
           <item android:title="@string/unmarktext_label"
                 android:alphabeticShortcut="@string/unmarktext_shortcut"
                 android:id="@+id/menu_unmarktext_id"/>
+          <item android:title="@string/next_no_readmark_label"
+                android:alphabeticShortcut="@string/next_no_readmark_shortcut"
+                android:id="@+id/menu_next_no_readmark_id"/>
           </menu>
     </item>
     <item android:id="@+id/menu_submenu_seeagain"
@@ -38,25 +47,46 @@
           <item android:title="@string/seetextagain_label"
                 android:alphabeticShortcut="@string/seetextagain_shortcut"
                 android:id="@+id/menu_seetextagain_id"/>
-          <item android:title="@string/seepresentation_label"
-                android:alphabeticShortcut="@string/seepresentation_shortcut"
-                android:id="@+id/menu_seepresentation_id"/>
+          <item android:title="@string/seepresentationconf_label"
+                android:alphabeticShortcut="@string/seepresentationconf_shortcut"
+                android:id="@+id/menu_seepresentationconf_id"/>
+          <item android:title="@string/seepresentationuser_label"
+                android:alphabeticShortcut="@string/seepresentationuser_shortcut"
+                android:id="@+id/menu_seepresentationuser_id"/>
           <item android:title="@string/seewhoison_label"
                 android:alphabeticShortcut="@string/seewhoison_shortcut"
                 android:id="@+id/menu_seewhoison_id"/>
+          <item android:title="@string/seeoriginalpost_label"
+                android:alphabeticShortcut="@string/seeoriginalpost_shortcut"
+                android:id="@+id/menu_seeoriginalpost_id"/>
           </menu>
     </item>
-    <item android:id="@+id/menu_submenu_textsize"
-          android:title="@string/title_submenu_textsize" >
-          <!-- "textsize" submenu -->
+    <item android:id="@+id/menu_submenu_texts"
+          android:title="@string/title_submenu_texts" >
+          <!-- "texts" submenu -->
           <menu>
-            <item android:title="@string/biggerfontsize_label"
-                  android:alphabeticShortcut="@string/biggerfontsize_shortcut"
-                  android:id="@+id/menu_biggerfontsize_id"/>
-            <item android:title="@string/smallerfontsize_label"
-                  android:alphabeticShortcut="@string/smallerfontsize_shortcut"
-                  android:id="@+id/menu_smallerfontsize_id"/>
-          </menu>
+            <item android:title="@string/monospaced_label"
+                  android:alphabeticShortcut="@string/monospaced_shortcut"
+                  android:id="@+id/menu_monospaced_id"/>
+            <item android:title="@string/menu_rot13_label" android:id="@+id/menu_rot13_id"></item>
+            <item android:title="@string/menu_speaktext_label" android:id="@+id/menu_speaktext_id"></item>
+            <item android:title="@string/menu_showimage_label" android:id="@+id/menu_showimage_id"></item>
+            <item android:title="@string/menu_superhoppa_label" android:id="@+id/menu_superhoppa_id"></item>
+         </menu>
     </item>
-    <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
+    <item android:id="@+id/menu_submenu_others"
+          android:title="@string/title_submenu_others" >
+          <!-- "others" submenu -->
+          <menu>
+            <item android:title="@string/gilla_label" android:id="@+id/menu_gilla_id"></item>
+            <item android:title="@string/add_recipient_label" android:id="@+id/menu_add_recipient_id"></item>
+            <item android:title="@string/sub_recipient_label" android:id="@+id/menu_sub_recipient_id"></item>
+            <item android:title="@string/add_comment_label" android:id="@+id/menu_add_comment_id"></item>
+            <item android:title="@string/sub_comment_label" android:id="@+id/menu_sub_comment_id"></item>
+            <item android:title="@string/message_log_label" android:id="@+id/menu_message_log_id"></item>
+            <item android:title="@string/leaveconference_label" android:id="@+id/menu_leaveconference_id"></item>
+            <item android:title="@string/menu_sharetext_label" android:id="@+id/menu_sharetext_id"></item>
+            </menu>
+    </item>
+            
 </menu>

@@ -1,13 +1,18 @@
 package org.lindev.androkom;
 
+import org.lindev.androkom.gui.IMConversationList;
+import org.lindev.androkom.gui.TextCreator;
+
 import android.app.Dialog;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.KeyEvent;
 import android.view.View;
 import android.widget.Button;
 import android.widget.TextView;
+import android.widget.Toast;
 
 /**
  * Dialog to enter commands by keyboard.
@@ -18,7 +23,7 @@ import android.widget.TextView;
 public class XDialog extends Dialog 
 {
 
-	private static final String TAG = "Androkom";
+	private static final String TAG = "Androkom XDialog";
 	
 	public XDialog(Context context) {
 		super(context);
@@ -46,19 +51,26 @@ public class XDialog extends Dialog
         Intent intent;
 		switch(parse_string_for_command(keyBuffer)) {
 		case 0 :
-            intent = new Intent(myContext, CreateNewIM.class);    
+            intent = new Intent(myContext, IMConversationList.class);
             myContext.startActivity(intent);
             break;
 		case 1 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 1);
+            intent = new Intent(myContext, TextCreator.class);
             myContext.startActivity(intent);
             break;
 		case 2 :
-            intent = new Intent(myContext, CreateNewText.class);    
-            intent.putExtra("recipient_type", 2);
+            intent = new Intent(myContext, TextCreator.class);
+            intent.putExtra(TextCreator.INTENT_IS_MAIL, true);
             myContext.startActivity(intent);
             break;
+		case 3 : 
+		    Toast.makeText(myContext, myContext.getString(R.string.appreciation_text),
+                    Toast.LENGTH_LONG).show();
+		    break;
+		case 4 :
+		    Toast.makeText(myContext, myContext.getString(R.string.abuse_text),
+                    Toast.LENGTH_LONG).show();
+		    break;
 		}
 		dismiss();
 	}
@@ -76,7 +88,12 @@ public class XDialog extends Dialog
 	}
 	
 	public boolean onKeyUp(int keyCode, KeyEvent event) {
-		switch(keyCode) {
+	    Log.d(TAG, "keyCode:"+keyCode);
+	    Log.d(TAG, "event.DisplayLabel:"+event.getDisplayLabel());
+        Log.d(TAG, "event.getUnicodeChar:"+event.getUnicodeChar());
+        Log.d(TAG, "event.getCharacters:"+event.getCharacters());
+
+        switch(keyCode) {
 		case KeyEvent.KEYCODE_DEL :
 		case KeyEvent.KEYCODE_BACK :
 		case KeyEvent.KEYCODE_CLEAR :
@@ -128,6 +145,8 @@ public class XDialog extends Dialog
 	
 	String[] keycommands = {"Sända meddelande",
 			"Skriva ett inlägg",
-			"Skicka brev"
+			"Skicka brev",
+			"Få uppmuntran",
+			"Få skäll"
 			};
 }

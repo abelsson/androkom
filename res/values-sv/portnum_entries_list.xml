@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="portnum_entries_list">
+    <item>"Standard (4894)"</item>
+    <item>"SSL (44894)"</item>
+    <item>"Annan/HTTP (80)"</item>
+    <item>"Annan/HTTPS (443)"</item>
+    <item>"Annan/SSH (22)"</item>
+    <item>"Annan/IMAPS (993)"</item>
+    <item>"Annan/POP3S (995)"</item>
+  </array>
+  <array name="portnum_values_list">
+    <item>"4894"</item>
+    <item>"44894"</item>
+    <item>"80"</item>
+    <item>"443"</item>
+    <item>"22"</item>
+    <item>"993"</item>
+    <item>"995"</item>
+  </array>
+</resources>

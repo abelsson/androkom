@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="preferredlanguage_entries_list">
+    <item>Default</item>  
+    <item>Svenska</item>
+    <item>English</item>
+  </array>
+  <array name="preferredlanguage_values_list">
+    <item>""</item>
+    <item>sv</item>
+    <item>en</item>
+  </array>
+</resources>

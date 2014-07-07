@@ -9,4 +9,7 @@
 	<item android:title="@string/login_save_oisafe_psw"
 		android:alphabeticShortcut="@string/save_oisafe_psw_id_shortcut"
 		android:id="@+id/save_oisafe_psw_id"/>
+    <item android:title="@string/login_clear_cache_label"
+        android:alphabeticShortcut="@string/clear_cache_shortcut"
+        android:id="@+id/clear_cache_id"/>
 </menu>

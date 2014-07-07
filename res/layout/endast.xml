@@ -18,6 +18,8 @@ android:id="@+id/confname"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text=""
+android:hint="name"
+android:inputType="text"
 android:textSize="18sp"
 >
 </EditText>
@@ -33,6 +35,8 @@ android:id="@+id/num_texts"
 android:layout_width="fill_parent"
 android:layout_height="wrap_content"
 android:text=""
+android:hint="123"
+android:inputType="number"
 android:textSize="18sp"
 >
 </EditText>

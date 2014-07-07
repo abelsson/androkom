@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+  <array name="directtounreads_entries_list">
+    <item>Direkt</item>
+    <item>Ärendelista</item>
+    <item>Fråga</item>
+  </array>
+  <array name="directtounreads_values_list">
+    <item>"0"</item>
+    <item>"1"</item>
+    <item>"2"</item>
+  </array>
+</resources>

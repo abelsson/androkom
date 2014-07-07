@@ -1,0 +1,104 @@
+Androkom - utvecklingsmiljö i Eclipse
+=====================================
+
+Dagaktuellt (2013-12-15) förslag på byggmiljö:
+
+Ubuntu Server 13.10 64bits. Efter installation används knappt 5GB så
+rek minst 10GB disk (dvs 5GB + 1GB swap + slask) och 1GB ram.
+
+sudo apt-get install libgtk2.0-0:i386 libpangox-1.0-0:i386 libpangoxft-1.0-0:i386 libidn11:i386 libglu1-mesa:i386 lxde firefox emacs git
+
+reboot & justera bildupplösning vid behov
+
+Ladda ner & installera JDK från Oracle. jdk-7u45-linux-x64.tar.gz
+Om .tar.gz-filen väljs så räcker det med att packa upp den och lägga
+till följande i .bash_aliases:
+PATH=$PATH:~/jdk1.7.0_45/bin
+export PATH
+
+wget http://dl.google.com/android/adt/adt-bundle-linux-x86_64-20131030.zip
+unzip
+
+starta eclipse i ADT och installera stöd för Android 2.3.3 (API 10)
+och Android 4.2.2 (API 17):
+adt-bundle-linux-x86_64-20131030/eclipse/eclipse
+Window -> Android SDK manager -> Välj Package 2.3.3 och Install.
+
+Hämta källkoden, notera: ej i workspace-katalogen.
+
+cd 
+git clone https://github.com/jonasgit/androkom.git
+cd androkom
+git clone https://github.com/jonasgit/lattekom.git
+
+eclipse -> File -> import projekt, välj androkom som skapades med git
+
+Efter import kan man behöva rensa i bygginställningarna:
+Go to Project » Properties » Java Build Path » Libraries and
+remove all except the "Android X.Y" 
+
+git clone ovan skapar enbart en kopia av källkoden men ger inte
+rätt att checka in till github.
+
+----------------------------------------------------------
+Äldre instruktion:
+
+Note: Ersätt /home/jonas med lämplig sökväg hos dig.
+Note: jonasgit är mitt namn på github, ersätt med ditt.
+
+Installera VirtualBox
+Installera Linux Mint i VirtualBox: www.linuxmint.com
+
+Använd Synaptic Package manager för att installera "git", "sun-java6-jdk"
+och "eclipse". Om du kör 64-bitars Mint så behövs också paketet "ia32-libs".
+Emacs kan förstås vara bra att ha också, en smaksak.
+
+Ladda ner android SDK från <http://developer.android.com/sdk/index.html>
+
+Installera enligt <http://developer.android.com/sdk/installing.html>,
+dvs:
+cd ~
+tar xvzf Downloads/android-sdk_r16-linux.tgz
+Notera att den packas upp till: /home/jonas/android-sdk-linux
+
+starta Eclipse och notera workspace, t.ex. "/home/jonas/workspace", antagligen
+vill du också välja "use as default".
+
+Om du installerat på en ny ren Linux Mint så behöver du lägga till
+<http://download.eclipse.org/releases/indigo> (för eclipse 3.7) i
+"Help > Install New Software...". Det räcker att lägga till som källa, man
+behöver inte välja något att installera. Om man inte har gjort detta så får
+man antagligen felet: "requires 'org.eclipse.wst.sse.core 0.0.0' but it
+could not be found".
+
+Installera och konfigurera ADT enligt
+<http://developer.android.com/sdk/eclipse-adt.html#installing>. Godkänn att
+installera ej signerade paket. Apply changes och starta om eclipse. När
+"Configure SDK" kommer upp, välj till Android 2.1. Se också till att byta ut
+Android SDK Location "/home/jonas/android-sdks" till
+"/home/jonas/android-sdk-linux" enligt ovan.
+
+I Eclipse->Window->Android SDK Manager välj och installera version 1.6
+och 2.2 (utöver vad som redan är installerat). Välj också dokumentation
+och samples om så önskas.
+
+Skapa konto på github och clona projekten <https://github.com/abelsson/androkom>
+och <https://github.com/pajp/lattekom> eller från annan lämplig branch.
+Glöm inte ssh-nycklarna. Se t.ex. <http://help.github.com/linux-set-up-git/>
+
+cd workspace
+git clone git@github.com:jonasgit/androkom.git
+cd androkom
+
+Här borde man kunna göra "git submodule init;git submodule update" enligt
+README, men jag får det inte att fungera. Däremot:
+
+git clone git@github.com:jonasgit/lattekom.git
+
+Sedan Create new project som beskrivs i androkom/README. Förutom starta
+om eclipse så kan det vara bra att markera androkom resp lattekom och
+trycka på F5.
+
+Om du vill provköra i virtuellt miljö så skapa en virtuell android
+med eclipse -> Window -> AVD manager -> New. Sedan ska det gå att
+köra med ctrl-F11 eller gröna pilen.

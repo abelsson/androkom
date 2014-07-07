@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+	<string-array name="texttype_array">
+		<item>Recipient</item>
+		<item>CC</item>
+		<item>BCC</item>
+	</string-array>
+</resources>
