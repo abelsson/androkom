@@ -22,7 +22,7 @@ http://www.sonatype.com/books/mvnref-book/reference/android-dev.html
 		<dependency>
 			<groupId>junit</groupId>
 			<artifactId>junit</artifactId>
-			<version>4.8.1</version>
+			<version>4.13.1</version>
 			<scope>test</scope>
 		</dependency>
 	</dependencies>
